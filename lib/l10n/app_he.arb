@@ -598,7 +598,7 @@
   "callInApp": "שיחה באפליקציה · המספרים נשארים פרטיים",
   "callWeakSignal": "קליטה חלשה",
   "callWindowEndedKeepTalking": "זמן הזמינות הסתיים — השיחה ממשיכה כרגיל",
-  "callPhoneSimulated": "באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל{name} בשיחה רגילה. כאן זו הדמיה.",
+  "callPhoneSimulated": "באפליקציה האמיתית הטלפון מחייג עכשיו ל{name}. כאן — אם הוגדר מספר בדיקה, הוא מחויג במקומו.",
   "@callPhoneSimulated": {
     "placeholders": {
       "name": {
@@ -784,7 +784,7 @@
   "debugVoiceNo": "דמה \"לא\"",
   "debugTestDial": "חיוג אמיתי לבדיקה",
   "debugTestDialLabel": "מספר לבדיקה (למשל המספר שלך)",
-  "debugTestDialHelp": "האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.",
+  "debugTestDialHelp": "האנשים המדומים לעולם לא מחויגים. במקומם יחויג המספר שכאן (למשל המספר שלך או של מישהו שמסכים).",
   "debugAnswerNone": "לא עונה",
   "scRun": "הפעל",
   "scNoAnswerTitle": "הצד השני לא עונה",
@@ -818,5 +818,8 @@
   "scAppClosedBody": "הזמינות נגמרת לבד — אף אחד לא נשאר \"זמין\" לנצח.",
   "scQuickConnectTitle": "חיבור מהיר עם אבא",
   "scQuickConnectBody": "אבא נהיה פנוי. אם גם את/ה זמין/ה — מתחילה ספירה של 5 שניות עם ביטול.",
-  "scQuickConnectHint": "קודם להפוך לזמין/ה, ואז להפעיל שוב."
+  "scQuickConnectHint": "קודם להפוך לזמין/ה, ואז להפעיל שוב.",
+  "debugDialOnEveryCall": "לחייג באמת בכל שיחה",
+  "debugDialOnEveryCallBody": "כשמגיעים לשיחת טלפון עם אדם מדומה — הטלפון יחייג באמת למספר הבדיקה",
+  "debugDialNow": "חייג עכשיו לבדיקה"
 }

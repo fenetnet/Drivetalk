@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// No description provided for @callPhoneSimulated.
   ///
   /// In he, this message translates to:
-  /// **'באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל{name} בשיחה רגילה. כאן זו הדמיה.'**
+  /// **'באפליקציה האמיתית הטלפון מחייג עכשיו ל{name}. כאן — אם הוגדר מספר בדיקה, הוא מחויג במקומו.'**
   String callPhoneSimulated(String name);
 
   /// No description provided for @callDialTestNumber.
@@ -2131,7 +2131,7 @@ abstract class AppLocalizations {
   /// No description provided for @debugTestDialHelp.
   ///
   /// In he, this message translates to:
-  /// **'האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.'**
+  /// **'האנשים המדומים לעולם לא מחויגים. במקומם יחויג המספר שכאן (למשל המספר שלך או של מישהו שמסכים).'**
   String get debugTestDialHelp;
 
   /// No description provided for @debugAnswerNone.
@@ -2337,6 +2337,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'קודם להפוך לזמין/ה, ואז להפעיל שוב.'**
   String get scQuickConnectHint;
+
+  /// No description provided for @debugDialOnEveryCall.
+  ///
+  /// In he, this message translates to:
+  /// **'לחייג באמת בכל שיחה'**
+  String get debugDialOnEveryCall;
+
+  /// No description provided for @debugDialOnEveryCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשמגיעים לשיחת טלפון עם אדם מדומה — הטלפון יחייג באמת למספר הבדיקה'**
+  String get debugDialOnEveryCallBody;
+
+  /// No description provided for @debugDialNow.
+  ///
+  /// In he, this message translates to:
+  /// **'חייג עכשיו לבדיקה'**
+  String get debugDialNow;
 }
 
 class _AppLocalizationsDelegate

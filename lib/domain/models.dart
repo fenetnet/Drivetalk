@@ -350,6 +350,7 @@ class MyPreferences {
     this.voiceReadout = true,
     this.voiceCommands = true,
     this.testDialNumber,
+    this.dialTestNumberOnEveryCall = true,
     this.routines = const [],
     this.circles = const [],
   });
@@ -370,6 +371,10 @@ class MyPreferences {
 
   /// Prototype only: a real number (e.g. my own) to test a real phone call.
   final String? testDialNumber;
+
+  /// Prototype only: every regular call actually dials [testDialNumber]
+  /// (instead of the fake person), to feel the real flow.
+  final bool dialTestNumberOnEveryCall;
   final List<Routine> routines;
   final List<Circle> circles;
 
@@ -385,6 +390,7 @@ class MyPreferences {
     bool? voiceCommands,
     String? testDialNumber,
     bool clearTestDialNumber = false,
+    bool? dialTestNumberOnEveryCall,
     List<Routine>? routines,
     List<Circle>? circles,
   }) => MyPreferences(
@@ -403,6 +409,8 @@ class MyPreferences {
     testDialNumber: clearTestDialNumber
         ? null
         : testDialNumber ?? this.testDialNumber,
+    dialTestNumberOnEveryCall:
+        dialTestNumberOnEveryCall ?? this.dialTestNumberOnEveryCall,
     routines: routines ?? this.routines,
     circles: circles ?? this.circles,
   );
@@ -418,6 +426,7 @@ class MyPreferences {
     'voiceReadout': voiceReadout,
     'voiceCommands': voiceCommands,
     'testDialNumber': testDialNumber,
+    'dialTestNumberOnEveryCall': dialTestNumberOnEveryCall,
     'routines': [for (final r in routines) r.toJson()],
   };
 
@@ -437,6 +446,8 @@ class MyPreferences {
         voiceReadout: j['voiceReadout'] as bool? ?? true,
         voiceCommands: j['voiceCommands'] as bool? ?? true,
         testDialNumber: j['testDialNumber'] as String?,
+        dialTestNumberOnEveryCall:
+            j['dialTestNumberOnEveryCall'] as bool? ?? true,
         routines: [
           for (final r in (j['routines'] as List? ?? []))
             Routine.fromJson((r as Map).cast<String, Object?>()),

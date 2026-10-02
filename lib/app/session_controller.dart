@@ -786,8 +786,15 @@ class SessionController extends Notifier<SessionState> {
     if (method == CallMethod.inApp) {
       await ref.read(callServiceProvider).startInAppCall(peer.id);
     }
-    // Phase 1: fake people are never dialed. The call screen offers dialing
-    // a real test number from the developer screen instead.
+    // Phase 1: fake people are never dialed. If the owner set a test number,
+    // that real number is dialed instead, to feel the real flow.
+    if (method == CallMethod.phone) {
+      final prefs = ref.read(profileServiceProvider).prefs;
+      final test = prefs.testDialNumber;
+      if (prefs.dialTestNumberOnEveryCall && test != null && test.isNotEmpty) {
+        unawaited(ref.read(phoneDialerProvider).call(test));
+      }
+    }
     final started = state.windowStartedAt;
     _log('call_started', {
       'method': method.name,

@@ -1044,7 +1044,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String callPhoneSimulated(String name) {
-    return 'באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל$name בשיחה רגילה. כאן זו הדמיה.';
+    return 'באפליקציה האמיתית הטלפון מחייג עכשיו ל$name. כאן — אם הוגדר מספר בדיקה, הוא מחויג במקומו.';
   }
 
   @override
@@ -1314,7 +1314,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get debugTestDialHelp =>
-      'האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.';
+      'האנשים המדומים לעולם לא מחויגים. במקומם יחויג המספר שכאן (למשל המספר שלך או של מישהו שמסכים).';
 
   @override
   String get debugAnswerNone => 'לא עונה';
@@ -1427,4 +1427,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get scQuickConnectHint => 'קודם להפוך לזמין/ה, ואז להפעיל שוב.';
+
+  @override
+  String get debugDialOnEveryCall => 'לחייג באמת בכל שיחה';
+
+  @override
+  String get debugDialOnEveryCallBody =>
+      'כשמגיעים לשיחת טלפון עם אדם מדומה — הטלפון יחייג באמת למספר הבדיקה';
+
+  @override
+  String get debugDialNow => 'חייג עכשיו לבדיקה';
 }

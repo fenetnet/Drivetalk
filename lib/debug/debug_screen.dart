@@ -13,6 +13,7 @@ import '../features/common/widgets.dart';
 import '../platform/vehicle_signal_source.dart';
 import '../services/fake/fake_services.dart';
 import '../services/fake/fake_world.dart';
+import '../platform/phone_dialer.dart';
 import '../platform/voice_service.dart';
 import 'matching_inspector.dart';
 import 'scenarios.dart';
@@ -288,23 +289,56 @@ class _TestDialFieldState extends ConsumerState<_TestDialField> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
+    ref.watch(dataVersionProvider);
     final profile = ref.read(profileServiceProvider);
-    return _Pad(
-      TextField(
-        controller: _c,
-        keyboardType: TextInputType.phone,
-        textDirection: TextDirection.ltr,
-        decoration: InputDecoration(
-          labelText: l.debugTestDialLabel,
-          helperText: l.debugTestDialHelp,
-          helperMaxLines: 3,
+    final hasNumber = (profile.prefs.testDialNumber ?? '').isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _Pad(
+          TextField(
+            controller: _c,
+            keyboardType: TextInputType.phone,
+            textDirection: TextDirection.ltr,
+            decoration: InputDecoration(
+              labelText: l.debugTestDialLabel,
+              helperText: l.debugTestDialHelp,
+              helperMaxLines: 3,
+            ),
+            onChanged: (v) => profile.updatePrefs(
+              v.trim().isEmpty
+                  ? profile.prefs.copyWith(clearTestDialNumber: true)
+                  : profile.prefs.copyWith(testDialNumber: v.trim()),
+            ),
+          ),
         ),
-        onChanged: (v) => profile.updatePrefs(
-          v.trim().isEmpty
-              ? profile.prefs.copyWith(clearTestDialNumber: true)
-              : profile.prefs.copyWith(testDialNumber: v.trim()),
+        SwitchListTile(
+          title: Text(l.debugDialOnEveryCall),
+          subtitle: Text(l.debugDialOnEveryCallBody),
+          value: profile.prefs.dialTestNumberOnEveryCall,
+          onChanged: (v) => profile.updatePrefs(
+            profile.prefs.copyWith(dialTestNumberOnEveryCall: v),
+          ),
         ),
-      ),
+        _Pad(
+          FilledButton.icon(
+            icon: const Icon(Icons.phone_forwarded_rounded),
+            label: Text(l.debugDialNow),
+            onPressed: !hasNumber
+                ? null
+                : () async {
+                    final r = await ref
+                        .read(phoneDialerProvider)
+                        .call(profile.prefs.testDialNumber!);
+                    if (r == DialResult.unsupported || r == DialResult.failed) {
+                      messengerKey.currentState?.showSnackBar(
+                        SnackBar(content: Text(l.callDialUnsupported)),
+                      );
+                    }
+                  },
+          ),
+        ),
+      ],
     );
   }
 }
