@@ -24,7 +24,7 @@ _עודכן: 2026-10-02 (סבב משוב 1)_
 
 ## איך בודקים
 
-1. **בטלפון Android** — GitHub → Actions → הריצה האחרונה → Artifacts → `drivetalk-prototype-apk`.
+1. **בטלפון Android** — https://github.com/fenetnet/Drivetalk/releases/tag/prototype → ללחוץ על `drivetalk-prototype.apk` → לפתוח → להתקין.
 2. **בדפדפן** — הקישור בשיחה (קול/מצלמה/חיוג לא עובדים בדפדפן).
 
 ### תרחישים מומלצים

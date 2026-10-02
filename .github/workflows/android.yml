@@ -7,6 +7,9 @@ on:
     branches: [main, "claude/**"]
   workflow_dispatch:
 
+permissions:
+  contents: write # to publish the APK as a simple download link
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -47,3 +50,16 @@ jobs:
           name: drivetalk-prototype-apk
           path: drivetalk-prototype.apk
           retention-days: 30
+
+      # One fixed, easy download link (no ZIP):
+      # https://github.com/<owner>/<repo>/releases/tag/prototype
+      - name: Publish download link
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete prototype --yes --cleanup-tag || true
+          gh release create prototype drivetalk-prototype.apk \
+            --prerelease \
+            --target "${{ github.sha }}" \
+            --title "DriveTalk — גרסת ניסיון" \
+            --notes "גרסת ניסיון עם נתונים מדומים. להורדה: ללחוץ על drivetalk-prototype.apk למטה, ואז לפתוח את הקובץ בטלפון."
