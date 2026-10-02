@@ -153,13 +153,31 @@ line of text, no lists, no typing. Calls and invitations also get large layouts.
   Driving Focus or CarPlay connect/disconnect. Core Motion only as a foreground signal.
   No background GPS without explicit owner approval.
 
-## Backend (Phase 2+, not connected yet)
+## Real mode (Phase 2) — `lib/real/`, `lib/features/real/`
 
-Supabase: Postgres for the social graph, Auth, Realtime for availability, Row Level
-Security on every table, server-side (Edge/RPC) functions for matching, beacon fan-out,
-and safety actions. Availability rows have `expires_at`; a scheduled job + query-time
-filter guarantee expiry even if the app is killed. Only the anon/public key ever ships
-in the app; service keys live only in server environment.
+`appModeProvider` (stored on the phone) picks the demo `RootGate` or
+`RealRoot`; they share widgets but never data. Invitation links
+(`DeepLinkListener`, app_links) switch to real mode.
+
+- `RealBackend` interface → `SupabaseRealBackend` (production) and
+  `MemoryRealBackend`/`MemoryServer` (tests; mirrors the SQL rules).
+- `RealController` (Riverpod): sign-in, snapshot refresh (realtime events,
+  debounced, plus a 10–30s poll and on app resume), offers, call stages
+  (`connecting → dialed | waitingForTheirCall | inApp → feedback`), invites,
+  safety, diagnostics text without secrets.
+- Server (`supabase/migrations/…two_user_test.sql`): profiles, invitations
+  (128-bit random one-time tokens, 7 days), connections, availability
+  (≤3h, hidden once expired, pg_cron cleanup), match_offers (mutual accept
+  with row lock, 15-min decline cooldown), blocks, feedback, reports,
+  phone_numbers (own-row RLS; revealed only by `call_details()` to the other
+  side of an offer both accepted). Clients write only through functions
+  except own feedback/reports/phone/unmatch.
+- Who dials: the side holding the other's number; if both, `user_a`.
+- Config via `--dart-define` from CI repository variables
+  (`lib/real/backend_config.dart`).
+- Invite site: `invite_site/` → `gh-pages` (or Cloudflare Pages). Links
+  `https://<site>/i/<token>`; the app also accepts `drivetalk://invite/<token>`
+  and pasted messages/codes (`parseInviteToken`).
 
 ## Calls (Phase 5, not connected yet)
 
@@ -189,6 +207,12 @@ matching inspector (scores, reasons, filters), local analytics counts, reset dat
   decline → next, auto-driving opt-in, feedback deferred while driving, beacon
   limits, beacon "yes", expiry, invitation mute, block, not-today.
 - `test/app_smoke_test.dart` — onboarding (18+ gate) → RTL home → suggestion.
+- `test/real_flow_test.dart` — two phones on the in-memory server: invite,
+  mutual yes, who dials, decline/cooldown, expiry, voice in driving, block,
+  offline, diagnostics without secrets.
+- `test/real_app_test.dart` — the real-mode screens end to end.
+- `test/supabase_live_test.dart` — same controller against a real Supabase
+  (skipped unless env vars are set); `tool/e2e` checks RLS directly.
 - CI: `.github/workflows/android.yml` runs analyze + tests and builds the APK.
 
 ## Android signing (test builds)

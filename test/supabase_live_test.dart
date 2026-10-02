@@ -29,7 +29,7 @@ class _Dialer implements PhoneDialer {
   }
 }
 
-ProviderContainer phone(_Dialer dialer) => ProviderContainer(
+ProviderContainer _phone(_Dialer dialer) => ProviderContainer(
   overrides: [
     realBackendProvider.overrideWithValue(
       SupabaseRealBackend(
@@ -55,8 +55,8 @@ Future<void> settle([int ms = 300]) =>
 void main() {
   test('two phones against a real server', () async {
     final meDialer = _Dialer();
-    final me = phone(meDialer);
-    final yoni = phone(_Dialer());
+    final me = _phone(meDialer);
+    final yoni = _phone(_Dialer());
     final m = me.read(realProvider.notifier);
     final y = yoni.read(realProvider.notifier);
     await settle();

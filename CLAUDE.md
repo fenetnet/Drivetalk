@@ -85,10 +85,17 @@ lib/
   matching/       matching engine + config + reasons (pure Dart, unit-tested)
   services/       abstract service interfaces
   services/fake/  Phase 1 in-memory implementations + seed data
+  real/           Phase 2 real mode: backend interface, Supabase + in-memory
+                  backends, RealController, deep links, local store
+  features/real/  real-mode screens (onboarding, home, people, offer,
+                  waiting, call, feedback, invite, test, settings)
   platform/       device signals (vehicle detection) behind interfaces
   debug/          developer screen + matching inspector (kDevTools only)
   l10n/           app_he.arb (template) + generated localizations
 assets/config/matching.json   all matching weights / limits / cooldowns
+supabase/migrations/          the whole server schema (RLS, functions, realtime)
+invite_site/                  static invitation page (published to gh-pages)
+tool/e2e/                     backend end-to-end check against a local Supabase
 test/             engine unit tests, session-flow tests, app smoke test
 ```
 
@@ -111,6 +118,12 @@ flutter run --dart-define=DEV_TOOLS=true
 flutter build web --release --dart-define=DEV_TOOLS=true --no-web-resources-cdn
 ```
 
+Real mode is configured only by CI repository variables `SUPABASE_URL`,
+`SUPABASE_ANON_KEY` (public anon/publishable key), `INVITE_BASE_URL`
+(→ `--dart-define`). Never the service_role / secret key.
+Local backend: `supabase start` (docker) + `tool/e2e` and
+`SUPABASE_LIVE_URL=… SUPABASE_LIVE_KEY=… flutter test test/supabase_live_test.dart`.
+
 The Android SDK cannot be downloaded in the cloud container (dl.google.com is
 blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
@@ -124,8 +137,9 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Work phases
 
-1. Interactive local prototype, fake data only  ← **current**
-2. Auth + users + social graph + backend
+1. Interactive local prototype, fake data only  ✅
+2. Auth + users + social graph + backend  ← **current** (built; owner must
+   set up Supabase + variables — `docs/setup-guide.md`)
 3. Realtime availability + matchmaking
 4. Android automatic driving detection
 5. Real audio calls
