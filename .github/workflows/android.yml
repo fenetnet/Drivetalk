@@ -39,8 +39,25 @@ jobs:
 
       # Prototype build: fake data + developer tools enabled.
       # (Store builds will never pass DEV_TOOLS=true.)
+      # Stable signing key from GitHub secrets (never stored in git), so each
+      # new build installs as an update over the previous one.
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_TEST_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/test.jks"
+            echo "DT_KEYSTORE_PATH=$RUNNER_TEMP/test.jks" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No stable signing key yet — updates will need uninstall/reinstall."
+          fi
+
       - name: Build APK
-        run: flutter build apk --release --dart-define=DEV_TOOLS=true
+        env:
+          DT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_TEST_KEYSTORE_PASSWORD }}
+        run: >
+          flutter build apk --release --dart-define=DEV_TOOLS=true
+          --build-number=${{ github.run_number }}
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk drivetalk-prototype.apk

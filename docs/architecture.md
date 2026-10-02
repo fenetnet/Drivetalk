@@ -190,3 +190,12 @@ matching inspector (scores, reasons, filters), local analytics counts, reset dat
   limits, beacon "yes", expiry, invitation mute, block, not-today.
 - `test/app_smoke_test.dart` — onboarding (18+ gate) → RTL home → suggestion.
 - CI: `.github/workflows/android.yml` runs analyze + tests and builds the APK.
+
+## Android signing (test builds)
+
+CI signs release APKs with one stable test key (GitHub secrets
+`ANDROID_TEST_KEYSTORE_BASE64`, `ANDROID_TEST_KEYSTORE_PASSWORD`, alias
+`drivetalk`) so updates install over previous builds. The key is never in git.
+Public certificate SHA-256 (needed later for Android App Links `assetlinks.json`):
+`BA:B3:22:23:52:5B:14:DA:F4:11:6A:2A:8D:73:76:EA:8D:0E:40:A3:25:3C:24:69:2E:E9:BE:FD:B4:70:A8:AB`
+Build number = GitHub run number.

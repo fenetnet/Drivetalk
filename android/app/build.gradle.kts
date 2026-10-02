@@ -29,11 +29,28 @@ android {
         versionName = flutter.versionName
     }
 
+    // Test builds are signed with ONE stable key so updates install over the
+    // previous version. The key never lives in git: CI writes it from GitHub
+    // secrets and passes its path/password via environment variables.
+    val testKeystore = System.getenv("DT_KEYSTORE_PATH")
+    signingConfigs {
+        if (testKeystore != null) {
+            create("stableTest") {
+                storeFile = file(testKeystore)
+                storePassword = System.getenv("DT_KEYSTORE_PASSWORD")
+                keyAlias = "drivetalk"
+                keyPassword = System.getenv("DT_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (testKeystore != null) {
+                signingConfigs.getByName("stableTest")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

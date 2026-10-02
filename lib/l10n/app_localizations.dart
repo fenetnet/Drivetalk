@@ -1615,7 +1615,7 @@ abstract class AppLocalizations {
   /// No description provided for @optionsTitle.
   ///
   /// In he, this message translates to:
-  /// **'{count, plural, =1{מישהו פנוי לדבר עכשיו} other{{count} אנשים פנויים לדבר עכשיו}}'**
+  /// **'{count, plural, =1{מישהו פנוי עכשיו} other{{count} פנויים עכשיו}}'**
   String optionsTitle(int count);
 
   /// No description provided for @moreOptions.
@@ -1837,19 +1837,19 @@ abstract class AppLocalizations {
   /// No description provided for @voiceQuickConnect.
   ///
   /// In he, this message translates to:
-  /// **'מתקשרים ל{name} בעוד {seconds} שניות. לביטול אמרו \"בטל\".'**
+  /// **'מתקשרים ל{name}.'**
   String voiceQuickConnect(String name, int seconds);
 
   /// No description provided for @voiceInvitation.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לכ-{minutes} דקות. לדבר?'**
+  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?'**
   String voiceInvitation(String name, String gender, int minutes);
 
   /// No description provided for @voiceSuggestion.
   ///
   /// In he, this message translates to:
-  /// **'{name}, {who}, {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לעוד כ-{minutes} דקות. לדבר?'**
+  /// **'{name}. לדבר?'**
   String voiceSuggestion(String name, String gender, int minutes, String who);
 
   /// No description provided for @settingsProfile.
@@ -2349,6 +2349,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חייג עכשיו לבדיקה'**
   String get debugDialNow;
+
+  /// No description provided for @talkShort.
+  ///
+  /// In he, this message translates to:
+  /// **'לדבר'**
+  String get talkShort;
 }
 
 class _AppLocalizationsDelegate

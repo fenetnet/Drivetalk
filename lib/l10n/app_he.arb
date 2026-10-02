@@ -524,7 +524,7 @@
   "debugAnalyticsEmpty": "עוד אין אירועים",
   "debugReset": "אפס את כל הנתונים",
   "debugResetDone": "הנתונים אופסו",
-  "optionsTitle": "{count, plural, =1{מישהו פנוי לדבר עכשיו} other{{count} אנשים פנויים לדבר עכשיו}}",
+  "optionsTitle": "{count, plural, =1{מישהו פנוי עכשיו} other{{count} פנויים עכשיו}}",
   "@optionsTitle": {
     "placeholders": {
       "count": {
@@ -654,7 +654,7 @@
       }
     }
   },
-  "voiceQuickConnect": "מתקשרים ל{name} בעוד {seconds} שניות. לביטול אמרו \"בטל\".",
+  "voiceQuickConnect": "מתקשרים ל{name}.",
   "@voiceQuickConnect": {
     "placeholders": {
       "name": {
@@ -665,7 +665,7 @@
       }
     }
   },
-  "voiceInvitation": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לכ-{minutes} דקות. לדבר?",
+  "voiceInvitation": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?",
   "@voiceInvitation": {
     "placeholders": {
       "name": {
@@ -679,7 +679,7 @@
       }
     }
   },
-  "voiceSuggestion": "{name}, {who}, {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לעוד כ-{minutes} דקות. לדבר?",
+  "voiceSuggestion": "{name}. לדבר?",
   "@voiceSuggestion": {
     "placeholders": {
       "name": {
@@ -820,5 +820,6 @@
   "scQuickConnectHint": "קודם להפוך לזמין/ה, ואז להפעיל שוב.",
   "debugDialOnEveryCall": "לחייג באמת בכל שיחה",
   "debugDialOnEveryCallBody": "כשמגיעים לשיחת טלפון עם אדם מדומה — הטלפון יחייג באמת למספר הבדיקה",
-  "debugDialNow": "חייג עכשיו לבדיקה"
+  "debugDialNow": "חייג עכשיו לבדיקה",
+  "talkShort": "לדבר"
 }

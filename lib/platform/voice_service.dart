@@ -58,11 +58,49 @@ class DeviceVoiceService implements VoiceService {
   Completer<VoiceAnswer>? _pending;
   VoiceAnswer? _simulatedNext;
 
+  bool _configured = false;
+
+  /// Short, brisk and as natural as the phone allows: slightly faster than
+  /// default, and a high-quality (network/neural) Hebrew voice if available.
+  Future<void> _configure() async {
+    if (_configured) return;
+    _configured = true;
+    await _tts.setLanguage('he-IL');
+    await _tts.setSpeechRate(0.58); // 0.5 = normal on Android
+    await _tts.setPitch(1.05);
+    await _tts.awaitSpeakCompletion(true);
+    try {
+      final voices = await _tts.getVoices as List?;
+      final hebrew = [
+        for (final v in voices ?? const [])
+          if (v is Map && '${v['locale']}'.toLowerCase().startsWith('he')) v,
+      ];
+      if (hebrew.isEmpty) return;
+      // Prefer network / neural voices, which sound much less robotic.
+      hebrew.sort((a, b) => _voiceScore(b).compareTo(_voiceScore(a)));
+      final best = hebrew.first;
+      await _tts.setVoice({
+        'name': '${best['name']}',
+        'locale': '${best['locale']}',
+      });
+    } catch (_) {
+      // Keep the engine's default Hebrew voice.
+    }
+  }
+
+  static int _voiceScore(Map<dynamic, dynamic> v) {
+    final name = '${v['name']}'.toLowerCase();
+    var score = 0;
+    if (name.contains('network') || name.contains('neural')) score += 2;
+    if (name.contains('local')) score -= 1;
+    if ('${v['quality']}'.toLowerCase().contains('high')) score += 1;
+    return score;
+  }
+
   @override
   Future<void> speak(String text) async {
     try {
-      await _tts.setLanguage('he-IL');
-      await _tts.awaitSpeakCompletion(true);
+      await _configure();
       await _tts.speak(text);
     } catch (_) {
       // No TTS engine — the screen still shows everything.

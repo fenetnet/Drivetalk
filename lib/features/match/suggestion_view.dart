@@ -5,6 +5,7 @@ import '../../app/conversation_starters.dart';
 import '../../app/providers.dart';
 import '../../app/session_controller.dart';
 import '../../app/theme.dart';
+import '../../matching/match_reason.dart';
 import '../../matching/matching_engine.dart';
 import '../../services/call_service.dart';
 import '../common/labels.dart';
@@ -68,108 +69,135 @@ class SuggestionView extends ConsumerWidget {
   }
 }
 
-class _OptionCard extends ConsumerWidget {
+/// Compact by default: who, one reason, one button. Tap for more.
+class _OptionCard extends ConsumerStatefulWidget {
   const _OptionCard({required this.suggestion});
   final Suggestion suggestion;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_OptionCard> createState() => _OptionCardState();
+}
+
+class _OptionCardState extends ConsumerState<_OptionCard> {
+  var _expanded = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l = context.l10n;
-    final s = suggestion;
+    final s = widget.suggestion;
     final person = s.person;
     final controller = ref.read(sessionProvider.notifier);
     final me = ref.watch(profileServiceProvider).me;
+    final now = ref.watch(nowProvider);
     final starter = ref.watch(startersProvider).forPair(me, person);
     final viaPhone = controller.callMethodFor(person) == CallMethod.phone;
+    final minutes = s.candidate.input.availability?.minutesLeftAt(now);
+    // The single most telling reason (availability is shown separately).
+    final mainReason = s.candidate.reasons
+        .where((r) => r is! AvailableForReason)
+        .firstOrNull;
+    final who = relationshipLine(
+      l,
+      connection: s.candidate.input.connection,
+      mutualFriends: s.candidate.input.mutualFriends,
+      sharedGroups: s.candidate.input.sharedGroups,
+    );
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                PersonAvatar(person: person, size: 56),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        person.name,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        relationshipLine(
-                          l,
-                          connection: s.candidate.input.connection,
-                          mutualFriends: s.candidate.input.mutualFriends,
-                          sharedGroups: s.candidate.input.sharedGroups,
-                        ),
-                        style: const TextStyle(color: AppColors.inkSoft),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  tooltip: l.more,
-                  icon: const Icon(Icons.more_vert_rounded),
-                  onSelected: (v) => switch (v) {
-                    'today' => controller.notToday(s),
-                    'while' => controller.doNotSuggestForAWhile(s),
-                    'block' => confirmBlock(context, ref, person),
-                    _ => showReportSheet(context, ref, person),
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(value: 'today', child: Text(l.notToday)),
-                    PopupMenuItem(value: 'while', child: Text(l.doNotSuggest)),
-                    PopupMenuItem(value: 'block', child: Text(l.block)),
-                    PopupMenuItem(value: 'report', child: Text(l.report)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                Pill(text: tierLabel(l, s.candidate.tier)),
-                if (s.isExploration)
-                  Pill(
-                    icon: Icons.auto_awesome_rounded,
-                    text: l.explorationBadge,
-                    color: const Color(0xFFFCEFD2),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            for (final r in s.candidate.reasons)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 3),
-                child: Row(
-                  children: [
-                    Icon(reasonIcon(r), size: 18, color: AppColors.terracotta),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(reasonText(l, r, person))),
-                  ],
-                ),
-              ),
-            if (starter != null) ...[
-              const SizedBox(height: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () => setState(() => _expanded = !_expanded),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.chat_bubble_outline_rounded,
-                    size: 18,
-                    color: AppColors.sageDark,
+                  PersonAvatar(person: person, size: 52),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                person.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (s.isExploration) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 16,
+                                color: AppColors.terracotta,
+                              ),
+                            ],
+                          ],
+                        ),
+                        Text(
+                          [
+                            if (minutes != null && minutes > 0)
+                              l.timeLeftMinutes(minutes),
+                            who,
+                          ].join(' · '),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.inkSoft),
+                        ),
+                        if (mainReason != null)
+                          Text(
+                            reasonText(l, mainReason, person),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                      ],
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  Expanded(
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.sageDark,
+                      minimumSize: const Size(0, 48),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                    ),
+                    onPressed: () => controller.talkNow(s),
+                    icon: Icon(
+                      viaPhone ? Icons.call_rounded : Icons.headset_mic_rounded,
+                      size: 20,
+                    ),
+                    label: Text(l.talkShort),
+                  ),
+                ],
+              ),
+              if (_expanded) ...[
+                const Divider(height: 20),
+                for (final r in s.candidate.reasons)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 3),
+                    child: Row(
+                      children: [
+                        Icon(
+                          reasonIcon(r),
+                          size: 18,
+                          color: AppColors.terracotta,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(reasonText(l, r, person))),
+                      ],
+                    ),
+                  ),
+                if (starter != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       l.starterLine(starter),
                       style: const TextStyle(
@@ -178,25 +206,31 @@ class _OptionCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                ],
-              ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 4,
+                  children: [
+                    TextButton(
+                      onPressed: () => controller.notToday(s),
+                      child: Text(l.notToday),
+                    ),
+                    TextButton(
+                      onPressed: () => controller.doNotSuggestForAWhile(s),
+                      child: Text(l.doNotSuggest),
+                    ),
+                    TextButton(
+                      onPressed: () => confirmBlock(context, ref, person),
+                      child: Text(l.block),
+                    ),
+                    TextButton(
+                      onPressed: () => showReportSheet(context, ref, person),
+                      child: Text(l.report),
+                    ),
+                  ],
+                ),
+              ],
             ],
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
-              child: FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.sageDark,
-                  minimumSize: const Size.fromHeight(48),
-                ),
-                onPressed: () => controller.talkNow(s),
-                icon: Icon(
-                  viaPhone ? Icons.call_rounded : Icons.headset_mic_rounded,
-                ),
-                label: Text(s.alreadyAccepted ? l.talkNowAccepted : l.talkNow),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

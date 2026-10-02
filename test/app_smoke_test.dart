@@ -65,11 +65,12 @@ void main() {
 
     // Three options appear, each with its own "talk now".
     await pumpFor(t, 2500);
-    expect(find.text('3 אנשים פנויים לדבר עכשיו'), findsOneWidget);
-    expect(find.text('לדבר עכשיו'), findsNWidgets(3));
+    expect(find.text('3 פנויים עכשיו'), findsOneWidget);
+    expect(find.text('לדבר'), findsNWidgets(3));
 
-    // Per-person menu: not today / don't suggest / block / report.
-    await t.tap(find.byIcon(Icons.more_vert_rounded).first);
+    // Compact cards; tapping one shows more: not today / don't suggest /
+    // block / report.
+    await t.tap(find.text('דנה'));
     await pumpFor(t, 400);
     expect(find.text('לא היום'), findsOneWidget);
     expect(find.text('לא להציע בתקופה הקרובה'), findsOneWidget);

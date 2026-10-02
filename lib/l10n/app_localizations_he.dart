@@ -952,8 +952,8 @@ class AppLocalizationsHe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count אנשים פנויים לדבר עכשיו',
-      one: 'מישהו פנוי לדבר עכשיו',
+      other: '$count פנויים עכשיו',
+      one: 'מישהו פנוי עכשיו',
     );
     return '$_temp0';
   }
@@ -1111,7 +1111,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String voiceQuickConnect(String name, int seconds) {
-    return 'מתקשרים ל$name בעוד $seconds שניות. לביטול אמרו \"בטל\".';
+    return 'מתקשרים ל$name.';
   }
 
   @override
@@ -1121,17 +1121,12 @@ class AppLocalizationsHe extends AppLocalizations {
       'male': 'פנוי',
       'other': 'פנוי/ה',
     });
-    return '$name $_temp0 לכ-$minutes דקות. לדבר?';
+    return '$name $_temp0. לדבר?';
   }
 
   @override
   String voiceSuggestion(String name, String gender, int minutes, String who) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'פנויה',
-      'male': 'פנוי',
-      'other': 'פנוי/ה',
-    });
-    return '$name, $who, $_temp0 לעוד כ-$minutes דקות. לדבר?';
+    return '$name. לדבר?';
   }
 
   @override
@@ -1434,4 +1429,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get debugDialNow => 'חייג עכשיו לבדיקה';
+
+  @override
+  String get talkShort => 'לדבר';
 }
