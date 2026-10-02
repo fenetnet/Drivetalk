@@ -1,0 +1,528 @@
+{
+  "@@locale": "he",
+  "appTitle": "DriveTalk",
+  "tabHome": "בית",
+  "tabConnections": "קשרים",
+  "tabDiscover": "גילוי",
+  "tabSettings": "הגדרות",
+  "onbWelcomeTitle": "הזמן המת שלך יכול להפוך לשיחה טובה",
+  "onbWelcomeBody": "בנסיעה, בהליכה או בהפסקה — נמצא את האדם הנכון לדבר איתו דווקא עכשיו.",
+  "onbHowTitle": "איך זה עובד",
+  "onbHow1": "מסמנים שפנויים, ולכמה זמן.",
+  "onbHow2": "מקבלים הצעה לאדם אחד מתאים — עם הסבר למה.",
+  "onbHow3": "השיחה מתחילה רק אם שני הצדדים אישרו.",
+  "onbPrivacyTitle": "פרטיות ובטיחות",
+  "onbPrivacy1": "לא משתפים מיקום, מסלול או מהירות — עם אף אחד.",
+  "onbPrivacy2": "שיחות לא מוקלטות ולא מתומללות.",
+  "onbPrivacy3": "אין שיחות אוטומטיות. בנהיגה — רק דיבורית ומתקן לרכב.",
+  "onbSetupTitle": "כמה פרטים קטנים",
+  "onbNameLabel": "איך קוראים לך?",
+  "onbGenderLabel": "איך לפנות אליך?",
+  "genderMale": "בלשון זכר",
+  "genderFemale": "בלשון נקבה",
+  "genderOther": "ניטרלי",
+  "onbAdultCheckbox": "אני בן/בת 18 ומעלה",
+  "onbOpennessLabel": "מה מתאים לך שנציע?",
+  "onbNext": "המשך",
+  "onbStart": "בואו נתחיל",
+  "onbPrototypeNote": "זהו אב-טיפוס: כל האנשים והשיחות מדומים.",
+  "homeGreeting": "שלום {name}",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeGreetingNoName": "שלום",
+  "homeStatusUnavailable": "כרגע לא זמין לשיחות",
+  "homeImFreeNow": "{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{אני פנוי/ה עכשיו}}",
+  "@homeImFreeNow": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "homeAvailableCount": "{count, plural, =0{כרגע אף אחד שמתאים לך לא פנוי — אפשר לסמן זמינות ונשלח הזמנה למעטים} =1{אדם אחד שמתאים לך פנוי עכשיו} other{{count} אנשים שמתאימים לך פנויים עכשיו}}",
+  "@homeAvailableCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeRestingTitle": "הזמינות שלך פעילה",
+  "timeLeftMinutes": "עוד {minutes} דק׳",
+  "@timeLeftMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "homeFindAnother": "מצא מישהו לדבר איתו",
+  "stopAvailability": "עצור זמינות",
+  "homeAutoDrivingOn": "זמינות אוטומטית בנסיעה פעילה",
+  "pickModeTitle": "מה המצב?",
+  "modeDriving": "נסיעה",
+  "modeWalking": "הליכה",
+  "modeBreak": "הפסקה",
+  "modeFree": "סתם פנוי",
+  "pickDurationTitle": "לכמה זמן?",
+  "minutesShort": "{minutes} דק׳",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUntilTripEnds": "עד שאסיים את הנסיעה",
+  "durationTripNote": "מסתיים ביציאה מהרכב, ולכל היותר אחרי {hours} שעות.",
+  "@durationTripNote": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "searchingTitle": "מחפשים מישהו שמתאים לדבר איתך עכשיו",
+  "searchingNoOneYet": "אם אף אחד לא פנוי, נשלח הודעה לכמה אנשים שעשויים להתאים.",
+  "beaconSent": "{count, plural, =0{אף אחד לא פנוי בדיוק עכשיו. נמשיך לחפש כל עוד את/ה זמין/ה.} =1{אף אחד לא פנוי בדיוק עכשיו, אז שלחנו הודעה לאדם אחד שעשוי להתאים.} other{אף אחד לא פנוי בדיוק עכשיו, אז שלחנו הודעה ל-{count} אנשים שעשויים להתאים.}}",
+  "@beaconSent": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tierFamiliar": "מוכר",
+  "tierReconnect": "לחדש קשר",
+  "tierWiden": "להרחיב מעגל",
+  "tierSurprise": "הפתע אותי",
+  "tierFamiliarDesc": "חברים קרובים, משפחה ואנשים שכבר בקשר איתך",
+  "tierReconnectDesc": "אנשים שמכירים, אבל לא דיברתם כאן הרבה זמן",
+  "tierWidenDesc": "מכרים, קולגות וחברים של חברים",
+  "tierSurpriseDesc": "הפתעה מבוקרת: חבר של חבר או קבוצה משותפת — תמיד עם הסבר",
+  "explorationBadge": "הפתעה קטנה",
+  "talkNow": "לדבר עכשיו",
+  "next": "הבא",
+  "notToday": "לא היום",
+  "doNotSuggest": "לא להציע בתקופה הקרובה",
+  "more": "עוד",
+  "block": "חסימה",
+  "report": "דיווח",
+  "unmatch": "הסרה מהקשרים",
+  "relFamily": "משפחה",
+  "relCloseFriend": "חבר/ה קרוב/ה",
+  "relFriend": "חבר/ה",
+  "relChildhoodFriend": "חבר/ת ילדות",
+  "relColleague": "קולגה",
+  "relFormerColleague": "קולגה לשעבר",
+  "relAcquaintance": "מכר/ה",
+  "relFriendOfFriend": "חבר/ה של חברים",
+  "relSharedGroup": "מקבוצה משותפת",
+  "relUnclassified": "קשר",
+  "relNone": "ללא סיווג",
+  "reasonAvailable": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו לעוד כ-{minutes} דקות",
+  "@reasonAvailable": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "reasonDormant": "לא דיברתם כאן {duration}",
+  "@reasonDormant": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonNeverTalked": "עוד לא דיברתם כאן אף פעם",
+  "reasonMutualFriends": "{count, plural, =1{יש לכם חבר משותף} other{יש לכם {count} חברים משותפים}}",
+  "@reasonMutualFriends": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reasonSharedGroup": "שניכם בקבוצה \"{group}\"",
+  "@reasonSharedGroup": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonSharedInterests": "לשניכם יש עניין ב{interests}",
+  "@reasonSharedInterests": {
+    "placeholders": {
+      "interests": {
+        "type": "String"
+      }
+    }
+  },
+  "reasonBothFof": "שניכם פתוחים להכיר חברים של חברים",
+  "reasonEnjoyedLastTime": "בפעם הקודמת נהניתם מהשיחה",
+  "reasonAnswered": "{name} {gender, select, female{אישרה} male{אישר} other{אישר/ה}} שמתאים לדבר עכשיו",
+  "@reasonAnswered": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "durationDays": "{count, plural, =1{יום} =2{יומיים} other{{count} ימים}}",
+  "@durationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMonths": "{count, plural, =1{חודש} =2{חודשיים} other{{count} חודשים}}",
+  "@durationMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationYearPlus": "יותר משנה",
+  "listAnd": " ו",
+  "waitingTitle": "שאלנו את {name} אם מתאים לדבר עכשיו",
+  "@waitingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingSubtitle": "השיחה תתחיל רק אחרי אישור",
+  "cancel": "ביטול",
+  "noticeDeclined": "{name} {gender, select, female{לא יכולה} male{לא יכול} other{לא יכול/ה}} עכשיו. נחפש מישהו אחר.",
+  "@noticeDeclined": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeAvailabilityEnded": "זמן הזמינות הסתיים",
+  "noticeInvitationMuted": "השתקנו הזמנות כאלה ל-{hours} שעות",
+  "@noticeInvitationMuted": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "noticeBlocked": "{name} {gender, select, female{נחסמה} male{נחסם} other{נחסם/ה}}",
+  "@noticeBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeReported": "תודה, הדיווח התקבל",
+  "noticePausedToday": "לא נציע את {name} היום",
+  "@noticePausedToday": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noticePausedWhile": "לא נציע את {name} בתקופה הקרובה",
+  "@noticePausedWhile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "callSimulated": "סימולציה — אין שיחה אמיתית בשלב זה",
+  "callMute": "השתק",
+  "callUnmute": "בטל השתקה",
+  "callEnd": "סיום",
+  "callAudioOnly": "שיחת קול בלבד · לא מוקלטת",
+  "feedbackQuestion": "{gender, select, female{שמחה} male{שמח} other{שמח/ה}} שדיברתם?",
+  "@feedbackQuestion": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "feedbackVeryGood": "מאוד",
+  "feedbackGood": "כן",
+  "feedbackNotReally": "לא במיוחד",
+  "feedbackAgainQuestion": "שנחבר ביניכם שוב בעתיד?",
+  "yes": "כן",
+  "no": "לא",
+  "skip": "דלג",
+  "invitationText": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו לכ-{minutes} דקות. מתאים לך לדבר?",
+  "@invitationText": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "invitationNotNow": "לא עכשיו",
+  "invitationMute": "להשתיק הצעות כאלה ל-{hours} שעות",
+  "@invitationMute": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "driverSearching": "מחפשים...",
+  "driverCall": "שיחה",
+  "driverNext": "הבא",
+  "driverStop": "עצור",
+  "driverWaiting": "מחכים לאישור של {name}",
+  "@driverWaiting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "driverInVehicle": "נראה שהמכשיר ברכב",
+  "driverBecomeAvailable": "זמין לשיחה",
+  "driverFindAnother": "שיחה נוספת",
+  "driverSafety": "בנהיגה: רק דיבורית ומתקן לרכב",
+  "driverNotNow": "לא עכשיו",
+  "connTabClose": "קרובים",
+  "connTabReconnect": "לחדש קשר",
+  "connTabColleagues": "קולגות ומכרים",
+  "connTabFof": "חברים של חברים",
+  "connLastTalked": "דיברתם כאן לפני {duration}",
+  "@connLastTalked": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "connLastTalkedToday": "דיברתם כאן היום",
+  "connNeverTalked": "עוד לא דיברתם כאן",
+  "connEmpty": "אין כאן אף אחד כרגע",
+  "connFofOff": "כדי לראות חברים של חברים, צריך להפעיל את האפשרות במסך גילוי. יופיעו רק מי שגם הפעילו אותה.",
+  "addFriend": "הוספת חבר",
+  "addFriendInviteLink": "קישור הזמנה",
+  "addFriendInviteLinkBody": "שולחים את הקישור למי שרוצים. אחרי שיצטרפו — תהיו מחוברים.",
+  "addFriendCopy": "העתק קישור",
+  "addFriendCopied": "הקישור הועתק (קישור לדוגמה בלבד)",
+  "addFriendQrSoon": "קוד QR יתווסף בהמשך",
+  "addFriendSearch": "חיפוש לפי שם",
+  "addFriendAdd": "הוסף",
+  "addFriendConnected": "מחובר",
+  "addFriendGroups": "קבוצות הזמנה",
+  "addFriendGroupInvite": "הזמן לקבוצה",
+  "mutualFriendsShort": "{count, plural, =0{אין חברים משותפים} =1{חבר משותף אחד} other{{count} חברים משותפים}}",
+  "@mutualFriendsShort": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personRelationship": "סוג הקשר (לא חובה)",
+  "personCalls": "{count, plural, =0{עוד לא דיברתם כאן} =1{שיחה אחת כאן} other{{count} שיחות כאן}}",
+  "@personCalls": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personPausedUntil": "לא יוצע עד {date}",
+  "@personPausedUntil": {
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "MMMd"
+      }
+    }
+  },
+  "personAllow": "להציע שוב",
+  "personUnmatchConfirm": "להסיר את {name} מהקשרים? אפשר יהיה להתחבר שוב רק בהזמנה חדשה.",
+  "@personUnmatchConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personBlockConfirm": "לחסום את {name}? לא תוצעו זה לזה ולא תוכלו לדבר.",
+  "@personBlockConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirm": "אישור",
+  "reportTitle": "דיווח על {name}",
+  "@reportTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportInappropriate": "התנהגות לא הולמת",
+  "reportHarassment": "הטרדה",
+  "reportSpam": "ספאם או התחזות",
+  "reportUnderage": "נראה מתחת לגיל 18",
+  "reportOther": "אחר",
+  "reportAlsoBlock": "גם לחסום",
+  "reportSend": "שליחת דיווח",
+  "discoverIntro": "כאן קובעים כמה פתוח להיות. כל רמה פועלת רק אם גם הצד השני בחר בה.",
+  "discoverFofTitle": "פתוח להצעות של חברים של חברים",
+  "discoverFofBody": "תוצעו זה לזה רק אם שניכם הפעלתם. נציג כמה חברים משותפים יש לכם — בלי שמות.",
+  "discoverInterests": "תחומי עניין",
+  "discoverInterestsBody": "עוזרים להתאמה ולהסבר למה מישהו הוצע.",
+  "discoverLanguages": "שפות שיחה",
+  "langHe": "עברית",
+  "langEn": "אנגלית",
+  "settingsDriving": "נסיעה",
+  "settingsAutoDriving": "זמינות אוטומטית בנסיעה",
+  "settingsAutoDrivingBody": "כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. לעולם לא נתחיל שיחה בלי אישור.",
+  "settingsAutoDrivingDialogTitle": "לפני שמפעילים",
+  "settingsAutoDrivingDialogBody": "• זמינות אוטומטית היא לא אישור לשיחה — כל שיחה דורשת אישור של שני הצדדים.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.",
+  "enable": "הפעל",
+  "settingsCarBluetooth": "Bluetooth של הרכב",
+  "settingsCarBluetoothSoon": "יתווסף בשלב 4 — לזיהוי בביטחון גבוה יותר",
+  "settingsRelPrefs": "את מי להציע לי",
+  "settingsNotifications": "הזמנות מאחרים",
+  "beaconOff": "לא לשלוח לי הזמנות",
+  "beaconLow": "מעט — עד הזמנה אחת ביום מכל אדם",
+  "beaconNormal": "רגיל — עד שתיים ביום מכל אדם",
+  "settingsMutedUntil": "מושתק עד {time}",
+  "@settingsMutedUntil": {
+    "placeholders": {
+      "time": {
+        "type": "DateTime",
+        "format": "Hm"
+      }
+    }
+  },
+  "unmute": "בטל השתקה",
+  "settingsPrivacy": "פרטיות",
+  "privacyTitle": "מה אנחנו יודעים ומה לא",
+  "privacyShared": "מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן.",
+  "privacyServer": "מה השרת יודע: זמין/לא זמין, מצב (למשל נסיעה) ועד מתי.",
+  "privacyNever": "מה לא נשמר ולא משותף: מיקום, מסלול, מהירות, הקלטות, תמלולים, יומן השיחות ואנשי הקשר בטלפון.",
+  "privacyLocal": "זיהוי נסיעה נעשה בטלפון עצמו.",
+  "privacyExpiry": "לזמינות יש תמיד זמן סיום — גם אם האפליקציה נסגרת.",
+  "settingsBlocked": "משתמשים חסומים",
+  "blockedEmpty": "אין משתמשים חסומים",
+  "unblock": "בטל חסימה",
+  "settingsDevTools": "כלי מפתחים",
+  "settingsAbout": "אב-טיפוס · שלב 1 · כל הנתונים מדומים",
+  "debugTitle": "כלי מפתחים",
+  "debugSubtitle": "לא יופיע בגרסה לחנות",
+  "debugVehicle": "רכב",
+  "debugEnterVehicle": "נכנסתי לרכב",
+  "debugEnterVehicleBt": "נכנסתי לרכב + Bluetooth",
+  "debugExitVehicle": "יצאתי מהרכב",
+  "debugInVehicleYes": "מצב: המכשיר כנראה ברכב",
+  "debugInVehicleNo": "מצב: לא ברכב",
+  "debugAutoOffWarning": "זמינות אוטומטית כבויה בהגדרות — כניסה לרכב רק תעביר למצב נהג.",
+  "debugTime": "זמן",
+  "debugFakeClock": "{date} {time}",
+  "@debugFakeClock": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "debugResetTime": "אפס זמן",
+  "debugPlus5m": "5 דק׳ קדימה",
+  "debugPlus15m": "15 דק׳ קדימה",
+  "debugPlus1h": "שעה קדימה",
+  "debugPlus1d": "יום קדימה",
+  "debugPlus30d": "30 יום קדימה",
+  "debugMatching": "התאמות",
+  "debugSimulateMatch": "דמה התאמה",
+  "debugForceNoMatch": "דמה אין-התאמה",
+  "debugEveryoneUnavailable": "כולם לא זמינים",
+  "debugAnswers": "תשובת הצד השני",
+  "debugAnswerAuto": "לפי הסתברות",
+  "debugAnswerAccept": "תמיד מאשר",
+  "debugAnswerDecline": "תמיד דוחה",
+  "debugInvitation": "הזמנה נכנסת",
+  "debugSimulateInvitation": "דמה הזמנה נכנסת",
+  "debugInvitationMuted": "ההזמנה לא נמסרה — הזמנות מושתקות בהגדרות",
+  "debugWhoIsFree": "מי פנוי",
+  "debugNotAvailable": "לא פנוי",
+  "debugInspector": "מנוע ההתאמה — מאחורי הקלעים",
+  "debugInspectorNote": "מבוסס על המצב הנוכחי. אנשים שלא זמינים מופיעים כאן בדירוג להזמנות.",
+  "debugInspectorRanked": "מדורגים",
+  "debugInspectorRejected": "סוננו",
+  "debugScore": "ציון {score}",
+  "@debugScore": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "filterBlocked": "חסום",
+  "filterSkipped": "דולג בחלון הנוכחי",
+  "filterSafety": "מגבלת בטיחות",
+  "filterNotToday": "לא היום",
+  "filterDoNotSuggest": "לא להציע בתקופה הקרובה",
+  "filterRelExcluded": "סוג קשר שביקשת לא להציע",
+  "filterLanguage": "אין שפה משותפת",
+  "filterNotAvailable": "לא זמין עכשיו",
+  "filterFof": "חבר של חבר — לא שניכם הפעלתם",
+  "filterTier": "רמת התאמה שלא שניכם פתוחים אליה",
+  "featCloseness": "קרבה",
+  "featDormancy": "זמן מאז שיחה",
+  "featAvailableNow": "זמין עכשיו",
+  "featOverlap": "חפיפת זמן",
+  "featSharedInterests": "תחומי עניין",
+  "featSharedGroup": "קבוצה משותפת",
+  "featMutualFriends": "חברים משותפים",
+  "featRecentlySuggested": "הוצע לאחרונה",
+  "featFeedback": "פידבק קודם",
+  "debugAnalytics": "מדדים (נשמרים במכשיר בלבד)",
+  "debugAnalyticsEmpty": "עוד אין אירועים",
+  "debugReset": "אפס את כל הנתונים",
+  "debugResetDone": "הנתונים אופסו"
+}

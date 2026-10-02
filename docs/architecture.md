@@ -27,64 +27,99 @@
 ```
 
 The single place where fake vs real implementations are chosen is
-`lib/app/providers.dart` (service locator via Riverpod overrides).
+`lib/app/providers.dart`.
 
-## Service interfaces (Phase 1 has fake impls of all)
+## Service interfaces (Phase 1: all fake, in `lib/services/fake/`)
 
 | Interface | Responsibility |
 |---|---|
 | `ClockService` | "Now" — fakeable so Debug can fast-forward time |
-| `ProfileService` | Current user profile, preferences, openness levels |
-| `SocialGraphService` | Connections, relationship types, mutual friends, groups, block/unmatch/don't-suggest |
-| `AvailabilityService` | Start/stop/pause availability, mode, expiry; stream of who is available |
-| `MatchService` | Requests a suggestion (uses matching engine), handles accept/skip/decline, mutual consent |
-| `InvitationService` | Incoming/outgoing invitations (Beacon in Phase 6) |
-| `CallService` | Start/end/mute an audio call (simulated in Phase 1, LiveKit in Phase 5) |
-| `FeedbackService` | Post-call feedback |
-| `SafetyService` | Report, block |
-| `AnalyticsService` | Privacy-respecting event counters (local log in Phase 1) |
-| `VehicleSignalSource` (platform) | Stream of `VehicleEvent.enter/exit` with confidence |
+| `ProfileService` | Current user profile (name, Hebrew form of address, interests, languages, openness tiers, FoF opt-in) and preferences |
+| `SocialGraphService` | People, connections, relationship types, mutual-friend counts, shared groups, block/unblock, unmatch, suggestion pauses, call/feedback history, search |
+| `AvailabilityService` | My availability (mode + expiry) and others' availability |
+| `MatchService` | Suggestion history + mutual-consent handshake (`requestCall` → accepted/declined) |
+| `InvitationService` | Availability Beacon: send to a few people, receive invitations, answers, per-recipient daily counts |
+| `CallService` | Start/mute/end an audio call (simulated now, LiveKit in Phase 5) |
+| `SafetyService` | Reports |
+| `AnalyticsService` | Privacy-respecting event log (local only in Phase 1) |
+| `VehicleSignalSource` (platform) | `VehicleEvent.enter/exit` + confidence (normal / high with car Bluetooth) |
 
-## Domain model (initial)
+Services keep a synchronous cached state plus a `changes` stream (like a local
+cache kept fresh by Supabase Realtime later). `dataVersionProvider` bumps on any
+change; widgets watch it and read services synchronously. `nowProvider` ticks
+every second for countdowns.
 
-- `UserProfile` — id, displayName, avatar, languages, interests, ageVerified flag, openness settings.
-- `Connection` — otherUserId, relationshipType? (optional), lastInAppInteraction?,
-  callCount, feedbackHistory, doNotSuggestUntil?, blocked, source (invite/QR/search/group/fof).
-- `RelationshipType` — family, closeFriend, friend, childhoodFriend, colleague,
-  formerColleague, acquaintance, friendOfFriend, sharedGroup.
-- `Availability` — userId, status (unavailable/available/paused), mode
-  (driving/walking/break/free), startedAt, expiresAt, untilTripEnds flag, source (manual/auto).
-- `MatchTier` — familiar, reconnect, widenCircle, surpriseMe.
-- `Suggestion` — candidate, tier, score, reasons[] (typed, see below), isExploration.
-- `MatchReason` — typed enum + data, e.g. `availableFor(minutes)`,
-  `dormantFor(days)`, `mutualFriends(count)`, `sharedGroup(name)`,
-  `bothOpenToFof`, `relationship(type)`. UI renders text from these via localization —
-  reasons can only come from real fields, so they cannot be invented.
-- `CallSession`, `Feedback`, `Report`, `Block`.
+All fake services share one in-memory `FakeWorld` (seed data in
+`fake_seed.dart`: 15 people — close friend, sister, father, army friend,
+childhood friend, university friend not talked to for 6 months, two colleagues,
+former colleague, English-only colleague, acquaintance from a running group,
+three friends-of-friends (one did not opt in) and one person from a shared group).
 
-## Matching engine
+## Domain model
 
-Pure function: `rank(me, candidates, context, config) → List<Suggestion>`.
+- `Person` — id, name, generated avatar color, `Gender` (for Hebrew grammar only),
+  languages, interests, groups, friend ids (for mutual counts only), open tiers,
+  FoF opt-in, adult-verified, safety-restricted.
+- `Connection` — my view of a person: optional `RelationshipType`, optional
+  private context label ("חבר מהצבא"), last **in-app** interaction, call count,
+  feedback history, last time I passed on them.
+- `SuggestionPause` — "not today" (until midnight) / "don't suggest for a while"
+  (30 days, configurable). Works for non-connections too.
+- `Availability` — mode, startedAt, **expiresAt (always set)**, untilTripEnds,
+  source (manual / automaticVehicle / shortcut).
+- `MyPreferences` — auto driving availability (**off by default**), excluded
+  relationship types, invitation frequency, invitation mute, onboarding, 18+.
+- `MatchReason` (sealed) — `AvailableFor`, `Dormant`, `NeverTalkedInApp`,
+  `MutualFriends`, `SharedGroup`, `SharedInterests`, `BothOpenToFriendsOfFriends`,
+  `EnjoyedLastTime`, `AnsweredYourInvitation`. Built only from real fields; the UI
+  turns them into Hebrew text.
 
-1. **Filters** (hard): blocked either way · unmatched · doNotSuggestUntil · tier not allowed
-   by either side · not available · no shared language · safety flags · cooldown
-   (suggested in the last N minutes / declined recently).
-2. **Score** = Σ weight × feature, each feature normalized 0..1:
-   closeness, dormancy bonus (capped, zeroed if user declined recently), both available now,
-   overlap minutes, shared interests, shared group, mutual friends, recently-suggested penalty,
-   past feedback.
-3. **Select**: with probability `explorationRate` pick randomly from top-K instead of #1.
-   Random seed injectable for deterministic tests.
-4. **Explain**: top reasons by contribution, only from present data.
+## Matching engine (`lib/matching/`)
 
-All weights, caps, cooldowns, `explorationRate`, top-K, and Beacon limits live in
-`MatchingConfig` (loaded from `assets/config/matching.json` in Phase 1; server-side later).
+`MatchingEngine.rank(request, candidates) → RankResult(ranked, rejected)` then
+`pick(result) → Suggestion?`. Pure Dart, random source injectable.
+
+1. **Filters**: blocked · skipped in this window · safety (restricted / not 18+) ·
+   paused (not today / don't suggest) · relationship type I excluded · no shared
+   language · not available (except when ranking for the Beacon) ·
+   non-connections need a shared group or (mutual friends AND both opted in to FoF).
+2. **Tier** (both sides must be open to it, most familiar first):
+   familiar = close types not dormant · reconnect = known & silent ≥ 60 days ·
+   widen circle = colleagues/acquaintances/FoF/groups · surprise me = FoF/groups/acquaintances.
+3. **Score** = Σ weight × feature (0..1): closeness, dormancy (0 if I passed on
+   them in the last 30 days), available now, overlap minutes, shared interests,
+   shared group, mutual friends, recently suggested (penalty), past feedback
+   ("don't connect again" = −1).
+4. **Pick**: top score, except `explorationRate` (10%) of the time a random one of
+   the next best (top-K = 4) — marked "הפתעה קטנה".
+5. **Explain**: availability first, then up to `maxReasons` (3) reasons by contribution.
+
+Weights, caps, cooldowns, exploration, beacon limits and snooze lengths are in
+`assets/config/matching.json`.
+
+## Session flow (`lib/app/session_controller.dart`)
+
+Phases: `idle → searching → suggestion → waitingForAnswer → inCall → feedback`.
+
+- Start availability → searching (short delay) → engine pick → suggestion.
+- "Talk now" → ask the other side (`requestCall`) → only on **yes** → call.
+  Declined → notice + next suggestion. No auto-connect anywhere.
+- Next / not today / don't suggest / block / report → next suggestion.
+- Nobody available → after `waitSecondsBeforeBeacon` (8s) send invitations to at
+  most 3 people (not currently available, under their daily limit). A "yes"
+  comes back as a suggestion marked already-accepted.
+- Incoming invitation → full-screen: talk now / not now / mute 4 hours.
+- Expiry checked every second; a call in progress is allowed to finish.
+- After a call: feedback, unless in driver mode — then it waits until driving ends.
+- Vehicle ENTER: driver mode; if auto availability is ON (opt-in) → driving
+  availability "until trip ends" (capped at 3 hours). Never a call.
+  Vehicle EXIT: ends trip-bound availability (after the call, if one is running).
 
 ## Driver mode
 
-Driver mode is a UI state derived from: availability mode == driving **or** vehicle
-signal active. When on, routes swap to minimal screens (max 3 huge actions, no lists,
-no text input). Feedback prompts are deferred until driving ends.
+`isDriverMode = probablyInVehicle || (available && mode == driving)`. The root
+swaps to `DriverScreen`: dark, max 3 huge buttons (call / next / stop), one short
+line of text, no lists, no typing. Calls and invitations also get large layouts.
 
 ## Platform: vehicle detection (Phase 4 / 7)
 
@@ -112,11 +147,25 @@ minted by a server function after both sides consent.
 
 ## Localization
 
-`flutter_localizations` + ARB files (`app_he.arb` default, `app_en.arb` later).
-`Directionality` from locale; layout uses `start/end` (never left/right).
+`flutter_localizations` + ARB files (`app_he.arb` is the template; add `app_en.arb`
+and a locale in `app.dart` for English). Hebrew grammar uses ICU `select` on the
+person's form of address. Layout uses `start/end` (never left/right).
 
 ## Debug tools
 
-`lib/debug/` screen reachable only when `kDebugMode` (or a dev flavor). Controls the
-fake services: vehicle enter/exit, who is available, fast-forward clock, force match /
-no-match, simulate incoming invitation.
+`lib/debug/` — compiled in only when `kDevTools` (`--dart-define=DEV_TOOLS=true`
+or a debug build). A small wrench button on the side of every main screen opens it.
+Controls: vehicle enter / enter+Bluetooth / exit, clock +5m/+15m/+1h/+1d/+30d,
+simulate match, force no-match, everyone unavailable, other side always
+accepts/declines, simulate incoming invitation, per-person availability,
+matching inspector (scores, reasons, filters), local analytics counts, reset data.
+
+## Testing
+
+- `test/matching_engine_test.dart` — filters, tiers, scoring, reasons-only-from-data,
+  exploration.
+- `test/session_flow_test.dart` — full flows with fake time: consent before call,
+  decline → next, auto-driving opt-in, feedback deferred while driving, beacon
+  limits, beacon "yes", expiry, invitation mute, block, not-today.
+- `test/app_smoke_test.dart` — onboarding (18+ gate) → RTL home → suggestion.
+- CI: `.github/workflows/android.yml` runs analyze + tests and builds the APK.

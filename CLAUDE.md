@@ -49,7 +49,7 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 ## Tech stack
 
 - Flutter (Dart), Android first.
-- State management: Riverpod (see decisions log).
+- State management: Riverpod 3 (see decisions log).
 - Hebrew + RTL first, all strings via localization (ARB files) so English can be added.
 - Phase 1 uses fake/mock services only. Later: Supabase (Postgres + Auth +
   Realtime + RLS + server functions), LiveKit (audio only) — both need owner approval.
@@ -60,33 +60,48 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   Shortcuts automations (Driving Focus, CarPlay). Core Motion only as a
   foreground signal.
 
-## Code layout (planned)
+## Code layout
 
 ```
 lib/
-  app/            app shell, routing, theme, localization setup
-  features/       UI per feature (home, availability, match, driver, call, ...)
-  domain/         models + business logic (pure Dart, no Flutter imports)
-  matching/       matching engine + config (pure Dart, unit-tested)
-  services/       abstract service interfaces (auth, availability, social graph, calls, ...)
-  services/fake/  Phase 1 fake implementations
-  platform/       device signals (vehicle detection, bluetooth) behind interfaces
-  debug/          developer/debug screen — excluded from release builds
+  app/            providers (THE fake↔real wiring file), session controller,
+                  root gate, theme, dev-tools flag
+  features/       UI per feature (home, availability, match, driver, call,
+                  feedback, invitation, connections, discover, settings, onboarding)
+  domain/         models (pure Dart, no Flutter imports)
+  matching/       matching engine + config + reasons (pure Dart, unit-tested)
+  services/       abstract service interfaces
+  services/fake/  Phase 1 in-memory implementations + seed data
+  platform/       device signals (vehicle detection) behind interfaces
+  debug/          developer screen + matching inspector (kDevTools only)
+  l10n/           app_he.arb (template) + generated localizations
+assets/config/matching.json   all matching weights / limits / cooldowns
+test/             engine unit tests, session-flow tests, app smoke test
 ```
 
-UI depends only on service **interfaces**; fake → real swap happens in one
-provider wiring file.
+UI depends only on service **interfaces**; fake → real swap happens in
+`lib/app/providers.dart`. All user-facing text lives in `lib/l10n/app_he.arb`.
 
 ## Commands
 
-(Filled in once the Flutter project exists.)
+Flutter 3.47.x stable. In the cloud container Flutter is installed at
+`/opt/sdk/flutter/bin` (add to PATH; not persisted between sessions — reinstall
+from storage.googleapis.com/flutter_infra_release if missing).
 
 ```
 flutter pub get
-flutter analyze
-flutter test
-flutter run
+flutter gen-l10n            # after editing lib/l10n/app_he.arb
+dart format lib test
+flutter analyze             # must be clean
+flutter test                # must pass
+flutter run --dart-define=DEV_TOOLS=true
+flutter build web --release --dart-define=DEV_TOOLS=true --no-web-resources-cdn
 ```
+
+The Android SDK cannot be downloaded in the cloud container (dl.google.com is
+blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
+
+`DEV_TOOLS=true` compiles in the developer screen. Store builds must not pass it.
 
 ## Git
 
