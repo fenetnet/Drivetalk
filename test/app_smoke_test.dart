@@ -44,24 +44,9 @@ void main() {
       await t.tap(find.text('המשך'));
       await pumpFor(t, 500);
     }
-    // Can't start before confirming 18+.
     final start = find.widgetWithText(FilledButton, 'בואו נתחיל');
-    expect(t.widget<FilledButton>(start).onPressed, isNull);
     await t.enterText(find.byType(TextField), 'נתנאל');
     FocusManager.instance.primaryFocus?.unfocus();
-    await t.scrollUntilVisible(
-      find.byType(Checkbox),
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byType(ListView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    await t.ensureVisible(find.byType(Checkbox));
-    await pumpFor(t, 300);
-    await t.tap(find.byType(Checkbox));
     await t.pump();
     await t.tap(start);
     await pumpFor(t, 500);

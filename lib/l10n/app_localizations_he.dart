@@ -76,9 +76,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get genderOther => 'ניטרלי';
 
   @override
-  String get onbAdultCheckbox => 'אני בן/בת 18 ומעלה';
-
-  @override
   String get onbOpennessLabel => 'מה מתאים לך שנציע?';
 
   @override

@@ -220,12 +220,6 @@ abstract class AppLocalizations {
   /// **'ניטרלי'**
   String get genderOther;
 
-  /// No description provided for @onbAdultCheckbox.
-  ///
-  /// In he, this message translates to:
-  /// **'אני בן/בת 18 ומעלה'**
-  String get onbAdultCheckbox;
-
   /// No description provided for @onbOpennessLabel.
   ///
   /// In he, this message translates to:

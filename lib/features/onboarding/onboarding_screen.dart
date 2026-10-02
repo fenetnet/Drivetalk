@@ -19,7 +19,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _name = TextEditingController();
   var _page = 0;
   var _gender = Gender.unspecified;
-  var _adult = false;
   var _tiers = {MatchTier.familiar, MatchTier.reconnect, MatchTier.widenCircle};
   var _fof = false;
 
@@ -40,9 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         openToFriendsOfFriends: _fof,
       ),
     );
-    await profile.updatePrefs(
-      profile.prefs.copyWith(onboardingDone: true, confirmedAdult: true),
-    );
+    await profile.updatePrefs(profile.prefs.copyWith(onboardingDone: true));
   }
 
   void _next() => _pages.nextPage(
@@ -103,7 +100,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                   const Spacer(),
                   FilledButton(
-                    onPressed: last ? (_adult ? _finish : null) : _next,
+                    onPressed: last ? _finish : _next,
                     child: Text(last ? l.onbStart : l.onbNext),
                   ),
                 ],
@@ -168,13 +165,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           subtitle: Text(l.discoverFofBody),
           value: _fof,
           onChanged: (v) => setState(() => _fof = v),
-        ),
-        const Divider(),
-        CheckboxListTile(
-          contentPadding: EdgeInsets.zero,
-          value: _adult,
-          onChanged: (v) => setState(() => _adult = v ?? false),
-          title: Text(l.onbAdultCheckbox),
         ),
       ],
     );

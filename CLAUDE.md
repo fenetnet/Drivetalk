@@ -56,7 +56,8 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Match explanations must only use data we actually have — never invent reasons.
 - Matching weights live in configuration, not hard-coded in logic.
 - Block / Report / Unmatch / Don't-suggest-again exist from day one.
-- Public release targets adults only (18+) unless the owner decides otherwise.
+- No age gate in the prototype (owner decision D-035). Revisit before a
+  public store release (store requirements, Phase 9).
 
 ## Tech stack
 
