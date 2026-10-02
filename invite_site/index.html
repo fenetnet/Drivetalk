@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DriveTalk</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div class="logo">🚗💬</div>
+  <h1>DriveTalk</h1>
+  <p class="lead">זמן מת → שיחה אמיתית עם האדם הנכון.<br>רק כששניכם פנויים, ורק אם שניכם אומרים כן.</p>
+  <section class="card">
+    <h2>גרסת ניסיון לאנדרואיד</h2>
+    <a class="btn primary" id="download" href="#">הורדה</a>
+    <p class="small">קיבלת קישור הזמנה? פתחו אותו — הוא יוביל לכאן ויסביר הכל.</p>
+  </section>
+</main>
+<script src="config.js"></script>
+<script>document.getElementById('download').href = window.DT_CONFIG.apkUrl;</script>
+</body>
+</html>

@@ -1432,4 +1432,442 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get talkShort => 'לדבר';
+
+  @override
+  String get realBadge => 'בדיקה אמיתית';
+
+  @override
+  String get realNotConfiguredTitle => 'הבדיקה עם חבר עוד לא מחוברת';
+
+  @override
+  String get realNotConfiguredBody =>
+      'בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.';
+
+  @override
+  String get realBackToDemo => 'למצב הדגמה';
+
+  @override
+  String get realToReal => 'בדיקה עם חבר אמיתי';
+
+  @override
+  String get realToRealBody =>
+      'חברים אמיתיים, שיחות אמיתיות. בלי אנשים מדומים.';
+
+  @override
+  String get realStarting => 'מתחברים…';
+
+  @override
+  String get realWelcomeTitle => 'בדיקה עם חבר';
+
+  @override
+  String get realWelcomeBody =>
+      'בלי סיסמה ובלי מייל. רק שם, כדי שחברים יזהו אותך.';
+
+  @override
+  String get realPhoneLabel => 'מספר טלפון (לא חובה)';
+
+  @override
+  String get realPhoneHelp =>
+      'נמסר רק לחבר ששניכם הסכמתם לדבר, ברגע השיחה — כדי לדבר בשיחה רגילה. בלי מספר: שיחה מדומה.';
+
+  @override
+  String get realJoin => 'יאללה';
+
+  @override
+  String get realInviteWaitingAfterJoin =>
+      'יש לך הזמנה — היא תיפתח מיד אחרי הכניסה';
+
+  @override
+  String get realTabPeople => 'האנשים שלי';
+
+  @override
+  String get realTabTest => 'בדיקה';
+
+  @override
+  String realMeAvailableTitle(String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'את פנויה לשיחה',
+      'male': 'אתה פנוי לשיחה',
+      'other': 'את/ה פנוי/ה לשיחה',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get realWaitingForFriends => 'כשחבר יהיה פנוי — נשאל את שניכם.';
+
+  @override
+  String get realFreeFriendsTitle => 'פנויים עכשיו';
+
+  @override
+  String get realNobodyFree => 'אף חבר לא פנוי כרגע';
+
+  @override
+  String get realNoFriendsTitle => 'עוד אין פה חברים';
+
+  @override
+  String get realNoFriendsBody =>
+      'הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.';
+
+  @override
+  String get realInviteFriend => 'הזמן חבר';
+
+  @override
+  String get realHaveCode => 'יש לי קוד הזמנה';
+
+  @override
+  String get realCodeHint => 'הדביקו כאן את הקישור או הקוד';
+
+  @override
+  String get realCodeInvalid => 'לא מצאנו קוד הזמנה בטקסט הזה';
+
+  @override
+  String get realOpen => 'פתיחה';
+
+  @override
+  String get realInviteMessage =>
+      'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?';
+
+  @override
+  String realInviteMessageNoSite(String apkUrl, String code) {
+    return 'להורדה: $apkUrl\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← $code';
+  }
+
+  @override
+  String get realInviteShareSubject => 'הזמנה ל-DriveTalk';
+
+  @override
+  String get realInviteCopied => 'ההזמנה הועתקה — אפשר להדביק בוואטסאפ';
+
+  @override
+  String realOfferTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה',
+      'male': 'פנוי',
+      'other': 'פנוי/ה',
+    });
+    return '$name $_temp0 עכשיו. רוצה לדבר?';
+  }
+
+  @override
+  String get realTalkNow => 'דבר עכשיו';
+
+  @override
+  String get realNotNow => 'לא עכשיו';
+
+  @override
+  String get realOfferNote => 'השיחה תתחיל רק אם שניכם אומרים כן';
+
+  @override
+  String realWaitingTitle(String name) {
+    return 'מחכים ל$name…';
+  }
+
+  @override
+  String realWaitingBody(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'תאשר',
+      'male': 'יאשר',
+      'other': 'יאשר/תאשר',
+    });
+    return 'ברגע ש$name $_temp0 — מתחברים.';
+  }
+
+  @override
+  String get realStopWaiting => 'לא לחכות';
+
+  @override
+  String get realDidNotWorkOut => 'לא הסתדר הפעם. נחפש הזדמנות אחרת.';
+
+  @override
+  String get realVoiceDidNotWorkOut => 'לא הסתדר הפעם.';
+
+  @override
+  String realVoiceTheyCall(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'מתקשרת',
+      'male': 'מתקשר',
+      'other': 'מתקשר/ת',
+    });
+    return '$name $_temp0 אליך.';
+  }
+
+  @override
+  String get realBothSaidYes => 'שניכם אמרתם כן!';
+
+  @override
+  String get realConnecting => 'מתחברים…';
+
+  @override
+  String realCallingIn(String name, int seconds) {
+    return 'מתקשרים ל$name בעוד $seconds…';
+  }
+
+  @override
+  String get realCallNow => 'להתקשר עכשיו';
+
+  @override
+  String get realDialedTitle => 'השיחה נפתחה בטלפון';
+
+  @override
+  String get realDialedBody => 'כשתסיימו — חזרו לכאן.';
+
+  @override
+  String realTheyCallTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'מתקשרת',
+      'male': 'מתקשר',
+      'other': 'מתקשר/ת',
+    });
+    return '$name $_temp0 אליך עכשיו';
+  }
+
+  @override
+  String get realTheyCallBody =>
+      'שיחה רגילה, מהטלפון. אם לא הגיעה שיחה תוך דקה — לחצו למטה.';
+
+  @override
+  String get realTheyDidNotCall => 'לא הגיעה שיחה';
+
+  @override
+  String realInAppTitle(String name) {
+    return 'מדברים עם $name';
+  }
+
+  @override
+  String get realInAppBody =>
+      'לא שותפו מספרי טלפון, לכן זו שיחה מדומה. בשלב הבא תהיה כאן שיחת קול אמיתית.';
+
+  @override
+  String get realFeedbackThanks => 'תודה!';
+
+  @override
+  String realConnected(String name) {
+    return 'מעולה! $name עכשיו ברשימת האנשים שלך.';
+  }
+
+  @override
+  String realInviteTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'הזמינה',
+      'male': 'הזמין',
+      'other': 'הזמין/ה',
+    });
+    return '$name $_temp0 אותך';
+  }
+
+  @override
+  String get realInviteBody =>
+      'כששניכם פנויים — נציע לכם לדבר. רק אם שניכם מסכימים.';
+
+  @override
+  String get realInviteAccept => 'אישור';
+
+  @override
+  String get realInviteLoading => 'בודקים את ההזמנה…';
+
+  @override
+  String get realInviteProblemUsed => 'ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.';
+
+  @override
+  String get realInviteProblemExpired => 'פג תוקף ההזמנה. בקשו הזמנה חדשה.';
+
+  @override
+  String get realInviteProblemOwn => 'זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.';
+
+  @override
+  String get realInviteProblemNotFound =>
+      'לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.';
+
+  @override
+  String realInviteAlready(String name) {
+    return '$name כבר ברשימת האנשים שלך.';
+  }
+
+  @override
+  String get realErrorOffline => 'אין חיבור לאינטרנט. ננסה שוב לבד.';
+
+  @override
+  String realErrorGeneric(String code) {
+    return 'משהו השתבש ($code). נסו שוב.';
+  }
+
+  @override
+  String get realErrorAnonymousDisabled =>
+      'בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).';
+
+  @override
+  String get realErrorSchema => 'השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).';
+
+  @override
+  String get realErrorInvalidPhone => 'מספר הטלפון לא נראה תקין';
+
+  @override
+  String get realErrorInvalidName => 'השם צריך להיות באורך 1–40 תווים';
+
+  @override
+  String get realErrorRateLimited =>
+      'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.';
+
+  @override
+  String get realErrorTooManyInvites =>
+      'יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.';
+
+  @override
+  String get realSaved => 'נשמר';
+
+  @override
+  String get realDialFailed => 'לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה';
+
+  @override
+  String realUnmatched(String name) {
+    return 'הקשר עם $name הוסר';
+  }
+
+  @override
+  String realFreeFor(int minutes) {
+    return 'פנוי/ה · $minutes דק׳';
+  }
+
+  @override
+  String get realNotFree => 'לא פנוי/ה כרגע';
+
+  @override
+  String get realTestIntro =>
+      'כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.';
+
+  @override
+  String get realTestSteps =>
+      '1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"';
+
+  @override
+  String get realStatusServer => 'שרת';
+
+  @override
+  String get realStatusAccount => 'חשבון';
+
+  @override
+  String get realStatusLive => 'עדכון מיידי';
+
+  @override
+  String get realStatusFriends => 'חברים';
+
+  @override
+  String get realStatusMe => 'הזמינות שלי';
+
+  @override
+  String get realStatusFreeFriends => 'חברים פנויים עכשיו';
+
+  @override
+  String get realStatusLastOffer => 'הצעה אחרונה';
+
+  @override
+  String get realStatusVersion => 'גרסה';
+
+  @override
+  String get realStatusLastError => 'שגיאה אחרונה';
+
+  @override
+  String get realStatusPhone => 'מספר לשיחה רגילה';
+
+  @override
+  String get realOk => 'תקין';
+
+  @override
+  String get realNotConnected => 'לא מחובר';
+
+  @override
+  String get realLiveError => 'לא יציב — מתעדכן כל כמה שניות';
+
+  @override
+  String get realNone => 'אין';
+
+  @override
+  String get realShared => 'משותף';
+
+  @override
+  String get realNotShared => 'לא משותף';
+
+  @override
+  String get realMeNotAvailable => 'לא פנוי';
+
+  @override
+  String get realOfferPending => 'מחכה לתשובה';
+
+  @override
+  String get realOfferAccepted => 'שניכם אמרתם כן';
+
+  @override
+  String get realOfferDeclined => 'לא הסתדר';
+
+  @override
+  String get realOfferExpired => 'פג הזמן';
+
+  @override
+  String get realOfferCancelled => 'בוטל';
+
+  @override
+  String get realCopyDiagnostics => 'העתק מידע לבדיקה';
+
+  @override
+  String get realCopied => 'הועתק. אפשר להדביק ולשלוח';
+
+  @override
+  String get realRefresh => 'רענון';
+
+  @override
+  String get realSettingsMode => 'מצב האפליקציה';
+
+  @override
+  String get realModeReal => 'בדיקה אמיתית עם חברים';
+
+  @override
+  String get realModeDemo => 'הדגמה עם אנשים מדומים';
+
+  @override
+  String get realSwitchToDemo => 'מעבר להדגמה';
+
+  @override
+  String get realTestModeToggle => 'מסך בדיקה (Test Mode)';
+
+  @override
+  String get realTestModeBody => 'מציג את הלשונית \"בדיקה\" עם מצב החיבור';
+
+  @override
+  String get realMyNumber => 'המספר שלי לשיחה רגילה';
+
+  @override
+  String get realStartOver => 'להתחיל מחדש כמשתמש חדש';
+
+  @override
+  String get realStartOverConfirm =>
+      'החברים וההזמנות של המשתמש הנוכחי לא יעברו. להמשיך?';
+
+  @override
+  String get realDownloadLink => 'קישור להורדת האפליקציה';
+
+  @override
+  String get realShareApp => 'שיתוף';
+
+  @override
+  String get realNameTitle => 'השם שלי';
+
+  @override
+  String get realPrivacyNote =>
+      'השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.';
+
+  @override
+  String realVoiceOffer(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה',
+      'male': 'פנוי',
+      'other': 'פנוי/ה',
+    });
+    return '$name $_temp0. לדבר?';
+  }
+
+  @override
+  String realVoiceCalling(String name) {
+    return 'מתקשרים ל$name.';
+  }
 }

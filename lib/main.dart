@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
@@ -10,6 +11,8 @@ import 'app/conversation_starters.dart';
 import 'app/providers.dart';
 import 'domain/models.dart';
 import 'matching/matching_config.dart';
+import 'real/local_store.dart';
+import 'real/real_controller.dart';
 import 'services/fake/fake_world.dart';
 
 const _meKey = 'me.v1';
@@ -59,9 +62,17 @@ Future<void> main() async {
     // Corrupt or old data: start fresh.
   }
 
+  var version = '?';
+  try {
+    final info = await PackageInfo.fromPlatform();
+    version = '${info.version} (${info.buildNumber})';
+  } catch (_) {}
+
   runApp(
     ProviderScope(
       overrides: [
+        localStoreProvider.overrideWithValue(PrefsLocalStore(store)),
+        appVersionProvider.overrideWithValue(version),
         matchingConfigProvider.overrideWithValue(config),
         startersProvider.overrideWithValue(starters),
         fakeWorldProvider.overrideWithValue(world),

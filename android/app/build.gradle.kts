@@ -27,6 +27,13 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Invitation links (see AndroidManifest.xml). CI sets these from the
+        // INVITE_BASE_URL repository variable; a harmless default otherwise.
+        manifestPlaceholders["inviteHost"] =
+            System.getenv("INVITE_HOST")?.takeIf { it.isNotBlank() }
+                ?: "invite.drivetalk.invalid"
+        manifestPlaceholders["invitePathPrefix"] =
+            System.getenv("INVITE_PATH_PREFIX")?.takeIf { it.isNotBlank() } ?: "/i/"
     }
 
     // Test builds are signed with ONE stable key so updates install over the

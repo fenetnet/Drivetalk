@@ -1,0 +1,5 @@
+/.well-known/assetlinks.json
+  Content-Type: application/json
+/i/*
+  X-Robots-Tag: noindex
+  Referrer-Policy: no-referrer

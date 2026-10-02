@@ -10,8 +10,9 @@ import '../common/labels.dart';
 Future<void> confirmBlock(
   BuildContext context,
   WidgetRef ref,
-  Person person,
-) async {
+  Person person, {
+  Future<void> Function()? onBlock,
+}) async {
   final l = context.l10n;
   final ok = await showDialog<bool>(
     context: context,
@@ -31,7 +32,11 @@ Future<void> confirmBlock(
     ),
   );
   if (ok ?? false) {
-    await ref.read(sessionProvider.notifier).blockPerson(person);
+    if (onBlock != null) {
+      await onBlock();
+    } else {
+      await ref.read(sessionProvider.notifier).blockPerson(person);
+    }
   }
 }
 
@@ -39,14 +44,17 @@ Future<void> confirmBlock(
 Future<void> showReportSheet(
   BuildContext context,
   WidgetRef ref,
-  Person person,
-) async {
+  Person person, {
+  Future<void> Function(ReportReason reason, bool alsoBlock)? onReport,
+}) async {
   final result = await showModalBottomSheet<(ReportReason, bool)>(
     context: context,
     showDragHandle: true,
     builder: (c) => _ReportSheet(person: person),
   );
-  if (result != null) {
+  if (result != null && onReport != null) {
+    await onReport(result.$1, result.$2);
+  } else if (result != null) {
     await ref
         .read(sessionProvider.notifier)
         .reportPerson(person, result.$1, alsoBlock: result.$2);

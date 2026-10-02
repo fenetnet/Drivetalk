@@ -821,5 +821,265 @@
   "debugDialOnEveryCall": "לחייג באמת בכל שיחה",
   "debugDialOnEveryCallBody": "כשמגיעים לשיחת טלפון עם אדם מדומה — הטלפון יחייג באמת למספר הבדיקה",
   "debugDialNow": "חייג עכשיו לבדיקה",
-  "talkShort": "לדבר"
+  "talkShort": "לדבר",
+  "realBadge": "בדיקה אמיתית",
+  "realNotConfiguredTitle": "הבדיקה עם חבר עוד לא מחוברת",
+  "realNotConfiguredBody": "בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.",
+  "realBackToDemo": "למצב הדגמה",
+  "realToReal": "בדיקה עם חבר אמיתי",
+  "realToRealBody": "חברים אמיתיים, שיחות אמיתיות. בלי אנשים מדומים.",
+  "realStarting": "מתחברים…",
+  "realWelcomeTitle": "בדיקה עם חבר",
+  "realWelcomeBody": "בלי סיסמה ובלי מייל. רק שם, כדי שחברים יזהו אותך.",
+  "realPhoneLabel": "מספר טלפון (לא חובה)",
+  "realPhoneHelp": "נמסר רק לחבר ששניכם הסכמתם לדבר, ברגע השיחה — כדי לדבר בשיחה רגילה. בלי מספר: שיחה מדומה.",
+  "realJoin": "יאללה",
+  "realInviteWaitingAfterJoin": "יש לך הזמנה — היא תיפתח מיד אחרי הכניסה",
+  "realTabPeople": "האנשים שלי",
+  "realTabTest": "בדיקה",
+  "realMeAvailableTitle": "{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{את/ה פנוי/ה לשיחה}}",
+  "@realMeAvailableTitle": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realWaitingForFriends": "כשחבר יהיה פנוי — נשאל את שניכם.",
+  "realFreeFriendsTitle": "פנויים עכשיו",
+  "realNobodyFree": "אף חבר לא פנוי כרגע",
+  "realNoFriendsTitle": "עוד אין פה חברים",
+  "realNoFriendsBody": "הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.",
+  "realInviteFriend": "הזמן חבר",
+  "realHaveCode": "יש לי קוד הזמנה",
+  "realCodeHint": "הדביקו כאן את הקישור או הקוד",
+  "realCodeInvalid": "לא מצאנו קוד הזמנה בטקסט הזה",
+  "realOpen": "פתיחה",
+  "realInviteMessage": "אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?",
+  "realInviteMessageNoSite": "להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}",
+  "@realInviteMessageNoSite": {
+    "placeholders": {
+      "apkUrl": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteShareSubject": "הזמנה ל-DriveTalk",
+  "realInviteCopied": "ההזמנה הועתקה — אפשר להדביק בוואטסאפ",
+  "realOfferTitle": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו. רוצה לדבר?",
+  "@realOfferTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realTalkNow": "דבר עכשיו",
+  "realNotNow": "לא עכשיו",
+  "realOfferNote": "השיחה תתחיל רק אם שניכם אומרים כן",
+  "realWaitingTitle": "מחכים ל{name}…",
+  "@realWaitingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realWaitingBody": "ברגע ש{name} {gender, select, female{תאשר} male{יאשר} other{יאשר/תאשר}} — מתחברים.",
+  "@realWaitingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realStopWaiting": "לא לחכות",
+  "realDidNotWorkOut": "לא הסתדר הפעם. נחפש הזדמנות אחרת.",
+  "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
+  "realVoiceTheyCall": "{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך.",
+  "@realVoiceTheyCall": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realBothSaidYes": "שניכם אמרתם כן!",
+  "realConnecting": "מתחברים…",
+  "realCallingIn": "מתקשרים ל{name} בעוד {seconds}…",
+  "@realCallingIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "realCallNow": "להתקשר עכשיו",
+  "realDialedTitle": "השיחה נפתחה בטלפון",
+  "realDialedBody": "כשתסיימו — חזרו לכאן.",
+  "realTheyCallTitle": "{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך עכשיו",
+  "@realTheyCallTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realTheyCallBody": "שיחה רגילה, מהטלפון. אם לא הגיעה שיחה תוך דקה — לחצו למטה.",
+  "realTheyDidNotCall": "לא הגיעה שיחה",
+  "realInAppTitle": "מדברים עם {name}",
+  "@realInAppTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realInAppBody": "לא שותפו מספרי טלפון, לכן זו שיחה מדומה. בשלב הבא תהיה כאן שיחת קול אמיתית.",
+  "realFeedbackThanks": "תודה!",
+  "realConnected": "מעולה! {name} עכשיו ברשימת האנשים שלך.",
+  "@realConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteTitle": "{name} {gender, select, female{הזמינה} male{הזמין} other{הזמין/ה}} אותך",
+  "@realInviteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteBody": "כששניכם פנויים — נציע לכם לדבר. רק אם שניכם מסכימים.",
+  "realInviteAccept": "אישור",
+  "realInviteLoading": "בודקים את ההזמנה…",
+  "realInviteProblemUsed": "ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.",
+  "realInviteProblemExpired": "פג תוקף ההזמנה. בקשו הזמנה חדשה.",
+  "realInviteProblemOwn": "זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.",
+  "realInviteProblemNotFound": "לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.",
+  "realInviteAlready": "{name} כבר ברשימת האנשים שלך.",
+  "@realInviteAlready": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realErrorOffline": "אין חיבור לאינטרנט. ננסה שוב לבד.",
+  "realErrorGeneric": "משהו השתבש ({code}). נסו שוב.",
+  "@realErrorGeneric": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "realErrorAnonymousDisabled": "בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).",
+  "realErrorSchema": "השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).",
+  "realErrorInvalidPhone": "מספר הטלפון לא נראה תקין",
+  "realErrorInvalidName": "השם צריך להיות באורך 1–40 תווים",
+  "realErrorRateLimited": "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
+  "realErrorTooManyInvites": "יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.",
+  "realSaved": "נשמר",
+  "realDialFailed": "לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה",
+  "realUnmatched": "הקשר עם {name} הוסר",
+  "@realUnmatched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realFreeFor": "פנוי/ה · {minutes} דק׳",
+  "@realFreeFor": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "realNotFree": "לא פנוי/ה כרגע",
+  "realTestIntro": "כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.",
+  "realTestSteps": "1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"",
+  "realStatusServer": "שרת",
+  "realStatusAccount": "חשבון",
+  "realStatusLive": "עדכון מיידי",
+  "realStatusFriends": "חברים",
+  "realStatusMe": "הזמינות שלי",
+  "realStatusFreeFriends": "חברים פנויים עכשיו",
+  "realStatusLastOffer": "הצעה אחרונה",
+  "realStatusVersion": "גרסה",
+  "realStatusLastError": "שגיאה אחרונה",
+  "realStatusPhone": "מספר לשיחה רגילה",
+  "realOk": "תקין",
+  "realNotConnected": "לא מחובר",
+  "realLiveError": "לא יציב — מתעדכן כל כמה שניות",
+  "realNone": "אין",
+  "realShared": "משותף",
+  "realNotShared": "לא משותף",
+  "realMeNotAvailable": "לא פנוי",
+  "realOfferPending": "מחכה לתשובה",
+  "realOfferAccepted": "שניכם אמרתם כן",
+  "realOfferDeclined": "לא הסתדר",
+  "realOfferExpired": "פג הזמן",
+  "realOfferCancelled": "בוטל",
+  "realCopyDiagnostics": "העתק מידע לבדיקה",
+  "realCopied": "הועתק. אפשר להדביק ולשלוח",
+  "realRefresh": "רענון",
+  "realSettingsMode": "מצב האפליקציה",
+  "realModeReal": "בדיקה אמיתית עם חברים",
+  "realModeDemo": "הדגמה עם אנשים מדומים",
+  "realSwitchToDemo": "מעבר להדגמה",
+  "realTestModeToggle": "מסך בדיקה (Test Mode)",
+  "realTestModeBody": "מציג את הלשונית \"בדיקה\" עם מצב החיבור",
+  "realMyNumber": "המספר שלי לשיחה רגילה",
+  "realStartOver": "להתחיל מחדש כמשתמש חדש",
+  "realStartOverConfirm": "החברים וההזמנות של המשתמש הנוכחי לא יעברו. להמשיך?",
+  "realDownloadLink": "קישור להורדת האפליקציה",
+  "realShareApp": "שיתוף",
+  "realNameTitle": "השם שלי",
+  "realPrivacyNote": "השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.",
+  "realVoiceOffer": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?",
+  "@realVoiceOffer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realVoiceCalling": "מתקשרים ל{name}.",
+  "@realVoiceCalling": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

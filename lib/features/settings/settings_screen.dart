@@ -6,6 +6,7 @@ import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../debug/debug_screen.dart';
 import '../../domain/models.dart';
+import '../../real/real_controller.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import '../connections/circles_screen.dart';
@@ -29,6 +30,17 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
+          // Leave the demo (fake people) for the real test with friends.
+          ListTile(
+            leading: const Icon(
+              Icons.people_alt_rounded,
+              color: AppColors.sageDark,
+            ),
+            title: Text(l.realToReal),
+            subtitle: Text(l.realToRealBody),
+            trailing: const Icon(Icons.chevron_left_rounded),
+            onTap: () => ref.read(appModeProvider.notifier).set(AppMode.real),
+          ),
           const ProfileSection(),
           SectionTitle(l.settingsDriving),
           SwitchListTile(

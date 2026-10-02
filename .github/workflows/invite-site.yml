@@ -1,0 +1,56 @@
+# Publishes the small invitation web page (invite_site/) that invitation
+# links point to. Two free options:
+#   • GitHub Pages (no extra account): this workflow copies invite_site/ to
+#     the "gh-pages" branch. One-time: repository Settings → Pages →
+#     "Deploy from a branch" → gh-pages / (root).
+#     Site: https://<owner>.github.io/<repo>/
+#   • Cloudflare Pages (optional): add secrets CLOUDFLARE_API_TOKEN and
+#     CLOUDFLARE_ACCOUNT_ID. Site: https://<project>.pages.dev — there,
+#     invitation links can open the app directly (verified App Links).
+# Nothing secret is published: the page only knows the public APK link.
+name: Invite site
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths: ["invite_site/**", ".github/workflows/invite-site.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write # to update the gh-pages branch
+
+concurrency:
+  group: invite-site
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish to the gh-pages branch (GitHub Pages)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp -r invite_site "$RUNNER_TEMP/site"
+          cd "$RUNNER_TEMP/site"
+          git init -q
+          git checkout -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions" -c user.email="github-actions@users.noreply.github.com" \
+            commit -q -m "Invite site from ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+
+      - name: Publish to Cloudflare Pages (only if set up)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT || 'drivetalk-invite' }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "Cloudflare not set up — skipping (GitHub Pages is enough)."
+            exit 0
+          fi
+          npx --yes wrangler@3 pages project create "$PROJECT" --production-branch=main 2>/dev/null || true
+          npx --yes wrangler@3 pages deploy invite_site --project-name="$PROJECT" --branch=main

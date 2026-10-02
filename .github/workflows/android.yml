@@ -52,12 +52,37 @@ jobs:
             echo "::warning::No stable signing key yet — updates will need uninstall/reinstall."
           fi
 
+      # Real-mode server settings come from repository VARIABLES (Settings →
+      # Secrets and variables → Actions → Variables). They are public by
+      # design (Row Level Security protects the data). Never put the
+      # service_role key or the database password here.
+      - name: Invite link host
+        env:
+          INVITE_BASE_URL: ${{ vars.INVITE_BASE_URL }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+        run: |
+          if [ -n "$INVITE_BASE_URL" ]; then
+            host=$(python3 -c "import sys,urllib.parse as u;print(u.urlparse(sys.argv[1]).hostname or '')" "$INVITE_BASE_URL")
+            path=$(python3 -c "import sys,urllib.parse as u;print(u.urlparse(sys.argv[1]).path.rstrip('/'))" "$INVITE_BASE_URL")
+            echo "INVITE_HOST=$host" >> "$GITHUB_ENV"
+            echo "INVITE_PATH_PREFIX=$path/i/" >> "$GITHUB_ENV"
+          fi
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "::warning::SUPABASE_URL variable not set — the app will run in demo mode only."
+          fi
+
       - name: Build APK
         env:
           DT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_TEST_KEYSTORE_PASSWORD }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          INVITE_BASE_URL: ${{ vars.INVITE_BASE_URL }}
         run: >
           flutter build apk --release --dart-define=DEV_TOOLS=true
           --build-number=${{ github.run_number }}
+          --dart-define="SUPABASE_URL=$SUPABASE_URL"
+          --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+          --dart-define="INVITE_BASE_URL=$INVITE_BASE_URL"
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk drivetalk-prototype.apk
@@ -79,4 +104,4 @@ jobs:
             --prerelease \
             --target "${{ github.sha }}" \
             --title "DriveTalk — גרסת ניסיון" \
-            --notes "גרסת ניסיון עם נתונים מדומים. להורדה: ללחוץ על drivetalk-prototype.apk למטה, ואז לפתוח את הקובץ בטלפון."
+            --notes "גרסת ניסיון: הדגמה עם אנשים מדומים + בדיקה אמיתית עם חבר. להורדה: ללחוץ על drivetalk-prototype.apk למטה, ואז לפתוח את הקובץ בטלפון."

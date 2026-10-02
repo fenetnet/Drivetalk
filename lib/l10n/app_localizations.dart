@@ -2355,6 +2355,708 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לדבר'**
   String get talkShort;
+
+  /// No description provided for @realBadge.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה אמיתית'**
+  String get realBadge;
+
+  /// No description provided for @realNotConfiguredTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הבדיקה עם חבר עוד לא מחוברת'**
+  String get realNotConfiguredTitle;
+
+  /// No description provided for @realNotConfiguredBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.'**
+  String get realNotConfiguredBody;
+
+  /// No description provided for @realBackToDemo.
+  ///
+  /// In he, this message translates to:
+  /// **'למצב הדגמה'**
+  String get realBackToDemo;
+
+  /// No description provided for @realToReal.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה עם חבר אמיתי'**
+  String get realToReal;
+
+  /// No description provided for @realToRealBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים אמיתיים, שיחות אמיתיות. בלי אנשים מדומים.'**
+  String get realToRealBody;
+
+  /// No description provided for @realStarting.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים…'**
+  String get realStarting;
+
+  /// No description provided for @realWelcomeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה עם חבר'**
+  String get realWelcomeTitle;
+
+  /// No description provided for @realWelcomeBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי סיסמה ובלי מייל. רק שם, כדי שחברים יזהו אותך.'**
+  String get realWelcomeBody;
+
+  /// No description provided for @realPhoneLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר טלפון (לא חובה)'**
+  String get realPhoneLabel;
+
+  /// No description provided for @realPhoneHelp.
+  ///
+  /// In he, this message translates to:
+  /// **'נמסר רק לחבר ששניכם הסכמתם לדבר, ברגע השיחה — כדי לדבר בשיחה רגילה. בלי מספר: שיחה מדומה.'**
+  String get realPhoneHelp;
+
+  /// No description provided for @realJoin.
+  ///
+  /// In he, this message translates to:
+  /// **'יאללה'**
+  String get realJoin;
+
+  /// No description provided for @realInviteWaitingAfterJoin.
+  ///
+  /// In he, this message translates to:
+  /// **'יש לך הזמנה — היא תיפתח מיד אחרי הכניסה'**
+  String get realInviteWaitingAfterJoin;
+
+  /// No description provided for @realTabPeople.
+  ///
+  /// In he, this message translates to:
+  /// **'האנשים שלי'**
+  String get realTabPeople;
+
+  /// No description provided for @realTabTest.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה'**
+  String get realTabTest;
+
+  /// No description provided for @realMeAvailableTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{את/ה פנוי/ה לשיחה}}'**
+  String realMeAvailableTitle(String gender);
+
+  /// No description provided for @realWaitingForFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'כשחבר יהיה פנוי — נשאל את שניכם.'**
+  String get realWaitingForFriends;
+
+  /// No description provided for @realFreeFriendsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'פנויים עכשיו'**
+  String get realFreeFriendsTitle;
+
+  /// No description provided for @realNobodyFree.
+  ///
+  /// In he, this message translates to:
+  /// **'אף חבר לא פנוי כרגע'**
+  String get realNobodyFree;
+
+  /// No description provided for @realNoFriendsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין פה חברים'**
+  String get realNoFriendsTitle;
+
+  /// No description provided for @realNoFriendsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.'**
+  String get realNoFriendsBody;
+
+  /// No description provided for @realInviteFriend.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמן חבר'**
+  String get realInviteFriend;
+
+  /// No description provided for @realHaveCode.
+  ///
+  /// In he, this message translates to:
+  /// **'יש לי קוד הזמנה'**
+  String get realHaveCode;
+
+  /// No description provided for @realCodeHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הדביקו כאן את הקישור או הקוד'**
+  String get realCodeHint;
+
+  /// No description provided for @realCodeInvalid.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מצאנו קוד הזמנה בטקסט הזה'**
+  String get realCodeInvalid;
+
+  /// No description provided for @realOpen.
+  ///
+  /// In he, this message translates to:
+  /// **'פתיחה'**
+  String get realOpen;
+
+  /// No description provided for @realInviteMessage.
+  ///
+  /// In he, this message translates to:
+  /// **'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?'**
+  String get realInviteMessage;
+
+  /// No description provided for @realInviteMessageNoSite.
+  ///
+  /// In he, this message translates to:
+  /// **'להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}'**
+  String realInviteMessageNoSite(String apkUrl, String code);
+
+  /// No description provided for @realInviteShareSubject.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמנה ל-DriveTalk'**
+  String get realInviteShareSubject;
+
+  /// No description provided for @realInviteCopied.
+  ///
+  /// In he, this message translates to:
+  /// **'ההזמנה הועתקה — אפשר להדביק בוואטסאפ'**
+  String get realInviteCopied;
+
+  /// No description provided for @realOfferTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו. רוצה לדבר?'**
+  String realOfferTitle(String name, String gender);
+
+  /// No description provided for @realTalkNow.
+  ///
+  /// In he, this message translates to:
+  /// **'דבר עכשיו'**
+  String get realTalkNow;
+
+  /// No description provided for @realNotNow.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עכשיו'**
+  String get realNotNow;
+
+  /// No description provided for @realOfferNote.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה תתחיל רק אם שניכם אומרים כן'**
+  String get realOfferNote;
+
+  /// No description provided for @realWaitingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מחכים ל{name}…'**
+  String realWaitingTitle(String name);
+
+  /// No description provided for @realWaitingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'ברגע ש{name} {gender, select, female{תאשר} male{יאשר} other{יאשר/תאשר}} — מתחברים.'**
+  String realWaitingBody(String name, String gender);
+
+  /// No description provided for @realStopWaiting.
+  ///
+  /// In he, this message translates to:
+  /// **'לא לחכות'**
+  String get realStopWaiting;
+
+  /// No description provided for @realDidNotWorkOut.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הסתדר הפעם. נחפש הזדמנות אחרת.'**
+  String get realDidNotWorkOut;
+
+  /// No description provided for @realVoiceDidNotWorkOut.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הסתדר הפעם.'**
+  String get realVoiceDidNotWorkOut;
+
+  /// No description provided for @realVoiceTheyCall.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך.'**
+  String realVoiceTheyCall(String name, String gender);
+
+  /// No description provided for @realBothSaidYes.
+  ///
+  /// In he, this message translates to:
+  /// **'שניכם אמרתם כן!'**
+  String get realBothSaidYes;
+
+  /// No description provided for @realConnecting.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים…'**
+  String get realConnecting;
+
+  /// No description provided for @realCallingIn.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים ל{name} בעוד {seconds}…'**
+  String realCallingIn(String name, int seconds);
+
+  /// No description provided for @realCallNow.
+  ///
+  /// In he, this message translates to:
+  /// **'להתקשר עכשיו'**
+  String get realCallNow;
+
+  /// No description provided for @realDialedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה נפתחה בטלפון'**
+  String get realDialedTitle;
+
+  /// No description provided for @realDialedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשתסיימו — חזרו לכאן.'**
+  String get realDialedBody;
+
+  /// No description provided for @realTheyCallTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך עכשיו'**
+  String realTheyCallTitle(String name, String gender);
+
+  /// No description provided for @realTheyCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה רגילה, מהטלפון. אם לא הגיעה שיחה תוך דקה — לחצו למטה.'**
+  String get realTheyCallBody;
+
+  /// No description provided for @realTheyDidNotCall.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הגיעה שיחה'**
+  String get realTheyDidNotCall;
+
+  /// No description provided for @realInAppTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מדברים עם {name}'**
+  String realInAppTitle(String name);
+
+  /// No description provided for @realInAppBody.
+  ///
+  /// In he, this message translates to:
+  /// **'לא שותפו מספרי טלפון, לכן זו שיחה מדומה. בשלב הבא תהיה כאן שיחת קול אמיתית.'**
+  String get realInAppBody;
+
+  /// No description provided for @realFeedbackThanks.
+  ///
+  /// In he, this message translates to:
+  /// **'תודה!'**
+  String get realFeedbackThanks;
+
+  /// No description provided for @realConnected.
+  ///
+  /// In he, this message translates to:
+  /// **'מעולה! {name} עכשיו ברשימת האנשים שלך.'**
+  String realConnected(String name);
+
+  /// No description provided for @realInviteTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{הזמינה} male{הזמין} other{הזמין/ה}} אותך'**
+  String realInviteTitle(String name, String gender);
+
+  /// No description provided for @realInviteBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים — נציע לכם לדבר. רק אם שניכם מסכימים.'**
+  String get realInviteBody;
+
+  /// No description provided for @realInviteAccept.
+  ///
+  /// In he, this message translates to:
+  /// **'אישור'**
+  String get realInviteAccept;
+
+  /// No description provided for @realInviteLoading.
+  ///
+  /// In he, this message translates to:
+  /// **'בודקים את ההזמנה…'**
+  String get realInviteLoading;
+
+  /// No description provided for @realInviteProblemUsed.
+  ///
+  /// In he, this message translates to:
+  /// **'ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.'**
+  String get realInviteProblemUsed;
+
+  /// No description provided for @realInviteProblemExpired.
+  ///
+  /// In he, this message translates to:
+  /// **'פג תוקף ההזמנה. בקשו הזמנה חדשה.'**
+  String get realInviteProblemExpired;
+
+  /// No description provided for @realInviteProblemOwn.
+  ///
+  /// In he, this message translates to:
+  /// **'זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.'**
+  String get realInviteProblemOwn;
+
+  /// No description provided for @realInviteProblemNotFound.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.'**
+  String get realInviteProblemNotFound;
+
+  /// No description provided for @realInviteAlready.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} כבר ברשימת האנשים שלך.'**
+  String realInviteAlready(String name);
+
+  /// No description provided for @realErrorOffline.
+  ///
+  /// In he, this message translates to:
+  /// **'אין חיבור לאינטרנט. ננסה שוב לבד.'**
+  String get realErrorOffline;
+
+  /// No description provided for @realErrorGeneric.
+  ///
+  /// In he, this message translates to:
+  /// **'משהו השתבש ({code}). נסו שוב.'**
+  String realErrorGeneric(String code);
+
+  /// No description provided for @realErrorAnonymousDisabled.
+  ///
+  /// In he, this message translates to:
+  /// **'בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).'**
+  String get realErrorAnonymousDisabled;
+
+  /// No description provided for @realErrorSchema.
+  ///
+  /// In he, this message translates to:
+  /// **'השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).'**
+  String get realErrorSchema;
+
+  /// No description provided for @realErrorInvalidPhone.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר הטלפון לא נראה תקין'**
+  String get realErrorInvalidPhone;
+
+  /// No description provided for @realErrorInvalidName.
+  ///
+  /// In he, this message translates to:
+  /// **'השם צריך להיות באורך 1–40 תווים'**
+  String get realErrorInvalidName;
+
+  /// No description provided for @realErrorRateLimited.
+  ///
+  /// In he, this message translates to:
+  /// **'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.'**
+  String get realErrorRateLimited;
+
+  /// No description provided for @realErrorTooManyInvites.
+  ///
+  /// In he, this message translates to:
+  /// **'יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.'**
+  String get realErrorTooManyInvites;
+
+  /// No description provided for @realSaved.
+  ///
+  /// In he, this message translates to:
+  /// **'נשמר'**
+  String get realSaved;
+
+  /// No description provided for @realDialFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה'**
+  String get realDialFailed;
+
+  /// No description provided for @realUnmatched.
+  ///
+  /// In he, this message translates to:
+  /// **'הקשר עם {name} הוסר'**
+  String realUnmatched(String name);
+
+  /// No description provided for @realFreeFor.
+  ///
+  /// In he, this message translates to:
+  /// **'פנוי/ה · {minutes} דק׳'**
+  String realFreeFor(int minutes);
+
+  /// No description provided for @realNotFree.
+  ///
+  /// In he, this message translates to:
+  /// **'לא פנוי/ה כרגע'**
+  String get realNotFree;
+
+  /// No description provided for @realTestIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.'**
+  String get realTestIntro;
+
+  /// No description provided for @realTestSteps.
+  ///
+  /// In he, this message translates to:
+  /// **'1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"'**
+  String get realTestSteps;
+
+  /// No description provided for @realStatusServer.
+  ///
+  /// In he, this message translates to:
+  /// **'שרת'**
+  String get realStatusServer;
+
+  /// No description provided for @realStatusAccount.
+  ///
+  /// In he, this message translates to:
+  /// **'חשבון'**
+  String get realStatusAccount;
+
+  /// No description provided for @realStatusLive.
+  ///
+  /// In he, this message translates to:
+  /// **'עדכון מיידי'**
+  String get realStatusLive;
+
+  /// No description provided for @realStatusFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים'**
+  String get realStatusFriends;
+
+  /// No description provided for @realStatusMe.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמינות שלי'**
+  String get realStatusMe;
+
+  /// No description provided for @realStatusFreeFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים פנויים עכשיו'**
+  String get realStatusFreeFriends;
+
+  /// No description provided for @realStatusLastOffer.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעה אחרונה'**
+  String get realStatusLastOffer;
+
+  /// No description provided for @realStatusVersion.
+  ///
+  /// In he, this message translates to:
+  /// **'גרסה'**
+  String get realStatusVersion;
+
+  /// No description provided for @realStatusLastError.
+  ///
+  /// In he, this message translates to:
+  /// **'שגיאה אחרונה'**
+  String get realStatusLastError;
+
+  /// No description provided for @realStatusPhone.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר לשיחה רגילה'**
+  String get realStatusPhone;
+
+  /// No description provided for @realOk.
+  ///
+  /// In he, this message translates to:
+  /// **'תקין'**
+  String get realOk;
+
+  /// No description provided for @realNotConnected.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מחובר'**
+  String get realNotConnected;
+
+  /// No description provided for @realLiveError.
+  ///
+  /// In he, this message translates to:
+  /// **'לא יציב — מתעדכן כל כמה שניות'**
+  String get realLiveError;
+
+  /// No description provided for @realNone.
+  ///
+  /// In he, this message translates to:
+  /// **'אין'**
+  String get realNone;
+
+  /// No description provided for @realShared.
+  ///
+  /// In he, this message translates to:
+  /// **'משותף'**
+  String get realShared;
+
+  /// No description provided for @realNotShared.
+  ///
+  /// In he, this message translates to:
+  /// **'לא משותף'**
+  String get realNotShared;
+
+  /// No description provided for @realMeNotAvailable.
+  ///
+  /// In he, this message translates to:
+  /// **'לא פנוי'**
+  String get realMeNotAvailable;
+
+  /// No description provided for @realOfferPending.
+  ///
+  /// In he, this message translates to:
+  /// **'מחכה לתשובה'**
+  String get realOfferPending;
+
+  /// No description provided for @realOfferAccepted.
+  ///
+  /// In he, this message translates to:
+  /// **'שניכם אמרתם כן'**
+  String get realOfferAccepted;
+
+  /// No description provided for @realOfferDeclined.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הסתדר'**
+  String get realOfferDeclined;
+
+  /// No description provided for @realOfferExpired.
+  ///
+  /// In he, this message translates to:
+  /// **'פג הזמן'**
+  String get realOfferExpired;
+
+  /// No description provided for @realOfferCancelled.
+  ///
+  /// In he, this message translates to:
+  /// **'בוטל'**
+  String get realOfferCancelled;
+
+  /// No description provided for @realCopyDiagnostics.
+  ///
+  /// In he, this message translates to:
+  /// **'העתק מידע לבדיקה'**
+  String get realCopyDiagnostics;
+
+  /// No description provided for @realCopied.
+  ///
+  /// In he, this message translates to:
+  /// **'הועתק. אפשר להדביק ולשלוח'**
+  String get realCopied;
+
+  /// No description provided for @realRefresh.
+  ///
+  /// In he, this message translates to:
+  /// **'רענון'**
+  String get realRefresh;
+
+  /// No description provided for @realSettingsMode.
+  ///
+  /// In he, this message translates to:
+  /// **'מצב האפליקציה'**
+  String get realSettingsMode;
+
+  /// No description provided for @realModeReal.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה אמיתית עם חברים'**
+  String get realModeReal;
+
+  /// No description provided for @realModeDemo.
+  ///
+  /// In he, this message translates to:
+  /// **'הדגמה עם אנשים מדומים'**
+  String get realModeDemo;
+
+  /// No description provided for @realSwitchToDemo.
+  ///
+  /// In he, this message translates to:
+  /// **'מעבר להדגמה'**
+  String get realSwitchToDemo;
+
+  /// No description provided for @realTestModeToggle.
+  ///
+  /// In he, this message translates to:
+  /// **'מסך בדיקה (Test Mode)'**
+  String get realTestModeToggle;
+
+  /// No description provided for @realTestModeBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מציג את הלשונית \"בדיקה\" עם מצב החיבור'**
+  String get realTestModeBody;
+
+  /// No description provided for @realMyNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר שלי לשיחה רגילה'**
+  String get realMyNumber;
+
+  /// No description provided for @realStartOver.
+  ///
+  /// In he, this message translates to:
+  /// **'להתחיל מחדש כמשתמש חדש'**
+  String get realStartOver;
+
+  /// No description provided for @realStartOverConfirm.
+  ///
+  /// In he, this message translates to:
+  /// **'החברים וההזמנות של המשתמש הנוכחי לא יעברו. להמשיך?'**
+  String get realStartOverConfirm;
+
+  /// No description provided for @realDownloadLink.
+  ///
+  /// In he, this message translates to:
+  /// **'קישור להורדת האפליקציה'**
+  String get realDownloadLink;
+
+  /// No description provided for @realShareApp.
+  ///
+  /// In he, this message translates to:
+  /// **'שיתוף'**
+  String get realShareApp;
+
+  /// No description provided for @realNameTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השם שלי'**
+  String get realNameTitle;
+
+  /// No description provided for @realPrivacyNote.
+  ///
+  /// In he, this message translates to:
+  /// **'השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.'**
+  String get realPrivacyNote;
+
+  /// No description provided for @realVoiceOffer.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?'**
+  String realVoiceOffer(String name, String gender);
+
+  /// No description provided for @realVoiceCalling.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים ל{name}.'**
+  String realVoiceCalling(String name);
 }
 
 class _AppLocalizationsDelegate

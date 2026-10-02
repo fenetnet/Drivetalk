@@ -1,0 +1,384 @@
+import 'dart:async';
+
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../domain/models.dart';
+import 'backend_config.dart';
+import 'real_backend.dart';
+import 'real_models.dart';
+
+/// The real backend: Supabase (Postgres + Row Level Security + Realtime).
+///
+/// The app holds only the public URL and anon/publishable key. Everything a
+/// user may read or change is enforced by the database (see
+/// supabase/migrations), not by this code.
+class SupabaseRealBackend implements RealBackend {
+  /// [client] is for tests against a real server (several users per process).
+  SupabaseRealBackend({SupabaseClient? client})
+    : _client = client,
+      _injected = client != null;
+
+  SupabaseClient? _client;
+  final bool _injected;
+  RealtimeChannel? _channel;
+  final _changes = StreamController<void>.broadcast();
+  final _live = StreamController<LiveStatus>.broadcast();
+
+  @override
+  bool get isConfigured => _injected || BackendConfig.isConfigured;
+
+  SupabaseClient get _c {
+    final c = _client;
+    if (c == null) throw const RealBackendException('not_configured');
+    return c;
+  }
+
+  @override
+  String? get userId => _client?.auth.currentUser?.id;
+
+  @override
+  Future<void> start() async {
+    if (!isConfigured) return;
+    if (_client == null) {
+      await _guard(() async {
+        await Supabase.initialize(
+          url: BackendConfig.supabaseUrl,
+          publishableKey: BackendConfig.supabaseAnonKey,
+          debug: false,
+        );
+      });
+      _client = Supabase.instance.client;
+    }
+    if (userId != null) _subscribe();
+  }
+
+  @override
+  Future<RealProfile> signIn(String name, Gender gender) => _guard(() async {
+    if (_c.auth.currentUser == null) {
+      await _c.auth.signInAnonymously();
+    }
+    final p = await updateProfile(name, gender);
+    _subscribe();
+    return p;
+  });
+
+  @override
+  Future<RealProfile> updateProfile(String name, Gender gender) =>
+      _guard(() async {
+        final row = await _c.rpc(
+          'ensure_profile',
+          params: {'p_name': name.trim(), 'p_gender': genderToKey(gender)},
+        );
+        return _profile(Map<String, dynamic>.from(row as Map));
+      });
+
+  @override
+  Future<void> signOut() async {
+    await _unsubscribe();
+    try {
+      await _client?.auth.signOut();
+    } catch (_) {
+      // Signing out locally is enough.
+    }
+  }
+
+  @override
+  Future<RealSnapshot> fetchSnapshot() => _guard(() async {
+    final me = userId;
+    if (me == null) throw const RealBackendException('not_authenticated');
+    final since = DateTime.now()
+        .toUtc()
+        .subtract(const Duration(hours: 12))
+        .toIso8601String();
+    final results = await Future.wait([
+      _c.from('profiles').select('id, display_name, gender'),
+      _c.from('availability').select('user_id, mode, started_at, expires_at'),
+      _c
+          .from('match_offers')
+          .select()
+          .gt('updated_at', since)
+          .order('updated_at', ascending: false)
+          .limit(50),
+    ]);
+    final profiles = [
+      for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
+    ];
+    final mine = profiles.where((p) => p.id == me).firstOrNull;
+    if (mine == null) throw const RealBackendException('no_profile');
+    return RealSnapshot(
+      me: mine,
+      friends: [
+        for (final p in profiles)
+          if (p.id != me) p,
+      ]..sort((a, b) => a.name.compareTo(b.name)),
+      availability: {
+        for (final r in results[1])
+          r['user_id'] as String: RealAvailability(
+            userId: r['user_id'] as String,
+            mode: modeFromKey(r['mode'] as String?),
+            startedAt: _time(r['started_at']),
+            expiresAt: _time(r['expires_at']),
+          ),
+      },
+      offers: [for (final r in results[2]) _offer(r)],
+      fetchedAt: DateTime.now(),
+    );
+  });
+
+  @override
+  Stream<void> get changes => _changes.stream;
+
+  @override
+  Stream<LiveStatus> get liveStatus => _live.stream;
+
+  @override
+  Future<CreatedInvitation> createInvitation() => _guard(() async {
+    final rows = await _c.rpc('create_invitation') as List;
+    final r = Map<String, dynamic>.from(rows.single as Map);
+    return CreatedInvitation(r['token'] as String, _time(r['expires_at']));
+  });
+
+  @override
+  Future<InviteInfo> getInvitation(String token) => _guard(() async {
+    final rows = await _c.rpc('get_invitation', params: {'p_token': token});
+    final r = Map<String, dynamic>.from((rows as List).single as Map);
+    final g = r['inviter_gender'] as String?;
+    return InviteInfo(
+      inviteStatusFromKey(r['status'] as String?),
+      inviterName: r['inviter_name'] as String?,
+      inviterGender: g == null ? null : genderFromKey(g),
+    );
+  });
+
+  @override
+  Future<AcceptResult> acceptInvitation(String token) => _guard(() async {
+    final r = await _c.rpc('accept_invitation', params: {'p_token': token});
+    return acceptResultFromKey(r as String?);
+  });
+
+  @override
+  Future<void> setAvailability(AvailabilityMode mode, int minutes) =>
+      _guard(() async {
+        await _c.rpc(
+          'set_availability',
+          params: {'p_mode': mode.name, 'p_minutes': minutes},
+        );
+      });
+
+  @override
+  Future<void> clearAvailability() =>
+      _guard(() async => _c.rpc('clear_availability'));
+
+  @override
+  Future<OfferStatus> respondOffer(String offerId, {required bool accept}) =>
+      _guard(() async {
+        final r = await _c.rpc(
+          'respond_offer',
+          params: {'p_offer': offerId, 'p_accept': accept},
+        );
+        if (r == 'not_found') throw const RealBackendException('not_found');
+        return _status(r as String?);
+      });
+
+  @override
+  Future<void> sendFeedback({
+    required String? offerId,
+    required bool talked,
+    FeedbackRating? rating,
+    bool? wantAgain,
+  }) => _guard(() async {
+    await _c.from('feedback').insert({
+      'offer_id': ?offerId,
+      'talked': talked,
+      'rating': ?rating?.name,
+      'want_again': ?wantAgain,
+    });
+  });
+
+  @override
+  Future<String?> getMyPhone() => _guard(() async {
+    final rows = await _c.from('phone_numbers').select('phone');
+    return rows.isEmpty ? null : rows.first['phone'] as String?;
+  });
+
+  @override
+  Future<void> setMyPhone(String? phone) => _guard(() async {
+    final me = userId;
+    if (me == null) throw const RealBackendException('not_authenticated');
+    if (phone == null) {
+      await _c.from('phone_numbers').delete().eq('user_id', me);
+      return;
+    }
+    final n = normalizePhone(phone);
+    if (n == null) throw const RealBackendException('invalid_phone');
+    await _c.from('phone_numbers').upsert({
+      'user_id': me,
+      'phone': n,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    });
+  });
+
+  @override
+  Future<CallDetails> callDetails(String offerId) => _guard(() async {
+    final rows = await _c.rpc('call_details', params: {'p_offer': offerId});
+    final r = Map<String, dynamic>.from((rows as List).single as Map);
+    return CallDetails(
+      otherPhone: r['other_phone'] as String?,
+      iShare: r['i_share'] == true,
+    );
+  });
+
+  @override
+  Future<void> block(String userId) =>
+      _guard(() async => _c.rpc('block_user', params: {'p_user': userId}));
+
+  @override
+  Future<void> unmatch(String userId) => _guard(() async {
+    final me = this.userId!;
+    final a = me.compareTo(userId) < 0 ? me : userId;
+    final b = a == me ? userId : me;
+    await _c.from('connections').delete().eq('user_a', a).eq('user_b', b);
+  });
+
+  @override
+  Future<void> report(String userId, ReportReason reason) => _guard(() async {
+    await _c.from('reports').insert({
+      'reported': userId,
+      'reason': reason.name,
+    });
+  });
+
+  // ------------------------------------------------------------ realtime
+
+  void _subscribe() {
+    if (_channel != null || _client == null) return;
+    _live.add(LiveStatus.connecting);
+    var ch = _c.channel('drivetalk-${DateTime.now().millisecondsSinceEpoch}');
+    for (final table in const [
+      'availability',
+      'match_offers',
+      'connections',
+      'profiles',
+    ]) {
+      ch = ch.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: table,
+        callback: (_) => _changes.add(null),
+      );
+    }
+    _channel = ch.subscribe((status, [error]) {
+      switch (status) {
+        case RealtimeSubscribeStatus.subscribed:
+          _live.add(LiveStatus.connected);
+          // Catch up on anything missed while (re)connecting.
+          _changes.add(null);
+        case RealtimeSubscribeStatus.closed:
+          _live.add(LiveStatus.disconnected);
+        case RealtimeSubscribeStatus.channelError:
+        case RealtimeSubscribeStatus.timedOut:
+          _live.add(LiveStatus.error);
+      }
+    });
+  }
+
+  Future<void> _unsubscribe() async {
+    final ch = _channel;
+    _channel = null;
+    if (ch != null) {
+      try {
+        await _c.removeChannel(ch);
+      } catch (_) {}
+    }
+    _live.add(LiveStatus.disconnected);
+  }
+
+  // ------------------------------------------------------------- helpers
+
+  /// Turns any failure into a short, secret-free code.
+  Future<T> _guard<T>(Future<T> Function() body) async {
+    try {
+      return await body();
+    } on RealBackendException {
+      rethrow;
+    } on PostgrestException catch (e) {
+      throw RealBackendException(_codeFrom(e.message));
+    } on AuthException catch (e) {
+      final m = e.message.toLowerCase();
+      throw RealBackendException(
+        m.contains('anonymous') && m.contains('disabled')
+            ? 'anonymous_disabled'
+            : m.contains('rate') || e.statusCode == '429'
+            ? 'rate_limited'
+            : 'auth',
+      );
+    } catch (e) {
+      final s = e.toString().toLowerCase();
+      if (s.contains('socket') ||
+          s.contains('failed host lookup') ||
+          s.contains('clientexception') ||
+          s.contains('timeout') ||
+          s.contains('connection')) {
+        throw const RealBackendException('offline');
+      }
+      throw const RealBackendException('unknown');
+    }
+  }
+
+  static String _codeFrom(String message) {
+    const known = [
+      'invalid_minutes',
+      'not_authenticated',
+      'no_profile',
+      'too_many_open_invitations',
+    ];
+    for (final k in known) {
+      if (message.contains(k)) return k;
+    }
+    if (message.contains('display_name')) return 'invalid_name';
+    if (message.contains('phone')) return 'invalid_phone';
+    if (message.contains('permission denied') ||
+        message.contains('row-level security')) {
+      return 'not_allowed';
+    }
+    if (message.contains('does not exist') ||
+        message.contains('Could not find')) {
+      return 'schema_missing';
+    }
+    return 'server';
+  }
+
+  static RealProfile _profile(Map<String, dynamic> r) => RealProfile(
+    id: r['id'] as String,
+    name: r['display_name'] as String,
+    gender: genderFromKey(r['gender'] as String?),
+  );
+
+  static RealOffer _offer(Map<String, dynamic> r) => RealOffer(
+    id: r['id'] as String,
+    userA: r['user_a'] as String,
+    userB: r['user_b'] as String,
+    status: _status(r['status'] as String?),
+    createdAt: _time(r['created_at']),
+    updatedAt: _time(r['updated_at']),
+    expiresAt: _time(r['expires_at']),
+    aAccepted: _answer(r['a_response']),
+    bAccepted: _answer(r['b_response']),
+  );
+
+  static bool? _answer(Object? v) => switch (v) {
+    'accept' => true,
+    'decline' => false,
+    _ => null,
+  };
+
+  static OfferStatus _status(String? s) => switch (s) {
+    'accepted' => OfferStatus.accepted,
+    'declined' => OfferStatus.declined,
+    'expired' => OfferStatus.expired,
+    'cancelled' => OfferStatus.cancelled,
+    _ => OfferStatus.pending,
+  };
+
+  static DateTime _time(Object? v) => DateTime.parse(v as String).toLocal();
+}

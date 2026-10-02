@@ -140,8 +140,31 @@ Future<void> main() async {
       'I accept → still waiting for Yoni');
   check(await eve.rpc('respond_offer', params: {'p_offer': offerId, 'p_accept': true}) == 'not_found',
       "a stranger can't answer our offer");
+  // Phone numbers: private, revealed only after both accepted.
+  await yoni.from('phone_numbers').upsert({'user_id': uid(yoni), 'phone': '+972501234567'});
+  check((await rows(me, 'phone_numbers')).isEmpty, "I can't read Yoni's number directly");
+  final early = List<Map<String, dynamic>>.from(
+    await me.rpc('call_details', params: {'p_offer': offerId}),
+  ).single;
+  check(early['other_phone'] == null, 'no number before both accepted');
+  try {
+    await eve.from('phone_numbers').insert({'user_id': uid(yoni), 'phone': '+972500000000'});
+    check(false, "a stranger can't set someone else's number");
+  } on PostgrestException {
+    check(true, "a stranger can't set someone else's number");
+  }
+
   check(await yoni.rpc('respond_offer', params: {'p_offer': offerId, 'p_accept': true}) == 'accepted',
       'Yoni accepts → match accepted');
+  final details = List<Map<String, dynamic>>.from(
+    await me.rpc('call_details', params: {'p_offer': offerId}),
+  ).single;
+  check(details['other_phone'] == '+972501234567' && details['i_share'] == false,
+      'after both accepted I get the number Yoni chose to share');
+  final eveDetails = List<Map<String, dynamic>>.from(
+    await eve.rpc('call_details', params: {'p_offer': offerId}),
+  ).single;
+  check(eveDetails['other_phone'] == null, "a stranger can't get numbers from our offer");
 
   // --- a fresh round where Yoni declines
   await me.rpc('clear_availability');

@@ -86,6 +86,15 @@ create table public.feedback (
   created_at timestamptz not null default now()
 );
 
+-- Optional phone number for a regular phone call. Never readable by other
+-- users directly: revealed only through call_details() to the other side of an
+-- offer that BOTH accepted, and only if the owner chose to share it.
+create table public.phone_numbers (
+  user_id uuid primary key references public.profiles (id) on delete cascade default auth.uid(),
+  phone text not null check (phone ~ '^\+?[0-9]{6,15}$'),
+  updated_at timestamptz not null default now()
+);
+
 create table public.reports (
   id uuid primary key default gen_random_uuid(),
   reporter uuid not null references public.profiles (id) on delete cascade default auth.uid(),
@@ -122,6 +131,7 @@ alter table public.match_offers enable row level security;
 alter table public.blocks enable row level security;
 alter table public.feedback enable row level security;
 alter table public.reports enable row level security;
+alter table public.phone_numbers enable row level security;
 
 -- Profiles: me, and people I'm connected to (unless blocked either way).
 create policy profiles_select on public.profiles for select to authenticated
@@ -171,6 +181,15 @@ create policy blocks_delete on public.blocks for delete to authenticated
 create policy feedback_insert on public.feedback for insert to authenticated
   with check (user_id = auth.uid());
 create policy feedback_select on public.feedback for select to authenticated
+  using (user_id = auth.uid());
+-- Phone number: only my own row.
+create policy phones_select on public.phone_numbers for select to authenticated
+  using (user_id = auth.uid());
+create policy phones_insert on public.phone_numbers for insert to authenticated
+  with check (user_id = auth.uid());
+create policy phones_update on public.phone_numbers for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy phones_delete on public.phone_numbers for delete to authenticated
   using (user_id = auth.uid());
 create policy reports_insert on public.reports for insert to authenticated
   with check (reporter = auth.uid() and reported <> auth.uid());
@@ -408,6 +427,32 @@ begin
 end;
 $$;
 
+-- After BOTH accepted: the other side's number (if they chose to share it)
+-- and whether I share mine. Only for a recently accepted offer of mine.
+create or replace function public.call_details(p_offer uuid)
+returns table (other_phone text, i_share boolean)
+language plpgsql stable security definer set search_path = public as $$
+declare
+  me uuid := auth.uid();
+  o match_offers;
+  other uuid;
+begin
+  if me is null then raise exception 'not_authenticated'; end if;
+  select * into o from match_offers where id = p_offer;
+  if not found or me not in (o.user_a, o.user_b) or o.status <> 'accepted'
+     or o.updated_at < now() - interval '30 minutes' then
+    return query select null::text, false; return;
+  end if;
+  other := case when me = o.user_a then o.user_b else o.user_a end;
+  if is_blocked_between(me, other) then
+    return query select null::text, false; return;
+  end if;
+  return query select
+    (select phone from phone_numbers where user_id = other),
+    exists (select 1 from phone_numbers where user_id = me);
+end;
+$$;
+
 -- Housekeeping: drop expired availability and close stale offers.
 create or replace function public.expire_stale()
 returns void language sql security definer set search_path = public as $$
@@ -430,6 +475,8 @@ revoke all on function public.set_availability(text, integer) from public, anon;
 revoke all on function public.clear_availability() from public, anon;
 revoke all on function public.respond_offer(uuid, boolean) from public, anon;
 revoke all on function public.block_user(uuid) from public, anon;
+revoke all on function public.call_details(uuid) from public, anon;
+grant execute on function public.call_details(uuid) to authenticated;
 grant execute on function public.ensure_profile(text, text) to authenticated;
 grant execute on function public.create_invitation() to authenticated;
 grant execute on function public.get_invitation(text) to authenticated, anon;
@@ -439,10 +486,28 @@ grant execute on function public.clear_availability() to authenticated;
 grant execute on function public.respond_offer(uuid, boolean) to authenticated;
 grant execute on function public.block_user(uuid) to authenticated;
 
+-- Table privileges (explicit, in case the project doesn't grant them by
+-- default). RLS above still decides which ROWS each user may touch.
+revoke all on all tables in schema public from anon;
+grant select on public.profiles, public.invitations, public.connections,
+  public.availability, public.match_offers, public.blocks, public.feedback,
+  public.phone_numbers to authenticated;
+grant insert, update on public.profiles to authenticated;
+grant delete on public.connections, public.availability, public.blocks to authenticated;
+grant insert on public.feedback, public.reports to authenticated;
+grant insert, update, delete on public.phone_numbers to authenticated;
+
 -- Every minute, clean up (also keeps the "nobody stays free forever" promise
--- when apps are closed). Read paths already ignore expired rows.
-create extension if not exists pg_cron;
-select cron.schedule('drivetalk-expire-stale', '* * * * *', 'select public.expire_stale()');
+-- when apps are closed). Read paths already ignore expired rows, so if the
+-- scheduler isn't available nothing breaks.
+do $$
+begin
+  create extension if not exists pg_cron;
+  perform cron.schedule('drivetalk-expire-stale', '* * * * *', 'select public.expire_stale()');
+exception when others then
+  raise notice 'pg_cron not available: %', sqlerrm;
+end;
+$$;
 
 -- -------------------------------------------------------------- realtime
 -- Clients listen for changes and re-read through RLS-protected queries.

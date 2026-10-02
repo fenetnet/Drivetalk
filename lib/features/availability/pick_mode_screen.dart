@@ -7,9 +7,13 @@ import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../common/labels.dart';
 
+/// Real mode starts availability on the server instead of the demo session.
+typedef StartAvailability = void Function(AvailabilityMode mode, int minutes);
+
 /// Step 1: what are you doing? (driving / walking / break / just free)
 class PickModeScreen extends StatelessWidget {
-  const PickModeScreen({super.key});
+  const PickModeScreen({super.key, this.onStart});
+  final StartAvailability? onStart;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +43,8 @@ class PickModeScreen extends StatelessWidget {
                         label: modeLabel(l, m),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => PickDurationScreen(mode: m),
+                            builder: (_) =>
+                                PickDurationScreen(mode: m, onStart: onStart),
                           ),
                         ),
                       ),
@@ -57,8 +62,9 @@ class PickModeScreen extends StatelessWidget {
 /// Step 2: for how long? 15/30/45/60 or "until I finish the drive".
 /// Optionally: available only to one of my private circles.
 class PickDurationScreen extends ConsumerStatefulWidget {
-  const PickDurationScreen({super.key, required this.mode});
+  const PickDurationScreen({super.key, required this.mode, this.onStart});
   final AvailabilityMode mode;
+  final StartAvailability? onStart;
 
   @override
   ConsumerState<PickDurationScreen> createState() => _PickDurationState();
@@ -68,6 +74,16 @@ class _PickDurationState extends ConsumerState<PickDurationScreen> {
   String? _circleId;
 
   void _start({int? minutes, bool untilTripEnds = false}) {
+    final onStart = widget.onStart;
+    if (onStart != null) {
+      final cap = ref
+          .read(matchingConfigProvider)
+          .snooze
+          .drivingSafetyCapMinutes;
+      onStart(widget.mode, untilTripEnds ? cap : minutes ?? 30);
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      return;
+    }
     ref
         .read(sessionProvider.notifier)
         .startAvailability(
@@ -87,7 +103,10 @@ class _PickDurationState extends ConsumerState<PickDurationScreen> {
         .watch(matchingConfigProvider)
         .snooze
         .drivingSafetyCapMinutes;
-    final circles = ref.watch(profileServiceProvider).prefs.circles;
+    // Circles are a demo feature for now.
+    final circles = widget.onStart != null
+        ? const <Circle>[]
+        : ref.watch(profileServiceProvider).prefs.circles;
     return Scaffold(
       appBar: AppBar(
         title: Row(
