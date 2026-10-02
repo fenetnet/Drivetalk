@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# e2e tool
+tool/e2e/.dart_tool/
+tool/e2e/pubspec.lock

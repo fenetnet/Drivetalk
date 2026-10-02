@@ -1,0 +1,7 @@
+name: drivetalk_e2e
+description: End-to-end checks of the Supabase schema with two (or three) real clients.
+publish_to: none
+environment:
+  sdk: ^3.9.0
+dependencies:
+  supabase: ^2.10.0
