@@ -21,6 +21,10 @@ abstract class SocialGraphService implements ObservableService {
   List<Person> get blockedByMe;
 
   Future<void> setRelationship(String personId, RelationshipType? type);
+
+  /// "Quick connect" works only when both sides pre-approved each other.
+  bool isMutualQuickConnect(String personId);
+  Future<void> setQuickConnect(String personId, bool on);
   Future<void> addConnection(String personId);
 
   /// Removes the connection. They can still be found again only via a new invite.

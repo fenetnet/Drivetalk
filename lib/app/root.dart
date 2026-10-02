@@ -11,7 +11,9 @@ import '../features/feedback/feedback_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/invitation/invitation_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/quick_connect/quick_connect_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/voice_message/voice_message_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'app.dart';
 import 'dev_tools.dart';
@@ -27,6 +29,8 @@ class RootGate extends ConsumerWidget {
       s.invitation != null ||
       s.phase == SessionPhase.inCall ||
       s.phase == SessionPhase.feedback ||
+      s.phase == SessionPhase.quickConnecting ||
+      s.phase == SessionPhase.voiceMessage ||
       driver;
 
   @override
@@ -51,6 +55,21 @@ class RootGate extends ConsumerWidget {
             SnackBar(
               content: Text(_noticeText(l, notice, ref)),
               behavior: SnackBarBehavior.floating,
+              duration: Duration(
+                seconds: notice.kind == NoticeKind.micPermissionDenied ? 8 : 4,
+              ),
+              // A voice note is offered only outside driver mode.
+              action:
+                  notice.offersVoiceMessage &&
+                      notice.person != null &&
+                      !ref.read(driverModeProvider)
+                  ? SnackBarAction(
+                      label: l.voiceMessageAction,
+                      onPressed: () => ref
+                          .read(sessionProvider.notifier)
+                          .startVoiceMessage(notice.person!),
+                    )
+                  : null,
             ),
           );
       }
@@ -66,8 +85,12 @@ class RootGate extends ConsumerWidget {
       body = const OnboardingScreen();
     } else if (session.invitation != null) {
       body = InvitationScreen(driverMode: driver);
+    } else if (session.phase == SessionPhase.quickConnecting) {
+      body = const QuickConnectScreen();
     } else if (session.phase == SessionPhase.inCall) {
       body = CallScreen(driverMode: driver);
+    } else if (session.phase == SessionPhase.voiceMessage) {
+      body = const VoiceMessageScreen();
     } else if (driver) {
       body = const DriverScreen();
     } else if (session.phase == SessionPhase.feedback) {
@@ -79,6 +102,7 @@ class RootGate extends ConsumerWidget {
     return Stack(
       children: [
         Positioned.fill(child: body),
+        if (!ref.watch(networkServiceProvider).online) const _OfflineBanner(),
         if (kDevTools) const _DevToolsButton(),
       ],
     );
@@ -98,7 +122,46 @@ class RootGate extends ConsumerWidget {
       NoticeKind.reported => l.noticeReported,
       NoticeKind.pausedNotToday => l.noticePausedToday(name),
       NoticeKind.pausedForAWhile => l.noticePausedWhile(name),
+      NoticeKind.noAnswer => l.noticeNoAnswer(name, g),
+      NoticeKind.noLongerAvailable => l.noticeNoLongerAvailable(name, g),
+      NoticeKind.voiceMessageSent => l.noticeVoiceMessageSent(name),
+      NoticeKind.micPermissionDenied => l.noticeMicDenied,
+      NoticeKind.quickConnectCancelled => l.noticeQuickConnectCancelled(name),
     };
+  }
+}
+
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Material(
+        color: const Color(0xFF3D405B),
+        child: SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Row(
+              children: [
+                const Icon(Icons.wifi_off_rounded, color: Colors.white),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).offlineBanner,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

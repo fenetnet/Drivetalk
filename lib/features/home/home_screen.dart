@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../app/session_controller.dart';
 import '../../app/theme.dart';
+import '../../domain/models.dart';
 import '../availability/pick_mode_screen.dart';
 import '../availability/searching_view.dart';
 import '../common/labels.dart';
@@ -20,7 +21,7 @@ class HomeScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
     final Widget child = switch (session.phase) {
       SessionPhase.searching => const SearchingView(),
-      SessionPhase.suggestion => const SuggestionView(),
+      SessionPhase.options => const SuggestionView(),
       SessionPhase.waitingForAnswer => const WaitingView(),
       _ => const _IdleHome(),
     };
@@ -86,6 +87,13 @@ class _IdleHome extends ConsumerWidget {
               ],
             ),
           ],
+          if (!active)
+            for (final r in prefs.routines)
+              if (r.isDueAt(now))
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: _RoutineCard(routine: r),
+                ),
           const Spacer(),
           if (active)
             _RestingCard(
@@ -218,6 +226,50 @@ class _RestingCard extends ConsumerWidget {
                 onPressed: controller.stopAvailability,
                 child: Text(l.stopAvailability),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "It's your usual driving time — become available?" (from My routines).
+class _RoutineCard extends ConsumerWidget {
+  const _RoutineCard({required this.routine});
+  final Routine routine;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Card(
+      color: const Color(0xFFDCEBE3),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+        child: Row(
+          children: [
+            Icon(modeIcon(routine.mode), color: AppColors.sageDark),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                l.routineDue(
+                  modeLabel(l, routine.mode),
+                  routine.durationMinutes,
+                ),
+              ),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.sageDark,
+                minimumSize: const Size(64, 40),
+              ),
+              onPressed: () => ref
+                  .read(sessionProvider.notifier)
+                  .startAvailability(
+                    routine.mode,
+                    minutes: routine.durationMinutes,
+                  ),
+              child: Text(l.routineStart),
             ),
           ],
         ),

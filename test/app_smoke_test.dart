@@ -1,5 +1,6 @@
 import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
+import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/services/fake/fake_world.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,7 @@ void main() {
         overrides: [
           matchingConfigProvider.overrideWithValue(config),
           fakeWorldProvider.overrideWithValue(world),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
         ],
         child: const DriveTalkApp(),
       ),
@@ -76,12 +78,18 @@ void main() {
     await pumpFor(t, 500);
     expect(find.text('מחפשים מישהו שמתאים לדבר איתך עכשיו'), findsOneWidget);
 
-    // Suggestion appears with actions.
+    // Three options appear, each with its own "talk now".
     await pumpFor(t, 2500);
-    expect(find.text('לדבר עכשיו'), findsOneWidget);
-    expect(find.text('הבא'), findsOneWidget);
+    expect(find.text('3 אנשים פנויים לדבר עכשיו'), findsOneWidget);
+    expect(find.text('לדבר עכשיו'), findsNWidgets(3));
+
+    // Per-person menu: not today / don't suggest / block / report.
+    await t.tap(find.byIcon(Icons.more_vert_rounded).first);
+    await pumpFor(t, 400);
     expect(find.text('לא היום'), findsOneWidget);
     expect(find.text('לא להציע בתקופה הקרובה'), findsOneWidget);
+    expect(find.text('חסימה'), findsOneWidget);
+    expect(find.text('דיווח'), findsOneWidget);
 
     // Leave cleanly.
     world.reset();

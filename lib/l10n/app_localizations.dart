@@ -151,13 +151,13 @@ abstract class AppLocalizations {
   /// No description provided for @onbHow2.
   ///
   /// In he, this message translates to:
-  /// **'מקבלים הצעה לאדם אחד מתאים — עם הסבר למה.'**
+  /// **'מקבלים כמה הצעות מתאימות — עם הסבר למה כל אחת.'**
   String get onbHow2;
 
   /// No description provided for @onbHow3.
   ///
   /// In he, this message translates to:
-  /// **'השיחה מתחילה רק אם שני הצדדים אישרו.'**
+  /// **'שיחה מתחילה רק כשגם הצד השני מסכים, או עם מי ששניכם סימנתם מראש ל\"חיבור מהיר\".'**
   String get onbHow3;
 
   /// No description provided for @onbPrivacyTitle.
@@ -181,7 +181,7 @@ abstract class AppLocalizations {
   /// No description provided for @onbPrivacy3.
   ///
   /// In he, this message translates to:
-  /// **'אין שיחות אוטומטיות. בנהיגה — רק דיבורית ומתקן לרכב.'**
+  /// **'בנהיגה — רק דיבורית ומתקן לרכב. אפשר לענות \"כן\" או \"לא\" בקול.'**
   String get onbPrivacy3;
 
   /// No description provided for @onbSetupTitle.
@@ -649,7 +649,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeDeclined.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{לא יכולה} male{לא יכול} other{לא יכול/ה}} עכשיו. נחפש מישהו אחר.'**
+  /// **'{name} {gender, select, female{לא יכולה} male{לא יכול} other{לא יכול/ה}} עכשיו. אפשר להשאיר הודעה קולית.'**
   String noticeDeclined(String name, String gender);
 
   /// No description provided for @noticeAvailabilityEnded.
@@ -1123,7 +1123,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAutoDrivingBody.
   ///
   /// In he, this message translates to:
-  /// **'כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. לעולם לא נתחיל שיחה בלי אישור.'**
+  /// **'כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. שיחה מתחילה רק באישור — או בחיבור מהיר ששניכם סימנתם מראש.'**
   String get settingsAutoDrivingBody;
 
   /// No description provided for @settingsAutoDrivingDialogTitle.
@@ -1135,7 +1135,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAutoDrivingDialogBody.
   ///
   /// In he, this message translates to:
-  /// **'• זמינות אוטומטית היא לא אישור לשיחה — כל שיחה דורשת אישור של שני הצדדים.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.'**
+  /// **'• זמינות אוטומטית היא לא אישור לשיחה — שיחה דורשת אישור של שני הצדדים, או חיבור מהיר ששניכם סימנתם מראש.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.'**
   String get settingsAutoDrivingDialogBody;
 
   /// No description provided for @enable.
@@ -1213,7 +1213,7 @@ abstract class AppLocalizations {
   /// No description provided for @privacyShared.
   ///
   /// In he, this message translates to:
-  /// **'מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן.'**
+  /// **'מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן. מספר הטלפון שלך משמש רק לחיוג אחרי ששניכם הסכמתם — וחברים של חברים מקבלים אותו רק אם אישרת.'**
   String get privacyShared;
 
   /// No description provided for @privacyServer.
@@ -1617,6 +1617,726 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הנתונים אופסו'**
   String get debugResetDone;
+
+  /// No description provided for @optionsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =1{מישהו פנוי לדבר עכשיו} other{{count} אנשים פנויים לדבר עכשיו}}'**
+  String optionsTitle(int count);
+
+  /// No description provided for @moreOptions.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשרויות נוספות'**
+  String get moreOptions;
+
+  /// No description provided for @talkNowAccepted.
+  ///
+  /// In he, this message translates to:
+  /// **'לדבר — כבר אישר/ה'**
+  String get talkNowAccepted;
+
+  /// No description provided for @starterLine.
+  ///
+  /// In he, this message translates to:
+  /// **'נושא לפתיחה: {text}'**
+  String starterLine(String text);
+
+  /// No description provided for @routineDue.
+  ///
+  /// In he, this message translates to:
+  /// **'זה הזמן הרגיל שלך ל{mode}. להיות זמין ל-{minutes} דק׳?'**
+  String routineDue(String mode, int minutes);
+
+  /// No description provided for @routineStart.
+  ///
+  /// In he, this message translates to:
+  /// **'כן'**
+  String get routineStart;
+
+  /// No description provided for @availableTo.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין ל:'**
+  String get availableTo;
+
+  /// No description provided for @availableToEveryone.
+  ///
+  /// In he, this message translates to:
+  /// **'כולם'**
+  String get availableToEveryone;
+
+  /// No description provided for @driverListening.
+  ///
+  /// In he, this message translates to:
+  /// **'מקשיב… אפשר לומר \"כן\" או \"לא\"'**
+  String get driverListening;
+
+  /// No description provided for @quickConnectTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים ל{name}'**
+  String quickConnectTitle(String name);
+
+  /// No description provided for @quickConnectIn.
+  ///
+  /// In he, this message translates to:
+  /// **'{seconds, plural, =0{מחייג…} =1{בעוד שנייה} other{בעוד {seconds} שניות}}'**
+  String quickConnectIn(int seconds);
+
+  /// No description provided for @quickConnectWhy.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר — שניכם אישרתם מראש. אפשר לבטל עכשיו או לומר \"בטל\".'**
+  String get quickConnectWhy;
+
+  /// No description provided for @voiceMessageSimulated.
+  ///
+  /// In he, this message translates to:
+  /// **'הדמיה — שום דבר לא מוקלט או נשלח'**
+  String get voiceMessageSimulated;
+
+  /// No description provided for @voiceMessageTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הודעה קולית ל{name}'**
+  String voiceMessageTitle(String name);
+
+  /// No description provided for @voiceMessageHint.
+  ///
+  /// In he, this message translates to:
+  /// **'עד {max} שניות. למשל: \"היי, חשבתי עליך, נדבר בקרוב\".'**
+  String voiceMessageHint(int max);
+
+  /// No description provided for @voiceMessageSend.
+  ///
+  /// In he, this message translates to:
+  /// **'שליחה'**
+  String get voiceMessageSend;
+
+  /// No description provided for @voiceMessageAction.
+  ///
+  /// In he, this message translates to:
+  /// **'הודעה קולית'**
+  String get voiceMessageAction;
+
+  /// No description provided for @callViaPhone.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחת טלפון רגילה'**
+  String get callViaPhone;
+
+  /// No description provided for @callInApp.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה באפליקציה · המספרים נשארים פרטיים'**
+  String get callInApp;
+
+  /// No description provided for @callWeakSignal.
+  ///
+  /// In he, this message translates to:
+  /// **'קליטה חלשה'**
+  String get callWeakSignal;
+
+  /// No description provided for @callWindowEndedKeepTalking.
+  ///
+  /// In he, this message translates to:
+  /// **'זמן הזמינות הסתיים — השיחה ממשיכה כרגיל'**
+  String get callWindowEndedKeepTalking;
+
+  /// No description provided for @callPhoneSimulated.
+  ///
+  /// In he, this message translates to:
+  /// **'באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל{name} בשיחה רגילה. כאן זו הדמיה.'**
+  String callPhoneSimulated(String name);
+
+  /// No description provided for @callDialTestNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'חייג באמת למספר הבדיקה'**
+  String get callDialTestNumber;
+
+  /// No description provided for @callDialUnsupported.
+  ///
+  /// In he, this message translates to:
+  /// **'אי אפשר לחייג מכאן (למשל בדפדפן)'**
+  String get callDialUnsupported;
+
+  /// No description provided for @callSetTestNumberHint.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר להגדיר מספר לבדיקת חיוג אמיתי בכלי המפתחים'**
+  String get callSetTestNumberHint;
+
+  /// No description provided for @callDropped.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה נותקה'**
+  String get callDropped;
+
+  /// No description provided for @callRetry.
+  ///
+  /// In he, this message translates to:
+  /// **'לנסות שוב'**
+  String get callRetry;
+
+  /// No description provided for @callOnHold.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה בהמתנה — נכנסה שיחת טלפון'**
+  String get callOnHold;
+
+  /// No description provided for @callResume.
+  ///
+  /// In he, this message translates to:
+  /// **'להמשיך'**
+  String get callResume;
+
+  /// No description provided for @callWeAreDone.
+  ///
+  /// In he, this message translates to:
+  /// **'סיימנו'**
+  String get callWeAreDone;
+
+  /// No description provided for @feedbackDidNotTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברנו בסוף'**
+  String get feedbackDidNotTalk;
+
+  /// No description provided for @offlineBanner.
+  ///
+  /// In he, this message translates to:
+  /// **'אין חיבור לאינטרנט — ננסה שוב אוטומטית'**
+  String get offlineBanner;
+
+  /// No description provided for @noticeNoAnswer.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{לא ענתה} male{לא ענה} other{לא ענה/תה}}. אפשר להשאיר הודעה קולית.'**
+  String noticeNoAnswer(String name, String gender);
+
+  /// No description provided for @noticeNoLongerAvailable.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} כבר {gender, select, female{לא פנויה} male{לא פנוי} other{לא פנוי/ה}}. ממשיכים.'**
+  String noticeNoLongerAvailable(String name, String gender);
+
+  /// No description provided for @noticeVoiceMessageSent.
+  ///
+  /// In he, this message translates to:
+  /// **'ההודעה ל{name} נשלחה (הדמיה)'**
+  String noticeVoiceMessageSent(String name);
+
+  /// No description provided for @noticeMicDenied.
+  ///
+  /// In he, this message translates to:
+  /// **'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.'**
+  String get noticeMicDenied;
+
+  /// No description provided for @noticeQuickConnectCancelled.
+  ///
+  /// In he, this message translates to:
+  /// **'בוטל. לא נתקשר ל{name} עכשיו.'**
+  String noticeQuickConnectCancelled(String name);
+
+  /// No description provided for @voiceQuickConnect.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים ל{name} בעוד {seconds} שניות. לביטול אמרו \"בטל\".'**
+  String voiceQuickConnect(String name, int seconds);
+
+  /// No description provided for @voiceInvitation.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לכ-{minutes} דקות. לדבר?'**
+  String voiceInvitation(String name, String gender, int minutes);
+
+  /// No description provided for @voiceSuggestion.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}, {who}, {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לעוד כ-{minutes} דקות. לדבר?'**
+  String voiceSuggestion(String name, String gender, int minutes, String who);
+
+  /// No description provided for @settingsProfile.
+  ///
+  /// In he, this message translates to:
+  /// **'הפרופיל שלי'**
+  String get settingsProfile;
+
+  /// No description provided for @photoFromGallery.
+  ///
+  /// In he, this message translates to:
+  /// **'מהגלריה'**
+  String get photoFromGallery;
+
+  /// No description provided for @photoFromCamera.
+  ///
+  /// In he, this message translates to:
+  /// **'צילום'**
+  String get photoFromCamera;
+
+  /// No description provided for @photoRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'הסרה'**
+  String get photoRemove;
+
+  /// No description provided for @photoPrivacyNote.
+  ///
+  /// In he, this message translates to:
+  /// **'באב-הטיפוס התמונה נשמרת רק בטלפון הזה. בגרסה האמיתית תמונות ייבדקו לפני שיוצגו לאחרים.'**
+  String get photoPrivacyNote;
+
+  /// No description provided for @myPhoneNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר שלי'**
+  String get myPhoneNumber;
+
+  /// No description provided for @myPhoneNumberHelp.
+  ///
+  /// In he, this message translates to:
+  /// **'משמש רק לחיוג רגיל אחרי ששניכם הסכמתם. לא מוצג לאף אחד על המסך.'**
+  String get myPhoneNumberHelp;
+
+  /// No description provided for @shareNumberWithFof.
+  ///
+  /// In he, this message translates to:
+  /// **'לאפשר חיוג רגיל גם עם חברים של חברים'**
+  String get shareNumberWithFof;
+
+  /// No description provided for @shareNumberWithFofBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רק אם גם הצד השני הסכים. אחרת השיחה איתם תהיה בתוך האפליקציה, והמספרים יישארו פרטיים.'**
+  String get shareNumberWithFofBody;
+
+  /// No description provided for @settingsVoiceReadout.
+  ///
+  /// In he, this message translates to:
+  /// **'הקראה בקול בנסיעה'**
+  String get settingsVoiceReadout;
+
+  /// No description provided for @settingsVoiceReadoutBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הטלפון מקריא מי פנוי ושואל אם לדבר'**
+  String get settingsVoiceReadoutBody;
+
+  /// No description provided for @settingsVoiceCommands.
+  ///
+  /// In he, this message translates to:
+  /// **'לענות \"כן\" / \"לא\" בקול'**
+  String get settingsVoiceCommands;
+
+  /// No description provided for @settingsVoiceCommandsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'דורש הרשאת מיקרופון. הזיהוי נעשה דרך הטלפון ושום דבר לא נשמר.'**
+  String get settingsVoiceCommandsBody;
+
+  /// No description provided for @routinesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה שלי'**
+  String get routinesTitle;
+
+  /// No description provided for @routinesCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =0{עוד לא הוגדרו זמנים קבועים} =1{זמן קבוע אחד} other{{count} זמנים קבועים}}'**
+  String routinesCount(int count);
+
+  /// No description provided for @routinesIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'ספרו לנו מתי אתם בדרך כלל בדרכים. בזמנים האלה נציע בלחיצה אחת להפוך לזמינים.'**
+  String get routinesIntro;
+
+  /// No description provided for @routinesEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין זמנים קבועים'**
+  String get routinesEmpty;
+
+  /// No description provided for @routineAdd.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת זמן קבוע'**
+  String get routineAdd;
+
+  /// No description provided for @save.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירה'**
+  String get save;
+
+  /// No description provided for @daySun.
+  ///
+  /// In he, this message translates to:
+  /// **'א׳'**
+  String get daySun;
+
+  /// No description provided for @dayMon.
+  ///
+  /// In he, this message translates to:
+  /// **'ב׳'**
+  String get dayMon;
+
+  /// No description provided for @dayTue.
+  ///
+  /// In he, this message translates to:
+  /// **'ג׳'**
+  String get dayTue;
+
+  /// No description provided for @dayWed.
+  ///
+  /// In he, this message translates to:
+  /// **'ד׳'**
+  String get dayWed;
+
+  /// No description provided for @dayThu.
+  ///
+  /// In he, this message translates to:
+  /// **'ה׳'**
+  String get dayThu;
+
+  /// No description provided for @dayFri.
+  ///
+  /// In he, this message translates to:
+  /// **'ו׳'**
+  String get dayFri;
+
+  /// No description provided for @daySat.
+  ///
+  /// In he, this message translates to:
+  /// **'ש׳'**
+  String get daySat;
+
+  /// No description provided for @circlesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'המעגלים שלי'**
+  String get circlesTitle;
+
+  /// No description provided for @circlesCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =0{אין מעגלים} =1{מעגל אחד} other{{count} מעגלים}}'**
+  String circlesCount(int count);
+
+  /// No description provided for @circlesIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'מעגלים פרטיים שרק את/ה רואה. כשנהיים זמינים אפשר לבחור להיות זמינים רק למעגל אחד.'**
+  String get circlesIntro;
+
+  /// No description provided for @circleAdd.
+  ///
+  /// In he, this message translates to:
+  /// **'מעגל חדש'**
+  String get circleAdd;
+
+  /// No description provided for @circleMembers.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =0{אין חברים במעגל} =1{אדם אחד} other{{count} אנשים}}'**
+  String circleMembers(int count);
+
+  /// No description provided for @circleDelete.
+  ///
+  /// In he, this message translates to:
+  /// **'מחיקת המעגל'**
+  String get circleDelete;
+
+  /// No description provided for @circleNameHint.
+  ///
+  /// In he, this message translates to:
+  /// **'למשל: חברים מהצבא'**
+  String get circleNameHint;
+
+  /// No description provided for @filterNotInCircle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא במעגל שבחרת'**
+  String get filterNotInCircle;
+
+  /// No description provided for @quickConnectToggle.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר'**
+  String get quickConnectToggle;
+
+  /// No description provided for @quickConnectExplain.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים — מתקשרים מיד, בלי לחכות לאישור (עם 5 שניות לביטול). עובד רק אם גם {name} יסמן אותך.'**
+  String quickConnectExplain(String name);
+
+  /// No description provided for @quickConnectMutual.
+  ///
+  /// In he, this message translates to:
+  /// **'פעיל — גם {name} סימן אותך.'**
+  String quickConnectMutual(String name);
+
+  /// No description provided for @quickConnectWaiting.
+  ///
+  /// In he, this message translates to:
+  /// **'סימנת. יופעל כשגם {name} יסמן אותך.'**
+  String quickConnectWaiting(String name);
+
+  /// No description provided for @debugScenarios.
+  ///
+  /// In he, this message translates to:
+  /// **'תרחישי תקלות והפרעות'**
+  String get debugScenarios;
+
+  /// No description provided for @debugVoice.
+  ///
+  /// In he, this message translates to:
+  /// **'קול'**
+  String get debugVoice;
+
+  /// No description provided for @debugVoiceBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בדפדפן אין מיקרופון — כאן אפשר לדמות תשובה קולית במצב נהג.'**
+  String get debugVoiceBody;
+
+  /// No description provided for @debugVoiceYes.
+  ///
+  /// In he, this message translates to:
+  /// **'דמה \"כן\"'**
+  String get debugVoiceYes;
+
+  /// No description provided for @debugVoiceNo.
+  ///
+  /// In he, this message translates to:
+  /// **'דמה \"לא\"'**
+  String get debugVoiceNo;
+
+  /// No description provided for @debugTestDial.
+  ///
+  /// In he, this message translates to:
+  /// **'חיוג אמיתי לבדיקה'**
+  String get debugTestDial;
+
+  /// No description provided for @debugTestDialLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר לבדיקה (למשל המספר שלך)'**
+  String get debugTestDialLabel;
+
+  /// No description provided for @debugTestDialHelp.
+  ///
+  /// In he, this message translates to:
+  /// **'האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.'**
+  String get debugTestDialHelp;
+
+  /// No description provided for @debugAnswerNone.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עונה'**
+  String get debugAnswerNone;
+
+  /// No description provided for @scRun.
+  ///
+  /// In he, this message translates to:
+  /// **'הפעל'**
+  String get scRun;
+
+  /// No description provided for @scNoAnswerTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הצד השני לא עונה'**
+  String get scNoAnswerTitle;
+
+  /// No description provided for @scNoAnswerBody.
+  ///
+  /// In he, this message translates to:
+  /// **'לחצו \"לדבר\" על מישהו — אחרי 30 שניות בלי תשובה ממשיכים הלאה.'**
+  String get scNoAnswerBody;
+
+  /// No description provided for @scNoAnswerArmed.
+  ///
+  /// In he, this message translates to:
+  /// **'מעכשיו אף אחד לא עונה. אפשר להחזיר ב\"תשובת הצד השני\".'**
+  String get scNoAnswerArmed;
+
+  /// No description provided for @scGoneTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הפסיק להיות זמין בזמן ההמתנה'**
+  String get scGoneTitle;
+
+  /// No description provided for @scGoneBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בזמן שמחכים לתשובה.'**
+  String get scGoneBody;
+
+  /// No description provided for @scBlockedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חסם אותי בזמן ההמתנה'**
+  String get scBlockedTitle;
+
+  /// No description provided for @scBlockedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בזמן שמחכים. נראה כמו \"לא יכול עכשיו\" — בלי לחשוף.'**
+  String get scBlockedBody;
+
+  /// No description provided for @scInviteWhileWaitingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמנה נכנסת בזמן המתנה'**
+  String get scInviteWhileWaitingTitle;
+
+  /// No description provided for @scInviteWhileWaitingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בזמן שמחכים. אפשר לבחור בהזמנה במקום.'**
+  String get scInviteWhileWaitingBody;
+
+  /// No description provided for @scDroppedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה נותקה'**
+  String get scDroppedTitle;
+
+  /// No description provided for @scDroppedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בשיחה בתוך האפליקציה (עם חבר של חבר שלא שיתף מספר).'**
+  String get scDroppedBody;
+
+  /// No description provided for @scHoldTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחת טלפון נכנסת באמצע'**
+  String get scHoldTitle;
+
+  /// No description provided for @scHoldBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בשיחה בתוך האפליקציה. השיחה עוברת להמתנה.'**
+  String get scHoldBody;
+
+  /// No description provided for @scWeakSignalTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'קליטה חלשה'**
+  String get scWeakSignalTitle;
+
+  /// No description provided for @scWeakSignalOff.
+  ///
+  /// In he, this message translates to:
+  /// **'להחזיר קליטה טובה'**
+  String get scWeakSignalOff;
+
+  /// No description provided for @scWeakSignalBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מופיע סימן קטן בשיחה בתוך האפליקציה.'**
+  String get scWeakSignalBody;
+
+  /// No description provided for @scExpireInCallTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמינות נגמרת באמצע שיחה'**
+  String get scExpireInCallTitle;
+
+  /// No description provided for @scExpireInCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בשיחה. השיחה ממשיכה, הזמינות נסגרת אחריה.'**
+  String get scExpireInCallBody;
+
+  /// No description provided for @scExitCarInCallTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'יציאה מהרכב באמצע שיחה'**
+  String get scExitCarInCallTitle;
+
+  /// No description provided for @scExitCarInCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין בשיחה. מצב הנהג נגמר רק כשהשיחה מסתיימת.'**
+  String get scExitCarInCallBody;
+
+  /// No description provided for @scEnterCarChoosingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'כניסה לרכב בזמן בחירה'**
+  String get scEnterCarChoosingTitle;
+
+  /// No description provided for @scEnterCarChoosingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין כשמוצגות אפשרויות. עוברים מיד למצב נהג.'**
+  String get scEnterCarChoosingBody;
+
+  /// No description provided for @scOfflineTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אין אינטרנט'**
+  String get scOfflineTitle;
+
+  /// No description provided for @scOfflineOff.
+  ///
+  /// In he, this message translates to:
+  /// **'להחזיר אינטרנט'**
+  String get scOfflineOff;
+
+  /// No description provided for @scOfflineBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מופיע פס עליון והחיפוש ממתין עד שהחיבור חוזר.'**
+  String get scOfflineBody;
+
+  /// No description provided for @scMicDeniedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אין הרשאת מיקרופון'**
+  String get scMicDeniedTitle;
+
+  /// No description provided for @scMicDeniedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מוצג הסבר איך לאשר. הכפתורים ממשיכים לעבוד.'**
+  String get scMicDeniedBody;
+
+  /// No description provided for @scAppClosedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'האפליקציה נסגרה לכמה שעות'**
+  String get scAppClosedTitle;
+
+  /// No description provided for @scAppClosedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמינות נגמרת לבד — אף אחד לא נשאר \"זמין\" לנצח.'**
+  String get scAppClosedBody;
+
+  /// No description provided for @scQuickConnectTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר עם אבא'**
+  String get scQuickConnectTitle;
+
+  /// No description provided for @scQuickConnectBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אבא נהיה פנוי. אם גם את/ה זמין/ה — מתחילה ספירה של 5 שניות עם ביטול.'**
+  String get scQuickConnectBody;
+
+  /// No description provided for @scQuickConnectHint.
+  ///
+  /// In he, this message translates to:
+  /// **'קודם להפוך לזמין/ה, ואז להפעיל שוב.'**
+  String get scQuickConnectHint;
 }
 
 class _AppLocalizationsDelegate

@@ -26,7 +26,7 @@ class DriverScreen extends ConsumerWidget {
 
     final Widget content;
     switch (session.phase) {
-      case SessionPhase.suggestion when session.suggestion != null:
+      case SessionPhase.options when session.suggestion != null:
         final s = session.suggestion!;
         content = _DriverLayout(
           top: Column(
@@ -188,20 +188,40 @@ class DriverScreen extends ConsumerWidget {
   }
 }
 
-class _DriverLayout extends StatelessWidget {
+class _DriverLayout extends ConsumerWidget {
   const _DriverLayout({required this.top, required this.actions});
   final Widget top;
   final List<Widget> actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
+    final listening = ref.watch(sessionProvider.select((s) => s.listening));
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(child: Center(child: top)),
+          if (listening)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.mic_rounded,
+                    color: AppColors.sand,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l.driverListening,
+                    style: const TextStyle(color: AppColors.sand, fontSize: 20),
+                  ),
+                ],
+              ),
+            ),
           for (final a in actions) ...[a, const SizedBox(height: 14)],
           Text(
             l.driverSafety,

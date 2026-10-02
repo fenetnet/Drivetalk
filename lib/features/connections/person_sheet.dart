@@ -73,7 +73,25 @@ class PersonSheet extends ConsumerWidget {
             textAlign: TextAlign.center,
           ),
           if (c != null) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: const Icon(
+                Icons.bolt_rounded,
+                color: AppColors.sageDark,
+              ),
+              title: Text(l.quickConnectToggle),
+              subtitle: Text(
+                !c.quickConnect
+                    ? l.quickConnectExplain(person.name)
+                    : graph.isMutualQuickConnect(personId)
+                    ? l.quickConnectMutual(person.name)
+                    : l.quickConnectWaiting(person.name),
+              ),
+              value: c.quickConnect,
+              onChanged: (v) => graph.setQuickConnect(personId, v),
+            ),
+            const SizedBox(height: 8),
             Text(
               l.personRelationship,
               style: const TextStyle(fontWeight: FontWeight.w600),

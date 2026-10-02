@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 
-/// Generated avatar (no photos in Phase 1 → nothing to moderate yet).
+/// Profile photo, or a generated avatar with the first letter.
 class PersonAvatar extends StatelessWidget {
   const PersonAvatar({super.key, required this.person, this.size = 56});
   final Person person;
@@ -15,9 +15,16 @@ class PersonAvatar extends StatelessWidget {
       width: size,
       height: size,
       alignment: Alignment.center,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Color(person.avatarColor),
         shape: BoxShape.circle,
+        image: person.photo == null
+            ? null
+            : DecorationImage(
+                image: MemoryImage(person.photo!),
+                fit: BoxFit.cover,
+              ),
         border: Border.all(color: Colors.white, width: size / 24),
         boxShadow: [
           BoxShadow(
@@ -27,14 +34,16 @@ class PersonAvatar extends StatelessWidget {
           ),
         ],
       ),
-      child: Text(
-        person.initial,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size * 0.42,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: person.photo != null
+          ? null
+          : Text(
+              person.initial,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: size * 0.42,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
     );
   }
 }

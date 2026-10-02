@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../matching/matching_config.dart';
 import '../matching/matching_engine.dart';
+import '../platform/phone_dialer.dart';
 import '../platform/vehicle_signal_source.dart';
+import '../platform/voice_service.dart';
 import '../services/analytics_service.dart';
 import '../services/availability_service.dart';
 import '../services/call_service.dart';
@@ -13,9 +15,11 @@ import '../services/fake/fake_services.dart';
 import '../services/fake/fake_world.dart';
 import '../services/invitation_service.dart';
 import '../services/match_service.dart';
+import '../services/network_service.dart';
 import '../services/profile_service.dart';
 import '../services/safety_service.dart';
 import '../services/social_graph_service.dart';
+import '../services/voice_message_service.dart';
 import 'matching_facade.dart';
 
 // ---------------------------------------------------------------------------
@@ -64,6 +68,23 @@ final vehicleSignalProvider = Provider<VehicleSignalSource>(
   (ref) => FakeVehicleSignalSource(),
 );
 
+final networkServiceProvider = Provider<NetworkService>(
+  (ref) => FakeNetworkService(ref.watch(fakeWorldProvider)),
+);
+
+final voiceMessageServiceProvider = Provider<VoiceMessageService>(
+  (ref) => FakeVoiceMessageService(),
+);
+
+// Real device capabilities (work the same with fake or real backends).
+final phoneDialerProvider = Provider<PhoneDialer>(
+  (ref) => PlatformPhoneDialer(),
+);
+
+final voiceServiceProvider = Provider<VoiceService>(
+  (ref) => DeviceVoiceService(),
+);
+
 // ---------------------------------------------------------------------------
 // Matching
 // ---------------------------------------------------------------------------
@@ -104,6 +125,7 @@ class DataVersion extends Notifier<int> {
       ref.watch(socialGraphServiceProvider).changes,
       ref.watch(availabilityServiceProvider).changes,
       ref.watch(matchServiceProvider).changes,
+      ref.watch(networkServiceProvider).changes,
     ];
     final subs = [for (final s in streams) s.listen((_) => state++)];
     ref.onDispose(() {

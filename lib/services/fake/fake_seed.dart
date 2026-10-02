@@ -10,6 +10,7 @@ const fakeGroups = <String, Group>{
   'parents': Group(id: 'parents', name: 'קהילת הורים צעירים'),
 };
 
+/// Fake people's phone numbers are placeholders; the prototype never dials them.
 const _allTiers = {
   MatchTier.familiar,
   MatchTier.reconnect,
@@ -30,6 +31,7 @@ class FakePersonSeed {
     this.availableMinutes,
     this.mode = AvailabilityMode.free,
     this.acceptProbability = 0.7,
+    this.myQuickConnect = false,
   });
 
   final Person person;
@@ -46,7 +48,16 @@ class FakePersonSeed {
 
   /// Fake-only: chance they say yes when asked to talk.
   final double acceptProbability;
+
+  /// My side of "quick connect" with this person.
+  final bool myQuickConnect;
 }
+
+/// Private circles the user starts with (editable in the Connections screen).
+const seedCircles = <Circle>[
+  Circle(id: 'family', name: 'משפחה', memberIds: {'michal', 'avi'}),
+  Circle(id: 'army', name: 'חברים מהצבא', memberIds: {'yoni'}),
+];
 
 Person seedMe() => const Person(
   id: meId,
@@ -60,6 +71,8 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'dana',
+      phoneNumber: '050-555-0102',
+      quickConnectIds: {meId},
       gender: Gender.female,
       name: 'דנה',
       avatarColor: 0xFFE76F51,
@@ -80,6 +93,8 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'michal',
+      phoneNumber: '050-555-0103',
+      quickConnectIds: {meId},
       gender: Gender.female,
       name: 'מיכל',
       avatarColor: 0xFF9C6644,
@@ -95,6 +110,8 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'avi',
+      phoneNumber: '050-555-0104',
+      quickConnectIds: {meId},
       gender: Gender.male,
       name: 'אבי',
       avatarColor: 0xFF6D597A,
@@ -106,10 +123,12 @@ final fakeSeeds = <FakePersonSeed>[
     daysSinceInteraction: 2,
     callCount: 60,
     acceptProbability: 0.9,
+    myQuickConnect: true,
   ),
   const FakePersonSeed(
     person: Person(
       id: 'yoni',
+      phoneNumber: '050-555-0105',
       gender: Gender.male,
       name: 'יוני',
       avatarColor: 0xFF2A9D8F,
@@ -128,6 +147,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'uri',
+      phoneNumber: '050-555-0106',
       gender: Gender.male,
       name: 'אורי',
       avatarColor: 0xFF457B9D,
@@ -145,6 +165,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'gil',
+      phoneNumber: '050-555-0107',
       gender: Gender.male,
       name: 'גיל',
       avatarColor: 0xFF8D99AE,
@@ -160,6 +181,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'roni',
+      phoneNumber: '050-555-0108',
       gender: Gender.female,
       name: 'רוני',
       avatarColor: 0xFFF4A261,
@@ -177,6 +199,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'lior',
+      phoneNumber: '050-555-0109',
       name: 'ליאור',
       avatarColor: 0xFFB5838D,
       interests: {'מוזיקה', 'צילום'},
@@ -191,6 +214,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'amit',
+      phoneNumber: '050-555-0110',
       gender: Gender.male,
       name: 'עמית',
       avatarColor: 0xFF588157,
@@ -206,6 +230,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'daniel',
+      phoneNumber: '050-555-0111',
       gender: Gender.male,
       name: 'Daniel',
       avatarColor: 0xFF3D5A80,
@@ -224,6 +249,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'shira',
+      phoneNumber: '050-555-0112',
       gender: Gender.female,
       name: 'שירה',
       avatarColor: 0xFFCB997E,
@@ -243,6 +269,8 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'tamar',
+      phoneNumber: '050-555-0113',
+      sharesNumberWithFriendsOfFriends: true,
       gender: Gender.female,
       name: 'תמר',
       avatarColor: 0xFFD62828,
@@ -259,6 +287,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'alon',
+      phoneNumber: '050-555-0114',
       gender: Gender.male,
       name: 'אלון',
       avatarColor: 0xFF264653,
@@ -273,6 +302,7 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'maya',
+      phoneNumber: '050-555-0115',
       gender: Gender.female,
       name: 'מאיה',
       avatarColor: 0xFFBC6C25,
@@ -290,6 +320,8 @@ final fakeSeeds = <FakePersonSeed>[
   const FakePersonSeed(
     person: Person(
       id: 'noa',
+      phoneNumber: '050-555-0116',
+      sharesNumberWithFriendsOfFriends: true,
       gender: Gender.female,
       name: 'נועה',
       avatarColor: 0xFF7B2CBF,

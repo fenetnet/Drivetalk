@@ -22,7 +22,17 @@ class MatchingConfig {
     required this.maxReasons,
     required this.beacon,
     required this.snooze,
+    required this.optionsShown,
+    required this.callAnswerTimeoutSeconds,
+    required this.quickConnect,
   });
+
+  /// How many people to show at once in normal mode (driver mode shows one).
+  final int optionsShown;
+
+  /// If the other side doesn't answer a call request within this, move on.
+  final int callAnswerTimeoutSeconds;
+  final QuickConnectConfig quickConnect;
 
   /// Feature name → weight. Negative weights are penalties.
   final Map<String, double> weights;
@@ -84,6 +94,11 @@ class MatchingConfig {
       maxReasons: j['maxReasons'] as int,
       beacon: BeaconConfig.fromJson(j['beacon'] as Map<String, dynamic>),
       snooze: SnoozeConfig.fromJson(j['snooze'] as Map<String, dynamic>),
+      optionsShown: j['optionsShown'] as int,
+      callAnswerTimeoutSeconds: j['callAnswerTimeoutSeconds'] as int,
+      quickConnect: QuickConnectConfig.fromJson(
+        j['quickConnect'] as Map<String, dynamic>,
+      ),
     );
   }
 }
@@ -133,4 +148,24 @@ class SnoozeConfig {
     drivingSafetyCapMinutes: j['drivingSafetyCapMinutes'] as int,
     beaconMuteHours: j['beaconMuteHours'] as int,
   );
+}
+
+/// "Quick connect": mutual pre-approval, short cancellable countdown.
+class QuickConnectConfig {
+  const QuickConnectConfig({
+    required this.countdownSeconds,
+    required this.maxPerWindow,
+    required this.maxPerPersonPerDay,
+  });
+
+  final int countdownSeconds;
+  final int maxPerWindow;
+  final int maxPerPersonPerDay;
+
+  factory QuickConnectConfig.fromJson(Map<String, dynamic> j) =>
+      QuickConnectConfig(
+        countdownSeconds: j['countdownSeconds'] as int,
+        maxPerWindow: j['maxPerWindow'] as int,
+        maxPerPersonPerDay: j['maxPerPersonPerDay'] as int,
+      );
 }

@@ -135,6 +135,7 @@ String filterLabel(AppLocalizations l, FilterReason r) => switch (r) {
   FilterReason.notAvailable => l.filterNotAvailable,
   FilterReason.friendsOfFriendsNotMutual => l.filterFof,
   FilterReason.tierNotOpen => l.filterTier,
+  FilterReason.notInCircle => l.filterNotInCircle,
 };
 
 String featureLabel(AppLocalizations l, String feature) => switch (feature) {
@@ -149,3 +150,19 @@ String featureLabel(AppLocalizations l, String feature) => switch (feature) {
   'feedback' => l.featFeedback,
   _ => feature,
 };
+
+String weekdayShort(AppLocalizations l, int weekday) => switch (weekday) {
+  DateTime.sunday => l.daySun,
+  DateTime.monday => l.dayMon,
+  DateTime.tuesday => l.dayTue,
+  DateTime.wednesday => l.dayWed,
+  DateTime.thursday => l.dayThu,
+  DateTime.friday => l.dayFri,
+  _ => l.daySat,
+};
+
+/// "א׳, ב׳, ג׳" in week order starting Sunday.
+String weekdaysText(AppLocalizations l, Set<int> days) => [
+  for (final d in const [7, 1, 2, 3, 4, 5, 6])
+    if (days.contains(d)) weekdayShort(l, d),
+].join(', ');

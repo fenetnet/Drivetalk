@@ -8,6 +8,9 @@ import '../../debug/debug_screen.dart';
 import '../../domain/models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
+import '../connections/circles_screen.dart';
+import 'profile_section.dart';
+import 'routines_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -26,6 +29,7 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
+          const ProfileSection(),
           SectionTitle(l.settingsDriving),
           SwitchListTile(
             secondary: const Icon(Icons.directions_car_rounded),
@@ -64,7 +68,41 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(l.settingsCarBluetooth),
             subtitle: Text(l.settingsCarBluetoothSoon),
           ),
+          SwitchListTile(
+            secondary: const Icon(Icons.record_voice_over_rounded),
+            title: Text(l.settingsVoiceReadout),
+            subtitle: Text(l.settingsVoiceReadoutBody),
+            value: prefs.voiceReadout,
+            onChanged: (v) =>
+                profile.updatePrefs(prefs.copyWith(voiceReadout: v)),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.mic_rounded),
+            title: Text(l.settingsVoiceCommands),
+            subtitle: Text(l.settingsVoiceCommandsBody),
+            value: prefs.voiceCommands,
+            onChanged: (v) =>
+                profile.updatePrefs(prefs.copyWith(voiceCommands: v)),
+          ),
+          ListTile(
+            leading: const Icon(Icons.event_repeat_rounded),
+            title: Text(l.routinesTitle),
+            subtitle: Text(l.routinesCount(prefs.routines.length)),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const RoutinesScreen()),
+            ),
+          ),
           SectionTitle(l.settingsRelPrefs),
+          ListTile(
+            leading: const Icon(Icons.bubble_chart_rounded),
+            title: Text(l.circlesTitle),
+            subtitle: Text(l.circlesCount(prefs.circles.length)),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const CirclesScreen()),
+            ),
+          ),
           for (final t in RelationshipType.values)
             CheckboxListTile(
               dense: true,

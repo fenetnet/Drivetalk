@@ -29,7 +29,7 @@
   "mutualFriendsFull": 5,
   "recentlySuggestedHours": 12,
   "declineCooldownDays": 30,
-  "explorationRate": 0.10,
+  "explorationRate": 0.1,
   "explorationTopK": 4,
   "maxReasons": 3,
   "beacon": {
@@ -37,11 +37,18 @@
     "maxPerRecipientPerDayNormal": 2,
     "maxPerRecipientPerDayLow": 1,
     "waitSecondsBeforeBeacon": 8,
-    "answerTimeoutSeconds": 60
+    "answerTimeoutSeconds": 30
   },
   "snooze": {
     "doNotSuggestDays": 30,
     "drivingSafetyCapMinutes": 180,
     "beaconMuteHours": 4
+  },
+  "optionsShown": 3,
+  "callAnswerTimeoutSeconds": 30,
+  "quickConnect": {
+    "countdownSeconds": 5,
+    "maxPerWindow": 1,
+    "maxPerPersonPerDay": 1
   }
 }

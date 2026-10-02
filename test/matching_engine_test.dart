@@ -6,6 +6,7 @@ import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/matching/match_reason.dart';
 import 'package:drivetalk/matching/matching_config.dart';
 import 'package:drivetalk/matching/matching_engine.dart';
+import 'package:drivetalk/platform/voice_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 MatchingConfig loadConfig([void Function(Map<String, dynamic>)? edit]) {
@@ -354,5 +355,70 @@ void main() {
       final engine = MatchingEngine(config);
       expect(engine.pick(engine.rank(req(), const [])), isNull);
     });
+  });
+
+  group('several options', () {
+    final candidates = [
+      friend('a', type: RelationshipType.family),
+      friend('b', type: RelationshipType.closeFriend),
+      friend('c', type: RelationshipType.friend),
+      friend('d', type: RelationshipType.colleague),
+      friend('e', type: RelationshipType.acquaintance),
+    ];
+
+    test('returns the top N distinct people, best first', () {
+      final engine = MatchingEngine(
+        loadConfig((j) => j['explorationRate'] = 0.0),
+      );
+      final options = engine.pickOptions(engine.rank(req(), candidates), 3);
+      expect(options.map((s) => s.person.id), ['a', 'b', 'c']);
+    });
+
+    test('exploration swaps only the last slot, never duplicates', () {
+      final engine = MatchingEngine(
+        loadConfig((j) => j['explorationRate'] = 1.0),
+        random: Random(2),
+      );
+      for (var i = 0; i < 30; i++) {
+        final options = engine.pickOptions(engine.rank(req(), candidates), 3);
+        final ids = options.map((s) => s.person.id).toList();
+        expect(ids.take(2), ['a', 'b']);
+        expect(ids.toSet(), hasLength(3));
+        expect(options.last.isExploration, isTrue);
+        expect(['d', 'e'], contains(ids.last));
+      }
+    });
+
+    test('fewer candidates than N → all of them', () {
+      final engine = MatchingEngine(config);
+      final options = engine.pickOptions(
+        engine.rank(req(), candidates.take(2).toList()),
+        3,
+      );
+      expect(options, hasLength(2));
+    });
+  });
+
+  test('circle filter keeps only circle members', () {
+    final engine = MatchingEngine(config);
+    final r = engine.rank(
+      MatchRequest(
+        me: me,
+        prefs: const MyPreferences(),
+        now: now,
+        circle: const Circle(id: 'x', name: 'X', memberIds: {'b'}),
+      ),
+      [friend('a'), friend('b')],
+    );
+    expect(r.ranked.single.input.person.id, 'b');
+    expect(r.rejected.single.reason, FilterReason.notInCircle);
+  });
+
+  test('voice: understands simple Hebrew yes / no', () {
+    expect(parseYesNo('כן'), VoiceAnswer.yes);
+    expect(parseYesNo('יאללה בוא'), VoiceAnswer.yes);
+    expect(parseYesNo('לא עכשיו'), VoiceAnswer.no);
+    expect(parseYesNo('בטל'), VoiceAnswer.no);
+    expect(parseYesNo('מה?'), VoiceAnswer.none);
   });
 }

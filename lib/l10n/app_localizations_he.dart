@@ -38,10 +38,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onbHow1 => 'מסמנים שפנויים, ולכמה זמן.';
 
   @override
-  String get onbHow2 => 'מקבלים הצעה לאדם אחד מתאים — עם הסבר למה.';
+  String get onbHow2 => 'מקבלים כמה הצעות מתאימות — עם הסבר למה כל אחת.';
 
   @override
-  String get onbHow3 => 'השיחה מתחילה רק אם שני הצדדים אישרו.';
+  String get onbHow3 =>
+      'שיחה מתחילה רק כשגם הצד השני מסכים, או עם מי ששניכם סימנתם מראש ל\"חיבור מהיר\".';
 
   @override
   String get onbPrivacyTitle => 'פרטיות ובטיחות';
@@ -54,7 +55,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get onbPrivacy3 =>
-      'אין שיחות אוטומטיות. בנהיגה — רק דיבורית ומתקן לרכב.';
+      'בנהיגה — רק דיבורית ומתקן לרכב. אפשר לענות \"כן\" או \"לא\" בקול.';
 
   @override
   String get onbSetupTitle => 'כמה פרטים קטנים';
@@ -379,7 +380,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'male': 'לא יכול',
       'other': 'לא יכול/ה',
     });
-    return '$name $_temp0 עכשיו. נחפש מישהו אחר.';
+    return '$name $_temp0 עכשיו. אפשר להשאיר הודעה קולית.';
   }
 
   @override
@@ -684,14 +685,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get settingsAutoDrivingBody =>
-      'כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. לעולם לא נתחיל שיחה בלי אישור.';
+      'כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. שיחה מתחילה רק באישור — או בחיבור מהיר ששניכם סימנתם מראש.';
 
   @override
   String get settingsAutoDrivingDialogTitle => 'לפני שמפעילים';
 
   @override
   String get settingsAutoDrivingDialogBody =>
-      '• זמינות אוטומטית היא לא אישור לשיחה — כל שיחה דורשת אישור של שני הצדדים.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.';
+      '• זמינות אוטומטית היא לא אישור לשיחה — שיחה דורשת אישור של שני הצדדים, או חיבור מהיר ששניכם סימנתם מראש.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.';
 
   @override
   String get enable => 'הפעל';
@@ -737,7 +738,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get privacyShared =>
-      'מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן.';
+      'מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן. מספר הטלפון שלך משמש רק לחיוג אחרי ששניכם הסכמתם — וחברים של חברים מקבלים אותו רק אם אישרת.';
 
   @override
   String get privacyServer =>
@@ -948,4 +949,482 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get debugResetDone => 'הנתונים אופסו';
+
+  @override
+  String optionsTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count אנשים פנויים לדבר עכשיו',
+      one: 'מישהו פנוי לדבר עכשיו',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moreOptions => 'אפשרויות נוספות';
+
+  @override
+  String get talkNowAccepted => 'לדבר — כבר אישר/ה';
+
+  @override
+  String starterLine(String text) {
+    return 'נושא לפתיחה: $text';
+  }
+
+  @override
+  String routineDue(String mode, int minutes) {
+    return 'זה הזמן הרגיל שלך ל$mode. להיות זמין ל-$minutes דק׳?';
+  }
+
+  @override
+  String get routineStart => 'כן';
+
+  @override
+  String get availableTo => 'זמין ל:';
+
+  @override
+  String get availableToEveryone => 'כולם';
+
+  @override
+  String get driverListening => 'מקשיב… אפשר לומר \"כן\" או \"לא\"';
+
+  @override
+  String quickConnectTitle(String name) {
+    return 'מתקשרים ל$name';
+  }
+
+  @override
+  String quickConnectIn(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'בעוד $seconds שניות',
+      one: 'בעוד שנייה',
+      zero: 'מחייג…',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get quickConnectWhy =>
+      'חיבור מהיר — שניכם אישרתם מראש. אפשר לבטל עכשיו או לומר \"בטל\".';
+
+  @override
+  String get voiceMessageSimulated => 'הדמיה — שום דבר לא מוקלט או נשלח';
+
+  @override
+  String voiceMessageTitle(String name) {
+    return 'הודעה קולית ל$name';
+  }
+
+  @override
+  String voiceMessageHint(int max) {
+    return 'עד $max שניות. למשל: \"היי, חשבתי עליך, נדבר בקרוב\".';
+  }
+
+  @override
+  String get voiceMessageSend => 'שליחה';
+
+  @override
+  String get voiceMessageAction => 'הודעה קולית';
+
+  @override
+  String get callViaPhone => 'שיחת טלפון רגילה';
+
+  @override
+  String get callInApp => 'שיחה באפליקציה · המספרים נשארים פרטיים';
+
+  @override
+  String get callWeakSignal => 'קליטה חלשה';
+
+  @override
+  String get callWindowEndedKeepTalking =>
+      'זמן הזמינות הסתיים — השיחה ממשיכה כרגיל';
+
+  @override
+  String callPhoneSimulated(String name) {
+    return 'באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל$name בשיחה רגילה. כאן זו הדמיה.';
+  }
+
+  @override
+  String get callDialTestNumber => 'חייג באמת למספר הבדיקה';
+
+  @override
+  String get callDialUnsupported => 'אי אפשר לחייג מכאן (למשל בדפדפן)';
+
+  @override
+  String get callSetTestNumberHint =>
+      'אפשר להגדיר מספר לבדיקת חיוג אמיתי בכלי המפתחים';
+
+  @override
+  String get callDropped => 'השיחה נותקה';
+
+  @override
+  String get callRetry => 'לנסות שוב';
+
+  @override
+  String get callOnHold => 'השיחה בהמתנה — נכנסה שיחת טלפון';
+
+  @override
+  String get callResume => 'להמשיך';
+
+  @override
+  String get callWeAreDone => 'סיימנו';
+
+  @override
+  String get feedbackDidNotTalk => 'לא דיברנו בסוף';
+
+  @override
+  String get offlineBanner => 'אין חיבור לאינטרנט — ננסה שוב אוטומטית';
+
+  @override
+  String noticeNoAnswer(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'לא ענתה',
+      'male': 'לא ענה',
+      'other': 'לא ענה/תה',
+    });
+    return '$name $_temp0. אפשר להשאיר הודעה קולית.';
+  }
+
+  @override
+  String noticeNoLongerAvailable(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'לא פנויה',
+      'male': 'לא פנוי',
+      'other': 'לא פנוי/ה',
+    });
+    return '$name כבר $_temp0. ממשיכים.';
+  }
+
+  @override
+  String noticeVoiceMessageSent(String name) {
+    return 'ההודעה ל$name נשלחה (הדמיה)';
+  }
+
+  @override
+  String get noticeMicDenied =>
+      'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.';
+
+  @override
+  String noticeQuickConnectCancelled(String name) {
+    return 'בוטל. לא נתקשר ל$name עכשיו.';
+  }
+
+  @override
+  String voiceQuickConnect(String name, int seconds) {
+    return 'מתקשרים ל$name בעוד $seconds שניות. לביטול אמרו \"בטל\".';
+  }
+
+  @override
+  String voiceInvitation(String name, String gender, int minutes) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה',
+      'male': 'פנוי',
+      'other': 'פנוי/ה',
+    });
+    return '$name $_temp0 לכ-$minutes דקות. לדבר?';
+  }
+
+  @override
+  String voiceSuggestion(String name, String gender, int minutes, String who) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה',
+      'male': 'פנוי',
+      'other': 'פנוי/ה',
+    });
+    return '$name, $who, $_temp0 לעוד כ-$minutes דקות. לדבר?';
+  }
+
+  @override
+  String get settingsProfile => 'הפרופיל שלי';
+
+  @override
+  String get photoFromGallery => 'מהגלריה';
+
+  @override
+  String get photoFromCamera => 'צילום';
+
+  @override
+  String get photoRemove => 'הסרה';
+
+  @override
+  String get photoPrivacyNote =>
+      'באב-הטיפוס התמונה נשמרת רק בטלפון הזה. בגרסה האמיתית תמונות ייבדקו לפני שיוצגו לאחרים.';
+
+  @override
+  String get myPhoneNumber => 'המספר שלי';
+
+  @override
+  String get myPhoneNumberHelp =>
+      'משמש רק לחיוג רגיל אחרי ששניכם הסכמתם. לא מוצג לאף אחד על המסך.';
+
+  @override
+  String get shareNumberWithFof => 'לאפשר חיוג רגיל גם עם חברים של חברים';
+
+  @override
+  String get shareNumberWithFofBody =>
+      'רק אם גם הצד השני הסכים. אחרת השיחה איתם תהיה בתוך האפליקציה, והמספרים יישארו פרטיים.';
+
+  @override
+  String get settingsVoiceReadout => 'הקראה בקול בנסיעה';
+
+  @override
+  String get settingsVoiceReadoutBody => 'הטלפון מקריא מי פנוי ושואל אם לדבר';
+
+  @override
+  String get settingsVoiceCommands => 'לענות \"כן\" / \"לא\" בקול';
+
+  @override
+  String get settingsVoiceCommandsBody =>
+      'דורש הרשאת מיקרופון. הזיהוי נעשה דרך הטלפון ושום דבר לא נשמר.';
+
+  @override
+  String get routinesTitle => 'השגרה שלי';
+
+  @override
+  String routinesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count זמנים קבועים',
+      one: 'זמן קבוע אחד',
+      zero: 'עוד לא הוגדרו זמנים קבועים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get routinesIntro =>
+      'ספרו לנו מתי אתם בדרך כלל בדרכים. בזמנים האלה נציע בלחיצה אחת להפוך לזמינים.';
+
+  @override
+  String get routinesEmpty => 'עוד אין זמנים קבועים';
+
+  @override
+  String get routineAdd => 'הוספת זמן קבוע';
+
+  @override
+  String get save => 'שמירה';
+
+  @override
+  String get daySun => 'א׳';
+
+  @override
+  String get dayMon => 'ב׳';
+
+  @override
+  String get dayTue => 'ג׳';
+
+  @override
+  String get dayWed => 'ד׳';
+
+  @override
+  String get dayThu => 'ה׳';
+
+  @override
+  String get dayFri => 'ו׳';
+
+  @override
+  String get daySat => 'ש׳';
+
+  @override
+  String get circlesTitle => 'המעגלים שלי';
+
+  @override
+  String circlesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count מעגלים',
+      one: 'מעגל אחד',
+      zero: 'אין מעגלים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get circlesIntro =>
+      'מעגלים פרטיים שרק את/ה רואה. כשנהיים זמינים אפשר לבחור להיות זמינים רק למעגל אחד.';
+
+  @override
+  String get circleAdd => 'מעגל חדש';
+
+  @override
+  String circleMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count אנשים',
+      one: 'אדם אחד',
+      zero: 'אין חברים במעגל',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get circleDelete => 'מחיקת המעגל';
+
+  @override
+  String get circleNameHint => 'למשל: חברים מהצבא';
+
+  @override
+  String get filterNotInCircle => 'לא במעגל שבחרת';
+
+  @override
+  String get quickConnectToggle => 'חיבור מהיר';
+
+  @override
+  String quickConnectExplain(String name) {
+    return 'כששניכם פנויים — מתקשרים מיד, בלי לחכות לאישור (עם 5 שניות לביטול). עובד רק אם גם $name יסמן אותך.';
+  }
+
+  @override
+  String quickConnectMutual(String name) {
+    return 'פעיל — גם $name סימן אותך.';
+  }
+
+  @override
+  String quickConnectWaiting(String name) {
+    return 'סימנת. יופעל כשגם $name יסמן אותך.';
+  }
+
+  @override
+  String get debugScenarios => 'תרחישי תקלות והפרעות';
+
+  @override
+  String get debugVoice => 'קול';
+
+  @override
+  String get debugVoiceBody =>
+      'בדפדפן אין מיקרופון — כאן אפשר לדמות תשובה קולית במצב נהג.';
+
+  @override
+  String get debugVoiceYes => 'דמה \"כן\"';
+
+  @override
+  String get debugVoiceNo => 'דמה \"לא\"';
+
+  @override
+  String get debugTestDial => 'חיוג אמיתי לבדיקה';
+
+  @override
+  String get debugTestDialLabel => 'מספר לבדיקה (למשל המספר שלך)';
+
+  @override
+  String get debugTestDialHelp =>
+      'האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.';
+
+  @override
+  String get debugAnswerNone => 'לא עונה';
+
+  @override
+  String get scRun => 'הפעל';
+
+  @override
+  String get scNoAnswerTitle => 'הצד השני לא עונה';
+
+  @override
+  String get scNoAnswerBody =>
+      'לחצו \"לדבר\" על מישהו — אחרי 30 שניות בלי תשובה ממשיכים הלאה.';
+
+  @override
+  String get scNoAnswerArmed =>
+      'מעכשיו אף אחד לא עונה. אפשר להחזיר ב\"תשובת הצד השני\".';
+
+  @override
+  String get scGoneTitle => 'הפסיק להיות זמין בזמן ההמתנה';
+
+  @override
+  String get scGoneBody => 'זמין בזמן שמחכים לתשובה.';
+
+  @override
+  String get scBlockedTitle => 'חסם אותי בזמן ההמתנה';
+
+  @override
+  String get scBlockedBody =>
+      'זמין בזמן שמחכים. נראה כמו \"לא יכול עכשיו\" — בלי לחשוף.';
+
+  @override
+  String get scInviteWhileWaitingTitle => 'הזמנה נכנסת בזמן המתנה';
+
+  @override
+  String get scInviteWhileWaitingBody =>
+      'זמין בזמן שמחכים. אפשר לבחור בהזמנה במקום.';
+
+  @override
+  String get scDroppedTitle => 'השיחה נותקה';
+
+  @override
+  String get scDroppedBody =>
+      'זמין בשיחה בתוך האפליקציה (עם חבר של חבר שלא שיתף מספר).';
+
+  @override
+  String get scHoldTitle => 'שיחת טלפון נכנסת באמצע';
+
+  @override
+  String get scHoldBody => 'זמין בשיחה בתוך האפליקציה. השיחה עוברת להמתנה.';
+
+  @override
+  String get scWeakSignalTitle => 'קליטה חלשה';
+
+  @override
+  String get scWeakSignalOff => 'להחזיר קליטה טובה';
+
+  @override
+  String get scWeakSignalBody => 'מופיע סימן קטן בשיחה בתוך האפליקציה.';
+
+  @override
+  String get scExpireInCallTitle => 'הזמינות נגמרת באמצע שיחה';
+
+  @override
+  String get scExpireInCallBody =>
+      'זמין בשיחה. השיחה ממשיכה, הזמינות נסגרת אחריה.';
+
+  @override
+  String get scExitCarInCallTitle => 'יציאה מהרכב באמצע שיחה';
+
+  @override
+  String get scExitCarInCallBody =>
+      'זמין בשיחה. מצב הנהג נגמר רק כשהשיחה מסתיימת.';
+
+  @override
+  String get scEnterCarChoosingTitle => 'כניסה לרכב בזמן בחירה';
+
+  @override
+  String get scEnterCarChoosingBody =>
+      'זמין כשמוצגות אפשרויות. עוברים מיד למצב נהג.';
+
+  @override
+  String get scOfflineTitle => 'אין אינטרנט';
+
+  @override
+  String get scOfflineOff => 'להחזיר אינטרנט';
+
+  @override
+  String get scOfflineBody => 'מופיע פס עליון והחיפוש ממתין עד שהחיבור חוזר.';
+
+  @override
+  String get scMicDeniedTitle => 'אין הרשאת מיקרופון';
+
+  @override
+  String get scMicDeniedBody => 'מוצג הסבר איך לאשר. הכפתורים ממשיכים לעבוד.';
+
+  @override
+  String get scAppClosedTitle => 'האפליקציה נסגרה לכמה שעות';
+
+  @override
+  String get scAppClosedBody =>
+      'הזמינות נגמרת לבד — אף אחד לא נשאר \"זמין\" לנצח.';
+
+  @override
+  String get scQuickConnectTitle => 'חיבור מהיר עם אבא';
+
+  @override
+  String get scQuickConnectBody =>
+      'אבא נהיה פנוי. אם גם את/ה זמין/ה — מתחילה ספירה של 5 שניות עם ביטול.';
+
+  @override
+  String get scQuickConnectHint => 'קודם להפוך לזמין/ה, ואז להפעיל שוב.';
 }

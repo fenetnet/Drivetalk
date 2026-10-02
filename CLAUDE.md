@@ -28,9 +28,20 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 ## Hard rules (never break)
 
 - No secrets / service keys in the app or in git. Ever.
-- No call recording, no transcription, no AI over call content.
-- Never auto-start a call. Every connection requires consent from both sides.
+- No call recording, no transcription, no AI over call content. Voice notes
+  ("leave a message") are a separate, user-initiated feature (simulated now).
+- A call starts only with consent from both sides: either the other side says
+  yes to "talk now", or BOTH sides pre-approved each other for "quick connect"
+  (owner decision D-026) — and even then with a visible/spoken cancellable
+  countdown (5s), max 1 per availability window and 1 per person per day.
   Automatic availability ≠ automatic call consent.
+- Calls go through the phone's regular dialer when numbers may be shared
+  (connections; friends-of-friends/groups only if BOTH allow it). Otherwise the
+  call stays inside the app so numbers remain private. Never read the call log.
+- Voice in the car: read aloud + "yes"/"no" via the phone's speech recognizer.
+  Nothing recorded or stored. Buttons always work as a fallback.
+- Fake people's numbers are never dialed. Real dialing in the prototype only
+  to a test number the owner enters in the developer screen.
 - Automatic driving availability is **opt-in, off by default**.
 - Never claim the user is "the driver" — only "the device is probably in a vehicle".
 - No continuous GPS for driving detection. No background GPS without explaining
@@ -40,7 +51,8 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Availability always has an automatic expiry.
 - Do not read the phone Call Log. Do not request full contacts access in early phases.
 - No infinite-scroll feed. No anonymous random chat as a core feature.
-- Driver mode: huge buttons, minimal text, no typing, no scrolling lists.
+- Driver mode: huge buttons, minimal text, no typing, no scrolling lists,
+  one person at a time (normal mode shows up to 3 options).
 - Match explanations must only use data we actually have — never invent reasons.
 - Matching weights live in configuration, not hard-coded in logic.
 - Block / Report / Unmatch / Don't-suggest-again exist from day one.

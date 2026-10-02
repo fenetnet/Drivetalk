@@ -9,6 +9,7 @@ import '../../services/social_graph_service.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import 'add_friend_screen.dart';
+import 'circles_screen.dart';
 import 'person_sheet.dart';
 
 enum _Tab { close, reconnect, colleagues, fof }
@@ -27,6 +28,13 @@ class ConnectionsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: Text(l.tabConnections),
           actions: [
+            IconButton(
+              tooltip: l.circlesTitle,
+              icon: const Icon(Icons.bubble_chart_rounded),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CirclesScreen()),
+              ),
+            ),
             IconButton(
               tooltip: l.addFriend,
               icon: const Icon(Icons.person_add_alt_1_rounded),

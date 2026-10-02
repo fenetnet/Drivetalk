@@ -9,12 +9,12 @@
   "onbWelcomeBody": "בנסיעה, בהליכה או בהפסקה — נמצא את האדם הנכון לדבר איתו דווקא עכשיו.",
   "onbHowTitle": "איך זה עובד",
   "onbHow1": "מסמנים שפנויים, ולכמה זמן.",
-  "onbHow2": "מקבלים הצעה לאדם אחד מתאים — עם הסבר למה.",
-  "onbHow3": "השיחה מתחילה רק אם שני הצדדים אישרו.",
+  "onbHow2": "מקבלים כמה הצעות מתאימות — עם הסבר למה כל אחת.",
+  "onbHow3": "שיחה מתחילה רק כשגם הצד השני מסכים, או עם מי ששניכם סימנתם מראש ל\"חיבור מהיר\".",
   "onbPrivacyTitle": "פרטיות ובטיחות",
   "onbPrivacy1": "לא משתפים מיקום, מסלול או מהירות — עם אף אחד.",
   "onbPrivacy2": "שיחות לא מוקלטות ולא מתומללות.",
-  "onbPrivacy3": "אין שיחות אוטומטיות. בנהיגה — רק דיבורית ומתקן לרכב.",
+  "onbPrivacy3": "בנהיגה — רק דיבורית ומתקן לרכב. אפשר לענות \"כן\" או \"לא\" בקול.",
   "onbSetupTitle": "כמה פרטים קטנים",
   "onbNameLabel": "איך קוראים לך?",
   "onbGenderLabel": "איך לפנות אליך?",
@@ -213,7 +213,7 @@
   },
   "waitingSubtitle": "השיחה תתחיל רק אחרי אישור",
   "cancel": "ביטול",
-  "noticeDeclined": "{name} {gender, select, female{לא יכולה} male{לא יכול} other{לא יכול/ה}} עכשיו. נחפש מישהו אחר.",
+  "noticeDeclined": "{name} {gender, select, female{לא יכולה} male{לא יכול} other{לא יכול/ה}} עכשיו. אפשר להשאיר הודעה קולית.",
   "@noticeDeclined": {
     "placeholders": {
       "name": {
@@ -417,9 +417,9 @@
   "langEn": "אנגלית",
   "settingsDriving": "נסיעה",
   "settingsAutoDriving": "זמינות אוטומטית בנסיעה",
-  "settingsAutoDrivingBody": "כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. לעולם לא נתחיל שיחה בלי אישור.",
+  "settingsAutoDrivingBody": "כשנזהה שהמכשיר כנראה ברכב, נסמן אותך כזמין. שיחה מתחילה רק באישור — או בחיבור מהיר ששניכם סימנתם מראש.",
   "settingsAutoDrivingDialogTitle": "לפני שמפעילים",
-  "settingsAutoDrivingDialogBody": "• זמינות אוטומטית היא לא אישור לשיחה — כל שיחה דורשת אישור של שני הצדדים.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.",
+  "settingsAutoDrivingDialogBody": "• זמינות אוטומטית היא לא אישור לשיחה — שיחה דורשת אישור של שני הצדדים, או חיבור מהיר ששניכם סימנתם מראש.\n• הזיהוי נעשה בטלפון בלבד. לא נשלח מיקום.\n• המערכת יודעת רק שהמכשיר כנראה ברכב — לא מי נוהג.\n• באב-הטיפוס, הנסיעה מדומה דרך כלי המפתחים.",
   "enable": "הפעל",
   "settingsCarBluetooth": "Bluetooth של הרכב",
   "settingsCarBluetoothSoon": "יתווסף בשלב 4 — לזיהוי בביטחון גבוה יותר",
@@ -440,7 +440,7 @@
   "unmute": "בטל השתקה",
   "settingsPrivacy": "פרטיות",
   "privacyTitle": "מה אנחנו יודעים ומה לא",
-  "privacyShared": "מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן.",
+  "privacyShared": "מה רואים אחרים: שם, תמונה, שאת/ה זמין/ה ולכמה זמן. מספר הטלפון שלך משמש רק לחיוג אחרי ששניכם הסכמתם — וחברים של חברים מקבלים אותו רק אם אישרת.",
   "privacyServer": "מה השרת יודע: זמין/לא זמין, מצב (למשל נסיעה) ועד מתי.",
   "privacyNever": "מה לא נשמר ולא משותף: מיקום, מסלול, מהירות, הקלטות, תמלולים, יומן השיחות ואנשי הקשר בטלפון.",
   "privacyLocal": "זיהוי נסיעה נעשה בטלפון עצמו.",
@@ -524,5 +524,299 @@
   "debugAnalytics": "מדדים (נשמרים במכשיר בלבד)",
   "debugAnalyticsEmpty": "עוד אין אירועים",
   "debugReset": "אפס את כל הנתונים",
-  "debugResetDone": "הנתונים אופסו"
+  "debugResetDone": "הנתונים אופסו",
+  "optionsTitle": "{count, plural, =1{מישהו פנוי לדבר עכשיו} other{{count} אנשים פנויים לדבר עכשיו}}",
+  "@optionsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreOptions": "אפשרויות נוספות",
+  "talkNowAccepted": "לדבר — כבר אישר/ה",
+  "starterLine": "נושא לפתיחה: {text}",
+  "@starterLine": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "routineDue": "זה הזמן הרגיל שלך ל{mode}. להיות זמין ל-{minutes} דק׳?",
+  "@routineDue": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "routineStart": "כן",
+  "availableTo": "זמין ל:",
+  "availableToEveryone": "כולם",
+  "driverListening": "מקשיב… אפשר לומר \"כן\" או \"לא\"",
+  "quickConnectTitle": "מתקשרים ל{name}",
+  "@quickConnectTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickConnectIn": "{seconds, plural, =0{מחייג…} =1{בעוד שנייה} other{בעוד {seconds} שניות}}",
+  "@quickConnectIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "quickConnectWhy": "חיבור מהיר — שניכם אישרתם מראש. אפשר לבטל עכשיו או לומר \"בטל\".",
+  "voiceMessageSimulated": "הדמיה — שום דבר לא מוקלט או נשלח",
+  "voiceMessageTitle": "הודעה קולית ל{name}",
+  "@voiceMessageTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceMessageHint": "עד {max} שניות. למשל: \"היי, חשבתי עליך, נדבר בקרוב\".",
+  "@voiceMessageHint": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceMessageSend": "שליחה",
+  "voiceMessageAction": "הודעה קולית",
+  "callViaPhone": "שיחת טלפון רגילה",
+  "callInApp": "שיחה באפליקציה · המספרים נשארים פרטיים",
+  "callWeakSignal": "קליטה חלשה",
+  "callWindowEndedKeepTalking": "זמן הזמינות הסתיים — השיחה ממשיכה כרגיל",
+  "callPhoneSimulated": "באפליקציה האמיתית, הטלפון היה מחייג עכשיו ל{name} בשיחה רגילה. כאן זו הדמיה.",
+  "@callPhoneSimulated": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "callDialTestNumber": "חייג באמת למספר הבדיקה",
+  "callDialUnsupported": "אי אפשר לחייג מכאן (למשל בדפדפן)",
+  "callSetTestNumberHint": "אפשר להגדיר מספר לבדיקת חיוג אמיתי בכלי המפתחים",
+  "callDropped": "השיחה נותקה",
+  "callRetry": "לנסות שוב",
+  "callOnHold": "השיחה בהמתנה — נכנסה שיחת טלפון",
+  "callResume": "להמשיך",
+  "callWeAreDone": "סיימנו",
+  "feedbackDidNotTalk": "לא דיברנו בסוף",
+  "offlineBanner": "אין חיבור לאינטרנט — ננסה שוב אוטומטית",
+  "noticeNoAnswer": "{name} {gender, select, female{לא ענתה} male{לא ענה} other{לא ענה/תה}}. אפשר להשאיר הודעה קולית.",
+  "@noticeNoAnswer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeNoLongerAvailable": "{name} כבר {gender, select, female{לא פנויה} male{לא פנוי} other{לא פנוי/ה}}. ממשיכים.",
+  "@noticeNoLongerAvailable": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeVoiceMessageSent": "ההודעה ל{name} נשלחה (הדמיה)",
+  "@noticeVoiceMessageSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeMicDenied": "אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.",
+  "noticeQuickConnectCancelled": "בוטל. לא נתקשר ל{name} עכשיו.",
+  "@noticeQuickConnectCancelled": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceQuickConnect": "מתקשרים ל{name} בעוד {seconds} שניות. לביטול אמרו \"בטל\".",
+  "@voiceQuickConnect": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceInvitation": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לכ-{minutes} דקות. לדבר?",
+  "@voiceInvitation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "voiceSuggestion": "{name}, {who}, {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} לעוד כ-{minutes} דקות. לדבר?",
+  "@voiceSuggestion": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      },
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfile": "הפרופיל שלי",
+  "photoFromGallery": "מהגלריה",
+  "photoFromCamera": "צילום",
+  "photoRemove": "הסרה",
+  "photoPrivacyNote": "באב-הטיפוס התמונה נשמרת רק בטלפון הזה. בגרסה האמיתית תמונות ייבדקו לפני שיוצגו לאחרים.",
+  "myPhoneNumber": "המספר שלי",
+  "myPhoneNumberHelp": "משמש רק לחיוג רגיל אחרי ששניכם הסכמתם. לא מוצג לאף אחד על המסך.",
+  "shareNumberWithFof": "לאפשר חיוג רגיל גם עם חברים של חברים",
+  "shareNumberWithFofBody": "רק אם גם הצד השני הסכים. אחרת השיחה איתם תהיה בתוך האפליקציה, והמספרים יישארו פרטיים.",
+  "settingsVoiceReadout": "הקראה בקול בנסיעה",
+  "settingsVoiceReadoutBody": "הטלפון מקריא מי פנוי ושואל אם לדבר",
+  "settingsVoiceCommands": "לענות \"כן\" / \"לא\" בקול",
+  "settingsVoiceCommandsBody": "דורש הרשאת מיקרופון. הזיהוי נעשה דרך הטלפון ושום דבר לא נשמר.",
+  "routinesTitle": "השגרה שלי",
+  "routinesCount": "{count, plural, =0{עוד לא הוגדרו זמנים קבועים} =1{זמן קבוע אחד} other{{count} זמנים קבועים}}",
+  "@routinesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "routinesIntro": "ספרו לנו מתי אתם בדרך כלל בדרכים. בזמנים האלה נציע בלחיצה אחת להפוך לזמינים.",
+  "routinesEmpty": "עוד אין זמנים קבועים",
+  "routineAdd": "הוספת זמן קבוע",
+  "save": "שמירה",
+  "daySun": "א׳",
+  "dayMon": "ב׳",
+  "dayTue": "ג׳",
+  "dayWed": "ד׳",
+  "dayThu": "ה׳",
+  "dayFri": "ו׳",
+  "daySat": "ש׳",
+  "circlesTitle": "המעגלים שלי",
+  "circlesCount": "{count, plural, =0{אין מעגלים} =1{מעגל אחד} other{{count} מעגלים}}",
+  "@circlesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circlesIntro": "מעגלים פרטיים שרק את/ה רואה. כשנהיים זמינים אפשר לבחור להיות זמינים רק למעגל אחד.",
+  "circleAdd": "מעגל חדש",
+  "circleMembers": "{count, plural, =0{אין חברים במעגל} =1{אדם אחד} other{{count} אנשים}}",
+  "@circleMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "circleDelete": "מחיקת המעגל",
+  "circleNameHint": "למשל: חברים מהצבא",
+  "filterNotInCircle": "לא במעגל שבחרת",
+  "quickConnectToggle": "חיבור מהיר",
+  "quickConnectExplain": "כששניכם פנויים — מתקשרים מיד, בלי לחכות לאישור (עם 5 שניות לביטול). עובד רק אם גם {name} יסמן אותך.",
+  "@quickConnectExplain": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickConnectMutual": "פעיל — גם {name} סימן אותך.",
+  "@quickConnectMutual": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickConnectWaiting": "סימנת. יופעל כשגם {name} יסמן אותך.",
+  "@quickConnectWaiting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "debugScenarios": "תרחישי תקלות והפרעות",
+  "debugVoice": "קול",
+  "debugVoiceBody": "בדפדפן אין מיקרופון — כאן אפשר לדמות תשובה קולית במצב נהג.",
+  "debugVoiceYes": "דמה \"כן\"",
+  "debugVoiceNo": "דמה \"לא\"",
+  "debugTestDial": "חיוג אמיתי לבדיקה",
+  "debugTestDialLabel": "מספר לבדיקה (למשל המספר שלך)",
+  "debugTestDialHelp": "האנשים המדומים לעולם לא מחויגים. מספר שתכתוב כאן יופיע כאפשרות \"חייג באמת\" במסך השיחה.",
+  "debugAnswerNone": "לא עונה",
+  "scRun": "הפעל",
+  "scNoAnswerTitle": "הצד השני לא עונה",
+  "scNoAnswerBody": "לחצו \"לדבר\" על מישהו — אחרי 30 שניות בלי תשובה ממשיכים הלאה.",
+  "scNoAnswerArmed": "מעכשיו אף אחד לא עונה. אפשר להחזיר ב\"תשובת הצד השני\".",
+  "scGoneTitle": "הפסיק להיות זמין בזמן ההמתנה",
+  "scGoneBody": "זמין בזמן שמחכים לתשובה.",
+  "scBlockedTitle": "חסם אותי בזמן ההמתנה",
+  "scBlockedBody": "זמין בזמן שמחכים. נראה כמו \"לא יכול עכשיו\" — בלי לחשוף.",
+  "scInviteWhileWaitingTitle": "הזמנה נכנסת בזמן המתנה",
+  "scInviteWhileWaitingBody": "זמין בזמן שמחכים. אפשר לבחור בהזמנה במקום.",
+  "scDroppedTitle": "השיחה נותקה",
+  "scDroppedBody": "זמין בשיחה בתוך האפליקציה (עם חבר של חבר שלא שיתף מספר).",
+  "scHoldTitle": "שיחת טלפון נכנסת באמצע",
+  "scHoldBody": "זמין בשיחה בתוך האפליקציה. השיחה עוברת להמתנה.",
+  "scWeakSignalTitle": "קליטה חלשה",
+  "scWeakSignalOff": "להחזיר קליטה טובה",
+  "scWeakSignalBody": "מופיע סימן קטן בשיחה בתוך האפליקציה.",
+  "scExpireInCallTitle": "הזמינות נגמרת באמצע שיחה",
+  "scExpireInCallBody": "זמין בשיחה. השיחה ממשיכה, הזמינות נסגרת אחריה.",
+  "scExitCarInCallTitle": "יציאה מהרכב באמצע שיחה",
+  "scExitCarInCallBody": "זמין בשיחה. מצב הנהג נגמר רק כשהשיחה מסתיימת.",
+  "scEnterCarChoosingTitle": "כניסה לרכב בזמן בחירה",
+  "scEnterCarChoosingBody": "זמין כשמוצגות אפשרויות. עוברים מיד למצב נהג.",
+  "scOfflineTitle": "אין אינטרנט",
+  "scOfflineOff": "להחזיר אינטרנט",
+  "scOfflineBody": "מופיע פס עליון והחיפוש ממתין עד שהחיבור חוזר.",
+  "scMicDeniedTitle": "אין הרשאת מיקרופון",
+  "scMicDeniedBody": "מוצג הסבר איך לאשר. הכפתורים ממשיכים לעבוד.",
+  "scAppClosedTitle": "האפליקציה נסגרה לכמה שעות",
+  "scAppClosedBody": "הזמינות נגמרת לבד — אף אחד לא נשאר \"זמין\" לנצח.",
+  "scQuickConnectTitle": "חיבור מהיר עם אבא",
+  "scQuickConnectBody": "אבא נהיה פנוי. אם גם את/ה זמין/ה — מתחילה ספירה של 5 שניות עם ביטול.",
+  "scQuickConnectHint": "קודם להפוך לזמין/ה, ואז להפעיל שוב."
 }

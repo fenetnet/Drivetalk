@@ -1,3 +1,4 @@
+import '../domain/models.dart';
 import '../matching/matching_engine.dart';
 import '../services/availability_service.dart';
 import '../services/clock_service.dart';
@@ -48,7 +49,18 @@ class MatchingFacade {
     blockedIds: graph.blockedIds,
     excludeIds: excludeIds,
     requireAvailable: requireAvailable,
+    circle: _myCircle(),
   );
+
+  /// The private circle I'm currently available to, if any.
+  Circle? _myCircle() {
+    final id = availability.mine?.circleId;
+    if (id == null) return null;
+    for (final c in profile.prefs.circles) {
+      if (c.id == id) return c;
+    }
+    return null;
+  }
 
   RankResult rank({
     bool requireAvailable = true,

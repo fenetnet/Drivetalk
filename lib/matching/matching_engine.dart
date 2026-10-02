@@ -36,6 +36,7 @@ class MatchRequest {
     this.blockedIds = const {},
     this.excludeIds = const {},
     this.requireAvailable = true,
+    this.circle,
   });
 
   final Person me;
@@ -51,10 +52,14 @@ class MatchRequest {
 
   /// False when ranking people to send an availability invitation (beacon) to.
   final bool requireAvailable;
+
+  /// If set, only members of this private circle are considered.
+  final Circle? circle;
 }
 
 /// Why a candidate was removed before scoring (shown in the debug inspector).
 enum FilterReason {
+  notInCircle,
   blocked,
   skippedThisSession,
   safety,
@@ -158,16 +163,32 @@ class MatchingEngine {
   /// Usually the best candidate; sometimes (explorationRate) a good-but-not-top
   /// one, so the app stays a little surprising without becoming random.
   Suggestion? pick(RankResult result) {
+    final options = pickOptions(result, 1);
+    return options.isEmpty ? null : options.first;
+  }
+
+  /// Up to [count] options to choose from, best first. With probability
+  /// explorationRate the last slot is replaced by a good-but-lower-ranked
+  /// person (from the next explorationTopK), so the list stays a little
+  /// surprising without becoming random.
+  List<Suggestion> pickOptions(RankResult result, int count) {
     final ranked = result.ranked;
-    if (ranked.isEmpty) return null;
-    final pool = min(config.explorationTopK, ranked.length);
-    if (pool > 1 && _random.nextDouble() < config.explorationRate) {
-      return Suggestion(
-        candidate: ranked[1 + _random.nextInt(pool - 1)],
+    if (ranked.isEmpty || count <= 0) return const [];
+    final picks = [
+      for (final c in ranked.take(count)) Suggestion(candidate: c),
+    ];
+    // Candidates below the shown ones that exploration may bring in.
+    final pool = ranked
+        .skip(picks.length - 1)
+        .take(config.explorationTopK)
+        .toList();
+    if (pool.length > 1 && _random.nextDouble() < config.explorationRate) {
+      picks[picks.length - 1] = Suggestion(
+        candidate: pool[1 + _random.nextInt(pool.length - 1)],
         isExploration: true,
       );
     }
-    return Suggestion(candidate: ranked.first);
+    return picks;
   }
 
   // ---------------------------------------------------------------- filters
@@ -178,6 +199,10 @@ class MatchingEngine {
     final now = req.now;
     if (req.blockedIds.contains(p.id)) return FilterReason.blocked;
     if (req.excludeIds.contains(p.id)) return FilterReason.skippedThisSession;
+    final circle = req.circle;
+    if (circle != null && !circle.memberIds.contains(p.id)) {
+      return FilterReason.notInCircle;
+    }
     if (p.safetyRestricted || !p.adultVerified) return FilterReason.safety;
     final pause = c.pause;
     if (pause != null && pause.until.isAfter(now)) {

@@ -39,10 +39,14 @@ The single place where fake vs real implementations are chosen is
 | `AvailabilityService` | My availability (mode + expiry) and others' availability |
 | `MatchService` | Suggestion history + mutual-consent handshake (`requestCall` → accepted/declined) |
 | `InvitationService` | Availability Beacon: send to a few people, receive invitations, answers, per-recipient daily counts |
-| `CallService` | Start/mute/end an audio call (simulated now, LiveKit in Phase 5) |
+| `CallService` | In-app audio call (simulated now, LiveKit in Phase 5). Regular calls use `PhoneDialer` |
+| `NetworkService` | Online / weak signal (debug can simulate offline) |
+| `VoiceMessageService` | Short voice notes (simulated — nothing recorded) |
 | `SafetyService` | Reports |
 | `AnalyticsService` | Privacy-respecting event log (local only in Phase 1) |
 | `VehicleSignalSource` (platform) | `VehicleEvent.enter/exit` + confidence (normal / high with car Bluetooth) |
+| `PhoneDialer` (platform) | Regular phone call: Kotlin bridge in `MainActivity.kt` (ACTION_CALL with CALL_PHONE permission, else ACTION_DIAL) |
+| `VoiceService` (platform) | Read aloud (`flutter_tts`) + "yes"/"no" (`speech_to_text`), `SilentVoiceService` in tests |
 
 Services keep a synchronous cached state plus a `changes` stream (like a local
 cache kept fresh by Supabase Realtime later). `dataVersionProvider` bumps on any
@@ -99,7 +103,24 @@ Weights, caps, cooldowns, exploration, beacon limits and snooze lengths are in
 
 ## Session flow (`lib/app/session_controller.dart`)
 
-Phases: `idle → searching → suggestion → waitingForAnswer → inCall → feedback`.
+Phases: `idle → searching → options → waitingForAnswer → inCall → feedback`,
+plus `quickConnecting` (mutual pre-approval countdown) and `voiceMessage`.
+
+- Options: `engine.pickOptions(result, optionsShown=3)`; exploration replaces only
+  the last slot. Driver mode shows/reads only the first; "no" drops it.
+- Quick connect (checked before options): mutual `Connection.quickConnect` +
+  `Person.quickConnectIds`, 5s countdown + spoken cancel, limits in config.
+- Call method: connection → phone; non-connection → phone only if both
+  `sharesNumberWithFriendsOfFriends`, else in-app.
+- Call request timeout `callAnswerTimeoutSeconds` (30). While waiting, the
+  other side becoming unavailable or blocking me ends the wait (block shown as
+  "can't now").
+- A call is recorded as an in-app interaction only after feedback says we
+  talked ("לא דיברנו בסוף" records nothing).
+- Offline: search pauses and retries every 3s; a banner is shown.
+- Circles: `Availability.circleId` → `MatchRequest.circle` filter.
+- Routines (`MyPreferences.routines`) show a one-tap card on Home when due.
+
 
 - Start availability → searching (short delay) → engine pick → suggestion.
 - "Talk now" → ask the other side (`requestCall`) → only on **yes** → call.

@@ -13,7 +13,9 @@ import '../features/common/widgets.dart';
 import '../platform/vehicle_signal_source.dart';
 import '../services/fake/fake_services.dart';
 import '../services/fake/fake_world.dart';
+import '../platform/voice_service.dart';
 import 'matching_inspector.dart';
+import 'scenarios.dart';
 
 /// Developer / debug screen. Only compiled in when kDevTools is true; never
 /// part of a store build. Lets us test the whole UX without a real drive or a
@@ -82,6 +84,36 @@ class DebugScreen extends ConsumerWidget {
               () => closeAnd(() => vehicle.simulate(VehicleTransition.exit)),
             ),
           ]),
+
+          // -------------------------------------------------------- scenarios
+          SectionTitle(l.debugScenarios),
+          const ScenariosSection(),
+
+          // ------------------------------------------------------------ voice
+          SectionTitle(l.debugVoice),
+          _Pad(
+            Text(
+              l.debugVoiceBody,
+              style: const TextStyle(color: AppColors.inkSoft),
+            ),
+          ),
+          _Buttons([
+            (
+              l.debugVoiceYes,
+              () => ref
+                  .read(voiceServiceProvider)
+                  .simulateAnswer(VoiceAnswer.yes),
+            ),
+            (
+              l.debugVoiceNo,
+              () =>
+                  ref.read(voiceServiceProvider).simulateAnswer(VoiceAnswer.no),
+            ),
+          ]),
+
+          // -------------------------------------------------------- test dial
+          SectionTitle(l.debugTestDial),
+          const _TestDialField(),
 
           // ------------------------------------------------------------- time
           SectionTitle(l.debugTime),
@@ -159,6 +191,10 @@ class DebugScreen extends ConsumerWidget {
                   value: ForcedAnswer.decline,
                   label: Text(l.debugAnswerDecline),
                 ),
+                ButtonSegment(
+                  value: ForcedAnswer.noAnswer,
+                  label: Text(l.debugAnswerNone),
+                ),
               ],
               selected: {world.forcedAnswer},
               onSelectionChanged: (s) {
@@ -213,15 +249,12 @@ class DebugScreen extends ConsumerWidget {
               icon: const Icon(Icons.restart_alt_rounded),
               label: Text(l.debugReset),
               onPressed: () {
-                final onboarded = world.prefs.onboardingDone;
                 final me = world.me;
+                final prefs = world.prefs;
                 world.reset();
-                // Keep the user's own profile so they don't redo onboarding.
+                // Keep my own profile & settings so onboarding isn't repeated.
                 world.me = me;
-                world.prefs = world.prefs.copyWith(
-                  onboardingDone: onboarded,
-                  confirmedAdult: onboarded,
-                );
+                world.prefs = prefs;
                 world.notify();
                 ref.invalidate(sessionProvider);
                 toast(l.debugResetDone);
@@ -229,6 +262,48 @@ class DebugScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TestDialField extends ConsumerStatefulWidget {
+  const _TestDialField();
+
+  @override
+  ConsumerState<_TestDialField> createState() => _TestDialFieldState();
+}
+
+class _TestDialFieldState extends ConsumerState<_TestDialField> {
+  late final _c = TextEditingController(
+    text: ref.read(profileServiceProvider).prefs.testDialNumber ?? '',
+  );
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final profile = ref.read(profileServiceProvider);
+    return _Pad(
+      TextField(
+        controller: _c,
+        keyboardType: TextInputType.phone,
+        textDirection: TextDirection.ltr,
+        decoration: InputDecoration(
+          labelText: l.debugTestDialLabel,
+          helperText: l.debugTestDialHelp,
+          helperMaxLines: 3,
+        ),
+        onChanged: (v) => profile.updatePrefs(
+          v.trim().isEmpty
+              ? profile.prefs.copyWith(clearTestDialNumber: true)
+              : profile.prefs.copyWith(testDialNumber: v.trim()),
+        ),
       ),
     );
   }

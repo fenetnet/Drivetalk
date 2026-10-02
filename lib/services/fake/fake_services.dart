@@ -8,9 +8,11 @@ import '../call_service.dart';
 import '../clock_service.dart';
 import '../invitation_service.dart';
 import '../match_service.dart';
+import '../network_service.dart';
 import '../profile_service.dart';
 import '../safety_service.dart';
 import '../social_graph_service.dart';
+import '../voice_message_service.dart';
 import 'fake_seed.dart';
 import 'fake_world.dart';
 
@@ -39,12 +41,14 @@ class FakeProfileService implements ProfileService {
   @override
   Future<void> updateMe(Person me) async {
     world.me = me;
+    world.profileChanged();
     world.notify();
   }
 
   @override
   Future<void> updatePrefs(MyPreferences prefs) async {
     world.prefs = prefs;
+    world.profileChanged();
     world.notify();
   }
 }
@@ -90,7 +94,21 @@ class FakeSocialGraphService implements SocialGraphService {
   Group? groupById(String id) => fakeGroups[id];
 
   @override
-  Set<String> get blockedIds => {...world.blockedByMe};
+  Set<String> get blockedIds => {...world.blockedByMe, ...world.blockedMe};
+
+  @override
+  bool isMutualQuickConnect(String personId) {
+    final c = world.connections[personId];
+    final p = world.others[personId];
+    return c != null &&
+        c.quickConnect &&
+        p != null &&
+        p.quickConnectIds.contains(world.me.id);
+  }
+
+  @override
+  Future<void> setQuickConnect(String personId, bool on) async =>
+      _update(personId, (c) => c.copyWith(quickConnect: on));
 
   @override
   List<Person> get blockedByMe => [
@@ -318,11 +336,29 @@ class FakeInvitationService implements InvitationService {
 
 class FakeCallService implements CallService {
   @override
-  Future<void> startCall(String personId) async {}
+  Future<void> startInAppCall(String personId) async {}
   @override
   Future<void> setMuted(bool muted) async {}
   @override
-  Future<void> endCall() async {}
+  Future<void> endInAppCall() async {}
+}
+
+class FakeNetworkService implements NetworkService {
+  FakeNetworkService(this.world);
+  final FakeWorld world;
+  @override
+  Stream<void> get changes => world.changes;
+  @override
+  bool get online => !world.offline;
+  @override
+  bool get weakSignal => world.weakSignal;
+}
+
+class FakeVoiceMessageService implements VoiceMessageService {
+  final sent = <(String, Duration)>[];
+  @override
+  Future<void> send(String personId, Duration length) async =>
+      sent.add((personId, length));
 }
 
 class FakeSafetyService implements SafetyService {

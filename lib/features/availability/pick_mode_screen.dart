@@ -55,33 +55,39 @@ class PickModeScreen extends StatelessWidget {
 }
 
 /// Step 2: for how long? 15/30/45/60 or "until I finish the drive".
-class PickDurationScreen extends ConsumerWidget {
+/// Optionally: available only to one of my private circles.
+class PickDurationScreen extends ConsumerStatefulWidget {
   const PickDurationScreen({super.key, required this.mode});
   final AvailabilityMode mode;
 
-  void _start(
-    BuildContext context,
-    WidgetRef ref, {
-    int? minutes,
-    bool untilTripEnds = false,
-  }) {
+  @override
+  ConsumerState<PickDurationScreen> createState() => _PickDurationState();
+}
+
+class _PickDurationState extends ConsumerState<PickDurationScreen> {
+  String? _circleId;
+
+  void _start({int? minutes, bool untilTripEnds = false}) {
     ref
         .read(sessionProvider.notifier)
         .startAvailability(
-          mode,
+          widget.mode,
           minutes: minutes,
           untilTripEnds: untilTripEnds,
+          circleId: _circleId,
         );
     Navigator.of(context).popUntil((r) => r.isFirst);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l = context.l10n;
+    final mode = widget.mode;
     final cap = ref
         .watch(matchingConfigProvider)
         .snooze
         .drivingSafetyCapMinutes;
+    final circles = ref.watch(profileServiceProvider).prefs.circles;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -102,7 +108,32 @@ class PickDurationScreen extends ConsumerWidget {
                 l.pickDurationTitle,
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              const SizedBox(height: 24),
+              if (circles.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l.availableTo,
+                  style: const TextStyle(color: AppColors.inkSoft),
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    ChoiceChip(
+                      label: Text(l.availableToEveryone),
+                      selected: _circleId == null,
+                      onSelected: (_) => setState(() => _circleId = null),
+                    ),
+                    for (final c in circles)
+                      ChoiceChip(
+                        label: Text(c.name),
+                        selected: _circleId == c.id,
+                        onSelected: (_) => setState(() => _circleId = c.id),
+                      ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 20),
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
@@ -113,14 +144,14 @@ class PickDurationScreen extends ConsumerWidget {
                     for (final m in const [15, 30, 45, 60])
                       _BigTile(
                         label: l.minutesShort(m),
-                        onTap: () => _start(context, ref, minutes: m),
+                        onTap: () => _start(minutes: m),
                       ),
                   ],
                 ),
               ),
               if (mode == AvailabilityMode.driving) ...[
                 FilledButton.icon(
-                  onPressed: () => _start(context, ref, untilTripEnds: true),
+                  onPressed: () => _start(untilTripEnds: true),
                   icon: const Icon(Icons.flag_rounded),
                   label: Text(l.durationUntilTripEnds),
                 ),

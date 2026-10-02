@@ -79,6 +79,10 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                   ),
                   const SizedBox(height: 12),
                 ],
+                TextButton(
+                  onPressed: c.didNotTalk,
+                  child: Text(l.feedbackDidNotTalk),
+                ),
               ] else ...[
                 Text(
                   l.feedbackAgainQuestion,
