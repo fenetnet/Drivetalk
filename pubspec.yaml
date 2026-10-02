@@ -15,7 +15,6 @@ dependencies:
   flutter_tts: ^4.2.5
   image_picker: ^1.2.3
   intl: ^0.20.3
-  permission_handler: ^13.0.2
   shared_preferences: ^2.5.5
   speech_to_text: ^7.5.0
 

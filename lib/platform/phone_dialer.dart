@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum DialResult { calling, openedDialer, unsupported, failed }
 
@@ -10,7 +9,7 @@ abstract class PhoneDialer {
 }
 
 /// Android: one-tap call (ACTION_CALL) when the "phone calls" permission is
-/// granted; otherwise opens the dialer with the number filled in.
+/// granted (asked on first use); otherwise opens the dialer with the number.
 /// Implemented by a tiny Kotlin bridge in MainActivity.kt.
 class PlatformPhoneDialer implements PhoneDialer {
   static const _channel = MethodChannel('app.drivetalk/phone');
@@ -21,14 +20,13 @@ class PlatformPhoneDialer implements PhoneDialer {
       return DialResult.unsupported;
     }
     try {
-      final status = await Permission.phone.request();
-      final direct = status.isGranted;
-      final ok = await _channel.invokeMethod<bool>('call', {
-        'number': number,
-        'direct': direct,
-      });
-      if (ok != true) return DialResult.failed;
-      return direct ? DialResult.calling : DialResult.openedDialer;
+      // The bridge asks for the "phone calls" permission the first time.
+      final r = await _channel.invokeMethod<String>('call', {'number': number});
+      return switch (r) {
+        'calling' => DialResult.calling,
+        'dialer' => DialResult.openedDialer,
+        _ => DialResult.failed,
+      };
     } on PlatformException {
       return DialResult.failed;
     } on MissingPluginException {
