@@ -141,7 +141,9 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 2. Auth + users + social graph + backend  ← **current** (built; owner must
    set up Supabase + variables — `docs/setup-guide.md`)
 3. Realtime availability + matchmaking
-4. Android automatic driving detection
+4. Android automatic driving detection  ✅ built (D-045): Kotlin
+   `Driving*.kt` (Activity Recognition, foreground service, device-token
+   RPCs in `supabase/migrations/20261003000000_auto_driving.sql`)
 5. Real audio calls
 6. Notifications + Availability Beacon
 7. iPhone + App Intents + Driving Focus/CarPlay

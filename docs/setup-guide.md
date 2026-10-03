@@ -52,6 +52,11 @@ _לבעלים. בערך 20–30 דקות, פעם אחת. אין צורך לתכ�
 5. אם קופצת אזהרה על "destructive operation", לוחצים **Run this query**.
 6. אמורה להופיע ההודעה **Success. No rows returned**.
 
+### 2ב׳. קובץ שני — זיהוי נסיעה אוטומטי
+אותו דבר בדיוק, עם הקובץ:
+https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnrxc1/supabase/migrations/20261003000000_auto_driving.sql
+(SQL Editor ‹ New query ‹ הדבקה ‹ Run ‹ "Success").
+
 ### 2ג. הפעלת כניסה בלי סיסמה
 1. בתפריט משמאל: **Authentication** ‹ **Sign In / Providers**.
 2. מפעילים את **Allow anonymous sign-ins**.
