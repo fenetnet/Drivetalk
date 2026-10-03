@@ -231,7 +231,8 @@ class RealOnboarding extends ConsumerStatefulWidget {
 class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  var _gender = Gender.male;
+  // No gender question (owner decision D-044).
+  final _gender = Gender.male;
 
   @override
   void dispose() {
@@ -297,24 +298,6 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                 border: const OutlineInputBorder(),
               ),
               onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 8),
-            Text(l.onbGenderLabel),
-            const SizedBox(height: 6),
-            SegmentedButton<Gender>(
-              segments: [
-                ButtonSegment(value: Gender.male, label: Text(l.genderMale)),
-                ButtonSegment(
-                  value: Gender.female,
-                  label: Text(l.genderFemale),
-                ),
-                ButtonSegment(
-                  value: Gender.unspecified,
-                  label: Text(l.genderOther),
-                ),
-              ],
-              selected: {_gender},
-              onSelectionChanged: (v) => setState(() => _gender = v.first),
             ),
             const SizedBox(height: 20),
             TextField(

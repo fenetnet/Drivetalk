@@ -18,7 +18,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pages = PageController();
   final _name = TextEditingController();
   var _page = 0;
-  var _gender = Gender.unspecified;
+  // Hebrew forms of address use the common default (owner decision D-044).
+  final _gender = Gender.male;
   var _tiers = {MatchTier.familiar, MatchTier.reconnect, MatchTier.widenCircle};
   var _fof = false;
 
@@ -130,21 +131,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               borderSide: BorderSide.none,
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Text(l.onbGenderLabel),
-        const SizedBox(height: 8),
-        SegmentedButton<Gender>(
-          segments: [
-            ButtonSegment(value: Gender.male, label: Text(l.genderMale)),
-            ButtonSegment(value: Gender.female, label: Text(l.genderFemale)),
-            ButtonSegment(
-              value: Gender.unspecified,
-              label: Text(l.genderOther),
-            ),
-          ],
-          selected: {_gender},
-          onSelectionChanged: (s) => setState(() => _gender = s.first),
         ),
         const SizedBox(height: 20),
         Text(l.onbOpennessLabel),

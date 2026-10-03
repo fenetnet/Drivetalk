@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme.dart';
-import '../../domain/models.dart';
 import '../../real/real_controller.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
@@ -136,7 +135,7 @@ class RealSettingsScreen extends ConsumerWidget {
     final l = context.l10n;
     final me = ref.read(realProvider).snapshot!.me;
     final name = TextEditingController(text: me.name);
-    var gender = me.gender;
+    final gender = me.gender;
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => StatefulBuilder(
@@ -149,22 +148,6 @@ class RealSettingsScreen extends ConsumerWidget {
                 controller: name,
                 maxLength: 40,
                 decoration: InputDecoration(labelText: l.onbNameLabel),
-              ),
-              const SizedBox(height: 8),
-              SegmentedButton<Gender>(
-                segments: [
-                  ButtonSegment(value: Gender.male, label: Text(l.genderMale)),
-                  ButtonSegment(
-                    value: Gender.female,
-                    label: Text(l.genderFemale),
-                  ),
-                  ButtonSegment(
-                    value: Gender.unspecified,
-                    label: Text(l.genderOther),
-                  ),
-                ],
-                selected: {gender},
-                onSelectionChanged: (v) => setState(() => gender = v.first),
               ),
             ],
           ),
