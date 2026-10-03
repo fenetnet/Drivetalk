@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'no_server.dart';
 import 'session_flow_test.dart' show config;
 
 Future<void> pumpFor(WidgetTester t, int ms) async {
@@ -147,6 +148,7 @@ void main() {
           matchingConfigProvider.overrideWithValue(config),
           voiceServiceProvider.overrideWithValue(SilentVoiceService()),
           localStoreProvider.overrideWithValue(store),
+          realBackendProvider.overrideWithValue(NoServerBackend()),
           incomingLinksProvider.overrideWithValue(const Stream.empty()),
         ],
         child: const DriveTalkApp(),

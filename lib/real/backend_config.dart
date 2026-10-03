@@ -5,8 +5,16 @@
 /// (they only allow what Row Level Security allows). The service_role / secret
 /// key must never be here.
 class BackendConfig {
-  static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  static const _url = String.fromEnvironment('SUPABASE_URL');
+  static const _key = String.fromEnvironment('SUPABASE_ANON_KEY');
+
+  /// The owner's test project. Both values are PUBLIC (publishable key);
+  /// build variables override them.
+  static const _defaultUrl = 'https://isjgrdiiawhyxzvzdkva.supabase.co';
+  static const _defaultKey = 'sb_publishable_2qohPSKh7lkPXblHVmPyFg_Xu6shuEn';
+
+  static String get supabaseUrl => _url.isEmpty ? _defaultUrl : _url;
+  static String get supabaseAnonKey => _key.isEmpty ? _defaultKey : _key;
 
   /// Base of the invitation link, e.g. https://drivetalk-test.pages.dev
   /// (empty → the share message falls back to "download + code").

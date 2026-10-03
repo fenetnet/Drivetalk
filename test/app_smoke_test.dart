@@ -1,11 +1,13 @@
 import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/platform/voice_service.dart';
+import 'package:drivetalk/real/real_controller.dart';
 import 'package:drivetalk/services/fake/fake_world.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'no_server.dart';
 import 'session_flow_test.dart' show config;
 
 Future<void> pumpFor(WidgetTester t, int ms) async {
@@ -29,6 +31,7 @@ void main() {
           matchingConfigProvider.overrideWithValue(config),
           fakeWorldProvider.overrideWithValue(world),
           voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          realBackendProvider.overrideWithValue(NoServerBackend()),
         ],
         child: const DriveTalkApp(),
       ),
