@@ -47,6 +47,10 @@ abstract class RealBackend {
   /// After both accepted: the other side's number (if they share it).
   Future<CallDetails> callDetails(String offerId);
 
+  /// Automatic driving: a token this phone uses in the background.
+  Future<String> createDeviceToken();
+  Future<void> revokeDeviceTokens();
+
   Future<void> block(String userId);
   Future<void> unmatch(String userId);
   Future<void> report(String userId, ReportReason reason);

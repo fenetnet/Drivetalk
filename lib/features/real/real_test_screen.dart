@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
+import '../../app/dev_tools.dart';
 import '../../app/theme.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
@@ -89,6 +90,17 @@ class RealTestScreen extends ConsumerWidget {
         null,
       ),
       (
+        Icons.directions_car_rounded,
+        l.realStatusAutoDriving,
+        !s.driving.supported
+            ? l.realAutoDrivingUnsupported
+            : [
+                s.driving.enabled ? l.realAutoOn : l.realAutoOff,
+                if (s.driving.inVehicle) l.realInVehicleNow,
+              ].join(' · '),
+        s.driving.enabled ? true : null,
+      ),
+      (
         Icons.info_outline_rounded,
         l.realStatusVersion,
         ref.watch(appVersionProvider),
@@ -170,6 +182,26 @@ class RealTestScreen extends ConsumerWidget {
               icon: const Icon(Icons.copy_rounded),
               label: Text(l.realCopyDiagnostics),
             ),
+            if (kDevTools && s.driving.enabled) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => c.simulateTrip(enter: true),
+                      child: Text(l.realSimEnter),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => c.simulateTrip(enter: false),
+                      child: Text(l.realSimExit),
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             Row(
               children: [

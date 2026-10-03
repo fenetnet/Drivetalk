@@ -7,15 +7,50 @@ import android.net.Uri
 import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import android.os.Bundle
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
+    companion object {
+        const val EXTRA_OFFER = "drivetalk_offer"
+        const val EXTRA_ACCEPT = "drivetalk_accept"
+    }
+
     private val callPermissionRequest = 4711
+    private val drivingPermissionRequest = 4712
     private var pendingNumber: String? = null
     private var pendingResult: MethodChannel.Result? = null
+    private var pendingDrivingResult: MethodChannel.Result? = null
+
+    /** "Talk now" / tap from a driving notification, waiting for the app. */
+    private var launchAction: Map<String, Any>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        readLaunchAction(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (readLaunchAction(intent)) DrivingEvents.send("action")
+    }
+
+    private fun readLaunchAction(intent: Intent?): Boolean {
+        val offer = intent?.getStringExtra(EXTRA_OFFER) ?: return false
+        launchAction = mapOf(
+            "offerId" to offer,
+            "accept" to intent.getBooleanExtra(EXTRA_ACCEPT, false),
+        )
+        intent.removeExtra(EXTRA_OFFER)
+        DrivingNotifications.cancelOffer(this, offer)
+        return true
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        configureDriving(flutterEngine)
         // Regular phone call through the phone's own dialer.
         // With the CALL_PHONE permission: one tap (ACTION_CALL).
         // Without it: the dialer opens with the number filled in (ACTION_DIAL).
@@ -43,12 +78,89 @@ class MainActivity : FlutterActivity() {
             }
     }
 
+    // Automatic driving availability (opt-in). See DrivingDetection.kt.
+    private fun configureDriving(flutterEngine: FlutterEngine) {
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        EventChannel(messenger, "app.drivetalk/driving/events").setStreamHandler(DrivingEvents)
+        MethodChannel(messenger, "app.drivetalk/driving").setMethodCallHandler { call, result ->
+            val store = DrivingStore(this)
+            when (call.method) {
+                "status" -> result.success(
+                    mapOf(
+                        "supported" to true,
+                        "permission" to DrivingDetection.hasPermission(this),
+                        "enabled" to store.enabled,
+                        "inVehicle" to store.inVehicle,
+                    ),
+                )
+                "requestPermission" -> requestDrivingPermissions(result)
+                "enable" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val texts = (call.argument<Map<String, String>>("texts") ?: emptyMap())
+                    store.save(
+                        url = call.argument<String>("url") ?: "",
+                        key = call.argument<String>("key") ?: "",
+                        token = call.argument<String>("token") ?: "",
+                        minutes = call.argument<Int>("minutes") ?: 120,
+                        texts = texts,
+                    )
+                    DrivingNotifications.ensureChannels(this)
+                    DrivingDetection.register(this) { ok ->
+                        if (!ok) store.enabled = false
+                        runOnUiThread { result.success(ok) }
+                    }
+                }
+                "disable" -> {
+                    DrivingDetection.unregister(this)
+                    if (store.inVehicle) DrivingService.end(this)
+                    store.clear()
+                    result.success(true)
+                }
+                "simulate" -> {
+                    DrivingReceiver.onVehicle(this, call.argument<Boolean>("enter") == true)
+                    result.success(true)
+                }
+                "takeLaunchAction" -> {
+                    result.success(launchAction)
+                    launchAction = null
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    private fun requestDrivingPermissions(result: MethodChannel.Result) {
+        val wanted = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            wanted.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            wanted.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        if (wanted.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            result.success(DrivingDetection.hasPermission(this))
+            return
+        }
+        pendingDrivingResult = result
+        requestPermissions(wanted.toTypedArray(), drivingPermissionRequest)
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == drivingPermissionRequest) {
+            val r = pendingDrivingResult
+            pendingDrivingResult = null
+            r?.success(DrivingDetection.hasPermission(this))
+            return
+        }
         if (requestCode != callPermissionRequest) return
         val number = pendingNumber
         val result = pendingResult

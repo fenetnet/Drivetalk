@@ -24,6 +24,7 @@ class MemoryServer {
   final offers = <String, _Offer>{};
   final blocks = <String>{}; // "blocker|blocked"
   final phones = <String, String>{};
+  final deviceTokens = <String, String>{}; // token → user
   final feedback = <Map<String, Object?>>[];
   final reports = <Map<String, Object?>>[];
 
@@ -77,6 +78,45 @@ class MemoryServer {
       );
     }
   }
+
+  /// The background calls of the driving service (device token only).
+  String autoStart(String token, {int minutes = 120}) {
+    final me = deviceTokens[token];
+    if (me == null) return 'bad_token';
+    final cur = availability[me];
+    if (cur != null && now().isBefore(cur.expiresAt) && !autoSet.contains(me)) {
+      return 'already_available';
+    }
+    availability[me] = RealAvailability(
+      userId: me,
+      mode: AvailabilityMode.driving,
+      startedAt: now(),
+      expiresAt: now().add(Duration(minutes: minutes.clamp(15, 180))),
+    );
+    autoSet.add(me);
+    _createOffersFor(me);
+    _changed();
+    return 'available';
+  }
+
+  String autoStop(String token) {
+    final me = deviceTokens[token];
+    if (me == null) return 'bad_token';
+    if (!autoSet.remove(me)) return 'nothing';
+    availability.remove(me);
+    for (final o in offers.values) {
+      if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
+        o
+          ..status = OfferStatus.cancelled
+          ..updatedAt = now();
+      }
+    }
+    _changed();
+    return 'stopped';
+  }
+
+  /// Users whose availability came from the driving detection.
+  final autoSet = <String>{};
 
   /// Like the server's scheduled job.
   void expireStale() {
@@ -298,6 +338,7 @@ class MemoryRealBackend implements RealBackend {
       throw const RealBackendException('invalid_minutes');
     }
     final now = server.now();
+    server.autoSet.remove(me);
     server.availability[me] = RealAvailability(
       userId: me,
       mode: mode,
@@ -403,6 +444,21 @@ class MemoryRealBackend implements RealBackend {
       otherPhone: server.phones[other],
       iShare: server.phones.containsKey(me),
     );
+  }
+
+  @override
+  Future<String> createDeviceToken() async {
+    final me = _uid;
+    server.deviceTokens.removeWhere((_, u) => u == me);
+    final t = '${server._token()}${server._token()}';
+    server.deviceTokens[t] = me;
+    return t;
+  }
+
+  @override
+  Future<void> revokeDeviceTokens() async {
+    final me = _uid;
+    server.deviceTokens.removeWhere((_, u) => u == me);
   }
 
   @override

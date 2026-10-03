@@ -3057,6 +3057,120 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מתקשרים ל{name}.'**
   String realVoiceCalling(String name);
+
+  /// No description provided for @realNotifChannelStatus.
+  ///
+  /// In he, this message translates to:
+  /// **'זמינות בנסיעה'**
+  String get realNotifChannelStatus;
+
+  /// No description provided for @realNotifChannelOffers.
+  ///
+  /// In he, this message translates to:
+  /// **'חבר פנוי לשיחה'**
+  String get realNotifChannelOffers;
+
+  /// No description provided for @realNotifStatusTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'DriveTalk · זמין לשיחה בנסיעה'**
+  String get realNotifStatusTitle;
+
+  /// No description provided for @realNotifStatusBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נסיעה טובה! נודיע כשחבר פנוי.'**
+  String get realNotifStatusBody;
+
+  /// No description provided for @realAutoDriving.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין אוטומטית בנסיעה'**
+  String get realAutoDriving;
+
+  /// No description provided for @realAutoDrivingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשהטלפון מזהה נסיעה — תהיה זמין לשיחה עד סוף הנסיעה. בלי GPS.'**
+  String get realAutoDrivingBody;
+
+  /// No description provided for @realAutoDrivingUnsupported.
+  ///
+  /// In he, this message translates to:
+  /// **'לא זמין במכשיר הזה'**
+  String get realAutoDrivingUnsupported;
+
+  /// No description provided for @realAutoDrivingDialogTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'זמינות אוטומטית בנסיעה'**
+  String get realAutoDrivingDialogTitle;
+
+  /// No description provided for @realAutoDrivingDialogBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הטלפון מזהה לבד שהוא כנראה ברכב (לפי חיישני התנועה — בלי GPS ובלי מיקום) ומסמן אותך כזמין עד סוף הנסיעה.\n\nכשחבר פנוי — תקבל התראה \"רוצה לדבר?\". שיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
+  String get realAutoDrivingDialogBody;
+
+  /// No description provided for @realAutoDrivingOn.
+  ///
+  /// In he, this message translates to:
+  /// **'מעולה. בנסיעה הבאה תהיה זמין לבד.'**
+  String get realAutoDrivingOn;
+
+  /// No description provided for @realAutoDrivingOff.
+  ///
+  /// In he, this message translates to:
+  /// **'זמינות אוטומטית בנסיעה כובתה'**
+  String get realAutoDrivingOff;
+
+  /// No description provided for @realAutoDrivingNoPermission.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי הרשאת \"פעילות גופנית\" אי אפשר לזהות נסיעה. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.'**
+  String get realAutoDrivingNoPermission;
+
+  /// No description provided for @realAutoDrivingFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.'**
+  String get realAutoDrivingFailed;
+
+  /// No description provided for @realStatusAutoDriving.
+  ///
+  /// In he, this message translates to:
+  /// **'זיהוי נסיעה'**
+  String get realStatusAutoDriving;
+
+  /// No description provided for @realAutoOn.
+  ///
+  /// In he, this message translates to:
+  /// **'פעיל'**
+  String get realAutoOn;
+
+  /// No description provided for @realAutoOff.
+  ///
+  /// In he, this message translates to:
+  /// **'כבוי'**
+  String get realAutoOff;
+
+  /// No description provided for @realInVehicleNow.
+  ///
+  /// In he, this message translates to:
+  /// **'ברכב עכשיו'**
+  String get realInVehicleNow;
+
+  /// No description provided for @realSimEnter.
+  ///
+  /// In he, this message translates to:
+  /// **'דמה: נכנסתי לרכב'**
+  String get realSimEnter;
+
+  /// No description provided for @realSimExit.
+  ///
+  /// In he, this message translates to:
+  /// **'דמה: יצאתי מהרכב'**
+  String get realSimExit;
 }
 
 class _AppLocalizationsDelegate

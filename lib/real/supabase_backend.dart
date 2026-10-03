@@ -229,6 +229,14 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<String> createDeviceToken() =>
+      _guard(() async => await _c.rpc('create_device_token') as String);
+
+  @override
+  Future<void> revokeDeviceTokens() =>
+      _guard(() async => _c.rpc('revoke_device_tokens'));
+
+  @override
   Future<void> block(String userId) =>
       _guard(() async => _c.rpc('block_user', params: {'p_user': userId}));
 

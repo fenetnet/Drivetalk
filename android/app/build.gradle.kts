@@ -71,3 +71,8 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // In-vehicle detection (Activity Recognition Transition API).
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+}

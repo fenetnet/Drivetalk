@@ -195,10 +195,69 @@ Future<void> main() async {
     check(true, 'availability longer than 3 hours is refused');
   }
 
+  // --- automatic driving availability (device token, app closed)
+  await me.rpc('clear_availability');
+  await yoni.rpc('clear_availability');
+  final device = await me.rpc('create_device_token') as String;
+  check(device.length >= 40, 'device token is long and random');
+  final background = SupabaseClient(url, anonKey); // no login, like the phone in the background
+  check(await background.rpc('auto_start', params: {'p_token': 'x' * 43}) == 'bad_token',
+      'a wrong device token is refused');
+  check(await background.rpc('auto_start', params: {'p_token': device}) == 'available',
+      'trip detected → I become available (driving), app closed');
+  final seen = await rows(yoni, 'availability');
+  check(seen.any((a) => a['user_id'] == uid(me) && a['mode'] == 'driving'),
+      'Yoni sees me free (driving)');
+  // A new friend (Yoni and I are in the 15-minute pause after his "no").
+  final dani = await newUser('יוני', 'male');
+  final inv2 = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await dani.rpc('accept_invitation', params: {'p_token': inv2['token']});
+  await dani.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  final pending = List<Map<String, dynamic>>.from(
+    await background.rpc('auto_offers', params: {'p_token': device}),
+  );
+  check(pending.length == 1 && pending.single['other_name'] == 'יוני',
+      'background check finds "Yoni is free — talk?"');
+  check(
+    await background.rpc('auto_decline', params: {
+          'p_token': device,
+          'p_offer': pending.single['offer_id'],
+        }) ==
+        'declined',
+    '"not now" from the notification works',
+  );
+  check(List.from(await eve.rpc('auto_offers', params: {'p_token': 'y' * 43})).isEmpty,
+      "a stranger's guess sees no offers");
+  check(await background.rpc('auto_stop', params: {'p_token': device}) == 'stopped',
+      'trip ended → automatic availability stops');
+  await me.rpc('set_availability', params: {'p_mode': 'walking', 'p_minutes': 30});
+  check(await background.rpc('auto_start', params: {'p_token': device}) == 'already_available',
+      'a manual "I\'m free" is not overridden by the car');
+  check(await background.rpc('auto_stop', params: {'p_token': device}) == 'nothing',
+      'nor stopped when the trip ends');
+  await me.rpc('revoke_device_tokens');
+  check(await background.rpc('auto_start', params: {'p_token': device}) == 'bad_token',
+      'turning the feature off revokes the device token');
+  try {
+    await eve.rpc('device_user', params: {'p_token': device});
+    check(false, 'internal token lookup is not callable');
+  } on PostgrestException {
+    check(true, 'internal token lookup is not callable');
+  }
+  await background.dispose();
+  await dani.dispose();
+  await me.rpc('clear_availability');
+  await yoni.rpc('clear_availability');
+
   // --- blocking
   await me.rpc('block_user', params: {'p_user': uid(yoni)});
   check((await rows(yoni, 'profiles')).length == 1, 'after I block Yoni he no longer sees me');
-  check((await rows(me, 'connections')).isEmpty, 'block removes the connection');
+  check(
+    (await rows(me, 'connections'))
+        .where((c) => c['user_a'] == uid(yoni) || c['user_b'] == uid(yoni))
+        .isEmpty,
+    'block removes the connection',
+  );
 
   await channel.unsubscribe();
   for (final c in [me, yoni, eve]) {

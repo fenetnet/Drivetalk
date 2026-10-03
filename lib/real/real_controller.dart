@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/providers.dart';
 import '../domain/models.dart';
 import '../l10n/app_localizations.dart';
+import '../platform/driving_detector.dart';
 import '../platform/phone_dialer.dart';
 import '../platform/voice_service.dart';
 import 'backend_config.dart';
@@ -58,6 +59,11 @@ final inviteBaseUrlProvider = Provider<String>(
 );
 
 final apkUrlProvider = Provider<String>((ref) => BackendConfig.apkUrl);
+
+/// Automatic driving detection (Android). Tests use a fake.
+final drivingDetectorProvider = Provider<DrivingDetector>(
+  (ref) => AndroidDrivingDetector(),
+);
 
 /// App version for diagnostics (overridden in main from package_info).
 final appVersionProvider = Provider<String>((ref) => '?');
@@ -118,6 +124,10 @@ enum RealNoticeKind {
   saved,
   dialFailed,
   micDenied,
+  autoDrivingOn,
+  autoDrivingOff,
+  autoDrivingNoPermission,
+  autoDrivingFailed,
 }
 
 class RealNotice {
@@ -172,6 +182,7 @@ class RealState {
     this.localAnswers = const {},
     this.dismissedOffers = const {},
     this.listening = false,
+    this.driving = const DrivingStatus(),
   });
 
   final RealPhase phase;
@@ -195,6 +206,9 @@ class RealState {
   final Set<String> dismissedOffers;
   final bool listening;
 
+  /// Automatic driving availability on this phone.
+  final DrivingStatus driving;
+
   String? get myId => snapshot?.me.id;
 
   static const _keep = Object();
@@ -216,6 +230,7 @@ class RealState {
     Map<String, bool>? localAnswers,
     Set<String>? dismissedOffers,
     bool? listening,
+    DrivingStatus? driving,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -239,6 +254,7 @@ class RealState {
     localAnswers: localAnswers ?? this.localAnswers,
     dismissedOffers: dismissedOffers ?? this.dismissedOffers,
     listening: listening ?? this.listening,
+    driving: driving ?? this.driving,
   );
 }
 
@@ -374,6 +390,18 @@ class RealController extends Notifier<RealState> {
   }
 
   Future<void> _start() async {
+    final detector = ref.read(drivingDetectorProvider);
+    _subs.add(
+      detector.events.listen((e) {
+        if (e == 'action') {
+          unawaited(_handleLaunchAction());
+        } else {
+          // The background service updates the server; catch up shortly.
+          unawaited(_loadDriving());
+          Timer(const Duration(seconds: 2), refresh);
+        }
+      }),
+    );
     _subs.add(
       _backend.changes.listen((_) {
         _debounce?.cancel();
@@ -413,6 +441,8 @@ class RealController extends Notifier<RealState> {
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
     unawaited(_loadPhone());
+    unawaited(_loadDriving());
+    unawaited(_handleLaunchAction());
     _openPendingInvite();
   }
 
@@ -436,6 +466,87 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(callStage: CallStage.feedback);
     }
     refresh();
+    unawaited(_loadDriving());
+    unawaited(_handleLaunchAction());
+  }
+
+  // ------------------------------------------------------------ auto driving
+
+  Future<void> _loadDriving() async {
+    final st = await ref.read(drivingDetectorProvider).status();
+    if (ref.mounted) state = state.copyWith(driving: st);
+  }
+
+  /// Turn on automatic driving availability (opt-in). Asks for the
+  /// "physical activity" permission (and notifications).
+  Future<bool> enableAutoDriving() async {
+    final detector = ref.read(drivingDetectorProvider);
+    if (!await detector.requestPermission()) {
+      _notify(RealNoticeKind.autoDrivingNoPermission);
+      await _loadDriving();
+      return false;
+    }
+    var ok = false;
+    await _run(() async {
+      final token = await _backend.createDeviceToken();
+      ok = await detector.enable(
+        url: BackendConfig.supabaseUrl,
+        key: BackendConfig.supabaseAnonKey,
+        token: token,
+        minutes: 120,
+        texts: {
+          'channelStatus': _l.realNotifChannelStatus,
+          'channelOffers': _l.realNotifChannelOffers,
+          'statusTitle': _l.realNotifStatusTitle,
+          'statusBody': _l.realNotifStatusBody,
+          'stop': _l.driverStop,
+          'offerTitle': _l.realOfferTitle('{name}', 'male'),
+          'offerBody': _l.realOfferNote,
+          'talk': _l.realTalkNow,
+          'notNow': _l.realNotNow,
+          'voiceOffer': _l.realVoiceOffer('{name}', 'male'),
+        },
+      );
+      if (!ok) await _backend.revokeDeviceTokens();
+    });
+    _notify(
+      ok ? RealNoticeKind.autoDrivingOn : RealNoticeKind.autoDrivingFailed,
+    );
+    await _loadDriving();
+    return ok;
+  }
+
+  Future<void> disableAutoDriving() async {
+    await ref.read(drivingDetectorProvider).disable();
+    try {
+      await _backend.revokeDeviceTokens();
+    } on RealBackendException {
+      // The phone forgot the token anyway.
+    }
+    _notify(RealNoticeKind.autoDrivingOff);
+    await _loadDriving();
+    await refresh();
+  }
+
+  /// Developer tools: pretend a trip started / ended.
+  Future<void> simulateTrip({required bool enter}) =>
+      ref.read(drivingDetectorProvider).simulate(enter: enter);
+
+  /// "Talk now" on a driving notification → answer yes in the app.
+  Future<void> _handleLaunchAction() async {
+    if (state.phase != RealPhase.ready) return;
+    final action = await ref.read(drivingDetectorProvider).takeLaunchAction();
+    if (action == null || !ref.mounted) return;
+    await refresh();
+    if (!action.accept || !ref.mounted) return;
+    final offer = state.snapshot?.offers
+        .where((o) => o.id == action.offerId)
+        .firstOrNull;
+    if (offer != null &&
+        offer.status == OfferStatus.pending &&
+        _myAnswer(state, offer) == null) {
+      await respond(offer, accept: true);
+    }
   }
 
   // ------------------------------------------------------------ account
@@ -500,6 +611,14 @@ class RealController extends Notifier<RealState> {
   /// Start over as a new user on this phone (the old test account stays
   /// on the server but is no longer used).
   Future<void> signOut() async {
+    if (state.driving.enabled) {
+      await ref.read(drivingDetectorProvider).disable();
+      try {
+        await _backend.revokeDeviceTokens();
+      } on RealBackendException {
+        // Signing out anyway.
+      }
+    }
     await _backend.signOut();
     if (!ref.mounted) return;
     state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
@@ -954,6 +1073,10 @@ class RealController extends Notifier<RealState> {
       'last offer: ${lastOffer == null ? '—' : '${lastOffer.status.name}, my answer ${lastOffer.myAnswer(snap!.me.id) ?? 'none'}, ${time(lastOffer.updatedAt)}'}',
       'call stage: ${s.callStage.name}${s.call == null ? '' : ' (${s.call!.role.name})'}',
       'phone shared: ${s.myPhone != null ? 'yes' : 'no'}',
+      'auto driving: ${s.driving.enabled ? 'on' : 'off'}'
+          '${s.driving.supported ? '' : ' (unsupported)'}'
+          '${s.driving.permission ? '' : ' (no permission)'}'
+          '${s.driving.inVehicle ? ', in vehicle' : ''}',
       'last refresh: ${time(snap?.fetchedAt)}',
       'last error: ${s.lastError ?? '—'}${s.lastErrorAt == null ? '' : ' at ${time(s.lastErrorAt)}'}',
       'now: ${now.toIso8601String()}',

@@ -43,6 +43,42 @@ class RealSettingsScreen extends ConsumerWidget {
             onTap: () => _editPhone(context, ref),
           ),
           SwitchListTile(
+            secondary: const Icon(Icons.directions_car_rounded),
+            title: Text(l.realAutoDriving),
+            subtitle: Text(
+              s.driving.supported
+                  ? l.realAutoDrivingBody
+                  : l.realAutoDrivingUnsupported,
+            ),
+            value: s.driving.enabled,
+            onChanged: !s.driving.supported || s.busy
+                ? null
+                : (v) async {
+                    if (!v) {
+                      await c.disableAutoDriving();
+                      return;
+                    }
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (d) => AlertDialog(
+                        title: Text(l.realAutoDrivingDialogTitle),
+                        content: Text(l.realAutoDrivingDialogBody),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(d, false),
+                            child: Text(l.cancel),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(d, true),
+                            child: Text(l.enable),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (ok ?? false) await c.enableAutoDriving();
+                  },
+          ),
+          SwitchListTile(
             secondary: const Icon(Icons.record_voice_over_rounded),
             title: Text(l.settingsVoiceReadout),
             subtitle: Text(l.settingsVoiceReadoutBody),

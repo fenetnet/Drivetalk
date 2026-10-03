@@ -1081,5 +1081,24 @@
         "type": "String"
       }
     }
-  }
+  },
+  "realNotifChannelStatus": "זמינות בנסיעה",
+  "realNotifChannelOffers": "חבר פנוי לשיחה",
+  "realNotifStatusTitle": "DriveTalk · זמין לשיחה בנסיעה",
+  "realNotifStatusBody": "נסיעה טובה! נודיע כשחבר פנוי.",
+  "realAutoDriving": "זמין אוטומטית בנסיעה",
+  "realAutoDrivingBody": "כשהטלפון מזהה נסיעה — תהיה זמין לשיחה עד סוף הנסיעה. בלי GPS.",
+  "realAutoDrivingUnsupported": "לא זמין במכשיר הזה",
+  "realAutoDrivingDialogTitle": "זמינות אוטומטית בנסיעה",
+  "realAutoDrivingDialogBody": "הטלפון מזהה לבד שהוא כנראה ברכב (לפי חיישני התנועה — בלי GPS ובלי מיקום) ומסמן אותך כזמין עד סוף הנסיעה.\n\nכשחבר פנוי — תקבל התראה \"רוצה לדבר?\". שיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
+  "realAutoDrivingOn": "מעולה. בנסיעה הבאה תהיה זמין לבד.",
+  "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
+  "realAutoDrivingNoPermission": "בלי הרשאת \"פעילות גופנית\" אי אפשר לזהות נסיעה. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.",
+  "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.",
+  "realStatusAutoDriving": "זיהוי נסיעה",
+  "realAutoOn": "פעיל",
+  "realAutoOff": "כבוי",
+  "realInVehicleNow": "ברכב עכשיו",
+  "realSimEnter": "דמה: נכנסתי לרכב",
+  "realSimExit": "דמה: יצאתי מהרכב"
 }

@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
+import 'package:drivetalk/platform/driving_detector.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
@@ -45,6 +46,7 @@ ProviderContainer _phone(_Dialer dialer) => ProviderContainer(
     localStoreProvider.overrideWithValue(MemoryLocalStore()),
     voiceServiceProvider.overrideWithValue(SilentVoiceService()),
     phoneDialerProvider.overrideWithValue(dialer),
+    drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
     inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
   ],
 );
@@ -103,6 +105,11 @@ void main() {
     expect(me.read(realProvider).lastError, isNull);
 
     expect(m.diagnostics(), isNot(contains('0507654321')));
+    // Automatic driving: the phone gets a background token.
+    expect(await m.enableAutoDriving(), isTrue);
+    expect(me.read(realProvider).driving.enabled, isTrue);
+    await m.disableAutoDriving();
+
     await m.stopAvailability();
     await y.block(yoni.read(realProvider).snapshot!.friends.single);
     await m.refresh();

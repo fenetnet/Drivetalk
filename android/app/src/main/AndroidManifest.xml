@@ -5,6 +5,14 @@
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <!-- Driving: understand "yes" / "no" by voice. Nothing is recorded or stored. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Automatic driving availability (opt-in, off by default): Android's
+         in-vehicle detection from motion sensors. No GPS, no location. -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Profile photo from the camera (gallery needs no permission). -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
@@ -55,6 +63,17 @@
             <!-- Links are handled by the app (app_links), not Flutter's router. -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
         </activity>
+        <receiver android:name=".DrivingReceiver" android:exported="false"/>
+        <receiver android:name=".DrivingBootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".DrivingService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

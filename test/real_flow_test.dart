@@ -3,6 +3,7 @@
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
+import 'package:drivetalk/platform/driving_detector.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
@@ -34,9 +35,11 @@ class Phone {
         voiceServiceProvider.overrideWithValue(voice),
         phoneDialerProvider.overrideWithValue(dialer),
         inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
+        drivingDetectorProvider.overrideWithValue(driving),
       ],
     );
   }
+  final driving = FakeDrivingDetector();
   final MemoryServer server;
   late final MemoryRealBackend backend;
   late final ProviderContainer container;
@@ -350,6 +353,75 @@ void main() {
     await again.read(realProvider.notifier).refresh();
     expect(again.read(realProvider).notice, isNull);
     again.dispose();
+  });
+
+  group('automatic driving availability', () {
+    test('turning it on gives the phone a background token', () async {
+      await connect();
+      expect(await me.c.enableAutoDriving(), isTrue);
+      expect(me.driving.enabled, isTrue);
+      expect(me.s.driving.enabled, isTrue);
+      expect(server.deviceTokens[me.driving.token], me.backend.userId);
+      expect(me.s.notice?.kind, RealNoticeKind.autoDrivingOn);
+    });
+
+    test('no permission → stays off, with an explanation', () async {
+      await connect();
+      me.driving.grantPermission = false;
+      expect(await me.c.enableAutoDriving(), isFalse);
+      expect(me.s.driving.enabled, isFalse);
+      expect(server.deviceTokens, isEmpty);
+      expect(me.s.notice?.kind, RealNoticeKind.autoDrivingNoPermission);
+    });
+
+    test('trip → available while the app is closed → offer → "talk now" '
+        'from the notification', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      // The Android service calls the server with the device token.
+      expect(server.autoStart(me.driving.token!), 'available');
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now).single.$2.mode, AvailabilityMode.driving);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      final offer = currentOffer(me.s, now)!;
+      expect(isRealDriving(me.s, now), isTrue, reason: 'driver screen');
+
+      // "Talk now" on the notification opens the app and answers yes.
+      me.driving.tapNotification(LaunchAction(offer.id, accept: true));
+      await pump(20);
+      expect(waitingOffer(me.s, now)?.id, offer.id);
+    });
+
+    test('trip ended stops only what the car started', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final token = me.driving.token!;
+      server.autoStart(token);
+      expect(server.autoStop(token), 'stopped');
+      await me.c.startAvailability(AvailabilityMode.walking, 30);
+      expect(server.autoStart(token), 'already_available');
+      expect(server.autoStop(token), 'nothing');
+      await me.c.refresh();
+      expect(myActiveAvailability(me.s, now)?.mode, AvailabilityMode.walking);
+    });
+
+    test('turning it off revokes the token', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final token = me.driving.token!;
+      await me.c.disableAutoDriving();
+      expect(me.driving.enabled, isFalse);
+      expect(server.autoStart(token), 'bad_token');
+    });
+
+    test('test info shows the state, never the token', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final info = me.c.diagnostics();
+      expect(info, contains('auto driving: on'));
+      expect(info, isNot(contains(me.driving.token!)));
+    });
   });
 
   group('invitation codes', () {

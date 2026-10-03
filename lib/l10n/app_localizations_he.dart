@@ -1870,4 +1870,64 @@ class AppLocalizationsHe extends AppLocalizations {
   String realVoiceCalling(String name) {
     return 'מתקשרים ל$name.';
   }
+
+  @override
+  String get realNotifChannelStatus => 'זמינות בנסיעה';
+
+  @override
+  String get realNotifChannelOffers => 'חבר פנוי לשיחה';
+
+  @override
+  String get realNotifStatusTitle => 'DriveTalk · זמין לשיחה בנסיעה';
+
+  @override
+  String get realNotifStatusBody => 'נסיעה טובה! נודיע כשחבר פנוי.';
+
+  @override
+  String get realAutoDriving => 'זמין אוטומטית בנסיעה';
+
+  @override
+  String get realAutoDrivingBody =>
+      'כשהטלפון מזהה נסיעה — תהיה זמין לשיחה עד סוף הנסיעה. בלי GPS.';
+
+  @override
+  String get realAutoDrivingUnsupported => 'לא זמין במכשיר הזה';
+
+  @override
+  String get realAutoDrivingDialogTitle => 'זמינות אוטומטית בנסיעה';
+
+  @override
+  String get realAutoDrivingDialogBody =>
+      'הטלפון מזהה לבד שהוא כנראה ברכב (לפי חיישני התנועה — בלי GPS ובלי מיקום) ומסמן אותך כזמין עד סוף הנסיעה.\n\nכשחבר פנוי — תקבל התראה \"רוצה לדבר?\". שיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
+
+  @override
+  String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה תהיה זמין לבד.';
+
+  @override
+  String get realAutoDrivingOff => 'זמינות אוטומטית בנסיעה כובתה';
+
+  @override
+  String get realAutoDrivingNoPermission =>
+      'בלי הרשאת \"פעילות גופנית\" אי אפשר לזהות נסיעה. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.';
+
+  @override
+  String get realAutoDrivingFailed => 'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.';
+
+  @override
+  String get realStatusAutoDriving => 'זיהוי נסיעה';
+
+  @override
+  String get realAutoOn => 'פעיל';
+
+  @override
+  String get realAutoOff => 'כבוי';
+
+  @override
+  String get realInVehicleNow => 'ברכב עכשיו';
+
+  @override
+  String get realSimEnter => 'דמה: נכנסתי לרכב';
+
+  @override
+  String get realSimExit => 'דמה: יצאתי מהרכב';
 }

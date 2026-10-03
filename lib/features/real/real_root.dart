@@ -41,7 +41,11 @@ class RealRoot extends ConsumerWidget {
               content: Text(_noticeText(l, n)),
               behavior: SnackBarBehavior.floating,
               duration: Duration(
-                seconds: n.kind == RealNoticeKind.micDenied ? 8 : 4,
+                seconds:
+                    n.kind == RealNoticeKind.micDenied ||
+                        n.kind == RealNoticeKind.autoDrivingNoPermission
+                    ? 8
+                    : 4,
               ),
             ),
           );
@@ -100,6 +104,10 @@ class RealRoot extends ConsumerWidget {
       RealNoticeKind.saved => l.realSaved,
       RealNoticeKind.dialFailed => l.realDialFailed,
       RealNoticeKind.micDenied => l.noticeMicDenied,
+      RealNoticeKind.autoDrivingOn => l.realAutoDrivingOn,
+      RealNoticeKind.autoDrivingOff => l.realAutoDrivingOff,
+      RealNoticeKind.autoDrivingNoPermission => l.realAutoDrivingNoPermission,
+      RealNoticeKind.autoDrivingFailed => l.realAutoDrivingFailed,
     };
   }
 }
