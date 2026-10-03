@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Real mode talks to the server (Supabase). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Regular phone call after both sides agreed (one tap, no dialer step). -->
     <uses-permission android:name="android.permission.CALL_PHONE"/>
     <!-- Driving: understand "yes" / "no" by voice. Nothing is recorded or stored. -->

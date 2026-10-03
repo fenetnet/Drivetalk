@@ -13,8 +13,15 @@ class BackendConfig {
   static const _defaultUrl = 'https://isjgrdiiawhyxzvzdkva.supabase.co';
   static const _defaultKey = 'sb_publishable_2qohPSKh7lkPXblHVmPyFg_Xu6shuEn';
 
-  static String get supabaseUrl => _url.isEmpty ? _defaultUrl : _url;
-  static String get supabaseAnonKey => _key.isEmpty ? _defaultKey : _key;
+  static String get supabaseUrl {
+    var u = _url.trim();
+    if (u.isEmpty) return _defaultUrl;
+    if (!u.startsWith('http')) u = 'https://$u';
+    return u.endsWith('/') ? u.substring(0, u.length - 1) : u;
+  }
+
+  static String get supabaseAnonKey =>
+      _key.trim().isEmpty ? _defaultKey : _key.trim();
 
   /// Base of the invitation link, e.g. https://drivetalk-test.pages.dev
   /// (empty → the share message falls back to "download + code").
