@@ -28,6 +28,7 @@ class RealNow extends Notifier<DateTime> {
 String realErrorText(AppLocalizations l, String code) => switch (code) {
   'offline' => l.realErrorOffline,
   'anonymous_disabled' => l.realErrorAnonymousDisabled,
+  'bad_key' => l.realErrorGeneric('bad_key — המפתח הציבורי לא תקין'),
   'schema_missing' => l.realErrorSchema,
   'invalid_phone' => l.realErrorInvalidPhone,
   'invalid_name' => l.realErrorInvalidName,

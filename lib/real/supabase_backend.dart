@@ -310,7 +310,9 @@ class SupabaseRealBackend implements RealBackend {
             ? 'anonymous_disabled'
             : m.contains('rate') || e.statusCode == '429'
             ? 'rate_limited'
-            : 'auth',
+            : m.contains('api key') || m.contains('apikey')
+            ? 'bad_key'
+            : 'auth ${e.statusCode ?? ''} ${_short(e.message)}'.trim(),
       );
     } catch (e) {
       final s = e.toString().toLowerCase();
@@ -323,6 +325,15 @@ class SupabaseRealBackend implements RealBackend {
       }
       throw const RealBackendException('unknown');
     }
+  }
+
+  /// A short, readable reason for the test screen (long token-like runs
+  /// removed, just in case).
+  static String _short(String message) {
+    final clean = message
+        .replaceAll(RegExp(r'[A-Za-z0-9_\-.]{24,}'), '…')
+        .replaceAll(RegExp(r'\s+'), ' ');
+    return clean.length > 80 ? '${clean.substring(0, 80)}…' : clean;
   }
 
   static String _codeFrom(String message) {
