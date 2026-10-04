@@ -3532,36 +3532,6 @@ abstract class AppLocalizations {
   /// **'בלי רכב'**
   String get realCarRemove;
 
-  /// No description provided for @realReasonNever.
-  ///
-  /// In he, this message translates to:
-  /// **'עוד לא דיברתם כאן'**
-  String get realReasonNever;
-
-  /// No description provided for @realReasonDays.
-  ///
-  /// In he, this message translates to:
-  /// **'לא דיברתם {count} ימים'**
-  String realReasonDays(int count);
-
-  /// No description provided for @realReasonWeeks.
-  ///
-  /// In he, this message translates to:
-  /// **'לא דיברתם {count} שבועות'**
-  String realReasonWeeks(int count);
-
-  /// No description provided for @realReasonMonths.
-  ///
-  /// In he, this message translates to:
-  /// **'לא דיברתם {count} חודשים'**
-  String realReasonMonths(int count);
-
-  /// No description provided for @realReasonMonth.
-  ///
-  /// In he, this message translates to:
-  /// **'לא דיברתם כבר חודש'**
-  String get realReasonMonth;
-
   /// No description provided for @realWeekTitle.
   ///
   /// In he, this message translates to:
@@ -3579,12 +3549,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{friends, plural, =1{עם חבר אחד} other{עם {friends} חברים}}'**
   String realWeekFriends(int friends);
-
-  /// No description provided for @realWeekNudge.
-  ///
-  /// In he, this message translates to:
-  /// **'לחיצה על \"אני פנוי\" בדרך הבאה — ונמצא לך עם מי'**
-  String get realWeekNudge;
 
   /// No description provided for @realRoutinesIntro.
   ///

@@ -2157,27 +2157,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realCarRemove => 'בלי רכב';
 
   @override
-  String get realReasonNever => 'עוד לא דיברתם כאן';
-
-  @override
-  String realReasonDays(int count) {
-    return 'לא דיברתם $count ימים';
-  }
-
-  @override
-  String realReasonWeeks(int count) {
-    return 'לא דיברתם $count שבועות';
-  }
-
-  @override
-  String realReasonMonths(int count) {
-    return 'לא דיברתם $count חודשים';
-  }
-
-  @override
-  String get realReasonMonth => 'לא דיברתם כבר חודש';
-
-  @override
   String get realWeekTitle => 'השבוע שלך';
 
   @override
@@ -2202,10 +2181,6 @@ class AppLocalizationsHe extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get realWeekNudge =>
-      'לחיצה על \"אני פנוי\" בדרך הבאה — ונמצא לך עם מי';
 
   @override
   String get realRoutinesIntro =>

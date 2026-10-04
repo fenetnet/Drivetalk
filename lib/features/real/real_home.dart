@@ -81,10 +81,6 @@ class RealHomeScreen extends ConsumerWidget {
         if (tb == null) return 1;
         return ta.compareTo(tb);
       });
-    final reasons = {
-      if (snap != null)
-        for (final (p, _) in free) p.id: talkReason(l, snap, p.id, now),
-    };
     final g = genderKey(me?.gender ?? Gender.unspecified);
     final hour = now.hour;
     final greet = hour < 5
@@ -150,7 +146,7 @@ class RealHomeScreen extends ConsumerWidget {
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
                 else
-                  _FreeNowCard(free: free, now: now, reasons: reasons),
+                  _FreeNowCard(free: free, now: now),
                 if (c.dueRoutine(now) case final r?) ...[
                   const SizedBox(height: 16),
                   _RoutineCard(routine: r),
@@ -197,14 +193,9 @@ class _Blob extends StatelessWidget {
 
 /// "Free now" card: friends' faces with a green ring.
 class _FreeNowCard extends StatelessWidget {
-  const _FreeNowCard({
-    required this.free,
-    required this.now,
-    this.reasons = const {},
-  });
+  const _FreeNowCard({required this.free, required this.now});
   final List<(RealProfile, RealAvailability)> free;
   final DateTime now;
-  final Map<String, String?> reasons;
 
   @override
   Widget build(BuildContext context) {
@@ -280,17 +271,6 @@ class _FreeNowCard extends StatelessWidget {
                             color: AppColors.inkSoft,
                           ),
                         ),
-                        if (reasons[p.id] case final r?)
-                          Text(
-                            r,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.coralDeep,
-                            ),
-                          ),
                       ],
                     ),
                   );
@@ -569,14 +549,6 @@ class _WeekCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                if (talks == 0)
-                  Text(
-                    l.realWeekNudge,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.inkSoft,
-                    ),
-                  ),
               ],
             ),
           ),

@@ -13,7 +13,6 @@ import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
 import 'package:drivetalk/real/real_controller.dart';
 import 'package:drivetalk/real/real_models.dart';
-import 'package:drivetalk/features/real/real_common.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -599,41 +598,18 @@ void main() {
     });
   });
 
-  group('smart reasons and the car', () {
-    test('"not talked in a while" comes only from real history', () async {
-      final l = lookupAppLocalizations(const Locale('he'));
+  group('talk history and the car', () {
+    test('talk history (for "longest without talking" first)', () async {
       await connect();
       final yoniId = me.s.snapshot!.friends.single.id;
-      expect(talkReason(l, me.s.snapshot!, yoniId, now), 'עוד לא דיברתם כאן');
+      expect(me.s.snapshot!.lastTalk[yoniId], isNull);
       await me.c.startAvailability(AvailabilityMode.free, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
       await me.c.respond(currentOffer(me.s, now)!, accept: true);
       await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
       await me.c.refresh();
-      expect(
-        talkReason(l, me.s.snapshot!, yoniId, now),
-        isNull,
-        reason: 'just talked',
-      );
-      expect(
-        talkReason(
-          l,
-          me.s.snapshot!,
-          yoniId,
-          now.add(const Duration(days: 20)),
-        ),
-        'לא דיברתם 2 שבועות',
-      );
-      expect(
-        talkReason(
-          l,
-          me.s.snapshot!,
-          yoniId,
-          now.add(const Duration(days: 95)),
-        ),
-        'לא דיברתם 3 חודשים',
-      );
+      expect(me.s.snapshot!.lastTalk[yoniId], isNotNull);
     });
 
     test('picking the car turns automatic driving on', () async {
