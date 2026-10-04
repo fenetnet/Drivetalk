@@ -16,9 +16,18 @@ import 'real_common.dart';
 
 /// Create an invitation and open the phone's share sheet (WhatsApp, SMS…).
 /// Falls back to copying when sharing isn't available.
-Future<void> shareInvite(BuildContext context, WidgetRef ref) async {
+/// Normally just the download link: once the friend joins, people who have
+/// each other's number connect by themselves. [withCode] adds a personal
+/// code, for a friend who isn't saved in my contacts.
+Future<void> shareInvite(
+  BuildContext context,
+  WidgetRef ref, {
+  bool withCode = false,
+}) async {
   final l = context.l10n;
-  final text = await ref.read(realProvider.notifier).createInviteMessage();
+  final text = withCode
+      ? await ref.read(realProvider.notifier).createInviteMessage()
+      : l.realInviteSimple(ref.read(apkUrlProvider));
   if (text == null) return;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     try {
@@ -141,29 +150,26 @@ class RealPeopleScreen extends ConsumerWidget {
           children: [
             Text(
               l.realTabPeople,
-              style: Theme.of(context).textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
-            Row(
+            FilledButton.icon(
+              onPressed: () => shareInvite(context, ref),
+              icon: const Icon(Icons.share_rounded),
+              label: Text(l.realInviteFriend),
+            ),
+            Wrap(
+              alignment: WrapAlignment.center,
               children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: s.busy ? null : () => shareInvite(context, ref),
-                    icon: const Icon(Icons.share_rounded),
-                    label: Text(l.realInviteFriend),
-                  ),
+                TextButton(
+                  onPressed: s.busy
+                      ? null
+                      : () => shareInvite(context, ref, withCode: true),
+                  child: Text(l.realInviteWithCode),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 52),
-                    ),
-                    onPressed: () => openInviteCodeSheet(context, ref),
-                    icon: const Icon(Icons.vpn_key_rounded),
-                    label: Text(l.realHaveCode),
-                  ),
+                TextButton(
+                  onPressed: () => openInviteCodeSheet(context, ref),
+                  child: Text(l.realHaveCode),
                 ),
               ],
             ),

@@ -3441,6 +3441,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.'**
   String get realWelcomeSub;
+
+  /// No description provided for @realInviteSimple.
+  ///
+  /// In he, this message translates to:
+  /// **'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: {apkUrl}\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)'**
+  String realInviteSimple(String apkUrl);
+
+  /// No description provided for @realInviteWithCode.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמנה עם קוד (למי שלא שמור אצלך)'**
+  String get realInviteWithCode;
 }
 
 class _AppLocalizationsDelegate

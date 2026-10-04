@@ -2106,4 +2106,12 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get realWelcomeSub =>
       'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.';
+
+  @override
+  String realInviteSimple(String apkUrl) {
+    return 'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: $apkUrl\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)';
+  }
+
+  @override
+  String get realInviteWithCode => 'הזמנה עם קוד (למי שלא שמור אצלך)';
 }

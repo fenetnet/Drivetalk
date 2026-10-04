@@ -1235,5 +1235,14 @@
   },
   "realGroupAccount": "החשבון שלי",
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
-  "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר."
+  "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.",
+  "realInviteSimple": "אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: {apkUrl}\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)",
+  "@realInviteSimple": {
+    "placeholders": {
+      "apkUrl": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteWithCode": "הזמנה עם קוד (למי שלא שמור אצלך)"
 }
