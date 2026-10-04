@@ -158,21 +158,7 @@ class RealPeopleScreen extends ConsumerWidget {
               icon: const Icon(Icons.share_rounded),
               label: Text(l.realInviteFriend),
             ),
-            Wrap(
-              alignment: WrapAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: s.busy
-                      ? null
-                      : () => shareInvite(context, ref, withCode: true),
-                  child: Text(l.realInviteWithCode),
-                ),
-                TextButton(
-                  onPressed: () => openInviteCodeSheet(context, ref),
-                  child: Text(l.realHaveCode),
-                ),
-              ],
-            ),
+
             const SizedBox(height: 12),
             const _ContactsCard(),
             const SizedBox(height: 12),

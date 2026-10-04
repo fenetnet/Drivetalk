@@ -523,10 +523,6 @@ class _NoFriendsCard extends ConsumerWidget {
             icon: const Icon(Icons.share_rounded),
             label: Text(l.realInviteFriend),
           ),
-          TextButton(
-            onPressed: () => openInviteCodeSheet(context, ref),
-            child: Text(l.realHaveCode),
-          ),
         ],
       ),
     );

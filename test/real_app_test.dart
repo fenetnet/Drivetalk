@@ -3,6 +3,8 @@
 import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
+import 'package:drivetalk/platform/contacts_reader.dart';
+import 'package:drivetalk/platform/driving_detector.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/deep_links.dart';
 import 'package:drivetalk/real/local_store.dart';
@@ -22,123 +24,123 @@ Future<void> pumpFor(WidgetTester t, int ms) async {
 }
 
 void main() {
-  testWidgets('join → invitation code → both free → talk → feedback', (
-    t,
-  ) async {
-    t.view.physicalSize = const Size(1080, 2340);
-    t.view.devicePixelRatio = 2.6;
-    addTearDown(t.view.reset);
+  testWidgets(
+    'join → friend found from contacts → both free → talk → feedback',
+    (t) async {
+      t.view.physicalSize = const Size(1080, 2340);
+      t.view.devicePixelRatio = 2.6;
+      addTearDown(t.view.reset);
 
-    final server = MemoryServer();
-    final store = MemoryLocalStore()..values['app.mode'] = 'real';
-    await t.pumpWidget(
-      ProviderScope(
+      final server = MemoryServer();
+      final store = MemoryLocalStore()..values['app.mode'] = 'real';
+      await t.pumpWidget(
+        ProviderScope(
+          overrides: [
+            matchingConfigProvider.overrideWithValue(config),
+            voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+            realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
+            localStoreProvider.overrideWithValue(store),
+            incomingLinksProvider.overrideWithValue(const Stream.empty()),
+            inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
+            contactsReaderProvider.overrideWithValue(
+              FakeContactsReader(numbers: ['053-222-2222']),
+            ),
+            drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+          ],
+          child: const DriveTalkApp(),
+        ),
+      );
+      await pumpFor(t, 300);
+
+      // Join: just a name.
+      expect(find.text('בדיקה עם חבר'), findsOneWidget);
+      expect(
+        Directionality.of(t.element(find.byType(Scaffold).first)),
+        TextDirection.rtl,
+      );
+      await t.enterText(find.byType(TextField).first, 'נתנאל');
+      await t.enterText(find.byType(TextField).at(1), '0521234567');
+      await t.pump();
+      await t.tap(find.text('יאללה'));
+      await pumpFor(t, 500);
+      expect(find.text('נתנאל, עם מי\nמדברים היום?'), findsOneWidget);
+      expect(find.text('עוד אין פה חברים'), findsOneWidget);
+
+      // The friend (another phone) joins; we have each other's numbers.
+      final yoni = ProviderContainer(
         overrides: [
-          matchingConfigProvider.overrideWithValue(config),
-          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
           realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
-          localStoreProvider.overrideWithValue(store),
-          incomingLinksProvider.overrideWithValue(const Stream.empty()),
-          inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
+          localStoreProvider.overrideWithValue(MemoryLocalStore()),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          contactsReaderProvider.overrideWithValue(
+            FakeContactsReader(numbers: ['0521234567']),
+          ),
+          drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
         ],
-        child: const DriveTalkApp(),
-      ),
-    );
-    await pumpFor(t, 300);
+      );
+      final y = yoni.read(realProvider.notifier);
+      await t.runAsync(() async {
+        await Future<void>.delayed(Duration.zero);
+        await y.signIn('יוני', Gender.male, phone: '0532222222');
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
+      await pumpFor(t, 800);
+      // No code, no invitation: we're connected.
+      expect(find.text('אף חבר לא פנוי כרגע'), findsOneWidget);
 
-    // Join: just a name.
-    expect(find.text('בדיקה עם חבר'), findsOneWidget);
-    expect(
-      Directionality.of(t.element(find.byType(Scaffold).first)),
-      TextDirection.rtl,
-    );
-    await t.enterText(find.byType(TextField).first, 'נתנאל');
-    await t.enterText(find.byType(TextField).at(1), '0521234567');
-    await t.pump();
-    await t.tap(find.text('יאללה'));
-    await pumpFor(t, 500);
-    expect(find.text('נתנאל, עם מי\nמדברים היום?'), findsOneWidget);
-    expect(find.text('עוד אין פה חברים'), findsOneWidget);
+      // Yoni becomes free → I see him.
+      await t.runAsync(() => y.startAvailability(AvailabilityMode.walking, 20));
+      await pumpFor(t, 600);
+      expect(find.text('יוני'), findsOneWidget);
 
-    // The friend (another phone) joins and sends an invitation.
-    final yoni = ProviderContainer(
-      overrides: [
-        realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
-        localStoreProvider.overrideWithValue(MemoryLocalStore()),
-        voiceServiceProvider.overrideWithValue(SilentVoiceService()),
-        inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
-      ],
-    );
-    final y = yoni.read(realProvider.notifier);
-    await t.runAsync(() async {
-      await Future<void>.delayed(Duration.zero);
-      await y.signIn('יוני', Gender.male);
-    });
-    final message = (await t.runAsync(y.createInviteMessage))!;
+      // I become free → both are asked.
+      await t.tap(find.text('אני פנוי עכשיו'));
+      await pumpFor(t, 500);
+      await t.tap(find.text('סתם פנוי'));
+      await pumpFor(t, 500);
+      await t.tap(find.text('30 דק׳'));
+      await pumpFor(t, 800);
+      expect(find.text('יוני פנוי עכשיו'), findsOneWidget);
+      expect(find.text('לא עכשיו'), findsOneWidget);
 
-    // I paste the whole WhatsApp message.
-    await t.tap(find.text('יש לי קוד הזמנה'));
-    await pumpFor(t, 500);
-    await t.enterText(find.byType(TextField).last, message);
-    await t.tap(find.text('פתיחה'));
-    await pumpFor(t, 500);
-    expect(find.text('יוני הזמין אותך'), findsOneWidget);
-    await t.tap(find.text('אישור'));
-    await pumpFor(t, 600);
-    expect(find.text('מעולה! יוני עכשיו ברשימת האנשים שלך.'), findsOneWidget);
-    expect(find.text('אף חבר לא פנוי כרגע'), findsOneWidget);
+      await t.tap(find.text('דבר עכשיו'));
+      await pumpFor(t, 500);
+      expect(find.text('מחכים ליוני…'), findsOneWidget);
 
-    // Yoni becomes free → I see him.
-    await t.runAsync(() => y.startAvailability(AvailabilityMode.walking, 20));
-    await pumpFor(t, 600);
-    expect(find.text('יוני'), findsOneWidget);
+      // Yoni says yes too.
+      await t.runAsync(() async {
+        await y.refresh();
+        final offer = currentOffer(yoni.read(realProvider), DateTime.now())!;
+        await y.respond(offer, accept: true);
+      });
+      // Both shared numbers → one side dials after a short countdown (here
+      // there is no phone dialer, so it becomes the in-app call).
+      await pumpFor(t, 4500);
+      expect(find.text('סיימנו'), findsOneWidget);
+      await t.tap(find.text('סיימנו'));
+      await pumpFor(t, 500);
+      expect(find.text('מאוד'), findsOneWidget);
+      await t.tap(find.text('מאוד'));
+      await pumpFor(t, 500);
+      expect(find.text('תודה!'), findsOneWidget);
+      expect(server.feedback, hasLength(1));
 
-    // I become free → both are asked.
-    await t.tap(find.text('אני פנוי עכשיו'));
-    await pumpFor(t, 500);
-    await t.tap(find.text('סתם פנוי'));
-    await pumpFor(t, 500);
-    await t.tap(find.text('30 דק׳'));
-    await pumpFor(t, 800);
-    expect(find.text('יוני פנוי עכשיו'), findsOneWidget);
-    expect(find.text('לא עכשיו'), findsOneWidget);
+      // The test tab shows everything is fine.
+      await t.tap(find.text('בדיקה'));
+      await pumpFor(t, 400);
+      expect(find.text('בדיקה עם חבר'), findsOneWidget);
+      await t.scrollUntilVisible(
+        find.text('העתק מידע לבדיקה'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(find.text('העתק מידע לבדיקה'), findsOneWidget);
 
-    await t.tap(find.text('דבר עכשיו'));
-    await pumpFor(t, 500);
-    expect(find.text('מחכים ליוני…'), findsOneWidget);
-
-    // Yoni says yes too.
-    await t.runAsync(() async {
-      await y.refresh();
-      final offer = currentOffer(yoni.read(realProvider), DateTime.now())!;
-      await y.respond(offer, accept: true);
-    });
-    await pumpFor(t, 800);
-    // I shared my number, Yoni didn't → Yoni calls me.
-    expect(find.text('יוני מתקשר אליך עכשיו'), findsOneWidget);
-    await t.tap(find.text('סיימנו'));
-    await pumpFor(t, 500);
-    expect(find.text('מאוד'), findsOneWidget);
-    await t.tap(find.text('מאוד'));
-    await pumpFor(t, 500);
-    expect(find.text('תודה!'), findsOneWidget);
-    expect(server.feedback, hasLength(1));
-
-    // The test tab shows everything is fine.
-    await t.tap(find.text('בדיקה'));
-    await pumpFor(t, 400);
-    expect(find.text('בדיקה עם חבר'), findsOneWidget);
-    await t.scrollUntilVisible(
-      find.text('העתק מידע לבדיקה'),
-      300,
-      scrollable: find.byType(Scrollable).last,
-    );
-    expect(find.text('העתק מידע לבדיקה'), findsOneWidget);
-
-    yoni.dispose();
-    await t.pumpWidget(const SizedBox());
-    await t.pump(const Duration(seconds: 5));
-  });
+      yoni.dispose();
+      await t.pumpWidget(const SizedBox());
+      await t.pump(const Duration(seconds: 5));
+    },
+  );
 
   testWidgets('real mode without a server says so and offers the demo', (
     t,
