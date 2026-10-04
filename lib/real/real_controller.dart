@@ -461,6 +461,7 @@ class RealController extends Notifier<RealState> {
     unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
     unawaited(_maybeSyncContacts());
+    unawaited(_ensureDevice());
     _openPendingInvite();
   }
 
@@ -544,15 +545,43 @@ class RealController extends Notifier<RealState> {
     'quickTitle': _l.realQuickNotif('{name}'),
     'quickBody': _l.realQuickWhy,
     'voiceQuick': _l.realVoiceQuick('{name}'),
+    'manualTitle': _l.realNotifManualTitle,
+    'manualBody': _l.realNotifManualBody,
   };
 
-  Future<void> disableAutoDriving() async {
-    await ref.read(drivingDetectorProvider).disable();
+  /// Background notifications need this phone's device token. Created once.
+  Future<void> _ensureDevice() async {
+    final detector = ref.read(drivingDetectorProvider);
+    final st = await detector.status();
+    if (!st.supported || st.configured || !ref.mounted) return;
     try {
-      await _backend.revokeDeviceTokens();
+      final token = await _backend.createDeviceToken();
+      await detector.configure(
+        url: BackendConfig.supabaseUrl,
+        key: BackendConfig.supabaseAnonKey,
+        token: token,
+        texts: _nativeTexts(),
+      );
     } on RealBackendException {
-      // The phone forgot the token anyway.
+      // Try again next start.
     }
+  }
+
+  /// While I'm free: a small notification watches for friends, even when
+  /// the app is closed (until my availability ends).
+  Future<void> _watchWhileFree() async {
+    final mine = myActiveAvailability(state, _now());
+    if (mine == null || mine.auto) return;
+    final detector = ref.read(drivingDetectorProvider);
+    await _ensureDevice();
+    await detector.requestNotificationPermission();
+    await detector.startAvailable(mine.expiresAt);
+  }
+
+  Future<void> disableAutoDriving() async {
+    // Detection off. The device token stays: it also brings "X is free"
+    // notifications whenever I mark myself free.
+    await ref.read(drivingDetectorProvider).disable();
     _notify(RealNoticeKind.autoDrivingOff);
     await _loadDriving();
     await refresh();
@@ -600,6 +629,7 @@ class RealController extends Notifier<RealState> {
       _openPendingInvite();
       // Right away: friends who are already here, from my contacts.
       unawaited(syncContacts());
+      unawaited(_ensureDevice());
     } on RealBackendException catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(busy: false);
@@ -643,13 +673,11 @@ class RealController extends Notifier<RealState> {
   /// Start over as a new user on this phone (the old test account stays
   /// on the server but is no longer used).
   Future<void> signOut() async {
-    if (state.driving.enabled) {
-      await ref.read(drivingDetectorProvider).disable();
-      try {
-        await _backend.revokeDeviceTokens();
-      } on RealBackendException {
-        // Signing out anyway.
-      }
+    await ref.read(drivingDetectorProvider).forget();
+    try {
+      await _backend.revokeDeviceTokens();
+    } on RealBackendException {
+      // Signing out anyway.
     }
     await _backend.signOut();
     if (!ref.mounted) return;
@@ -780,6 +808,7 @@ class RealController extends Notifier<RealState> {
     );
     _lastNudge = null;
     await refresh();
+    if (ok && ref.mounted) unawaited(_watchWhileFree());
     return ok;
   }
 
@@ -789,6 +818,7 @@ class RealController extends Notifier<RealState> {
     if (state.driving.inVehicle) {
       await ref.read(drivingDetectorProvider).simulate(enter: false);
     }
+    await ref.read(drivingDetectorProvider).stopAvailable();
     await _run(_backend.clearAvailability);
     unawaited(_loadDriving());
     await refresh();

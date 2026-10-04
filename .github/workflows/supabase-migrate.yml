@@ -1,0 +1,36 @@
+# Keeps the real database up to date: applies new files from
+# supabase/migrations automatically (no more copy-paste into the SQL editor).
+# Needs one repository secret, SUPABASE_DB_URL (Supabase → Connect →
+# "Session pooler" connection string with the database password). Skipped
+# when the secret is not set.
+name: Update database
+
+on:
+  push:
+    branches: [main, "claude/**"]
+    paths: ["supabase/migrations/**", "tool/migrate.sh", ".github/workflows/supabase-migrate.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply new migrations
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::notice::SUPABASE_DB_URL not set — skipping (paste the SQL by hand instead)."
+            exit 0
+          fi
+          command -v psql >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client)
+          bash tool/migrate.sh

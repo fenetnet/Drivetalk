@@ -35,6 +35,9 @@ class DrivingApi(private val store: DrivingStore) {
 
     fun stop(): String? = rpc("auto_stop", JSONObject())?.trim('"')
 
+    /** "Stop" on the notification: end any availability (manual too). */
+    fun stopAll(): String? = rpc("device_stop", JSONObject())?.trim('"')
+
     fun decline(offerId: String): String? =
         rpc("auto_decline", JSONObject().put("p_offer", offerId))?.trim('"')
 

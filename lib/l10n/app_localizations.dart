@@ -3345,6 +3345,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.'**
   String get realContactsNoPermission;
+
+  /// No description provided for @realNotifManualTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'DriveTalk · זמין לשיחה'**
+  String get realNotifManualTitle;
+
+  /// No description provided for @realNotifManualBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.'**
+  String get realNotifManualBody;
 }
 
 class _AppLocalizationsDelegate

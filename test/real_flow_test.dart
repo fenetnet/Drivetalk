@@ -373,7 +373,6 @@ void main() {
       me.driving.grantPermission = false;
       expect(await me.c.enableAutoDriving(), isFalse);
       expect(me.s.driving.enabled, isFalse);
-      expect(server.deviceTokens, isEmpty);
       expect(me.s.notice?.kind, RealNoticeKind.autoDrivingNoPermission);
     });
 
@@ -409,13 +408,29 @@ void main() {
       expect(myActiveAvailability(me.s, now)?.mode, AvailabilityMode.walking);
     });
 
-    test('turning it off revokes the token', () async {
+    test(
+      'turning it off stops detection; signing out revokes the token',
+      () async {
+        await connect();
+        await me.c.enableAutoDriving();
+        final token = me.driving.token!;
+        await me.c.disableAutoDriving();
+        expect(me.driving.enabled, isFalse);
+        expect(server.autoStart(token), 'available', reason: 'kept for alerts');
+        await me.c.signOut();
+        expect(server.autoStart(token), 'bad_token');
+        expect(me.driving.token, isNull);
+      },
+    );
+
+    test('marking myself free keeps watching in the background', () async {
       await connect();
-      await me.c.enableAutoDriving();
-      final token = me.driving.token!;
-      await me.c.disableAutoDriving();
-      expect(me.driving.enabled, isFalse);
-      expect(server.autoStart(token), 'bad_token');
+      await pump(10);
+      await me.c.startAvailability(AvailabilityMode.walking, 30);
+      await pump(10);
+      expect(me.driving.availableUntil, now.add(const Duration(minutes: 30)));
+      await me.c.stopAvailability();
+      expect(me.driving.availableUntil, isNull);
     });
 
     test('test info shows the state, never the token', () async {

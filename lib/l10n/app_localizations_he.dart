@@ -2037,4 +2037,10 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get realContactsNoPermission =>
       'בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.';
+
+  @override
+  String get realNotifManualTitle => 'DriveTalk · זמין לשיחה';
+
+  @override
+  String get realNotifManualBody => 'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.';
 }

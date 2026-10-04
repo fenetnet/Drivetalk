@@ -47,7 +47,7 @@ class DrivingReceiver : BroadcastReceiver() {
             ACTION_STOP -> {
                 DrivingStore(context).inVehicle = false
                 DrivingEvents.send("exit")
-                DrivingService.end(context)
+                DrivingService.stopAll(context)
             }
             ACTION_DECLINE -> {
                 val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return

@@ -72,12 +72,12 @@ object DrivingNotifications {
         return PendingIntent.getBroadcast(context, request, i, flags())
     }
 
-    fun status(context: Context): Notification {
+    fun status(context: Context, manual: Boolean = false): Notification {
         val store = DrivingStore(context)
         return builder(context, CHANNEL_STATUS)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(store.text("statusTitle", "DriveTalk"))
-            .setContentText(store.text("statusBody", "Available to talk while driving"))
+            .setContentTitle(store.text(if (manual) "manualTitle" else "statusTitle", "DriveTalk"))
+            .setContentText(store.text(if (manual) "manualBody" else "statusBody", ""))
             .setOngoing(true)
             .setContentIntent(openApp(context, 1))
             .addAction(

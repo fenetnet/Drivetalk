@@ -22,12 +22,24 @@ class DrivingService : Service() {
     companion object {
         const val ACTION_START = "app.drivetalk.driving.START"
         const val ACTION_END = "app.drivetalk.driving.END"
+        const val ACTION_MANUAL = "app.drivetalk.driving.MANUAL"
+        const val ACTION_QUIET_END = "app.drivetalk.driving.QUIET_END"
+        const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
         private const val POLL_MS = 20_000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
 
         fun start(context: Context) = send(context, ACTION_START)
 
         fun end(context: Context) = send(context, ACTION_END)
+
+        /** I marked myself free in the app: watch for friends until [until]. */
+        fun startManual(context: Context) = send(context, ACTION_MANUAL)
+
+        /** The app already cleared availability: just stop watching. */
+        fun quietEnd(context: Context) = send(context, ACTION_QUIET_END)
+
+        /** "Stop" on the notification: clear availability on the server. */
+        fun stopAll(context: Context) = send(context, ACTION_STOP_ALL)
 
         // Allowed from the background: activity-recognition events and
         // notification actions are exempt from Android's start limits.
@@ -53,6 +65,7 @@ class DrivingService : Service() {
     private val shown = mutableSetOf<String>()
     private var startedAt = 0L
     private var running = false
+    private var manual = false
     private var tts: TextToSpeech? = null
     private var ttsReady = false
 
@@ -60,7 +73,9 @@ class DrivingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         DrivingNotifications.ensureChannels(this)
-        val notification = DrivingNotifications.status(this)
+        if (intent?.action == ACTION_MANUAL) manual = true
+        if (intent?.action == ACTION_START) manual = false
+        val notification = DrivingNotifications.status(this, manual)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 DrivingNotifications.ID_STATUS,
@@ -71,14 +86,25 @@ class DrivingService : Service() {
             startForeground(DrivingNotifications.ID_STATUS, notification)
         }
         when (intent?.action) {
-            ACTION_END -> finish(callServer = true)
-            else -> begin()
+            ACTION_END -> if (manual && running) Unit else finish(callServer = true)
+            ACTION_QUIET_END -> finish(callServer = false)
+            ACTION_STOP_ALL -> {
+                val store = DrivingStore(this)
+                io.execute { DrivingApi(store).stopAll() }
+                finish(callServer = false)
+            }
+            ACTION_MANUAL -> begin(callStart = false)
+            else -> begin(callStart = true)
         }
         return START_NOT_STICKY
     }
 
-    private fun begin() {
-        if (running) return
+    private fun begin(callStart: Boolean) {
+        if (running) {
+            // Already watching (e.g. manual → a trip started): just update.
+            if (callStart) io.execute { DrivingApi(DrivingStore(this)).start() }
+            return
+        }
         running = true
         startedAt = System.currentTimeMillis()
         tts = TextToSpeech(this) { status ->
@@ -89,9 +115,11 @@ class DrivingService : Service() {
             }
         }
         val store = DrivingStore(this)
-        io.execute {
-            val r = DrivingApi(store).start()
-            if (r == "bad_token") main.post { finish(callServer = false) }
+        if (callStart) {
+            io.execute {
+                val r = DrivingApi(store).start()
+                if (r == "bad_token") main.post { finish(callServer = false) }
+            }
         }
         main.postDelayed(poll, 3_000)
     }
@@ -99,8 +127,11 @@ class DrivingService : Service() {
     private val poll: Runnable = object : Runnable {
         override fun run() {
             if (!running) return
-            if (System.currentTimeMillis() - startedAt > MAX_MS) {
-                finish(callServer = true)
+            val now = System.currentTimeMillis()
+            if (now - startedAt > MAX_MS ||
+                (manual && now > DrivingStore(this@DrivingService).availableUntil)
+            ) {
+                finish(callServer = !manual)
                 return
             }
             val ctx = this@DrivingService

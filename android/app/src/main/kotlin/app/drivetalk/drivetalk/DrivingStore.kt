@@ -20,6 +20,13 @@ class DrivingStore(context: Context) {
         get() = prefs.getBoolean("inVehicle", false)
         set(v) = prefs.edit().putBoolean("inVehicle", v).apply()
 
+    /** Manual availability: keep the service until this time (ms). */
+    var availableUntil: Long
+        get() = prefs.getLong("availableUntil", 0L)
+        set(v) = prefs.edit().putLong("availableUntil", v).apply()
+
+    val configured: Boolean get() = token.isNotEmpty() && url.isNotEmpty()
+
     val url: String get() = prefs.getString("url", "") ?: ""
     val key: String get() = prefs.getString("key", "") ?: ""
     val token: String get() = prefs.getString("token", "") ?: ""
@@ -29,15 +36,19 @@ class DrivingStore(context: Context) {
     fun text(name: String, fallback: String): String =
         prefs.getString("text_$name", null) ?: fallback
 
-    fun save(url: String, key: String, token: String, minutes: Int, texts: Map<String, String>) {
+    /** Server address + this phone's device token (no detection yet). */
+    fun configure(url: String, key: String, token: String, texts: Map<String, String>) {
         val e = prefs.edit()
             .putString("url", url.trimEnd('/'))
             .putString("key", key)
             .putString("token", token)
-            .putInt("minutes", minutes)
-            .putBoolean("enabled", true)
         for ((k, v) in texts) e.putString("text_$k", v)
-        e.apply()
+        e.commit()
+    }
+
+    fun save(url: String, key: String, token: String, minutes: Int, texts: Map<String, String>) {
+        configure(url, key, token, texts)
+        prefs.edit().putInt("minutes", minutes).putBoolean("enabled", true).commit()
     }
 
     fun saveTexts(texts: Map<String, String>) {

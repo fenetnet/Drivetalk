@@ -20,6 +20,8 @@ class MainActivity : FlutterActivity() {
     private val callPermissionRequest = 4711
     private val drivingPermissionRequest = 4712
     private val contactsPermissionRequest = 4713
+    private val notificationPermissionRequest = 4714
+    private var pendingNotificationResult: MethodChannel.Result? = null
     private var pendingContactsResult: MethodChannel.Result? = null
     private var pendingNumber: String? = null
     private var pendingResult: MethodChannel.Result? = null
@@ -94,6 +96,7 @@ class MainActivity : FlutterActivity() {
                         "permission" to DrivingDetection.hasPermission(this),
                         "enabled" to store.enabled,
                         "inVehicle" to store.inVehicle,
+                        "configured" to store.configured,
                     ),
                 )
                 "requestPermission" -> requestDrivingPermissions(result)
@@ -114,11 +117,46 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "disable" -> {
+                    // Detection off; the device token stays for "I'm free"
+                    // notifications.
                     DrivingDetection.unregister(this)
                     if (store.inVehicle) DrivingService.end(this)
+                    store.enabled = false
+                    store.inVehicle = false
+                    result.success(true)
+                }
+                "configure" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    store.configure(
+                        url = call.argument<String>("url") ?: "",
+                        key = call.argument<String>("key") ?: "",
+                        token = call.argument<String>("token") ?: "",
+                        texts = call.argument<Map<String, String>>("texts") ?: emptyMap(),
+                    )
+                    DrivingNotifications.ensureChannels(this)
+                    result.success(true)
+                }
+                "forget" -> {
+                    DrivingDetection.unregister(this)
+                    DrivingService.quietEnd(this)
                     store.clear()
                     result.success(true)
                 }
+                "startAvailable" -> {
+                    if (!store.configured) {
+                        result.success(false)
+                    } else {
+                        store.availableUntil = (call.argument<Number>("until") ?: 0).toLong()
+                        DrivingService.startManual(this)
+                        result.success(true)
+                    }
+                }
+                "stopAvailable" -> {
+                    store.availableUntil = 0L
+                    DrivingService.quietEnd(this)
+                    result.success(true)
+                }
+                "notificationPermission" -> requestNotificationPermission(result)
                 "texts" -> {
                     @Suppress("UNCHECKED_CAST")
                     store.saveTexts(call.argument<Map<String, String>>("texts") ?: emptyMap())
@@ -174,6 +212,17 @@ class MainActivity : FlutterActivity() {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
             checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
+    private fun requestNotificationPermission(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < 33 ||
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        ) {
+            result.success(true)
+            return
+        }
+        pendingNotificationResult = result
+        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), notificationPermissionRequest)
+    }
+
     private fun requestDrivingPermissions(result: MethodChannel.Result) {
         val wanted = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
@@ -200,6 +249,12 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == notificationPermissionRequest) {
+            val r = pendingNotificationResult
+            pendingNotificationResult = null
+            r?.success(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            return
+        }
         if (requestCode == contactsPermissionRequest) {
             val r = pendingContactsResult
             pendingContactsResult = null

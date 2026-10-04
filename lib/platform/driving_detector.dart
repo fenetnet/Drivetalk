@@ -9,8 +9,12 @@ class DrivingStatus {
     this.permission = false,
     this.enabled = false,
     this.inVehicle = false,
+    this.configured = false,
   });
   final bool supported;
+
+  /// This phone has its background device token (for notifications).
+  final bool configured;
   final bool permission;
   final bool enabled;
   final bool inVehicle;
@@ -38,6 +42,23 @@ abstract class DrivingDetector {
     required Map<String, String> texts,
   });
   Future<void> disable();
+
+  /// Give the phone its device token (background notifications while I'm
+  /// free, even with the app closed). No detection by itself.
+  Future<void> configure({
+    required String url,
+    required String key,
+    required String token,
+    required Map<String, String> texts,
+  });
+
+  /// Forget the token (signing out).
+  Future<void> forget();
+
+  /// I'm free until [until]: watch for friends in the background.
+  Future<bool> startAvailable(DateTime until);
+  Future<void> stopAvailable();
+  Future<bool> requestNotificationPermission();
 
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
@@ -67,6 +88,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         permission: m?['permission'] == true,
         enabled: m?['enabled'] == true,
         inVehicle: m?['inVehicle'] == true,
+        configured: m?['configured'] == true,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -108,6 +130,56 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> disable() async {
     try {
       await _channel.invokeMethod<void>('disable');
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> configure({
+    required String url,
+    required String key,
+    required String token,
+    required Map<String, String> texts,
+  }) => _call('configure', {
+    'url': url,
+    'key': key,
+    'token': token,
+    'texts': texts,
+  });
+
+  @override
+  Future<void> forget() => _call('forget');
+
+  @override
+  Future<bool> startAvailable(DateTime until) async {
+    if (!_android) return false;
+    try {
+      return await _channel.invokeMethod<bool>('startAvailable', {
+            'until': until.millisecondsSinceEpoch,
+          }) ??
+          false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> stopAvailable() => _call('stopAvailable');
+
+  @override
+  Future<bool> requestNotificationPermission() async {
+    if (!_android) return false;
+    try {
+      return await _channel.invokeMethod<bool>('notificationPermission') ??
+          false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _call(String method, [Map<String, Object?>? args]) async {
+    if (!_android) return;
+    try {
+      await _channel.invokeMethod<void>(method, args);
     } catch (_) {}
   }
 
@@ -158,6 +230,7 @@ class FakeDrivingDetector implements DrivingDetector {
   var enabled = false;
   var inVehicle = false;
   String? token;
+  DateTime? availableUntil;
   LaunchAction? pendingAction;
   final _events = StreamController<String>.broadcast(sync: true);
 
@@ -167,6 +240,7 @@ class FakeDrivingDetector implements DrivingDetector {
     permission: grantPermission,
     enabled: enabled,
     inVehicle: inVehicle,
+    configured: token != null,
   );
 
   @override
@@ -189,11 +263,40 @@ class FakeDrivingDetector implements DrivingDetector {
   @override
   Future<void> disable() async {
     enabled = false;
-    token = null;
   }
 
   @override
   Future<void> updateTexts(Map<String, String> texts) async {}
+
+  @override
+  Future<void> configure({
+    required String url,
+    required String key,
+    required String token,
+    required Map<String, String> texts,
+  }) async {
+    if (supported) this.token = token;
+  }
+
+  @override
+  Future<void> forget() async {
+    token = null;
+    enabled = false;
+    availableUntil = null;
+  }
+
+  @override
+  Future<bool> startAvailable(DateTime until) async {
+    if (token == null) return false;
+    availableUntil = until;
+    return true;
+  }
+
+  @override
+  Future<void> stopAvailable() async => availableUntil = null;
+
+  @override
+  Future<bool> requestNotificationPermission() async => true;
 
   @override
   Future<void> simulate({required bool enter}) async {
