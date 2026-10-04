@@ -1930,4 +1930,88 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realSimExit => 'דמה: יצאתי מהרכב';
+
+  @override
+  String realVoiceQuick(String name) {
+    return 'מתחברים ל$name. לביטול — בטל.';
+  }
+
+  @override
+  String realQuickIn(String name, int seconds) {
+    return 'מתחברים ל$name בעוד $seconds…';
+  }
+
+  @override
+  String get realQuickWhy => 'חיבור מהיר — שניכם במעגל הקרוב אחד של השני';
+
+  @override
+  String realUnblocked(String name) {
+    return 'החסימה של $name בוטלה';
+  }
+
+  @override
+  String realUnblockedBack(String name) {
+    return 'החסימה של $name בוטלה — $name שוב ברשימה שלך';
+  }
+
+  @override
+  String get realBlockedTitle => 'חסומים';
+
+  @override
+  String get realBlockedEmpty => 'לא חסמת אף אחד';
+
+  @override
+  String get realUnblock => 'ביטול חסימה';
+
+  @override
+  String get realCirclesTitle => 'מעגלים';
+
+  @override
+  String get realCirclesIntro =>
+      'קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.';
+
+  @override
+  String get realCircleNew => 'מעגל חדש';
+
+  @override
+  String get realCircleName => 'שם המעגל (למשל: משפחה)';
+
+  @override
+  String get realCircleQuick => 'חיבור מהיר';
+
+  @override
+  String get realCircleQuickBody =>
+      'אם גם הם שמו אותך במעגל מהיר — כששניכם פנויים מתחברים מיד (עם 5 שניות לביטול). עד פעם ביום לכל אדם.';
+
+  @override
+  String get realCircleMembers => 'מי במעגל';
+
+  @override
+  String realCircleCount(int count) {
+    return '$count אנשים';
+  }
+
+  @override
+  String get realCircleDelete => 'מחיקת המעגל';
+
+  @override
+  String get realCircleNoFriends => 'קודם צריך להזמין חברים';
+
+  @override
+  String get realAvailableTo => 'זמין ל:';
+
+  @override
+  String get realAvailableToAll => 'כל החברים';
+
+  @override
+  String get realPhoneRequired => 'מספר טלפון';
+
+  @override
+  String get realPhoneRequiredHelp =>
+      'כדי לדבר בשיחה רגילה. החבר מקבל את המספר רק ברגע ששניכם אמרתם \"כן\".';
+
+  @override
+  String realQuickNotif(String name) {
+    return '$name — חיבור מהיר. לחצו כדי להתחבר';
+  }
 }

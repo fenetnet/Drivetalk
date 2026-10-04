@@ -13,11 +13,14 @@ import 'real_common.dart';
 import 'real_people.dart';
 
 void openRealAvailabilityPicker(WidgetRef ref) {
+  final circles = ref.read(realProvider).snapshot?.circles ?? const [];
   navigatorKey.currentState?.push(
     MaterialPageRoute<void>(
       builder: (_) => PickModeScreen(
-        onStart: (mode, minutes) =>
-            ref.read(realProvider.notifier).startAvailability(mode, minutes),
+        realCircles: [for (final c in circles) (c.id, c.name)],
+        onStart: (mode, minutes, circleId) => ref
+            .read(realProvider.notifier)
+            .startAvailability(mode, minutes, circleId: circleId),
       ),
     ),
   );

@@ -6,6 +6,7 @@ import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
+import '../../real/real_models.dart';
 import '../common/labels.dart';
 import 'real_common.dart';
 import 'real_home.dart';
@@ -108,6 +109,8 @@ class RealRoot extends ConsumerWidget {
       RealNoticeKind.autoDrivingOff => l.realAutoDrivingOff,
       RealNoticeKind.autoDrivingNoPermission => l.realAutoDrivingNoPermission,
       RealNoticeKind.autoDrivingFailed => l.realAutoDrivingFailed,
+      RealNoticeKind.unblocked => l.realUnblocked(n.name ?? ''),
+      RealNoticeKind.unblockedReconnected => l.realUnblockedBack(n.name ?? ''),
     };
   }
 }
@@ -254,7 +257,10 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     final l = context.l10n;
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
-    final canGo = _name.text.trim().isNotEmpty && !s.busy;
+    final canGo =
+        _name.text.trim().isNotEmpty &&
+        normalizePhone(_phone.text) != null &&
+        !s.busy;
     return Scaffold(
       body: SafeArea(
         child: ListView(
@@ -312,9 +318,10 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
               controller: _phone,
               keyboardType: TextInputType.phone,
               textDirection: TextDirection.ltr,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                labelText: l.realPhoneLabel,
-                helperText: l.realPhoneHelp,
+                labelText: l.realPhoneRequired,
+                helperText: l.realPhoneRequiredHelp,
                 helperMaxLines: 4,
                 border: const OutlineInputBorder(),
               ),
@@ -322,11 +329,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
             const SizedBox(height: 28),
             FilledButton(
               onPressed: canGo
-                  ? () => c.signIn(
-                      _name.text,
-                      _gender,
-                      phone: _phone.text.trim().isEmpty ? null : _phone.text,
-                    )
+                  ? () => c.signIn(_name.text, _gender, phone: _phone.text)
                   : null,
               child: s.busy
                   ? const SizedBox(

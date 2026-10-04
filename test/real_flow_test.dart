@@ -424,6 +424,110 @@ void main() {
     });
   });
 
+  group('owner feedback round', () {
+    test(
+      'after "not now", a new offer comes by itself after 2 minutes',
+      () async {
+        await connect();
+        await me.c.startAvailability(AvailabilityMode.free, 60);
+        await yoni.c.startAvailability(AvailabilityMode.free, 60);
+        await me.c.refresh();
+        await me.c.respond(currentOffer(me.s, now)!, accept: false);
+        await yoni.c.refresh();
+        expect(currentOffer(yoni.s, now), isNull);
+        now = now.add(const Duration(minutes: 3));
+        await yoni.c.refresh(); // nudges the server while free
+        expect(currentOffer(yoni.s, now), isNotNull);
+      },
+    );
+
+    test(
+      'quick-connect circles on both sides → connected without asking',
+      () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        final yoniId = yoni.backend.userId!;
+        final meId = me.backend.userId!;
+        await me.c.saveCircle(
+          RealCircle(id: '', name: 'קרובים', quick: true, memberIds: {yoniId}),
+        );
+        await yoni.c.saveCircle(
+          RealCircle(id: '', name: 'משפחה', quick: true, memberIds: {meId}),
+        );
+        await me.c.startAvailability(AvailabilityMode.driving, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        await pump();
+        expect(currentOffer(me.s, now), isNull, reason: 'no question');
+        expect(me.s.callStage, CallStage.connecting);
+        expect(me.s.call?.quick, isTrue);
+        expect(me.s.dialCountdown, 5);
+        expect(me.voice.spoken.last, contains('יוני'));
+        // Only one side dials.
+        expect(
+          {me.s.call?.role, yoni.s.call?.role},
+          {CallRole.iCall, CallRole.theyCall},
+        );
+      },
+    );
+
+    test('one-sided quick circle is just a normal question', () async {
+      await connect();
+      await me.c.saveCircle(
+        RealCircle(
+          id: '',
+          name: 'קרובים',
+          quick: true,
+          memberIds: {yoni.backend.userId!},
+        ),
+      );
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNotNull);
+    });
+
+    test(
+      'free only for a circle → others neither see me nor get asked',
+      () async {
+        await connect();
+        final circle = RealCircle(id: '', name: 'משפחה', memberIds: const {});
+        await me.c.saveCircle(circle);
+        final saved = me.s.snapshot!.circles.single;
+        await me.c.startAvailability(
+          AvailabilityMode.walking,
+          30,
+          circleId: saved.id,
+        );
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), isEmpty);
+        expect(currentOffer(yoni.s, now), isNull);
+      },
+    );
+
+    test('unblock brings the friend back', () async {
+      await connect();
+      final y = me.s.snapshot!.friends.single;
+      await me.c.block(y);
+      expect((await me.c.blockedPeople()).single.name, 'יוני');
+      await me.c.unblock(y);
+      expect(me.s.snapshot!.friends.single.name, 'יוני');
+      expect(me.s.notice?.kind, RealNoticeKind.unblockedReconnected);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+    });
+
+    test('stopping availability also ends the trip service', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      await me.driving.simulate(enter: true);
+      await pump(10);
+      expect(me.s.driving.inVehicle, isTrue);
+      await me.c.stopAvailability();
+      expect(me.driving.inVehicle, isFalse);
+    });
+  });
+
   group('invitation codes', () {
     const t = 'AbCdEfGhIjKlMnOpQrStUv';
     test('from all kinds of links and messages', () {

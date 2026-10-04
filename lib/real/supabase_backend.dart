@@ -92,13 +92,16 @@ class SupabaseRealBackend implements RealBackend {
         .toIso8601String();
     final results = await Future.wait([
       _c.from('profiles').select('id, display_name, gender'),
-      _c.from('availability').select('user_id, mode, started_at, expires_at'),
+      _c
+          .from('availability')
+          .select('user_id, mode, started_at, expires_at, circle_id, source'),
       _c
           .from('match_offers')
           .select()
           .gt('updated_at', since)
           .order('updated_at', ascending: false)
           .limit(50),
+      _c.from('circles').select('id, name, quick, circle_members(member)'),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -118,9 +121,23 @@ class SupabaseRealBackend implements RealBackend {
             mode: modeFromKey(r['mode'] as String?),
             startedAt: _time(r['started_at']),
             expiresAt: _time(r['expires_at']),
+            circleId: r['circle_id'] as String?,
+            auto: r['source'] == 'auto',
           ),
       },
       offers: [for (final r in results[2]) _offer(r)],
+      circles: [
+        for (final r in results[3])
+          RealCircle(
+            id: r['id'] as String,
+            name: r['name'] as String,
+            quick: r['quick'] == true,
+            memberIds: {
+              for (final m in (r['circle_members'] as List? ?? const []))
+                (m as Map)['member'] as String,
+            },
+          ),
+      ]..sort((a, b) => a.name.compareTo(b.name)),
       fetchedAt: DateTime.now(),
     );
   });
@@ -157,13 +174,69 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
-  Future<void> setAvailability(AvailabilityMode mode, int minutes) =>
-      _guard(() async {
-        await _c.rpc(
-          'set_availability',
-          params: {'p_mode': mode.name, 'p_minutes': minutes},
-        );
-      });
+  Future<void> setAvailability(
+    AvailabilityMode mode,
+    int minutes, {
+    String? circleId,
+  }) => _guard(() async {
+    await _c.rpc(
+      'set_availability',
+      params: {'p_mode': mode.name, 'p_minutes': minutes, 'p_circle': circleId},
+    );
+  });
+
+  @override
+  Future<void> nudgeOffers() => _guard(() async => _c.rpc('nudge_offers'));
+
+  @override
+  Future<List<RealProfile>> blockedPeople() => _guard(() async {
+    final rows = await _c.rpc('my_blocks') as List;
+    return [
+      for (final r in rows)
+        RealProfile(
+          id: (r as Map)['user_id'] as String,
+          name: r['display_name'] as String,
+          gender: genderFromKey(r['gender'] as String?),
+        ),
+    ];
+  });
+
+  @override
+  Future<bool> unblock(String userId) => _guard(
+    () async =>
+        await _c.rpc('unblock_user', params: {'p_user': userId}) ==
+        'reconnected',
+  );
+
+  @override
+  Future<RealCircle> saveCircle(RealCircle circle) => _guard(() async {
+    final values = {'name': circle.name.trim(), 'quick': circle.quick};
+    final row = circle.id.isEmpty
+        ? await _c.from('circles').insert(values).select('id').single()
+        : await _c
+              .from('circles')
+              .update(values)
+              .eq('id', circle.id)
+              .select('id')
+              .single();
+    final id = row['id'] as String;
+    await _c.from('circle_members').delete().eq('circle_id', id);
+    if (circle.memberIds.isNotEmpty) {
+      await _c.from('circle_members').insert([
+        for (final m in circle.memberIds) {'circle_id': id, 'member': m},
+      ]);
+    }
+    return RealCircle(
+      id: id,
+      name: circle.name.trim(),
+      quick: circle.quick,
+      memberIds: circle.memberIds,
+    );
+  });
+
+  @override
+  Future<void> deleteCircle(String circleId) =>
+      _guard(() async => _c.from('circles').delete().eq('id', circleId));
 
   @override
   Future<void> clearAvailability() =>
@@ -267,6 +340,8 @@ class SupabaseRealBackend implements RealBackend {
       'match_offers',
       'connections',
       'profiles',
+      'circles',
+      'circle_members',
     ]) {
       ch = ch.onPostgresChanges(
         event: PostgresChangeEvent.all,
@@ -350,6 +425,7 @@ class SupabaseRealBackend implements RealBackend {
       'not_authenticated',
       'no_profile',
       'too_many_open_invitations',
+      'invalid_circle',
     ];
     for (final k in known) {
       if (message.contains(k)) return k;
@@ -383,6 +459,7 @@ class SupabaseRealBackend implements RealBackend {
     expiresAt: _time(r['expires_at']),
     aAccepted: _answer(r['a_response']),
     bAccepted: _answer(r['b_response']),
+    quick: r['quick'] == true,
   );
 
   static bool? _answer(Object? v) => switch (v) {

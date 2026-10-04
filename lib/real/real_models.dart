@@ -50,8 +50,16 @@ class RealAvailability {
     required this.mode,
     required this.startedAt,
     required this.expiresAt,
+    this.circleId,
+    this.auto = false,
   });
   final String userId;
+
+  /// Free only for this circle of mine (null = all my friends).
+  final String? circleId;
+
+  /// Set by the automatic driving detection.
+  final bool auto;
   final AvailabilityMode mode;
   final DateTime startedAt;
   final DateTime expiresAt;
@@ -83,6 +91,7 @@ class RealOffer {
     required this.expiresAt,
     this.aAccepted,
     this.bAccepted,
+    this.quick = false,
   });
   final String id;
   final String userA;
@@ -96,6 +105,9 @@ class RealOffer {
   final bool? aAccepted;
   final bool? bAccepted;
 
+  /// Mutual quick connect: accepted at once, without asking.
+  final bool quick;
+
   String otherId(String me) => me == userA ? userB : userA;
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
 }
@@ -108,6 +120,7 @@ class RealSnapshot {
     required this.availability,
     required this.offers,
     required this.fetchedAt,
+    this.circles = const [],
   });
   final RealProfile me;
   final List<RealProfile> friends;
@@ -116,6 +129,9 @@ class RealSnapshot {
   final Map<String, RealAvailability> availability;
   final List<RealOffer> offers;
   final DateTime fetchedAt;
+
+  /// My private circles (only I see them).
+  final List<RealCircle> circles;
 
   RealAvailability? get mine => availability[me.id];
   RealProfile? friend(String id) {
@@ -206,4 +222,28 @@ String? parseInviteToken(String input) {
     r'(?:^|[^A-Za-z0-9_-])([A-Za-z0-9_-]{22})(?:$|[^A-Za-z0-9_-])',
   ).firstMatch(text);
   return bare?.group(1);
+}
+
+/// A private circle ("family", "army friends"). [quick] = quick connect:
+/// when BOTH have each other in a quick circle and both are free, they are
+/// connected at once (with a 5-second cancel), at most once a day.
+class RealCircle {
+  const RealCircle({
+    required this.id,
+    required this.name,
+    this.quick = false,
+    this.memberIds = const {},
+  });
+  final String id;
+  final String name;
+  final bool quick;
+  final Set<String> memberIds;
+
+  RealCircle copyWith({String? name, bool? quick, Set<String>? memberIds}) =>
+      RealCircle(
+        id: id,
+        name: name ?? this.name,
+        quick: quick ?? this.quick,
+        memberIds: memberIds ?? this.memberIds,
+      );
 }

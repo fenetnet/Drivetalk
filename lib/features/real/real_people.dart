@@ -11,6 +11,7 @@ import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import '../match/safety_actions.dart';
+import 'real_circles.dart';
 import 'real_common.dart';
 
 /// Create an invitation and open the phone's share sheet (WhatsApp, SMS…).
@@ -197,6 +198,7 @@ class RealPeopleScreen extends ConsumerWidget {
                   onTap: () => _friendActions(context, ref, f),
                 ),
               ),
+            if (friends.isNotEmpty) const RealCirclesSection(),
           ],
         ),
       ),

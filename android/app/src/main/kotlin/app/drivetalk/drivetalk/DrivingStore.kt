@@ -40,6 +40,12 @@ class DrivingStore(context: Context) {
         e.apply()
     }
 
+    fun saveTexts(texts: Map<String, String>) {
+        val e = prefs.edit()
+        for ((k, v) in texts) e.putString("text_$k", v)
+        e.apply()
+    }
+
     fun clear() {
         prefs.edit().clear().apply()
     }

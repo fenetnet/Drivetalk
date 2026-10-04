@@ -116,6 +116,12 @@ class MainActivity : FlutterActivity() {
                     store.clear()
                     result.success(true)
                 }
+                "texts" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    store.saveTexts(call.argument<Map<String, String>>("texts") ?: emptyMap())
+                    DrivingNotifications.ensureChannels(this)
+                    result.success(true)
+                }
                 "simulate" -> {
                     DrivingReceiver.onVehicle(this, call.argument<Boolean>("enter") == true)
                     result.success(true)

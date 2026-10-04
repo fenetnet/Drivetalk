@@ -8,7 +8,8 @@ import java.net.URL
 /** The four background calls (device token only). Never on the main thread. */
 class DrivingApi(private val store: DrivingStore) {
 
-    data class Offer(val id: String, val name: String)
+    /** kind: "ask" (talk?) or "quick" (quick connect, already agreed). */
+    data class Offer(val id: String, val name: String, val kind: String = "ask")
 
     private fun rpc(fn: String, body: JSONObject): String? {
         if (store.url.isEmpty() || store.key.isEmpty() || store.token.isEmpty()) return null
@@ -43,7 +44,11 @@ class DrivingApi(private val store: DrivingStore) {
             val arr = JSONArray(text)
             (0 until arr.length()).map {
                 val o = arr.getJSONObject(it)
-                Offer(o.getString("offer_id"), o.optString("other_name", ""))
+                Offer(
+                    o.getString("offer_id"),
+                    o.optString("other_name", ""),
+                    o.optString("kind", "ask"),
+                )
             }
         } catch (e: Exception) {
             null

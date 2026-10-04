@@ -93,27 +93,35 @@ object DrivingNotifications {
     fun showOffer(context: Context, offer: DrivingApi.Offer) {
         val store = DrivingStore(context)
         val req = 100 + (offer.id.hashCode() and 0xffff)
-        val n = builder(context, CHANNEL_OFFERS)
+        val quick = offer.kind == "quick"
+        val b = builder(context, CHANNEL_OFFERS)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(store.text("offerTitle", "{name} is free now. Talk?").replace("{name}", offer.name))
-            .setContentText(store.text("offerBody", "A call starts only if you both say yes"))
+            .setContentTitle(
+                store.text(if (quick) "quickTitle" else "offerTitle", "{name}")
+                    .replace("{name}", offer.name),
+            )
+            .setContentText(store.text(if (quick) "quickBody" else "offerBody", ""))
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_CALL)
-            .setContentIntent(openApp(context, req))
+            .setContentIntent(openApp(context, req, offer.id, accept = false))
             .addAction(
                 Notification.Action.Builder(
                     null,
                     store.text("talk", "Talk now"),
-                    openApp(context, req + 1, offer.id, accept = true),
+                    // Quick connect is already agreed: opening the app connects.
+                    openApp(context, req + 1, offer.id, accept = !quick),
                 ).build(),
             )
-            .addAction(
+        if (!quick) {
+            b.addAction(
                 Notification.Action.Builder(
                     null,
                     store.text("notNow", "Not now"),
                     broadcast(context, DrivingReceiver.ACTION_DECLINE, req + 2, offer.id),
                 ).build(),
             )
+        }
+        val n = b
             .apply {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                     @Suppress("DEPRECATION")

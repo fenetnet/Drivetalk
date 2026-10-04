@@ -166,21 +166,31 @@ Future<void> main() async {
   ).single;
   check(eveDetails['other_phone'] == null, "a stranger can't get numbers from our offer");
 
-  // --- a fresh round where Yoni declines
+  // --- right after a call: not the same pair again (30-minute pause)
   await me.rpc('clear_availability');
   await yoni.rpc('clear_availability');
   await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
   await yoni.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  check((await rows(me, 'match_offers')).where((o) => o['status'] == 'pending').isEmpty,
+      'no new offer for the same pair right after a call');
+
+  // --- a round where a friend declines (Tal)
+  final tal = await newUser('טל', 'male');
+  final invTal = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await tal.rpc('accept_invitation', params: {'p_token': invTal['token']});
+  await tal.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
   final second = (await rows(me, 'match_offers')).firstWhere((o) => o['status'] == 'pending');
   await me.rpc('respond_offer', params: {'p_offer': second['id'], 'p_accept': true});
-  check(await yoni.rpc('respond_offer', params: {'p_offer': second['id'], 'p_accept': false}) == 'declined',
-      'Yoni declines');
+  check(await tal.rpc('respond_offer', params: {'p_offer': second['id'], 'p_accept': false}) == 'declined',
+      'Tal declines');
   final seenByMe = (await rows(me, 'match_offers')).firstWhere((o) => o['id'] == second['id']);
   check(seenByMe['status'] == 'declined', 'I see only "declined" (the app shows a gentle message)');
   // No immediate re-offer after a decline (cooldown).
   await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
   check((await rows(me, 'match_offers')).where((o) => o['status'] == 'pending').isEmpty,
       'no new offer right after a decline (cooldown)');
+  await tal.rpc('clear_availability');
+  await tal.dispose();
 
   // --- clearing availability cancels and hides
   await yoni.rpc('clear_availability');
@@ -245,11 +255,54 @@ Future<void> main() async {
     check(true, 'internal token lookup is not callable');
   }
   await background.dispose();
+
+  // --- circles: "available only to family" + mutual quick connect
+  await me.rpc('clear_availability');
+  final ron = await newUser('רון', 'male');
+  final inv3 = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await ron.rpc('accept_invitation', params: {'p_token': inv3['token']});
+  final family = await me.from('circles').insert({'name': 'משפחה', 'quick': true}).select().single();
+  await me.from('circle_members').insert({'circle_id': family['id'], 'member': uid(dani)});
+  try {
+    await me.from('circle_members').insert({'circle_id': family['id'], 'member': uid(eve)});
+    check(false, 'only my connections can be added to a circle');
+  } on PostgrestException {
+    check(true, 'only my connections can be added to a circle');
+  }
+  check((await rows(dani, 'circles')).isEmpty, "my circles are private");
+  await dani.rpc('clear_availability');
+  await ron.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  await me.rpc('set_availability',
+      params: {'p_mode': 'walking', 'p_minutes': 30, 'p_circle': family['id']});
+  check((await rows(ron, 'availability')).where((a) => a['user_id'] == uid(me)).isEmpty,
+      'free only for "family" → Ron (not in it) does not see me');
+  check((await rows(ron, 'match_offers')).where((o) => o['status'] == 'pending').isEmpty,
+      'and gets no offer');
+  // Mom (in my quick "family") also put me in her quick circle → mutual.
+  final mom = await newUser('אמא', 'female');
+  final invMom = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await mom.rpc('accept_invitation', params: {'p_token': invMom['token']});
+  await me.from('circle_members').insert({'circle_id': family['id'], 'member': uid(mom)});
+  final moms = await mom.from('circles').insert({'name': 'קרובים', 'quick': true}).select().single();
+  await mom.from('circle_members').insert({'circle_id': moms['id'], 'member': uid(me)});
+  await mom.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  final quickOffer = (await rows(me, 'match_offers'))
+      .where((o) => o['quick'] == true)
+      .toList();
+  check(quickOffer.length == 1 && quickOffer.single['status'] == 'accepted',
+      'both in each other\'s quick circle → connected at once (no question)');
+  await mom.rpc('nudge_offers');
+  check((await rows(me, 'match_offers')).where((o) => o['quick'] == true).length == 1,
+      'quick connect at most once a day per pair');
+  check(await mom.rpc('nudge_offers') == 0, 'nudge is harmless when nothing is new');
+  await mom.rpc('clear_availability');
+  await mom.dispose();
   await dani.dispose();
+  await ron.dispose();
   await me.rpc('clear_availability');
   await yoni.rpc('clear_availability');
 
-  // --- blocking
+  // --- blocking (and unblocking)
   await me.rpc('block_user', params: {'p_user': uid(yoni)});
   check((await rows(yoni, 'profiles')).length == 1, 'after I block Yoni he no longer sees me');
   check(
@@ -258,6 +311,13 @@ Future<void> main() async {
         .isEmpty,
     'block removes the connection',
   );
+  final myBlocks = List<Map<String, dynamic>>.from(await me.rpc('my_blocks'));
+  check(myBlocks.single['display_name'] == 'יוני', 'I can see whom I blocked');
+  check(await me.rpc('unblock_user', params: {'p_user': uid(yoni)}) == 'reconnected',
+      'unblock brings the connection back');
+  check((await rows(yoni, 'profiles')).any((p) => p['display_name'] == 'נתנאל'),
+      'after unblocking Yoni sees me again');
+  check(List.from(await yoni.rpc('my_blocks')).isEmpty, "Yoni can't see my block list");
 
   await channel.unsubscribe();
   for (final c in [me, yoni, eve]) {

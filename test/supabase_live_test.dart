@@ -105,15 +105,36 @@ void main() {
     expect(me.read(realProvider).lastError, isNull);
 
     expect(m.diagnostics(), isNot(contains('0507654321')));
+    // Circles through the real server.
+    final yoniId = me.read(realProvider).snapshot!.friends.single.id;
+    expect(
+      await m.saveCircle(
+        RealCircle(id: '', name: 'קרובים', quick: true, memberIds: {yoniId}),
+      ),
+      isTrue,
+    );
+    final circle = me.read(realProvider).snapshot!.circles.single;
+    expect(circle.memberIds, {yoniId});
+    expect(circle.quick, isTrue);
+    await m.saveCircle(circle.copyWith(name: 'משפחה', memberIds: {}));
+    expect(me.read(realProvider).snapshot!.circles.single.name, 'משפחה');
+    await m.deleteCircle(me.read(realProvider).snapshot!.circles.single);
+    expect(me.read(realProvider).snapshot!.circles, isEmpty);
+
     // Automatic driving: the phone gets a background token.
     expect(await m.enableAutoDriving(), isTrue);
     expect(me.read(realProvider).driving.enabled, isTrue);
     await m.disableAutoDriving();
 
     await m.stopAvailability();
-    await y.block(yoni.read(realProvider).snapshot!.friends.single);
+    final meProfile = yoni.read(realProvider).snapshot!.friends.single;
+    await y.block(meProfile);
     await m.refresh();
     expect(me.read(realProvider).snapshot!.friends, isEmpty);
+    expect((await y.blockedPeople()).single.name, 'נתנאל');
+    await y.unblock(meProfile);
+    await m.refresh();
+    expect(me.read(realProvider).snapshot!.friends.single.name, 'יוני');
 
     me.dispose();
     yoni.dispose();

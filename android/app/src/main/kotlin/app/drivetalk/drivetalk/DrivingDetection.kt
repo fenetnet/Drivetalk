@@ -35,15 +35,18 @@ object DrivingDetection {
             done?.invoke(false)
             return
         }
+        fun t(type: Int, transition: Int) = ActivityTransition.Builder()
+            .setActivityType(type)
+            .setActivityTransition(transition)
+            .build()
         val transitions = listOf(
-            ActivityTransition.Builder()
-                .setActivityType(DetectedActivity.IN_VEHICLE)
-                .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_ENTER)
-                .build(),
-            ActivityTransition.Builder()
-                .setActivityType(DetectedActivity.IN_VEHICLE)
-                .setActivityTransition(ActivityTransition.ACTIVITY_TRANSITION_EXIT)
-                .build(),
+            t(DetectedActivity.IN_VEHICLE, ActivityTransition.ACTIVITY_TRANSITION_ENTER),
+            t(DetectedActivity.IN_VEHICLE, ActivityTransition.ACTIVITY_TRANSITION_EXIT),
+            // Android's "left the vehicle" can be late; starting to walk
+            // (or run / cycle) is a faster, reliable sign the trip is over.
+            t(DetectedActivity.WALKING, ActivityTransition.ACTIVITY_TRANSITION_ENTER),
+            t(DetectedActivity.RUNNING, ActivityTransition.ACTIVITY_TRANSITION_ENTER),
+            t(DetectedActivity.ON_BICYCLE, ActivityTransition.ACTIVITY_TRANSITION_ENTER),
         )
         try {
             ActivityRecognition.getClient(context)

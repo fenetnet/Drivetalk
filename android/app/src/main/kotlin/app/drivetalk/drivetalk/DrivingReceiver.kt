@@ -24,7 +24,9 @@ class DrivingReceiver : BroadcastReceiver() {
         fun onVehicle(context: Context, entered: Boolean) {
             val store = DrivingStore(context)
             if (!store.enabled) return
-            if (entered == store.inVehicle) return
+            // A new trip always (re)starts the service, even if a previous
+            // one was never closed; "trip over" only matters during a trip.
+            if (!entered && !store.inVehicle) return
             store.inVehicle = entered
             DrivingEvents.send(if (entered) "enter" else "exit")
             if (entered) DrivingService.start(context) else DrivingService.end(context)
@@ -36,13 +38,11 @@ class DrivingReceiver : BroadcastReceiver() {
             ACTION_TRANSITION -> {
                 if (!ActivityTransitionResult.hasResult(intent)) return
                 val result = ActivityTransitionResult.extractResult(intent) ?: return
-                for (e in result.transitionEvents) {
-                    if (e.activityType != DetectedActivity.IN_VEHICLE) continue
-                    onVehicle(
-                        context,
-                        e.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER,
-                    )
-                }
+                // Use the latest event only (several can arrive together).
+                val e = result.transitionEvents.maxByOrNull { it.elapsedRealTimeNanos } ?: return
+                val entered = e.activityType == DetectedActivity.IN_VEHICLE &&
+                    e.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
+                onVehicle(context, entered)
             }
             ACTION_STOP -> {
                 DrivingStore(context).inVehicle = false

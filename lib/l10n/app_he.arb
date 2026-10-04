@@ -1100,5 +1100,73 @@
   "realAutoOff": "כבוי",
   "realInVehicleNow": "ברכב עכשיו",
   "realSimEnter": "דמה: נכנסתי לרכב",
-  "realSimExit": "דמה: יצאתי מהרכב"
+  "realSimExit": "דמה: יצאתי מהרכב",
+  "realVoiceQuick": "מתחברים ל{name}. לביטול — בטל.",
+  "@realVoiceQuick": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realQuickIn": "מתחברים ל{name} בעוד {seconds}…",
+  "@realQuickIn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "realQuickWhy": "חיבור מהיר — שניכם במעגל הקרוב אחד של השני",
+  "realUnblocked": "החסימה של {name} בוטלה",
+  "@realUnblocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realUnblockedBack": "החסימה של {name} בוטלה — {name} שוב ברשימה שלך",
+  "@realUnblockedBack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realBlockedTitle": "חסומים",
+  "realBlockedEmpty": "לא חסמת אף אחד",
+  "realUnblock": "ביטול חסימה",
+  "realCirclesTitle": "מעגלים",
+  "realCirclesIntro": "קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.",
+  "realCircleNew": "מעגל חדש",
+  "realCircleName": "שם המעגל (למשל: משפחה)",
+  "realCircleQuick": "חיבור מהיר",
+  "realCircleQuickBody": "אם גם הם שמו אותך במעגל מהיר — כששניכם פנויים מתחברים מיד (עם 5 שניות לביטול). עד פעם ביום לכל אדם.",
+  "realCircleMembers": "מי במעגל",
+  "realCircleCount": "{count} אנשים",
+  "@realCircleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realCircleDelete": "מחיקת המעגל",
+  "realCircleNoFriends": "קודם צריך להזמין חברים",
+  "realAvailableTo": "זמין ל:",
+  "realAvailableToAll": "כל החברים",
+  "realPhoneRequired": "מספר טלפון",
+  "realPhoneRequiredHelp": "כדי לדבר בשיחה רגילה. החבר מקבל את המספר רק ברגע ששניכם אמרתם \"כן\".",
+  "realQuickNotif": "{name} — חיבור מהיר. לחצו כדי להתחבר",
+  "@realQuickNotif": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

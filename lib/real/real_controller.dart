@@ -102,7 +102,11 @@ class RealCall {
     required this.role,
     required this.startedAt,
     this.phone,
+    this.quick = false,
   });
+
+  /// Quick connect (both pre-approved): no question, 5-second cancel.
+  final bool quick;
   final String offerId;
   final RealProfile other;
   final CallRole role;
@@ -128,6 +132,8 @@ enum RealNoticeKind {
   autoDrivingOff,
   autoDrivingNoPermission,
   autoDrivingFailed,
+  unblocked,
+  unblockedReconnected,
 }
 
 class RealNotice {
@@ -345,6 +351,7 @@ class RealController extends Notifier<RealState> {
   var _refreshing = false;
   var _refreshAgain = false;
   String? _spokenOfferId;
+  DateTime? _lastNudge;
 
   /// Offers whose outcome was already shown (so a restart doesn't repeat it).
   final _handled = <String>{};
@@ -473,8 +480,14 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ auto driving
 
   Future<void> _loadDriving() async {
-    final st = await ref.read(drivingDetectorProvider).status();
-    if (ref.mounted) state = state.copyWith(driving: st);
+    final detector = ref.read(drivingDetectorProvider);
+    final st = await detector.status();
+    if (!ref.mounted) return;
+    // Keep the notification texts current after app updates.
+    if (st.enabled && !state.driving.enabled) {
+      unawaited(detector.updateTexts(_nativeTexts()));
+    }
+    state = state.copyWith(driving: st);
   }
 
   /// Turn on automatic driving availability (opt-in). Asks for the
@@ -494,18 +507,7 @@ class RealController extends Notifier<RealState> {
         key: BackendConfig.supabaseAnonKey,
         token: token,
         minutes: 120,
-        texts: {
-          'channelStatus': _l.realNotifChannelStatus,
-          'channelOffers': _l.realNotifChannelOffers,
-          'statusTitle': _l.realNotifStatusTitle,
-          'statusBody': _l.realNotifStatusBody,
-          'stop': _l.driverStop,
-          'offerTitle': _l.realOfferTitle('{name}', 'male'),
-          'offerBody': _l.realOfferNote,
-          'talk': _l.realTalkNow,
-          'notNow': _l.realNotNow,
-          'voiceOffer': _l.realVoiceOffer('{name}', 'male'),
-        },
+        texts: _nativeTexts(),
       );
       if (!ok) await _backend.revokeDeviceTokens();
     });
@@ -515,6 +517,23 @@ class RealController extends Notifier<RealState> {
     await _loadDriving();
     return ok;
   }
+
+  /// Texts for the Android notifications (Hebrew lives in the ARB file).
+  Map<String, String> _nativeTexts() => {
+    'channelStatus': _l.realNotifChannelStatus,
+    'channelOffers': _l.realNotifChannelOffers,
+    'statusTitle': _l.realNotifStatusTitle,
+    'statusBody': _l.realNotifStatusBody,
+    'stop': _l.driverStop,
+    'offerTitle': _l.realOfferTitle('{name}', 'male'),
+    'offerBody': _l.realOfferNote,
+    'talk': _l.realTalkNow,
+    'notNow': _l.realNotNow,
+    'voiceOffer': _l.realVoiceOffer('{name}', 'male'),
+    'quickTitle': _l.realQuickNotif('{name}'),
+    'quickBody': _l.realQuickWhy,
+    'voiceQuick': _l.realVoiceQuick('{name}'),
+  };
 
   Future<void> disableAutoDriving() async {
     await ref.read(drivingDetectorProvider).disable();
@@ -644,6 +663,19 @@ class RealController extends Notifier<RealState> {
     }
     _refreshing = true;
     try {
+      // While I'm free, let the server create offers that became possible
+      // (a pause ended, someone's circle changed) — at most every 15s.
+      final now = _now();
+      if (myActiveAvailability(state, now) != null &&
+          (_lastNudge == null ||
+              now.difference(_lastNudge!) > const Duration(seconds: 15))) {
+        _lastNudge = now;
+        try {
+          await _backend.nudgeOffers();
+        } on RealBackendException {
+          // The fetch below reports connection problems.
+        }
+      }
       final snap = await _backend.fetchSnapshot();
       if (!ref.mounted) return;
       final prev = state;
@@ -721,17 +753,31 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ availability
 
-  Future<bool> startAvailability(AvailabilityMode mode, int minutes) async {
+  Future<bool> startAvailability(
+    AvailabilityMode mode,
+    int minutes, {
+    String? circleId,
+  }) async {
     final ok = await _run(
-      () => _backend.setAvailability(mode, minutes.clamp(1, 180)),
+      () => _backend.setAvailability(
+        mode,
+        minutes.clamp(1, 180),
+        circleId: circleId,
+      ),
     );
+    _lastNudge = null;
     await refresh();
     return ok;
   }
 
   Future<void> stopAvailability() async {
     _stopVoice();
+    // Also end the trip-bound background service, if one is running.
+    if (state.driving.inVehicle) {
+      await ref.read(drivingDetectorProvider).simulate(enter: false);
+    }
     await _run(_backend.clearAvailability);
+    unawaited(_loadDriving());
     await refresh();
   }
 
@@ -850,46 +896,67 @@ class RealController extends Notifier<RealState> {
       role: role,
       startedAt: _now(),
       phone: role == CallRole.iCall ? details.otherPhone : null,
+      quick: offer.quick,
     );
-    switch (role) {
+    // Quick connect: everyone gets 5 seconds to cancel. A normal match:
+    // only the side that dials gets 3 seconds.
+    final countdown = offer.quick ? 5 : (role == CallRole.iCall ? 3 : 0);
+    state = state.copyWith(call: call, dialCountdown: countdown);
+    if (countdown == 0) {
+      _proceed();
+      return;
+    }
+    if (_driving(_now()) || offer.quick) {
+      _speak(
+        offer.quick
+            ? _l.realVoiceQuick(other.name)
+            : _l.realVoiceCalling(other.name),
+      );
+    }
+    _dialTimer?.cancel();
+    _dialTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!ref.mounted || state.call?.offerId != offer.id) {
+        t.cancel();
+        return;
+      }
+      final left = state.dialCountdown - 1;
+      if (left > 0) {
+        state = state.copyWith(dialCountdown: left);
+      } else {
+        t.cancel();
+        state = state.copyWith(dialCountdown: 0);
+        _proceed();
+      }
+    });
+  }
+
+  /// After the countdown: dial, wait for their call, or the in-app call.
+  void _proceed() {
+    final call = state.call;
+    if (call == null || state.callStage != CallStage.connecting) return;
+    switch (call.role) {
       case CallRole.iCall:
-        // Short, cancellable countdown, then the phone's own dialer.
-        state = state.copyWith(call: call, dialCountdown: 3);
-        if (_driving(_now())) {
-          _speak(_l.realVoiceCalling(other.name));
-        }
-        _dialTimer?.cancel();
-        _dialTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-          if (!ref.mounted || state.call?.offerId != offer.id) {
-            t.cancel();
-            return;
-          }
-          final left = state.dialCountdown - 1;
-          if (left > 0) {
-            state = state.copyWith(dialCountdown: left);
-          } else {
-            t.cancel();
-            state = state.copyWith(dialCountdown: 0);
-            unawaited(_dial());
-          }
-        });
+        unawaited(_dial());
       case CallRole.theyCall:
-        state = state.copyWith(
-          call: call,
-          callStage: CallStage.waitingForTheirCall,
-        );
+        state = state.copyWith(callStage: CallStage.waitingForTheirCall);
         if (_driving(_now())) {
-          _speak(_l.realVoiceTheyCall(other.name, _genderKey(other.gender)));
+          _speak(
+            _l.realVoiceTheyCall(
+              call.other.name,
+              _genderKey(call.other.gender),
+            ),
+          );
         }
       case CallRole.inApp:
-        state = state.copyWith(call: call, callStage: CallStage.inApp);
+        state = state.copyWith(callStage: CallStage.inApp);
     }
   }
 
   /// "Call now" without waiting for the countdown.
   Future<void> dialNow() async {
     _dialTimer?.cancel();
-    await _dial();
+    state = state.copyWith(dialCountdown: 0);
+    _proceed();
   }
 
   Future<void> _dial() async {
@@ -1020,6 +1087,41 @@ class RealController extends Notifier<RealState> {
       await _backend.block(p.id);
       _notify(RealNoticeKind.blocked, name: p.name, gender: p.gender);
     });
+    await refresh();
+  }
+
+  Future<List<RealProfile>> blockedPeople() async {
+    try {
+      return await _backend.blockedPeople();
+    } on RealBackendException catch (e) {
+      _setError(e.code, show: true);
+      return const [];
+    }
+  }
+
+  Future<void> unblock(RealProfile p) async {
+    await _run(() async {
+      final back = await _backend.unblock(p.id);
+      _notify(
+        back ? RealNoticeKind.unblockedReconnected : RealNoticeKind.unblocked,
+        name: p.name,
+        gender: p.gender,
+      );
+    });
+    await refresh();
+  }
+
+  Future<bool> saveCircle(RealCircle circle) async {
+    final ok = await _run(() async {
+      await _backend.saveCircle(circle);
+      _notify(RealNoticeKind.saved);
+    });
+    await refresh();
+    return ok;
+  }
+
+  Future<void> deleteCircle(RealCircle circle) async {
+    await _run(() => _backend.deleteCircle(circle.id));
     await refresh();
   }
 

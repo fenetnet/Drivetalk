@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../real/real_controller.dart';
+import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 
@@ -132,6 +133,16 @@ class RealSettingsScreen extends ConsumerWidget {
               },
             ),
           ),
+          ListTile(
+            leading: const Icon(Icons.block_rounded),
+            title: Text(l.realBlockedTitle),
+            trailing: const Icon(Icons.chevron_left_rounded),
+            onTap: () => showModalBottomSheet<void>(
+              context: context,
+              showDragHandle: true,
+              builder: (_) => const _BlockedSheet(),
+            ),
+          ),
           const Divider(height: 32),
           ListTile(
             leading: const Icon(
@@ -239,5 +250,70 @@ class RealSettingsScreen extends ConsumerWidget {
     if (ok ?? false) {
       await ref.read(realProvider.notifier).setMyPhone(phone.text);
     }
+  }
+}
+
+class _BlockedSheet extends ConsumerStatefulWidget {
+  const _BlockedSheet();
+
+  @override
+  ConsumerState<_BlockedSheet> createState() => _BlockedSheetState();
+}
+
+class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
+  List<RealProfile>? _people;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final list = await ref.read(realProvider.notifier).blockedPeople();
+    if (mounted) setState(() => _people = list);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final people = _people;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.realBlockedTitle,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            if (people == null)
+              const Center(child: CircularProgressIndicator())
+            else if (people.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(l.realBlockedEmpty),
+              )
+            else
+              for (final p in people)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: PersonAvatar(person: p.toPerson(), size: 40),
+                  title: Text(p.name),
+                  trailing: TextButton(
+                    onPressed: () async {
+                      await ref.read(realProvider.notifier).unblock(p);
+                      await _load();
+                    },
+                    child: Text(l.realUnblock),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
   }
 }

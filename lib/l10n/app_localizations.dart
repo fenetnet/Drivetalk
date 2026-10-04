@@ -3171,6 +3171,144 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'דמה: יצאתי מהרכב'**
   String get realSimExit;
+
+  /// No description provided for @realVoiceQuick.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים ל{name}. לביטול — בטל.'**
+  String realVoiceQuick(String name);
+
+  /// No description provided for @realQuickIn.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים ל{name} בעוד {seconds}…'**
+  String realQuickIn(String name, int seconds);
+
+  /// No description provided for @realQuickWhy.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר — שניכם במעגל הקרוב אחד של השני'**
+  String get realQuickWhy;
+
+  /// No description provided for @realUnblocked.
+  ///
+  /// In he, this message translates to:
+  /// **'החסימה של {name} בוטלה'**
+  String realUnblocked(String name);
+
+  /// No description provided for @realUnblockedBack.
+  ///
+  /// In he, this message translates to:
+  /// **'החסימה של {name} בוטלה — {name} שוב ברשימה שלך'**
+  String realUnblockedBack(String name);
+
+  /// No description provided for @realBlockedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חסומים'**
+  String get realBlockedTitle;
+
+  /// No description provided for @realBlockedEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'לא חסמת אף אחד'**
+  String get realBlockedEmpty;
+
+  /// No description provided for @realUnblock.
+  ///
+  /// In he, this message translates to:
+  /// **'ביטול חסימה'**
+  String get realUnblock;
+
+  /// No description provided for @realCirclesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מעגלים'**
+  String get realCirclesTitle;
+
+  /// No description provided for @realCirclesIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.'**
+  String get realCirclesIntro;
+
+  /// No description provided for @realCircleNew.
+  ///
+  /// In he, this message translates to:
+  /// **'מעגל חדש'**
+  String get realCircleNew;
+
+  /// No description provided for @realCircleName.
+  ///
+  /// In he, this message translates to:
+  /// **'שם המעגל (למשל: משפחה)'**
+  String get realCircleName;
+
+  /// No description provided for @realCircleQuick.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר'**
+  String get realCircleQuick;
+
+  /// No description provided for @realCircleQuickBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אם גם הם שמו אותך במעגל מהיר — כששניכם פנויים מתחברים מיד (עם 5 שניות לביטול). עד פעם ביום לכל אדם.'**
+  String get realCircleQuickBody;
+
+  /// No description provided for @realCircleMembers.
+  ///
+  /// In he, this message translates to:
+  /// **'מי במעגל'**
+  String get realCircleMembers;
+
+  /// No description provided for @realCircleCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} אנשים'**
+  String realCircleCount(int count);
+
+  /// No description provided for @realCircleDelete.
+  ///
+  /// In he, this message translates to:
+  /// **'מחיקת המעגל'**
+  String get realCircleDelete;
+
+  /// No description provided for @realCircleNoFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'קודם צריך להזמין חברים'**
+  String get realCircleNoFriends;
+
+  /// No description provided for @realAvailableTo.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין ל:'**
+  String get realAvailableTo;
+
+  /// No description provided for @realAvailableToAll.
+  ///
+  /// In he, this message translates to:
+  /// **'כל החברים'**
+  String get realAvailableToAll;
+
+  /// No description provided for @realPhoneRequired.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר טלפון'**
+  String get realPhoneRequired;
+
+  /// No description provided for @realPhoneRequiredHelp.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי לדבר בשיחה רגילה. החבר מקבל את המספר רק ברגע ששניכם אמרתם \"כן\".'**
+  String get realPhoneRequiredHelp;
+
+  /// No description provided for @realQuickNotif.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} — חיבור מהיר. לחצו כדי להתחבר'**
+  String realQuickNotif(String name);
 }
 
 class _AppLocalizationsDelegate

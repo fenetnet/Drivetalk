@@ -166,10 +166,12 @@ class RealCallScreen extends ConsumerWidget {
       CallStage.connecting => MomentLayout(
         dark: dark,
         top: header(
-          call.role == CallRole.iCall && s.dialCountdown > 0
+          call.quick && s.dialCountdown > 0
+              ? l.realQuickIn(call.other.name, s.dialCountdown)
+              : call.role == CallRole.iCall && s.dialCountdown > 0
               ? l.realCallingIn(call.other.name, s.dialCountdown)
               : l.realConnecting,
-          body: l.realBothSaidYes,
+          body: call.quick ? l.realQuickWhy : l.realBothSaidYes,
           pulse: true,
         ),
         actions: [

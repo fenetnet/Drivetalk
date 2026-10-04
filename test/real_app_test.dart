@@ -53,6 +53,7 @@ void main() {
       TextDirection.rtl,
     );
     await t.enterText(find.byType(TextField).first, 'נתנאל');
+    await t.enterText(find.byType(TextField).at(1), '0521234567');
     await t.pump();
     await t.tap(find.text('יאללה'));
     await pumpFor(t, 500);
@@ -106,14 +107,15 @@ void main() {
     await pumpFor(t, 500);
     expect(find.text('מחכים ליוני…'), findsOneWidget);
 
-    // Yoni says yes too → simulated call (no numbers shared).
+    // Yoni says yes too.
     await t.runAsync(() async {
       await y.refresh();
       final offer = currentOffer(yoni.read(realProvider), DateTime.now())!;
       await y.respond(offer, accept: true);
     });
     await pumpFor(t, 800);
-    expect(find.text('מדברים עם יוני'), findsOneWidget);
+    // I shared my number, Yoni didn't → Yoni calls me.
+    expect(find.text('יוני מתקשר אליך עכשיו'), findsOneWidget);
     await t.tap(find.text('סיימנו'));
     await pumpFor(t, 500);
     expect(find.text('מאוד'), findsOneWidget);

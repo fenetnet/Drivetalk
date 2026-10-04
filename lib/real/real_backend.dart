@@ -27,7 +27,15 @@ abstract class RealBackend {
   Future<InviteInfo> getInvitation(String token);
   Future<AcceptResult> acceptInvitation(String token);
 
-  Future<void> setAvailability(AvailabilityMode mode, int minutes);
+  Future<void> setAvailability(
+    AvailabilityMode mode,
+    int minutes, {
+    String? circleId,
+  });
+
+  /// Ask the server to create offers that became possible (e.g. a pause
+  /// ended). Called every few seconds while I'm free.
+  Future<void> nudgeOffers();
   Future<void> clearAvailability();
 
   /// Returns the offer's new status.
@@ -52,6 +60,16 @@ abstract class RealBackend {
   Future<void> revokeDeviceTokens();
 
   Future<void> block(String userId);
+
+  /// People I blocked (to unblock them).
+  Future<List<RealProfile>> blockedPeople();
+
+  /// Returns true if the connection came back.
+  Future<bool> unblock(String userId);
+
+  /// Circles (private to me).
+  Future<RealCircle> saveCircle(RealCircle circle);
+  Future<void> deleteCircle(String circleId);
   Future<void> unmatch(String userId);
   Future<void> report(String userId, ReportReason reason);
 }

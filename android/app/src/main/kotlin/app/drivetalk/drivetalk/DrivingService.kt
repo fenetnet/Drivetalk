@@ -110,7 +110,8 @@ class DrivingService : Service() {
                     for (o in offers) {
                         if (shown.add(o.id)) {
                             DrivingNotifications.showOffer(ctx, o)
-                            speak(DrivingStore(ctx).text("voiceOffer", "{name}. Talk?").replace("{name}", o.name))
+                            val key = if (o.kind == "quick") "voiceQuick" else "voiceOffer"
+                            speak(DrivingStore(ctx).text(key, "{name}").replace("{name}", o.name))
                         }
                     }
                 }

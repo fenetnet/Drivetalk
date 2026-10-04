@@ -39,6 +39,9 @@ abstract class DrivingDetector {
   });
   Future<void> disable();
 
+  /// Refresh the notification texts (after an app update).
+  Future<void> updateTexts(Map<String, String> texts);
+
   /// Developer tools: pretend a trip started / ended.
   Future<void> simulate({required bool enter});
   Future<LaunchAction?> takeLaunchAction();
@@ -105,6 +108,13 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> disable() async {
     try {
       await _channel.invokeMethod<void>('disable');
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> updateTexts(Map<String, String> texts) async {
+    try {
+      await _channel.invokeMethod<void>('texts', {'texts': texts});
     } catch (_) {}
   }
 
@@ -181,6 +191,9 @@ class FakeDrivingDetector implements DrivingDetector {
     enabled = false;
     token = null;
   }
+
+  @override
+  Future<void> updateTexts(Map<String, String> texts) async {}
 
   @override
   Future<void> simulate({required bool enter}) async {

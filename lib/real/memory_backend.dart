@@ -25,6 +25,7 @@ class MemoryServer {
   final blocks = <String>{}; // "blocker|blocked"
   final phones = <String, String>{};
   final deviceTokens = <String, String>{}; // token → user
+  final wasConnected = <String>{}; // "blocker|blocked"
   final feedback = <Map<String, Object?>>[];
   final reports = <Map<String, Object?>>[];
 
@@ -47,35 +48,70 @@ class MemoryServer {
     return a != null && now().isBefore(a.expiresAt);
   }
 
+  /// Circles: id → (owner, circle).
+  final circles = <String, (String, RealCircle)>{};
+
+  bool _isQuick(String x, String y) => circles.values.any(
+    (c) => c.$1 == x && c.$2.quick && c.$2.memberIds.contains(y),
+  );
+
+  bool inAudience(String? circleId, String viewer) =>
+      circleId == null ||
+      (circles[circleId]?.$2.memberIds.contains(viewer) ?? false);
+
   void _createOffersFor(String user) {
     if (!_activeAvail(user)) return;
     final mine = availability[user]!;
     for (final other in availability.keys.toList()) {
       if (other == user || !_activeAvail(other)) continue;
       if (!connected(user, other) || blockedBetween(user, other)) continue;
+      final theirs = availability[other]!;
+      if (!inAudience(mine.circleId, other) ||
+          !inAudience(theirs.circleId, user)) {
+        continue;
+      }
       final pair = _pair(user, other).split('|');
+      bool samePair(_Offer o) => o.a == pair[0] && o.b == pair[1];
+      final since = now();
       final blocking = offers.values.any(
         (o) =>
-            o.a == pair[0] &&
-            o.b == pair[1] &&
+            samePair(o) &&
             (o.status == OfferStatus.pending ||
                 (o.status == OfferStatus.declined &&
-                    now().difference(o.updatedAt) <
-                        const Duration(minutes: 15))),
+                    since.difference(o.updatedAt) <
+                        const Duration(minutes: 2)) ||
+                (o.status == OfferStatus.accepted &&
+                    since.difference(o.updatedAt) <
+                        const Duration(minutes: 30))),
       );
       if (blocking) continue;
-      final theirs = availability[other]!;
+      final quick =
+          _isQuick(user, other) &&
+          _isQuick(other, user) &&
+          !offers.values.any(
+            (o) =>
+                samePair(o) &&
+                o.quick &&
+                since.difference(o.createdAt) < const Duration(days: 1),
+          );
       final id = _newId('offer');
       offers[id] = _Offer(
         id: id,
         a: pair[0],
         b: pair[1],
-        createdAt: now(),
-        updatedAt: now(),
+        createdAt: since,
+        updatedAt: since,
         expiresAt: mine.expiresAt.isBefore(theirs.expiresAt)
             ? mine.expiresAt
             : theirs.expiresAt,
+        quick: quick,
       );
+      if (quick) {
+        offers[id]!
+          ..status = OfferStatus.accepted
+          ..aAccepted = true
+          ..bAccepted = true;
+      }
     }
   }
 
@@ -154,7 +190,9 @@ class _Offer {
     required this.createdAt,
     required this.updatedAt,
     required this.expiresAt,
+    this.quick = false,
   });
+  final bool quick;
   final String id;
   final String a;
   final String b;
@@ -175,6 +213,7 @@ class _Offer {
     expiresAt: expiresAt,
     aAccepted: aAccepted,
     bAccepted: bAccepted,
+    quick: quick,
   );
 }
 
@@ -252,12 +291,18 @@ class MemoryRealBackend implements RealBackend {
       availability: {
         for (final e in server.availability.entries)
           if (visible.contains(e.key) &&
-              (e.key == me || now.isBefore(e.value.expiresAt)))
+              (e.key == me ||
+                  (now.isBefore(e.value.expiresAt) &&
+                      server.inAudience(e.value.circleId, me))))
             e.key: e.value,
       },
       offers: [
         for (final o in server.offers.values)
           if (o.a == me || o.b == me) o.toReal(),
+      ],
+      circles: [
+        for (final c in server.circles.values)
+          if (c.$1 == me) c.$2,
       ],
       fetchedAt: now,
     );
@@ -332,8 +377,15 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<void> setAvailability(AvailabilityMode mode, int minutes) async {
+  Future<void> setAvailability(
+    AvailabilityMode mode,
+    int minutes, {
+    String? circleId,
+  }) async {
     final me = _uid;
+    if (circleId != null && server.circles[circleId]?.$1 != me) {
+      throw const RealBackendException('invalid_circle');
+    }
     if (minutes < 1 || minutes > 180) {
       throw const RealBackendException('invalid_minutes');
     }
@@ -344,6 +396,7 @@ class MemoryRealBackend implements RealBackend {
       mode: mode,
       startedAt: now,
       expiresAt: now.add(Duration(minutes: minutes)),
+      circleId: circleId,
     );
     server._createOffersFor(me);
     server._changed();
@@ -462,9 +515,88 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
+  Future<void> nudgeOffers() async {
+    server._createOffersFor(_uid);
+    server._changed();
+  }
+
+  @override
+  Future<List<RealProfile>> blockedPeople() async {
+    final me = _uid;
+    return [
+      for (final b in server.blocks)
+        if (b.startsWith('$me|')) server.profiles[b.split('|')[1]]!,
+    ];
+  }
+
+  @override
+  Future<bool> unblock(String userId) async {
+    final me = _uid;
+    if (!server.blocks.remove('$me|$userId')) return false;
+    final was = server.wasConnected.remove('$me|$userId');
+    if (was && !server.blockedBetween(me, userId)) {
+      server.connections.add(MemoryServer._pair(me, userId));
+      server._changed();
+      return true;
+    }
+    server._changed();
+    return false;
+  }
+
+  @override
+  Future<RealCircle> saveCircle(RealCircle circle) async {
+    final me = _uid;
+    final name = circle.name.trim();
+    if (name.isEmpty || name.length > 30) {
+      throw const RealBackendException('invalid_name');
+    }
+    if (circle.id.isNotEmpty && server.circles[circle.id]?.$1 != me) {
+      throw const RealBackendException('not_allowed');
+    }
+    if (circle.memberIds.any((m) => !server.connected(me, m))) {
+      throw const RealBackendException('not_allowed');
+    }
+    final id = circle.id.isEmpty ? server._newId('circle') : circle.id;
+    final saved = RealCircle(
+      id: id,
+      name: name,
+      quick: circle.quick,
+      memberIds: {...circle.memberIds},
+    );
+    server.circles[id] = (me, saved);
+    server._changed();
+    return saved;
+  }
+
+  @override
+  Future<void> deleteCircle(String circleId) async {
+    final me = _uid;
+    if (server.circles[circleId]?.$1 == me) {
+      server.circles.remove(circleId);
+      for (final e in server.availability.entries.toList()) {
+        if (e.value.circleId == circleId) {
+          final a = e.value;
+          server.availability[e.key] = RealAvailability(
+            userId: a.userId,
+            mode: a.mode,
+            startedAt: a.startedAt,
+            expiresAt: a.expiresAt,
+            auto: a.auto,
+          );
+        }
+      }
+      server._changed();
+    }
+  }
+
+  @override
   Future<void> block(String userId) async {
     final me = _uid;
     if (userId == me) return;
+    if (server.connected(me, userId)) server.wasConnected.add('$me|$userId');
+    for (final c in server.circles.values) {
+      if (c.$1 == me) c.$2.memberIds.remove(userId);
+    }
     server.blocks.add('$me|$userId');
     server.connections.remove(MemoryServer._pair(me, userId));
     for (final o in server.offers.values) {
