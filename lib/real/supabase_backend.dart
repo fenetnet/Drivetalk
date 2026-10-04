@@ -94,14 +94,28 @@ class SupabaseRealBackend implements RealBackend {
       _c.from('profiles').select('id, display_name, gender'),
       _c
           .from('availability')
-          .select('user_id, mode, started_at, expires_at, circle_id, source'),
+          .select('user_id, mode, started_at, expires_at, circle_id, source')
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            // Older server (before circles): the basic columns only.
+            onError: (Object _) => _c
+                .from('availability')
+                .select('user_id, mode, started_at, expires_at'),
+          ),
       _c
           .from('match_offers')
           .select()
           .gt('updated_at', since)
           .order('updated_at', ascending: false)
           .limit(50),
-      _c.from('circles').select('id, name, quick, circle_members(member)'),
+      // Circles are optional: an older server without them still works.
+      _c
+          .from('circles')
+          .select('id, name, quick, circle_members(member)')
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
