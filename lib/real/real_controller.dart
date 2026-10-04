@@ -7,10 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../app/providers.dart';
 import '../domain/models.dart';
 import '../l10n/app_localizations.dart';
+import '../platform/contacts_reader.dart';
 import '../platform/driving_detector.dart';
 import '../platform/phone_dialer.dart';
 import '../platform/voice_service.dart';
 import 'backend_config.dart';
+import 'contacts_hash.dart';
 import 'local_store.dart';
 import 'real_backend.dart';
 import 'real_models.dart';
@@ -59,6 +61,11 @@ final inviteBaseUrlProvider = Provider<String>(
 );
 
 final apkUrlProvider = Provider<String>((ref) => BackendConfig.apkUrl);
+
+/// Phone contacts (numbers only, hashed before sending). Tests use a fake.
+final contactsReaderProvider = Provider<ContactsReader>(
+  (ref) => AndroidContactsReader(),
+);
 
 /// Automatic driving detection (Android). Tests use a fake.
 final drivingDetectorProvider = Provider<DrivingDetector>(
@@ -133,6 +140,9 @@ enum RealNoticeKind {
   autoDrivingNoPermission,
   autoDrivingFailed,
   unblocked,
+  contactsFound,
+  contactsNone,
+  contactsNoPermission,
   unblockedReconnected,
 }
 
@@ -450,6 +460,7 @@ class RealController extends Notifier<RealState> {
     unawaited(_loadPhone());
     unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
+    unawaited(_maybeSyncContacts());
     _openPendingInvite();
   }
 
@@ -587,6 +598,8 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(phase: RealPhase.ready, busy: false);
       await refresh();
       _openPendingInvite();
+      // Right away: friends who are already here, from my contacts.
+      unawaited(syncContacts());
     } on RealBackendException catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(busy: false);
@@ -1088,6 +1101,48 @@ class RealController extends Notifier<RealState> {
       _notify(RealNoticeKind.blocked, name: p.name, gender: p.gender);
     });
     await refresh();
+  }
+
+  // ------------------------------------------------------------ contacts
+
+  static const _contactsSyncKey = 'real.contactsSyncedAt';
+
+  /// Friends from the phone's contacts: whoever has my number and whose
+  /// number I have becomes a friend automatically (owner decision D-047).
+  /// Only hashes of numbers leave the phone; names never do.
+  Future<void> syncContacts({bool ask = true}) async {
+    final reader = ref.read(contactsReaderProvider);
+    final allowed = ask
+        ? await reader.requestPermission()
+        : await reader.hasPermission();
+    if (!ref.mounted) return;
+    if (!allowed) {
+      if (ask) _notify(RealNoticeKind.contactsNoPermission);
+      return;
+    }
+    final numbers = await reader.phoneNumbers();
+    if (!ref.mounted) return;
+    final hashes = {for (final n in numbers) ?hashPhone(n)}.toList();
+    await _run(() async {
+      final names = await _backend.syncContacts(hashes);
+      if (!ref.mounted) return;
+      _store.setString(_contactsSyncKey, _now().toIso8601String());
+      if (names.isNotEmpty) {
+        _notify(RealNoticeKind.contactsFound, name: names.join(', '));
+      } else if (ask) {
+        _notify(RealNoticeKind.contactsNone);
+      }
+    });
+    if (ref.mounted) await refresh();
+  }
+
+  /// Quietly again every 12 hours (only if permission was given before).
+  Future<void> _maybeSyncContacts() async {
+    final last = DateTime.tryParse(_store.getString(_contactsSyncKey) ?? '');
+    if (last != null && _now().difference(last) < const Duration(hours: 12)) {
+      return;
+    }
+    await syncContacts(ask: false);
   }
 
   Future<List<RealProfile>> blockedPeople() async {

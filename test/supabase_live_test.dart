@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
+import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
@@ -47,6 +48,7 @@ ProviderContainer _phone(_Dialer dialer) => ProviderContainer(
     voiceServiceProvider.overrideWithValue(SilentVoiceService()),
     phoneDialerProvider.overrideWithValue(dialer),
     drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+    contactsReaderProvider.overrideWithValue(FakeContactsReader()),
     inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
   ],
 );

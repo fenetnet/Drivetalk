@@ -19,6 +19,8 @@ class MainActivity : FlutterActivity() {
 
     private val callPermissionRequest = 4711
     private val drivingPermissionRequest = 4712
+    private val contactsPermissionRequest = 4713
+    private var pendingContactsResult: MethodChannel.Result? = null
     private var pendingNumber: String? = null
     private var pendingResult: MethodChannel.Result? = null
     private var pendingDrivingResult: MethodChannel.Result? = null
@@ -51,6 +53,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         configureDriving(flutterEngine)
+        configureContacts(flutterEngine)
         // Regular phone call through the phone's own dialer.
         // With the CALL_PHONE permission: one tap (ACTION_CALL).
         // Without it: the dialer opens with the number filled in (ACTION_DIAL).
@@ -135,6 +138,42 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    // Friends from contacts: numbers only, hashed in the app before sending.
+    private fun configureContacts(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/contacts")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "hasPermission" -> result.success(hasContactsPermission())
+                    "requestPermission" -> {
+                        if (hasContactsPermission() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                            result.success(hasContactsPermission())
+                        } else {
+                            pendingContactsResult = result
+                            requestPermissions(
+                                arrayOf(Manifest.permission.READ_CONTACTS),
+                                contactsPermissionRequest,
+                            )
+                        }
+                    }
+                    "phoneNumbers" -> {
+                        if (!hasContactsPermission()) {
+                            result.success(emptyList<String>())
+                        } else {
+                            Thread {
+                                val numbers = ContactsReader.phoneNumbers(this)
+                                runOnUiThread { result.success(numbers) }
+                            }.start()
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun hasContactsPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+
     private fun requestDrivingPermissions(result: MethodChannel.Result) {
         val wanted = mutableListOf<String>()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
@@ -161,6 +200,12 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == contactsPermissionRequest) {
+            val r = pendingContactsResult
+            pendingContactsResult = null
+            r?.success(hasContactsPermission())
+            return
+        }
         if (requestCode == drivingPermissionRequest) {
             val r = pendingDrivingResult
             pendingDrivingResult = null

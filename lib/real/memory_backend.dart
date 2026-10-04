@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import '../domain/models.dart';
+import 'contacts_hash.dart';
 import 'real_backend.dart';
 import 'real_models.dart';
 
@@ -26,6 +27,7 @@ class MemoryServer {
   final phones = <String, String>{};
   final deviceTokens = <String, String>{}; // token → user
   final wasConnected = <String>{}; // "blocker|blocked"
+  final contactHashes = <String, Set<String>>{};
   final feedback = <Map<String, Object?>>[];
   final reports = <Map<String, Object?>>[];
 
@@ -497,6 +499,30 @@ class MemoryRealBackend implements RealBackend {
       otherPhone: server.phones[other],
       iShare: server.phones.containsKey(me),
     );
+  }
+
+  @override
+  Future<List<String>> syncContacts(List<String> hashes) async {
+    final me = _uid;
+    server.contactHashes[me] = {...hashes};
+    final myPhone = server.phones[me];
+    if (myPhone == null) return const [];
+    final myHash = hashPhone(myPhone);
+    final names = <String>[];
+    for (final e in server.phones.entries) {
+      final other = e.key;
+      if (other == me) continue;
+      if (!hashes.contains(hashPhone(e.value))) continue;
+      if (!(server.contactHashes[other]?.contains(myHash) ?? false)) continue;
+      if (server.blockedBetween(me, other) || server.connected(me, other)) {
+        continue;
+      }
+      server.connections.add(MemoryServer._pair(me, other));
+      names.add(server.profiles[other]!.name);
+    }
+    server._createOffersFor(me);
+    server._changed();
+    return names;
   }
 
   @override

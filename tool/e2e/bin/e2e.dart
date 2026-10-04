@@ -6,8 +6,10 @@
 // invitations, connections, RLS isolation, availability + realtime,
 // mutual acceptance, gentle decline, expiry and blocking.
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:supabase/supabase.dart';
 
 final url = Platform.environment['SUPABASE_URL'] ?? 'http://127.0.0.1:54321';
@@ -318,6 +320,37 @@ Future<void> main() async {
   check((await rows(yoni, 'profiles')).any((p) => p['display_name'] == 'נתנאל'),
       'after unblocking Yoni sees me again');
   check(List.from(await yoni.rpc('my_blocks')).isEmpty, "Yoni can't see my block list");
+
+  // --- friends from phone contacts (each must have the other's number)
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  // Fresh numbers each run (earlier runs left users in the local database).
+  final n = (DateTime.now().millisecondsSinceEpoch % 9000000) + 1000000;
+  final aviPhone = '+97250$n';
+  final noaPhone = '+97252$n';
+  final avi = await newUser('אבי', 'male');
+  final noa = await newUser('נועה', 'female');
+  await avi.from('phone_numbers').upsert({'user_id': uid(avi), 'phone': '050$n'}); // local form
+  await noa.from('phone_numbers').upsert({'user_id': uid(noa), 'phone': noaPhone});
+  final first = List.from(await avi.rpc('sync_contacts', params: {'p_hashes': [h(noaPhone)]}));
+  check(first.isEmpty, 'only one side has the number → not connected yet');
+  final matched = List<Map<String, dynamic>>.from(
+    await noa.rpc('sync_contacts', params: {'p_hashes': [h(aviPhone), h('+972599999999')]}),
+  );
+  check(matched.length == 1 && matched.single['display_name'] == 'אבי',
+      'both have each other → connected automatically');
+  check((await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+      'Avi now sees Noa in his people');
+  check((await rows(eve, 'profiles')).length == 1, 'nobody else was connected');
+  try {
+    final leaked = await noa.from('contact_hashes').select();
+    check(leaked.isEmpty, 'contact hashes are not readable (even my own)');
+  } on PostgrestException {
+    check(true, 'contact hashes are not readable (even my own)');
+  }
+  final again = List.from(await noa.rpc('sync_contacts', params: {'p_hashes': [h(aviPhone)]}));
+  check(again.isEmpty, 'syncing again creates nothing new');
+  await avi.dispose();
+  await noa.dispose();
 
   await channel.unsubscribe();
   for (final c in [me, yoni, eve]) {

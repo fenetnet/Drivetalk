@@ -302,6 +302,13 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<List<String>> syncContacts(List<String> hashes) => _guard(() async {
+    final rows =
+        await _c.rpc('sync_contacts', params: {'p_hashes': hashes}) as List;
+    return [for (final r in rows) (r as Map)['display_name'] as String];
+  });
+
+  @override
   Future<String> createDeviceToken() =>
       _guard(() async => await _c.rpc('create_device_token') as String);
 

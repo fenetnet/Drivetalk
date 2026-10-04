@@ -49,7 +49,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Never expose location, route, or speed to other users. Server knows at most:
   available / mode / expires_at.
 - Availability always has an automatic expiry.
-- Do not read the phone Call Log. Do not request full contacts access in early phases.
+- Do not read the phone Call Log. Contacts (owner decision D-047): only
+  phone NUMBERS are read, hashed (SHA-256 of +972… form) on the phone; names
+  never leave it. People who have EACH OTHER's number connect automatically.
 - No infinite-scroll feed. No anonymous random chat as a core feature.
 - Driver mode: huge buttons, minimal text, no typing, no scrolling lists,
   one person at a time (normal mode shows up to 3 options).

@@ -13,6 +13,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Friends from contacts (owner decision D-047): numbers only, hashed
+         in the app; names never leave the phone. -->
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <!-- Profile photo from the camera (gallery needs no permission). -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>

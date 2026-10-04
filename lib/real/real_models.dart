@@ -192,6 +192,25 @@ String? normalizePhone(String raw) {
   return RegExp(r'^\+?[0-9]{6,15}$').hasMatch(t) ? t : null;
 }
 
+/// International form used for matching contacts (+972…). Must match the
+/// server's `e164()` in supabase/migrations/20261005000000_contacts.sql.
+String? e164Phone(String raw) {
+  final plus = raw.trim().startsWith('+');
+  var d = raw.replaceAll(RegExp(r'[^0-9]'), '');
+  if (d.isEmpty) return null;
+  if (!plus) {
+    if (d.startsWith('00')) {
+      d = d.substring(2);
+    } else if (d.startsWith('972')) {
+      // already international
+    } else if (d.startsWith('0')) {
+      d = '972${d.substring(1)}';
+    }
+  }
+  if (d.length < 8 || d.length > 15) return null;
+  return '+$d';
+}
+
 /// Pulls an invitation token out of a link or a pasted code.
 /// Accepts `https://host/i/<token>`, `…/invite.html?t=<token>`,
 /// `drivetalk://invite/<token>`, or the bare token.

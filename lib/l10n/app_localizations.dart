@@ -3309,6 +3309,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{name} — חיבור מהיר. לחצו כדי להתחבר'**
   String realQuickNotif(String name);
+
+  /// No description provided for @realContactsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים מאנשי הקשר'**
+  String get realContactsTitle;
+
+  /// No description provided for @realContactsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מי ששמור אצלך ושומר גם אותך — מתחבר אוטומטית. רק מספרים מוצפנים יוצאים מהטלפון, בלי שמות.'**
+  String get realContactsBody;
+
+  /// No description provided for @realContactsButton.
+  ///
+  /// In he, this message translates to:
+  /// **'חיפוש באנשי הקשר'**
+  String get realContactsButton;
+
+  /// No description provided for @realContactsFound.
+  ///
+  /// In he, this message translates to:
+  /// **'מצאנו: {names} — כבר ברשימה שלך'**
+  String realContactsFound(String names);
+
+  /// No description provided for @realContactsNone.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.'**
+  String get realContactsNone;
+
+  /// No description provided for @realContactsNoPermission.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.'**
+  String get realContactsNoPermission;
 }
 
 class _AppLocalizationsDelegate

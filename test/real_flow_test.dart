@@ -3,6 +3,7 @@
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
+import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
@@ -36,10 +37,12 @@ class Phone {
         phoneDialerProvider.overrideWithValue(dialer),
         inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
         drivingDetectorProvider.overrideWithValue(driving),
+        contactsReaderProvider.overrideWithValue(contacts),
       ],
     );
   }
   final driving = FakeDrivingDetector();
+  final contacts = FakeContactsReader();
   final MemoryServer server;
   late final MemoryRealBackend backend;
   late final ProviderContainer container;
@@ -525,6 +528,56 @@ void main() {
       expect(me.s.driving.inVehicle, isTrue);
       await me.c.stopAvailability();
       expect(me.driving.inVehicle, isFalse);
+    });
+  });
+
+  group('friends from contacts', () {
+    test('each has the other saved → friends without any code', () async {
+      me.contacts.numbers = ['053-222-2222', '+972 54 000 0000'];
+      yoni.contacts.numbers = ['+972521111111'];
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await pump(10);
+      expect(me.s.snapshot!.friends, isEmpty, reason: 'Yoni not here yet');
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      await pump(10);
+      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+      expect(yoni.s.notice?.kind, RealNoticeKind.contactsFound);
+      await me.c.refresh();
+      expect(me.s.snapshot!.friends.single.name, 'יוני');
+    });
+
+    test('only one side has the number → not connected', () async {
+      me.contacts.numbers = ['0532222222'];
+      yoni.contacts.numbers = [];
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      await pump(10);
+      expect(yoni.s.snapshot!.friends, isEmpty);
+    });
+
+    test('no permission → explained, nothing sent', () async {
+      me.contacts.granted = false;
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await pump(10);
+      expect(me.s.notice?.kind, RealNoticeKind.contactsNoPermission);
+      expect(server.contactHashes, isEmpty);
+    });
+
+    test('only hashes leave the phone', () async {
+      me.contacts.numbers = ['0532222222'];
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await pump(10);
+      final sent = server.contactHashes[me.backend.userId]!;
+      expect(sent.single, hasLength(64));
+      expect(sent.single, isNot(contains('532222222')));
+    });
+
+    test('phone formats all match', () {
+      expect(e164Phone('052-111-1111'), '+972521111111');
+      expect(e164Phone('+972 52 111 1111'), '+972521111111');
+      expect(e164Phone('00972521111111'), '+972521111111');
+      expect(e164Phone('972521111111'), '+972521111111');
+      expect(e164Phone('12'), isNull);
     });
   });
 

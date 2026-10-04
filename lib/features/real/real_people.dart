@@ -167,7 +167,9 @@ class RealPeopleScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            const _ContactsCard(),
+            const SizedBox(height: 12),
             if (friends.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -277,5 +279,57 @@ class RealPeopleScreen extends ConsumerWidget {
           },
         );
     }
+  }
+}
+
+class _ContactsCard extends ConsumerWidget {
+  const _ContactsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    return Card(
+      color: const Color(0xFFDCEBE3),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.contacts_rounded, color: AppColors.sageDark),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.realContactsTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l.realContactsBody,
+              style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+            ),
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.sageDark,
+              ),
+              onPressed: busy
+                  ? null
+                  : () => ref.read(realProvider.notifier).syncContacts(),
+              icon: const Icon(Icons.search_rounded),
+              label: Text(l.realContactsButton),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

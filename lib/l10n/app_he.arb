@@ -1168,5 +1168,18 @@
         "type": "String"
       }
     }
-  }
+  },
+  "realContactsTitle": "חברים מאנשי הקשר",
+  "realContactsBody": "מי ששמור אצלך ושומר גם אותך — מתחבר אוטומטית. רק מספרים מוצפנים יוצאים מהטלפון, בלי שמות.",
+  "realContactsButton": "חיפוש באנשי הקשר",
+  "realContactsFound": "מצאנו: {names} — כבר ברשימה שלך",
+  "@realContactsFound": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "realContactsNone": "עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.",
+  "realContactsNoPermission": "בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור."
 }

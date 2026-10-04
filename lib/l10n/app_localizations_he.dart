@@ -2014,4 +2014,27 @@ class AppLocalizationsHe extends AppLocalizations {
   String realQuickNotif(String name) {
     return '$name — חיבור מהיר. לחצו כדי להתחבר';
   }
+
+  @override
+  String get realContactsTitle => 'חברים מאנשי הקשר';
+
+  @override
+  String get realContactsBody =>
+      'מי ששמור אצלך ושומר גם אותך — מתחבר אוטומטית. רק מספרים מוצפנים יוצאים מהטלפון, בלי שמות.';
+
+  @override
+  String get realContactsButton => 'חיפוש באנשי הקשר';
+
+  @override
+  String realContactsFound(String names) {
+    return 'מצאנו: $names — כבר ברשימה שלך';
+  }
+
+  @override
+  String get realContactsNone =>
+      'עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.';
+
+  @override
+  String get realContactsNoPermission =>
+      'בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.';
 }

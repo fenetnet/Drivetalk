@@ -59,6 +59,10 @@ abstract class RealBackend {
   Future<String> createDeviceToken();
   Future<void> revokeDeviceTokens();
 
+  /// Upload hashed contact numbers; returns names of new connections
+  /// (people who have my number too).
+  Future<List<String>> syncContacts(List<String> hashes);
+
   Future<void> block(String userId);
 
   /// People I blocked (to unblock them).
