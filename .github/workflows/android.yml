@@ -87,6 +87,22 @@ jobs:
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk drivetalk-prototype.apk
 
+      # Google Play needs an App Bundle (.aab), signed with the same key
+      # (used as the "upload key"). Same settings as the APK.
+      - name: Build App Bundle (Google Play)
+        env:
+          DT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_TEST_KEYSTORE_PASSWORD }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          INVITE_BASE_URL: ${{ vars.INVITE_BASE_URL }}
+        run: >
+          flutter build appbundle --release
+          --build-number=${{ github.run_number }}
+          --dart-define="SUPABASE_URL=$SUPABASE_URL"
+          --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+          --dart-define="INVITE_BASE_URL=$INVITE_BASE_URL"
+          && mv build/app/outputs/bundle/release/app-release.aab drivetalk.aab
+
       - uses: actions/upload-artifact@v4
         with:
           name: drivetalk-prototype-apk
@@ -100,7 +116,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete prototype --yes --cleanup-tag || true
-          gh release create prototype drivetalk-prototype.apk \
+          gh release create prototype drivetalk-prototype.apk drivetalk.aab \
             --prerelease \
             --target "${{ github.sha }}" \
             --title "DriveTalk — גרסת ניסיון" \
