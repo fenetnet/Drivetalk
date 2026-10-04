@@ -3357,6 +3357,90 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.'**
   String get realNotifManualBody;
+
+  /// No description provided for @realOfferName.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו'**
+  String realOfferName(String name, String gender);
+
+  /// No description provided for @realOfferAsk.
+  ///
+  /// In he, this message translates to:
+  /// **'רוצה לדבר?'**
+  String get realOfferAsk;
+
+  /// No description provided for @realOfferAskShort.
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{פנוי/ה. לדבר?}}'**
+  String realOfferAskShort(String gender);
+
+  /// No description provided for @realQuickWhyShort.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר'**
+  String get realQuickWhyShort;
+
+  /// No description provided for @realGreetMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר טוב'**
+  String get realGreetMorning;
+
+  /// No description provided for @realGreetNoon.
+  ///
+  /// In he, this message translates to:
+  /// **'צהריים טובים'**
+  String get realGreetNoon;
+
+  /// No description provided for @realGreetEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'ערב טוב'**
+  String get realGreetEvening;
+
+  /// No description provided for @realGreetNight.
+  ///
+  /// In he, this message translates to:
+  /// **'לילה טוב'**
+  String get realGreetNight;
+
+  /// No description provided for @realHomeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}, עם מי\nמדברים היום?'**
+  String realHomeTitle(String name);
+
+  /// No description provided for @realFreeCount.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} פנויים'**
+  String realFreeCount(int count);
+
+  /// No description provided for @realFreeUntil.
+  ///
+  /// In he, this message translates to:
+  /// **'פנוי · {time}'**
+  String realFreeUntil(String time);
+
+  /// No description provided for @realGroupAccount.
+  ///
+  /// In he, this message translates to:
+  /// **'החשבון שלי'**
+  String get realGroupAccount;
+
+  /// No description provided for @realWelcomeHeadline.
+  ///
+  /// In he, this message translates to:
+  /// **'זמן מת?\nשיחה טובה.'**
+  String get realWelcomeHeadline;
+
+  /// No description provided for @realWelcomeSub.
+  ///
+  /// In he, this message translates to:
+  /// **'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.'**
+  String get realWelcomeSub;
 }
 
 class _AppLocalizationsDelegate

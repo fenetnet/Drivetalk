@@ -1183,5 +1183,57 @@
   "realContactsNone": "עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.",
   "realContactsNoPermission": "בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.",
   "realNotifManualTitle": "DriveTalk · זמין לשיחה",
-  "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה."
+  "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.",
+  "realOfferName": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו",
+  "@realOfferName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realOfferAsk": "רוצה לדבר?",
+  "realOfferAskShort": "{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{פנוי/ה. לדבר?}}",
+  "@realOfferAskShort": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realQuickWhyShort": "חיבור מהיר",
+  "realGreetMorning": "בוקר טוב",
+  "realGreetNoon": "צהריים טובים",
+  "realGreetEvening": "ערב טוב",
+  "realGreetNight": "לילה טוב",
+  "realHomeTitle": "{name}, עם מי\nמדברים היום?",
+  "@realHomeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realFreeCount": "{count} פנויים",
+  "@realFreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realFreeUntil": "פנוי · {time}",
+  "@realFreeUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "realGroupAccount": "החשבון שלי",
+  "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
+  "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר."
 }

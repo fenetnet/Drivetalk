@@ -57,7 +57,7 @@ void main() {
     await t.pump();
     await t.tap(find.text('יאללה'));
     await pumpFor(t, 500);
-    expect(find.text('שלום נתנאל'), findsOneWidget);
+    expect(find.text('נתנאל, עם מי\nמדברים היום?'), findsOneWidget);
     expect(find.text('עוד אין פה חברים'), findsOneWidget);
 
     // The friend (another phone) joins and sends an invitation.
@@ -100,7 +100,7 @@ void main() {
     await pumpFor(t, 500);
     await t.tap(find.text('30 דק׳'));
     await pumpFor(t, 800);
-    expect(find.text('יוני פנוי עכשיו. רוצה לדבר?'), findsOneWidget);
+    expect(find.text('יוני פנוי עכשיו'), findsOneWidget);
     expect(find.text('לא עכשיו'), findsOneWidget);
 
     await t.tap(find.text('דבר עכשיו'));

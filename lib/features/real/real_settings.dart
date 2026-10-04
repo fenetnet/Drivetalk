@@ -10,6 +10,8 @@ import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
+import 'real_common.dart';
+import 'real_home.dart';
 
 class RealSettingsScreen extends ConsumerWidget {
   const RealSettingsScreen({super.key});
@@ -23,155 +25,157 @@ class RealSettingsScreen extends ConsumerWidget {
     final apk = ref.watch(apkUrlProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.tabSettings)),
+      appBar: AppBar(
+        title: Text(
+          l.tabSettings,
+          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.only(bottom: 32),
         children: [
-          ListTile(
-            leading: me == null
-                ? const Icon(Icons.person_rounded)
-                : PersonAvatar(person: me.toPerson(), size: 40),
-            title: Text(l.realNameTitle),
-            subtitle: Text(me?.name ?? '—'),
-            trailing: const Icon(Icons.edit_rounded),
-            onTap: me == null ? null : () => _editName(context, ref),
-          ),
-          ListTile(
-            leading: const Icon(Icons.phone_rounded),
-            title: Text(l.realMyNumber),
-            subtitle: Text(s.myPhone == null ? l.realNotShared : l.realShared),
-            trailing: const Icon(Icons.edit_rounded),
-            onTap: () => _editPhone(context, ref),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.directions_car_rounded),
-            title: Text(l.realAutoDriving),
-            subtitle: Text(
-              s.driving.supported
-                  ? l.realAutoDrivingBody
-                  : l.realAutoDrivingUnsupported,
-            ),
-            value: s.driving.enabled,
-            onChanged: !s.driving.supported || s.busy
-                ? null
-                : (v) async {
-                    if (!v) {
-                      await c.disableAutoDriving();
-                      return;
-                    }
-                    final ok = await showDialog<bool>(
-                      context: context,
-                      builder: (d) => AlertDialog(
-                        title: Text(l.realAutoDrivingDialogTitle),
-                        content: Text(l.realAutoDrivingDialogBody),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(d, false),
-                            child: Text(l.cancel),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(d, true),
-                            child: Text(l.enable),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (ok ?? false) await c.enableAutoDriving();
-                  },
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.record_voice_over_rounded),
-            title: Text(l.settingsVoiceReadout),
-            subtitle: Text(l.settingsVoiceReadoutBody),
-            value: s.prefs.voice,
-            onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
-          ),
-          SectionTitle(l.realSettingsMode),
-          ListTile(
-            leading: const Icon(
-              Icons.verified_rounded,
-              color: AppColors.sageDark,
-            ),
-            title: Text(l.realModeReal),
-            subtitle: Text(l.realPrivacyNote),
-          ),
-          SwitchListTile(
-            secondary: const Icon(Icons.fact_check_rounded),
-            title: Text(l.realTestModeToggle),
-            subtitle: Text(l.realTestModeBody),
-            value: s.prefs.testTab,
-            onChanged: (v) => c.setPrefs(s.prefs.copyWith(testTab: v)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.theater_comedy_rounded),
-            title: Text(l.realSwitchToDemo),
-            subtitle: Text(l.realModeDemo),
-            onTap: () => ref.read(appModeProvider.notifier).set(AppMode.demo),
-          ),
-          ListTile(
-            leading: const Icon(Icons.download_rounded),
-            title: Text(l.realDownloadLink),
-            subtitle: Text(
-              apk,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textDirection: TextDirection.ltr,
-            ),
-            trailing: IconButton(
-              tooltip: l.realShareApp,
-              icon: const Icon(Icons.share_rounded),
-              onPressed: () async {
-                if (!kIsWeb &&
-                    defaultTargetPlatform == TargetPlatform.android) {
-                  await SharePlus.instance.share(ShareParams(text: apk));
-                } else {
-                  await Clipboard.setData(ClipboardData(text: apk));
-                  messengerKey.currentState?.showSnackBar(
-                    SnackBar(content: Text(l.realCopied)),
-                  );
-                }
-              },
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.block_rounded),
-            title: Text(l.realBlockedTitle),
-            trailing: const Icon(Icons.chevron_left_rounded),
-            onTap: () => showModalBottomSheet<void>(
-              context: context,
-              showDragHandle: true,
-              builder: (_) => const _BlockedSheet(),
-            ),
-          ),
-          const Divider(height: 32),
-          ListTile(
-            leading: const Icon(
-              Icons.restart_alt_rounded,
-              color: AppColors.danger,
-            ),
-            title: Text(l.realStartOver),
-            onTap: () async {
-              final ok = await showDialog<bool>(
-                context: context,
-                builder: (d) => AlertDialog(
-                  content: Text(l.realStartOverConfirm),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(d, false),
-                      child: Text(l.cancel),
-                    ),
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.danger,
-                      ),
-                      onPressed: () => Navigator.pop(d, true),
-                      child: Text(l.confirm),
-                    ),
-                  ],
+          SettingsGroup(
+            title: l.realGroupAccount,
+            children: [
+              ListTile(
+                leading: me == null
+                    ? const Icon(Icons.person_rounded)
+                    : PersonAvatar(person: me.toPerson(), size: 40),
+                title: Text(l.realNameTitle),
+                subtitle: Text(me?.name ?? '—'),
+                trailing: const Icon(Icons.edit_rounded),
+                onTap: me == null ? null : () => _editName(context, ref),
+              ),
+              ListTile(
+                leading: const Icon(Icons.phone_rounded),
+                title: Text(l.realMyNumber),
+                subtitle: Text(
+                  s.myPhone == null ? l.realNotShared : l.realShared,
                 ),
-              );
-              if (ok ?? false) await c.signOut();
-            },
+                trailing: const Icon(Icons.edit_rounded),
+                onTap: () => _editPhone(context, ref),
+              ),
+            ],
+          ),
+          SettingsGroup(
+            title: l.settingsDriving,
+            children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.directions_car_rounded),
+                title: Text(l.realAutoDriving),
+                subtitle: Text(
+                  s.driving.supported
+                      ? l.realAutoDrivingBody
+                      : l.realAutoDrivingUnsupported,
+                ),
+                value: s.driving.enabled,
+                onChanged: !s.driving.supported || s.busy
+                    ? null
+                    : (v) => setAutoDriving(context, ref, v),
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.record_voice_over_rounded),
+                title: Text(l.settingsVoiceReadout),
+                subtitle: Text(l.settingsVoiceReadoutBody),
+                value: s.prefs.voice,
+                onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
+              ),
+            ],
+          ),
+          SettingsGroup(
+            title: l.realSettingsMode,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.verified_rounded,
+                  color: AppColors.sageDark,
+                ),
+                title: Text(l.realModeReal),
+                subtitle: Text(l.realPrivacyNote),
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.fact_check_rounded),
+                title: Text(l.realTestModeToggle),
+                subtitle: Text(l.realTestModeBody),
+                value: s.prefs.testTab,
+                onChanged: (v) => c.setPrefs(s.prefs.copyWith(testTab: v)),
+              ),
+              ListTile(
+                leading: const Icon(Icons.theater_comedy_rounded),
+                title: Text(l.realSwitchToDemo),
+                subtitle: Text(l.realModeDemo),
+                onTap: () =>
+                    ref.read(appModeProvider.notifier).set(AppMode.demo),
+              ),
+              ListTile(
+                leading: const Icon(Icons.download_rounded),
+                title: Text(l.realDownloadLink),
+                subtitle: Text(
+                  apk,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textDirection: TextDirection.ltr,
+                ),
+                trailing: IconButton(
+                  tooltip: l.realShareApp,
+                  icon: const Icon(Icons.share_rounded),
+                  onPressed: () async {
+                    if (!kIsWeb &&
+                        defaultTargetPlatform == TargetPlatform.android) {
+                      await SharePlus.instance.share(ShareParams(text: apk));
+                    } else {
+                      await Clipboard.setData(ClipboardData(text: apk));
+                      messengerKey.currentState?.showSnackBar(
+                        SnackBar(content: Text(l.realCopied)),
+                      );
+                    }
+                  },
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.block_rounded),
+                title: Text(l.realBlockedTitle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => showModalBottomSheet<void>(
+                  context: context,
+                  showDragHandle: true,
+                  builder: (_) => const _BlockedSheet(),
+                ),
+              ),
+            ],
+          ),
+          SettingsGroup(
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.restart_alt_rounded,
+                  color: AppColors.danger,
+                ),
+                title: Text(l.realStartOver),
+                onTap: () async {
+                  final ok = await showDialog<bool>(
+                    context: context,
+                    builder: (d) => AlertDialog(
+                      content: Text(l.realStartOverConfirm),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(d, false),
+                          child: Text(l.cancel),
+                        ),
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.danger,
+                          ),
+                          onPressed: () => Navigator.pop(d, true),
+                          child: Text(l.confirm),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (ok ?? false) await c.signOut();
+                },
+              ),
+            ],
           ),
         ],
       ),

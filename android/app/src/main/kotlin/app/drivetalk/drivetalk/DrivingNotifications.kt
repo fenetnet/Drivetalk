@@ -75,7 +75,7 @@ object DrivingNotifications {
     fun status(context: Context, manual: Boolean = false): Notification {
         val store = DrivingStore(context)
         return builder(context, CHANNEL_STATUS)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(store.text(if (manual) "manualTitle" else "statusTitle", "DriveTalk"))
             .setContentText(store.text(if (manual) "manualBody" else "statusBody", ""))
             .setOngoing(true)
@@ -95,7 +95,7 @@ object DrivingNotifications {
         val req = 100 + (offer.id.hashCode() and 0xffff)
         val quick = offer.kind == "quick"
         val b = builder(context, CHANNEL_OFFERS)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(
                 store.text(if (quick) "quickTitle" else "offerTitle", "{name}")
                     .replace("{name}", offer.name),

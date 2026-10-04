@@ -9,7 +9,7 @@ import '../common/labels.dart';
 import '../common/widgets.dart';
 import 'real_common.dart';
 
-/// "Yoni is free now. Want to talk?" — talk now / not now.
+/// "Yoni is free now — want to talk?" (coral; dark while driving).
 class RealOfferScreen extends ConsumerWidget {
   const RealOfferScreen({super.key, required this.offer, required this.dark});
   final RealOffer offer;
@@ -23,51 +23,58 @@ class RealOfferScreen extends ConsumerWidget {
     final now = ref.watch(realNowProvider);
     final other = s.snapshot!.friend(offer.otherId(s.myId!))!;
     final theirs = s.snapshot!.availability[other.id];
+    final g = genderKey(other.gender);
+    final style = dark ? MomentStyle.dark : MomentStyle.coral;
+    final when = theirs != null && theirs.isActiveAt(now)
+        ? '${modeLabel(l, theirs.mode)} · '
+              '${l.timeLeftMinutes(theirs.minutesLeftAt(now))}'
+        : null;
+
     return MomentLayout(
-      dark: dark,
+      style: style,
+      header: when == null
+          ? null
+          : MomentChip(
+              text: when,
+              style: style,
+              icon: modeIcon(theirs!.mode),
+              dot: dark ? AppColors.sage : null,
+            ),
       footer: dark ? l.driverSafety : l.realOfferNote,
       top: Column(
         children: [
-          PersonAvatar(person: other.toPerson(), size: 120),
-          const SizedBox(height: 20),
-          MomentText(
-            l.realOfferTitle(other.name, genderKey(other.gender)),
-            size: 30,
-            dark: dark,
+          HeroAvatar(
+            person: other.toPerson(),
+            size: dark ? 200 : 168,
+            ring: dark ? AppColors.driverRing : Colors.white,
           ),
-          if (theirs != null && theirs.isActiveAt(now)) ...[
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  modeIcon(theirs.mode),
-                  color: dark ? Colors.white70 : AppColors.inkSoft,
-                ),
-                const SizedBox(width: 6),
-                MomentText(
-                  '${modeLabel(l, theirs.mode)} · '
-                  '${l.timeLeftMinutes(theirs.minutesLeftAt(now))}',
-                  size: 18,
-                  dark: dark,
-                  soft: true,
-                ),
-              ],
-            ),
-          ],
+          const SizedBox(height: 32),
+          MomentText(
+            dark ? other.name : l.realOfferName(other.name, g),
+            size: dark ? 44 : 38,
+            style: style,
+          ),
+          const SizedBox(height: 10),
+          MomentText(
+            dark ? l.realOfferAskShort(g) : l.realOfferAsk,
+            size: 22,
+            style: style,
+            soft: true,
+          ),
         ],
       ),
       actions: [
-        BigActionButton(
-          label: l.realTalkNow,
+        PrimaryPill(
+          label: dark ? l.yes : l.realTalkNow,
           icon: Icons.call_rounded,
-          height: 110,
+          style: style,
+          height: dark ? 120 : 76,
           onTap: s.busy ? null : () => c.respond(offer, accept: true),
         ),
-        BigActionButton(
+        SecondaryPill(
           label: l.realNotNow,
-          icon: Icons.close_rounded,
-          color: dark ? AppColors.driverCard : AppColors.inkSoft,
+          style: style,
+          height: dark ? 88 : 60,
           onTap: () => c.respond(offer, accept: false),
         ),
       ],
@@ -87,32 +94,33 @@ class RealWaitingScreen extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final other = s.snapshot!.friend(offer.otherId(s.myId!))!;
+    final style = dark ? MomentStyle.dark : MomentStyle.coral;
     return MomentLayout(
-      dark: dark,
+      style: style,
       footer: dark ? l.driverSafety : null,
       top: Column(
         children: [
           PulsingCircle(
-            size: 132,
-            color: AppColors.sage,
-            child: PersonAvatar(person: other.toPerson(), size: 120),
+            size: 184,
+            color: Colors.white.withValues(alpha: 0.35),
+            child: HeroAvatar(person: other.toPerson(), size: 168),
           ),
-          const SizedBox(height: 22),
-          MomentText(l.realWaitingTitle(other.name), size: 30, dark: dark),
-          const SizedBox(height: 8),
+          const SizedBox(height: 32),
+          MomentText(l.realWaitingTitle(other.name), size: 34, style: style),
+          const SizedBox(height: 10),
           MomentText(
             l.realWaitingBody(other.name, genderKey(other.gender)),
             size: 18,
-            dark: dark,
+            style: style,
             soft: true,
           ),
         ],
       ),
       actions: [
-        BigActionButton(
+        SecondaryPill(
           label: l.realStopWaiting,
-          icon: Icons.close_rounded,
-          color: dark ? AppColors.driverCard : AppColors.inkSoft,
+          style: style,
+          height: dark ? 88 : 60,
           onTap: () => c.cancelWaiting(offer),
         ),
       ],
@@ -121,7 +129,7 @@ class RealWaitingScreen extends ConsumerWidget {
 }
 
 /// Both said yes: countdown → phone call, or "they'll call you", or the
-/// simulated in-app call.
+/// simulated in-app call. Green.
 class RealCallScreen extends ConsumerWidget {
   const RealCallScreen({super.key, required this.dark});
   final bool dark;
@@ -132,75 +140,108 @@ class RealCallScreen extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final call = s.call;
+    final me = s.snapshot?.me;
     if (call == null) return const SizedBox.shrink();
     final person = call.other.toPerson();
     final g = genderKey(call.other.gender);
+    final style = dark ? MomentStyle.dark : MomentStyle.green;
 
-    Widget header(String title, {String? body, bool pulse = false}) => Column(
+    // Me + them, overlapping.
+    Widget pair() => SizedBox(
+      width: 232,
+      height: 128,
+      child: Stack(
+        children: [
+          if (me != null)
+            PositionedDirectional(
+              start: 0,
+              child: HeroAvatar(person: me.toPerson(), size: 128),
+            ),
+          PositionedDirectional(
+            end: 0,
+            child: HeroAvatar(person: person, size: 128),
+          ),
+        ],
+      ),
+    );
+
+    Widget header(String title, {String? body, Widget? extra}) => Column(
       children: [
-        if (pulse)
-          PulsingCircle(
-            size: 132,
-            color: AppColors.sage,
-            child: PersonAvatar(person: person, size: 120),
-          )
-        else
-          PersonAvatar(person: person, size: 120),
-        const SizedBox(height: 22),
-        MomentText(title, size: 28, dark: dark),
+        MomentText(title, size: 28, style: style),
         if (body != null) ...[
           const SizedBox(height: 8),
-          MomentText(body, size: 17, dark: dark, soft: true),
+          MomentText(body, size: 16, style: style, soft: true),
         ],
+        const SizedBox(height: 48),
+        pair(),
+        ?extra,
       ],
     );
 
-    final done = BigActionButton(
+    final done = PrimaryPill(
       label: l.callWeAreDone,
       icon: Icons.call_end_rounded,
-      color: AppColors.danger,
+      style: style,
       onTap: c.finishCall,
     );
 
     return switch (s.callStage) {
       CallStage.connecting => MomentLayout(
-        dark: dark,
+        style: style,
         top: header(
-          call.quick && s.dialCountdown > 0
+          call.quick ? l.realQuickWhyShort : l.realBothSaidYes,
+          body: call.quick && s.dialCountdown > 0
               ? l.realQuickIn(call.other.name, s.dialCountdown)
               : call.role == CallRole.iCall && s.dialCountdown > 0
               ? l.realCallingIn(call.other.name, s.dialCountdown)
               : l.realConnecting,
-          body: call.quick ? l.realQuickWhy : l.realBothSaidYes,
-          pulse: true,
+          extra: s.dialCountdown > 0
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Container(
+                    width: 96,
+                    height: 96,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 6,
+                      ),
+                    ),
+                    child: Text(
+                      '${s.dialCountdown}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 46,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                )
+              : null,
         ),
         actions: [
           if (call.role == CallRole.iCall)
-            BigActionButton(
+            PrimaryPill(
               label: l.realCallNow,
               icon: Icons.call_rounded,
-              height: 110,
+              style: style,
               onTap: c.dialNow,
             ),
-          BigActionButton(
-            label: l.cancel,
-            icon: Icons.close_rounded,
-            color: dark ? AppColors.driverCard : AppColors.inkSoft,
-            onTap: c.cancelCall,
-          ),
+          SecondaryPill(label: l.cancel, style: style, onTap: c.cancelCall),
         ],
       ),
       CallStage.dialed => MomentLayout(
-        dark: dark,
+        style: style,
         top: header(l.realDialedTitle, body: l.realDialedBody),
         actions: [done],
       ),
       CallStage.waitingForTheirCall => MomentLayout(
-        dark: dark,
+        style: style,
         top: header(
           l.realTheyCallTitle(call.other.name, g),
           body: l.realTheyCallBody,
-          pulse: true,
         ),
         actions: [
           done,
@@ -208,31 +249,32 @@ class RealCallScreen extends ConsumerWidget {
             onPressed: c.finishCall,
             child: Text(
               l.realTheyDidNotCall,
-              style: TextStyle(color: dark ? Colors.white70 : null),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
         ],
       ),
       _ => MomentLayout(
-        dark: dark,
-        top: Column(
-          children: [
-            header(l.realInAppTitle(call.other.name), body: l.realInAppBody),
-            const SizedBox(height: 16),
-            _CallTimer(since: call.startedAt, dark: dark),
-          ],
+        style: style,
+        footer: l.callAudioOnly,
+        top: header(
+          l.realInAppTitle(call.other.name),
+          body: l.realInAppBody,
+          extra: Padding(
+            padding: const EdgeInsets.only(top: 28),
+            child: _CallTimer(since: call.startedAt, style: style),
+          ),
         ),
         actions: [done],
-        footer: l.callAudioOnly,
       ),
     };
   }
 }
 
 class _CallTimer extends ConsumerWidget {
-  const _CallTimer({required this.since, required this.dark});
+  const _CallTimer({required this.since, required this.style});
   final DateTime since;
-  final bool dark;
+  final MomentStyle style;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -242,7 +284,7 @@ class _CallTimer extends ConsumerWidget {
     final text =
         '${(secs ~/ 60).toString().padLeft(2, '0')}:'
         '${(secs % 60).toString().padLeft(2, '0')}';
-    return MomentText(text, size: 22, dark: dark, soft: true);
+    return MomentText(text, size: 24, style: style, soft: true);
   }
 }
 
@@ -257,65 +299,94 @@ class RealFeedbackScreen extends ConsumerWidget {
     final c = ref.read(realProvider.notifier);
     final call = s.call;
     final me = s.snapshot?.me;
-    return Scaffold(
-      body: SafeArea(
+    return MomentLayout(
+      header: Align(
+        alignment: AlignmentDirectional.centerEnd,
+        child: TextButton(onPressed: c.skipFeedback, child: Text(l.skip)),
+      ),
+      top: Column(
+        children: [
+          if (call != null) HeroAvatar(person: call.other.toPerson()),
+          const SizedBox(height: 28),
+          MomentText(
+            l.feedbackQuestion(genderKey(me?.gender ?? Gender.unspecified)),
+            size: 30,
+          ),
+        ],
+      ),
+      actions: [
+        Row(
+          children: [
+            for (final (r, label, icon) in [
+              (
+                FeedbackRating.veryGood,
+                l.feedbackVeryGood,
+                Icons.sentiment_very_satisfied_rounded,
+              ),
+              (
+                FeedbackRating.good,
+                l.feedbackGood,
+                Icons.sentiment_satisfied_rounded,
+              ),
+              (
+                FeedbackRating.notReally,
+                l.feedbackNotReally,
+                Icons.sentiment_neutral_rounded,
+              ),
+            ]) ...[
+              Expanded(
+                child: _RatingTile(
+                  label: label,
+                  icon: icon,
+                  onTap: () => c.sendFeedback(talked: true, rating: r),
+                ),
+              ),
+              if (r != FeedbackRating.notReally) const SizedBox(width: 10),
+            ],
+          ],
+        ),
+        TextButton(
+          onPressed: () => c.sendFeedback(talked: false),
+          child: Text(l.feedbackDidNotTalk),
+        ),
+      ],
+    );
+  }
+}
+
+class _RatingTile extends StatelessWidget {
+  const _RatingTile({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(24),
+      elevation: 2,
+      shadowColor: const Color(0x22B8462C),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: TextButton(
-                  onPressed: c.skipFeedback,
-                  child: Text(l.skip),
-                ),
-              ),
-              const Spacer(),
-              if (call != null)
-                Center(
-                  child: PersonAvatar(person: call.other.toPerson(), size: 96),
-                ),
-              const SizedBox(height: 20),
+              Icon(icon, size: 40, color: AppColors.terracotta),
+              const SizedBox(height: 8),
               Text(
-                l.feedbackQuestion(genderKey(me?.gender ?? Gender.unspecified)),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall,
+                label,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              const SizedBox(height: 28),
-              for (final (r, label, icon) in [
-                (
-                  FeedbackRating.veryGood,
-                  l.feedbackVeryGood,
-                  Icons.sentiment_very_satisfied_rounded,
-                ),
-                (
-                  FeedbackRating.good,
-                  l.feedbackGood,
-                  Icons.sentiment_satisfied_rounded,
-                ),
-                (
-                  FeedbackRating.notReally,
-                  l.feedbackNotReally,
-                  Icons.sentiment_neutral_rounded,
-                ),
-              ]) ...[
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(56),
-                    backgroundColor: Colors.white,
-                  ),
-                  onPressed: () => c.sendFeedback(talked: true, rating: r),
-                  icon: Icon(icon, color: AppColors.terracotta),
-                  label: Text(label, style: const TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(height: 12),
-              ],
-              TextButton(
-                onPressed: () => c.sendFeedback(talked: false),
-                child: Text(l.feedbackDidNotTalk),
-              ),
-              const Spacer(flex: 2),
             ],
           ),
         ),
@@ -342,7 +413,7 @@ class RealInviteScreen extends ConsumerWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
-            MomentText(l.realInviteLoading, size: 20),
+            MomentText(l.realInviteLoading, size: 20, soft: true),
           ],
         ),
         actions: [
@@ -362,37 +433,31 @@ class RealInviteScreen extends ConsumerWidget {
       InviteStatus.valid => MomentLayout(
         top: Column(
           children: [
-            PersonAvatar(person: person, size: 120),
-            const SizedBox(height: 20),
-            MomentText(l.realInviteTitle(name, g), size: 30),
+            HeroAvatar(person: person),
+            const SizedBox(height: 28),
+            MomentText(l.realInviteTitle(name, g), size: 34),
             const SizedBox(height: 10),
             MomentText(l.realInviteBody, size: 18, soft: true),
           ],
         ),
         actions: [
-          BigActionButton(
+          PrimaryPill(
             label: l.realInviteAccept,
             icon: Icons.check_rounded,
             onTap: busy ? null : c.acceptInvite,
           ),
-          TextButton(onPressed: c.dismissInvite, child: Text(l.realNotNow)),
+          SecondaryPill(label: l.realNotNow, onTap: c.dismissInvite),
         ],
       ),
       InviteStatus.alreadyConnected => MomentLayout(
         top: Column(
           children: [
-            PersonAvatar(person: person, size: 120),
-            const SizedBox(height: 20),
-            MomentText(l.realInviteAlready(name), size: 24),
+            HeroAvatar(person: person),
+            const SizedBox(height: 28),
+            MomentText(l.realInviteAlready(name), size: 26),
           ],
         ),
-        actions: [
-          BigActionButton(
-            label: l.confirm,
-            icon: Icons.check_rounded,
-            onTap: c.dismissInvite,
-          ),
-        ],
+        actions: [PrimaryPill(label: l.confirm, onTap: c.dismissInvite)],
       ),
       _ => MomentLayout(
         top: Column(
@@ -414,15 +479,12 @@ class RealInviteScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: [
-          BigActionButton(
-            label: l.confirm,
-            icon: Icons.check_rounded,
-            color: AppColors.inkSoft,
-            onTap: c.dismissInvite,
-          ),
-        ],
+        actions: [PrimaryPill(label: l.confirm, onTap: c.dismissInvite)],
       ),
     };
   }
 }
+
+/// Small avatar for lists in real mode.
+Widget realPersonAvatar(RealProfile p, {double size = 44}) =>
+    PersonAvatar(person: p.toPerson(), size: size);

@@ -17,8 +17,17 @@ class RealProfile {
     id: id,
     name: name,
     gender: gender,
-    avatarColor: _palette[id.hashCode.abs() % _palette.length],
+    avatarColor: _palette[_stableHash('$id$name') % _palette.length],
   );
+
+  /// Same color on every phone and every launch (String.hashCode isn't).
+  static int _stableHash(String s) {
+    var h = 0;
+    for (final c in s.codeUnits) {
+      h = (h * 31 + c) & 0x7fffffff;
+    }
+    return h;
+  }
 
   static const _palette = [
     0xFFE76F51,

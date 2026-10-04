@@ -2043,4 +2043,67 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNotifManualBody => 'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.';
+
+  @override
+  String realOfferName(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה',
+      'male': 'פנוי',
+      'other': 'פנוי/ה',
+    });
+    return '$name $_temp0 עכשיו';
+  }
+
+  @override
+  String get realOfferAsk => 'רוצה לדבר?';
+
+  @override
+  String realOfferAskShort(String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'פנויה. לדבר?',
+      'male': 'פנוי. לדבר?',
+      'other': 'פנוי/ה. לדבר?',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get realQuickWhyShort => 'חיבור מהיר';
+
+  @override
+  String get realGreetMorning => 'בוקר טוב';
+
+  @override
+  String get realGreetNoon => 'צהריים טובים';
+
+  @override
+  String get realGreetEvening => 'ערב טוב';
+
+  @override
+  String get realGreetNight => 'לילה טוב';
+
+  @override
+  String realHomeTitle(String name) {
+    return '$name, עם מי\nמדברים היום?';
+  }
+
+  @override
+  String realFreeCount(int count) {
+    return '$count פנויים';
+  }
+
+  @override
+  String realFreeUntil(String time) {
+    return 'פנוי · $time';
+  }
+
+  @override
+  String get realGroupAccount => 'החשבון שלי';
+
+  @override
+  String get realWelcomeHeadline => 'זמן מת?\nשיחה טובה.';
+
+  @override
+  String get realWelcomeSub =>
+      'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.';
 }

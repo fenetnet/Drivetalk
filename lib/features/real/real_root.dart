@@ -122,12 +122,17 @@ class RealRoot extends ConsumerWidget {
 class RealShell extends ConsumerStatefulWidget {
   const RealShell({super.key});
 
+  /// Screenshots / previews only: which tab opens first.
+  static set debugInitialTab(int i) => _RealShellState.debugInitialTab = i;
+
   @override
   ConsumerState<RealShell> createState() => _RealShellState();
 }
 
 class _RealShellState extends ConsumerState<RealShell> {
-  var _index = 0;
+  /// Screenshots / previews only.
+  static int debugInitialTab = 0;
+  var _index = debugInitialTab;
 
   @override
   Widget build(BuildContext context) {
@@ -265,16 +270,136 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
         normalizePhone(_phone.text) != null &&
         !s.busy;
     return Scaffold(
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-          children: [
-            Row(
+      body: Stack(
+        children: [
+          const PositionedDirectional(
+            top: -140,
+            end: -100,
+            child: _Blob(size: 360, color: AppColors.blush),
+          ),
+          const PositionedDirectional(
+            top: 160,
+            start: -150,
+            child: _Blob(size: 260, color: AppColors.mint),
+          ),
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
               children: [
-                Expanded(
-                  child: Text(
-                    l.realWelcomeTitle,
-                    style: Theme.of(context).textTheme.headlineMedium,
+                Row(
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: const BoxDecoration(
+                        color: AppColors.terracotta,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x55B8462C),
+                            blurRadius: 20,
+                            offset: Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.forum_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                    const Spacer(),
+                    MomentChip(text: l.realWelcomeTitle),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  l.realWelcomeHeadline,
+                  style: const TextStyle(
+                    fontSize: 38,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l.realWelcomeSub,
+                  style: const TextStyle(
+                    color: AppColors.inkSoft,
+                    fontSize: 17,
+                    height: 1.4,
+                  ),
+                ),
+                if (s.invite != null) ...[
+                  const SizedBox(height: 14),
+                  MomentChip(
+                    text: l.realInviteWaitingAfterJoin,
+                    icon: Icons.mail_rounded,
+                  ),
+                ],
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x1FB8462C),
+                        blurRadius: 32,
+                        offset: Offset(0, 12),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      TextField(
+                        controller: _name,
+                        maxLength: 40,
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(
+                          labelText: l.onbNameLabel,
+                          prefixIcon: const Icon(Icons.person_rounded),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _phone,
+                        keyboardType: TextInputType.phone,
+                        textDirection: TextDirection.ltr,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          labelText: l.realPhoneRequired,
+                          helperText: l.realPhoneRequiredHelp,
+                          helperMaxLines: 3,
+                          prefixIcon: const Icon(Icons.phone_rounded),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                PrimaryPill(
+                  label: l.realJoin,
+                  height: 64,
+                  onTap: canGo
+                      ? () => c.signIn(_name.text, _gender, phone: _phone.text)
+                      : null,
+                ),
+                if (s.busy)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 12),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                const SizedBox(height: 16),
+                Text(
+                  l.realPrivacyNote,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.inkSoft,
+                    fontSize: 13,
                   ),
                 ),
                 TextButton(
@@ -284,73 +409,22 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              l.realWelcomeBody,
-              style: const TextStyle(color: AppColors.inkSoft, fontSize: 16),
-            ),
-            if (s.invite != null) ...[
-              const SizedBox(height: 12),
-              Card(
-                color: const Color(0xFFDCEBE3),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.mail_rounded, color: AppColors.sageDark),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(l.realInviteWaitingAfterJoin)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-            const SizedBox(height: 24),
-            TextField(
-              controller: _name,
-              maxLength: 40,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                labelText: l.onbNameLabel,
-                border: const OutlineInputBorder(),
-              ),
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _phone,
-              keyboardType: TextInputType.phone,
-              textDirection: TextDirection.ltr,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: l.realPhoneRequired,
-                helperText: l.realPhoneRequiredHelp,
-                helperMaxLines: 4,
-                border: const OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 28),
-            FilledButton(
-              onPressed: canGo
-                  ? () => c.signIn(_name.text, _gender, phone: _phone.text)
-                  : null,
-              child: s.busy
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    )
-                  : Text(l.realJoin),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l.realPrivacyNote,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+}
+
+class _Blob extends StatelessWidget {
+  const _Blob({required this.size, required this.color});
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  );
 }

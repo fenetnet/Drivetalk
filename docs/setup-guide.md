@@ -79,6 +79,17 @@ https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnr
    - `SUPABASE_URL` = ה-Project URL.
    - `SUPABASE_ANON_KEY` = ה-publishable/anon key.
 
+## שלב 2ד׳ — (פעם אחת) שעדכוני שרת יותקנו לבד
+אחרי זה לא צריך יותר להדביק קובצי SQL.
+1. ב-Supabase: למעלה **Connect** ‹ לשונית **Connection string** ‹ **Session pooler** ‹ להעתיק את הכתובת (מתחילה ב-`postgresql://postgres.`).
+2. בכתובת מופיע `[YOUR-PASSWORD]` — להחליף בסיסמת מסד הנתונים. אם לא שמרת אותה: **Project Settings ‹ Database ‹ Reset database password**, ולהעתיק את החדשה.
+3. ב-GitHub ‹ Settings ‹ Secrets and variables ‹ Actions ‹ **Secrets** ‹ New repository secret:
+   - Name: `SUPABASE_DB_URL`
+   - Secret: הכתובת המלאה (עם הסיסמה).
+4. GitHub ‹ Actions ‹ **Update database** ‹ Run workflow. אמור להסתיים ב-✓.
+
+> זה הסוד היחיד שנותן גישה מלאה למסד הנתונים — לכן הוא נשמר רק ב-GitHub Secrets, ולא נשלח אליי.
+
 ## שלב 3 — דף ההזמנה (חינם, בלי חשבון חדש)
 
 זה הדף שהחבר רואה כשהוא לוחץ על קישור ההזמנה: כפתור הורדה, כפתור "פתיחה באפליקציה" והקוד.

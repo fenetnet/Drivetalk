@@ -183,12 +183,16 @@ class RealPeopleScreen extends ConsumerWidget {
               Card(
                 margin: const EdgeInsets.only(bottom: 10),
                 child: ListTile(
-                  leading: PersonAvatar(person: f.toPerson(), size: 44),
+                  leading: RealAvatar(
+                    person: f.toPerson(),
+                    size: 48,
+                    online: snap!.availability[f.id]?.isActiveAt(now) ?? false,
+                  ),
                   title: Text(
                     f.name,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: switch (snap!.availability[f.id]) {
+                  subtitle: switch (snap.availability[f.id]) {
                     final a? when a.isActiveAt(now) => Text(
                       '${modeLabel(l, a.mode)} · '
                       '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
