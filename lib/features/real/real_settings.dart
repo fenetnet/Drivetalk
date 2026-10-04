@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
@@ -42,6 +43,17 @@ class RealSettingsScreen extends ConsumerWidget {
                 leading: me == null
                     ? const Icon(Icons.person_rounded)
                     : PersonAvatar(person: me.toPerson(), size: 40),
+                title: Text(l.realPhotoTitle),
+                subtitle: Text(
+                  me?.photo == null ? l.realPhotoNone : l.realPhotoSet,
+                ),
+                trailing: const Icon(Icons.photo_camera_rounded),
+                onTap: me == null || s.busy
+                    ? null
+                    : () => _editPhoto(context, ref, me.photo != null),
+              ),
+              ListTile(
+                leading: const Icon(Icons.badge_rounded),
                 title: Text(l.realNameTitle),
                 subtitle: Text(me?.name ?? '—'),
                 trailing: const Icon(Icons.edit_rounded),
@@ -242,6 +254,72 @@ class RealSettingsScreen extends ConsumerWidget {
       ),
     );
     if (picked != null) await c.setCar(picked.$1, picked.$2);
+  }
+
+  Future<void> _editPhoto(
+    BuildContext context,
+    WidgetRef ref,
+    bool hasPhoto,
+  ) async {
+    final l = context.l10n;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: Text(l.photoFromGallery),
+              onTap: () => Navigator.pop(sheet, 'gallery'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: Text(l.photoFromCamera),
+              onTap: () => Navigator.pop(sheet, 'camera'),
+            ),
+            if (hasPhoto)
+              ListTile(
+                leading: const Icon(Icons.delete_outline_rounded),
+                title: Text(l.photoRemove),
+                onTap: () => Navigator.pop(sheet, 'remove'),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (choice == null || !context.mounted) return; // Dismissed.
+    final messenger = ScaffoldMessenger.of(context);
+    final c = ref.read(realProvider.notifier);
+    Uint8List? bytes;
+    if (choice != 'remove') {
+      try {
+        final file = await ImagePicker().pickImage(
+          source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+          maxWidth: 512,
+          maxHeight: 512,
+          imageQuality: 80,
+        );
+        if (file == null) return;
+        bytes = await file.readAsBytes();
+      } catch (_) {
+        return; // Camera/gallery unavailable.
+      }
+    }
+    final error = await c.setPhoto(bytes);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          error != null
+              ? realErrorText(l, error)
+              : bytes == null
+              ? l.realPhotoRemoved
+              : l.realPhotoSaved,
+        ),
+      ),
+    );
   }
 
   Future<void> _editName(BuildContext context, WidgetRef ref) async {

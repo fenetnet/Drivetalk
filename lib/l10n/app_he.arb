@@ -1062,6 +1062,11 @@
   "realDownloadLink": "קישור להורדת האפליקציה",
   "realShareApp": "שיתוף",
   "realNameTitle": "השם שלי",
+  "realPhotoTitle": "התמונה שלי",
+  "realPhotoNone": "בלי תמונה. לחיצה כדי להוסיף",
+  "realPhotoSet": "רק החברים שלך רואים אותה",
+  "realPhotoSaved": "התמונה נשמרה",
+  "realPhotoRemoved": "התמונה הוסרה",
   "realPrivacyNote": "השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.",
   "realVoiceOffer": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?",
   "@realVoiceOffer": {

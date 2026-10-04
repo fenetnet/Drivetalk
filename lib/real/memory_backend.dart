@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
 
 import '../domain/models.dart';
 import 'contacts_hash.dart';
@@ -28,6 +29,7 @@ class MemoryServer {
   final deviceTokens = <String, String>{}; // token → user
   final wasConnected = <String>{}; // "blocker|blocked"
   final contactHashes = <String, Set<String>>{};
+  final photos = <String, Uint8List>{};
   final feedback = <Map<String, Object?>>[];
   final reports = <Map<String, Object?>>[];
 
@@ -262,7 +264,12 @@ class MemoryRealBackend implements RealBackend {
     if (trimmed.isEmpty || trimmed.length > 40) {
       throw const RealBackendException('invalid_name');
     }
-    final p = RealProfile(id: me, name: trimmed, gender: gender);
+    final p = RealProfile(
+      id: me,
+      name: trimmed,
+      gender: gender,
+      photoVersion: server.profiles[me]?.photoVersion ?? 0,
+    );
     server.profiles[me] = p;
     server._changed();
     _live.add(LiveStatus.connected);
@@ -627,6 +634,35 @@ class MemoryRealBackend implements RealBackend {
       }
       server._changed();
     }
+  }
+
+  @override
+  Future<void> setPhoto(Uint8List? jpeg) async {
+    final me = _uid;
+    if (offline) throw const RealBackendException('offline');
+    final p = server.profiles[me]!;
+    if (jpeg == null) {
+      server.photos.remove(me);
+    } else {
+      server.photos[me] = jpeg;
+    }
+    server.profiles[me] = RealProfile(
+      id: me,
+      name: p.name,
+      gender: p.gender,
+      photoVersion: jpeg == null ? 0 : p.photoVersion + 1,
+    );
+    server._changed();
+  }
+
+  @override
+  Future<Uint8List?> downloadPhoto(String userId) async {
+    final me = _uid;
+    if (offline) return null;
+    final allowed =
+        userId == me ||
+        (server.connected(me, userId) && !server.blockedBetween(me, userId));
+    return allowed ? server.photos[userId] : null;
   }
 
   @override

@@ -1,5 +1,7 @@
 // Two "phones" (Netanel & Yoni) running the real-mode controller against an
 // in-memory copy of the server rules.
+import 'dart:typed_data';
+
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
@@ -700,6 +702,71 @@ void main() {
       await me.c.refresh();
       expect(me.s.snapshot!.weekAt(now), (1, 1));
       expect(me.s.snapshot!.weekAt(now.add(const Duration(days: 8))), (0, 0));
+    });
+  });
+
+  group('profile photos', () {
+    final jpeg = Uint8List.fromList(List.generate(64, (i) => i));
+    final jpeg2 = Uint8List.fromList(List.generate(64, (i) => 200 - i));
+
+    test('a friend sees my photo; a change and a removal reach them', () async {
+      await connect();
+      expect(await me.c.setPhoto(jpeg), isNull);
+      expect(me.s.snapshot!.me.toPerson().photo, jpeg);
+      await yoni.c.refresh();
+      await pump(10);
+      expect(yoni.s.snapshot!.friends.single.toPerson().photo, jpeg);
+
+      await me.c.setPhoto(jpeg2);
+      await yoni.c.refresh();
+      await pump(10);
+      expect(yoni.s.snapshot!.friends.single.toPerson().photo, jpeg2);
+
+      await me.c.setPhoto(null);
+      expect(me.s.snapshot!.me.toPerson().photo, isNull);
+      await yoni.c.refresh();
+      await pump(10);
+      expect(yoni.s.snapshot!.friends.single.toPerson().photo, isNull);
+    });
+
+    test('kept on the phone: no new download after a restart', () async {
+      await connect();
+      await me.c.setPhoto(jpeg);
+      await yoni.c.refresh();
+      await pump(10);
+      server.photos.clear(); // A new download would now find nothing.
+      // Same phone storage, new app start.
+      final again = ProviderContainer(
+        overrides: [
+          realBackendProvider.overrideWithValue(yoni.backend),
+          localStoreProvider.overrideWithValue(yoni.store),
+          realClockProvider.overrideWithValue(clock),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+          contactsReaderProvider.overrideWithValue(FakeContactsReader()),
+        ],
+      );
+      again.read(realProvider);
+      await pump();
+      await again.read(realProvider.notifier).refresh();
+      expect(
+        again.read(realProvider).snapshot!.friends.single.toPerson().photo,
+        jpeg,
+      );
+      again.dispose();
+    });
+
+    test('a stranger or a blocked friend cannot download it', () async {
+      await connect();
+      await me.c.setPhoto(jpeg);
+      final stranger = Phone(server, clock);
+      await stranger.boot();
+      await stranger.c.signIn('זר', Gender.male);
+      expect(await stranger.backend.downloadPhoto(me.backend.userId!), isNull);
+      expect(await yoni.backend.downloadPhoto(me.backend.userId!), jpeg);
+      await me.c.block(me.s.snapshot!.friends.single);
+      expect(await yoni.backend.downloadPhoto(me.backend.userId!), isNull);
+      stranger.dispose();
     });
   });
 

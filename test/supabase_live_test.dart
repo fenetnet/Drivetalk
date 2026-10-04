@@ -4,6 +4,7 @@
 //   SUPABASE_LIVE_URL=http://127.0.0.1:54321 SUPABASE_LIVE_KEY=sb_publishable_… \
 //     flutter test test/supabase_live_test.dart
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
@@ -137,6 +138,17 @@ void main() {
     await y.unblock(meProfile);
     await m.refresh();
     expect(me.read(realProvider).snapshot!.friends.single.name, 'יוני');
+
+    // Profile photo: mine → Yoni downloads and shows it.
+    final pic = Uint8List.fromList(List.generate(500, (i) => i % 256));
+    expect(await m.setPhoto(pic), isNull);
+    await y.refresh();
+    await Future<void>.delayed(const Duration(seconds: 1));
+    expect(
+      yoni.read(realProvider).snapshot!.friends.single.toPerson().photo,
+      pic,
+    );
+    expect(await m.setPhoto(null), isNull);
 
     me.dispose();
     yoni.dispose();

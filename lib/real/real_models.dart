@@ -1,5 +1,7 @@
 // Data shapes for the real two-user test. Pure Dart.
 
+import 'dart:typed_data';
+
 import '../domain/models.dart';
 
 class RealProfile {
@@ -7,10 +9,26 @@ class RealProfile {
     required this.id,
     required this.name,
     this.gender = Gender.unspecified,
+    this.photoVersion = 0,
+    this.photo,
   });
   final String id;
   final String name;
   final Gender gender;
+
+  /// 0 = no photo. Goes up every time the person changes their photo.
+  final int photoVersion;
+
+  /// The downloaded photo (small JPEG), once we have it.
+  final Uint8List? photo;
+
+  RealProfile withPhoto(Uint8List? bytes) => RealProfile(
+    id: id,
+    name: name,
+    gender: gender,
+    photoVersion: photoVersion,
+    photo: bytes,
+  );
 
   /// Reuse the demo UI (avatars, labels) for real people.
   Person toPerson() => Person(
@@ -18,6 +36,7 @@ class RealProfile {
     name: name,
     gender: gender,
     avatarColor: _palette[_stableHash('$id$name') % _palette.length],
+    photo: photoVersion > 0 ? photo : null,
   );
 
   /// Same color on every phone and every launch (String.hashCode isn't).
@@ -162,6 +181,25 @@ class RealSnapshot {
   final List<RealCircle> circles;
 
   RealAvailability? get mine => availability[me.id];
+
+  /// Same snapshot with downloaded photos filled in (by user id).
+  RealSnapshot withPhotos(Map<String, Uint8List> photos) {
+    RealProfile fill(RealProfile p) =>
+        p.photoVersion > 0 && photos[p.id] != null
+        ? p.withPhoto(photos[p.id])
+        : p;
+    return RealSnapshot(
+      me: fill(me),
+      friends: [for (final f in friends) fill(f)],
+      availability: availability,
+      offers: offers,
+      fetchedAt: fetchedAt,
+      circles: circles,
+      lastTalk: lastTalk,
+      talks: talks,
+    );
+  }
+
   RealProfile? friend(String id) {
     for (final f in friends) {
       if (f.id == id) return f;

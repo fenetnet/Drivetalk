@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -368,6 +369,11 @@ class RealController extends Notifier<RealState> {
   var _refreshAgain = false;
   String? _spokenOfferId;
   DateTime? _lastNudge;
+
+  /// Downloaded profile photos: user id → (version, JPEG). Also kept on the
+  /// phone so they don't download again on every launch.
+  final _photos = <String, (int, Uint8List)>{};
+  final _photoLoading = <String>{};
 
   /// Offers whose outcome was already shown (so a restart doesn't repeat it).
   final _handled = <String>{};
@@ -753,7 +759,7 @@ class RealController extends Notifier<RealState> {
           // The fetch below reports connection problems.
         }
       }
-      final snap = await _backend.fetchSnapshot();
+      final snap = _withPhotos(await _backend.fetchSnapshot());
       if (!ref.mounted) return;
       final prev = state;
       // Drop local answers the server now knows about.
@@ -770,6 +776,7 @@ class RealController extends Notifier<RealState> {
         lastError: prev.lastError == 'offline' ? null : prev.lastError,
       );
       _react(snap);
+      unawaited(_loadPhotos(snap));
     } on RealBackendException catch (e) {
       if (ref.mounted) _setError(e.code);
     } finally {
@@ -779,6 +786,102 @@ class RealController extends Notifier<RealState> {
         unawaited(refresh());
       }
     }
+  }
+
+  // ------------------------------------------------------------ photos
+
+  static String _photoKey(String id) => 'real.photo.$id';
+
+  (int, Uint8List)? _cachedPhoto(String id) {
+    final mem = _photos[id];
+    if (mem != null) return mem;
+    try {
+      final raw = _store.getString(_photoKey(id));
+      if (raw == null) return null;
+      final i = raw.indexOf(':');
+      final hit = (
+        int.parse(raw.substring(0, i)),
+        base64Decode(raw.substring(i + 1)),
+      );
+      _photos[id] = hit;
+      return hit;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _keepPhoto(String id, int version, Uint8List? bytes) {
+    if (bytes == null) {
+      _photos.remove(id);
+      _store.setString(_photoKey(id), null);
+    } else {
+      _photos[id] = (version, bytes);
+      _store.setString(_photoKey(id), '$version:${base64Encode(bytes)}');
+    }
+  }
+
+  /// Fill in every photo we already have at the right version.
+  RealSnapshot _withPhotos(RealSnapshot snap) {
+    final have = <String, Uint8List>{};
+    for (final p in [snap.me, ...snap.friends]) {
+      if (p.photoVersion <= 0) continue;
+      final c = _cachedPhoto(p.id);
+      if (c != null && c.$1 == p.photoVersion) have[p.id] = c.$2;
+    }
+    return have.isEmpty ? snap : snap.withPhotos(have);
+  }
+
+  /// Download new or changed photos in the background, then show them.
+  Future<void> _loadPhotos(RealSnapshot snap) async {
+    var got = false;
+    for (final p in [snap.me, ...snap.friends]) {
+      if (p.photoVersion <= 0) {
+        if (_photos.containsKey(p.id) ||
+            _store.getString(_photoKey(p.id)) != null) {
+          _keepPhoto(p.id, 0, null);
+        }
+        continue;
+      }
+      if (p.photo != null || _photoLoading.contains(p.id)) continue;
+      _photoLoading.add(p.id);
+      try {
+        final bytes = await _backend.downloadPhoto(p.id);
+        if (bytes != null && bytes.isNotEmpty) {
+          _keepPhoto(p.id, p.photoVersion, bytes);
+          got = true;
+        }
+      } finally {
+        _photoLoading.remove(p.id);
+      }
+      if (!ref.mounted) return;
+    }
+    final current = state.snapshot;
+    if (got && current != null && ref.mounted) {
+      state = state.copyWith(snapshot: _withPhotos(current));
+    }
+  }
+
+  /// My profile photo (already shrunk to a small JPEG); null removes it.
+  /// Returns an error code, or null when it worked.
+  Future<String?> setPhoto(Uint8List? jpeg) async {
+    try {
+      await _backend.setPhoto(jpeg);
+    } on RealBackendException catch (e) {
+      return e.code;
+    }
+    final me = _backend.userId;
+    if (me != null) {
+      final snap = await _backend.fetchSnapshot().then<RealSnapshot?>(
+        (s) => s,
+        onError: (Object _) => null,
+      );
+      if (!ref.mounted) return null;
+      if (snap != null) {
+        _keepPhoto(me, snap.me.photoVersion, jpeg);
+        state = state.copyWith(snapshot: _withPhotos(snap));
+      }
+    }
+    return null;
   }
 
   /// What changed on the server that the user must see.

@@ -3040,6 +3040,36 @@ abstract class AppLocalizations {
   /// **'השם שלי'**
   String get realNameTitle;
 
+  /// No description provided for @realPhotoTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'התמונה שלי'**
+  String get realPhotoTitle;
+
+  /// No description provided for @realPhotoNone.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי תמונה. לחיצה כדי להוסיף'**
+  String get realPhotoNone;
+
+  /// No description provided for @realPhotoSet.
+  ///
+  /// In he, this message translates to:
+  /// **'רק החברים שלך רואים אותה'**
+  String get realPhotoSet;
+
+  /// No description provided for @realPhotoSaved.
+  ///
+  /// In he, this message translates to:
+  /// **'התמונה נשמרה'**
+  String get realPhotoSaved;
+
+  /// No description provided for @realPhotoRemoved.
+  ///
+  /// In he, this message translates to:
+  /// **'התמונה הוסרה'**
+  String get realPhotoRemoved;
+
   /// No description provided for @realPrivacyNote.
   ///
   /// In he, this message translates to:

@@ -8,6 +8,7 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 - **שם** שבחרת.
 - **מספר הטלפון** שלך. הוא נמסר לחבר רק אחרי ששניכם אמרתם "כן" לשיחה, כדי שאחד מכם יוכל להתקשר.
 - **מי החברים שלך באפליקציה.**
+- **תמונת פרופיל** (רשות). רק אתה והחברים שלך יכולים לראות אותה.
 - **האם אתה פנוי עכשיו:** מצב (נסיעה / הליכה / הפסקה / פנוי) ומתי זה נגמר. הזמינות נמחקת לבד כשהיא נגמרת.
 - **הצעות שיחה, משוב קצר אחרי שיחה, חסימות ודיווחים.**
 
@@ -34,7 +35,7 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 
 ---
 
-**English summary:** DriveTalk stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, and whether you are currently available (mode and expiry, deleted automatically).
+**English summary:** DriveTalk stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, an optional profile photo (visible only to your friends), and whether you are currently available (mode and expiry, deleted automatically).
 - **Not collected:** no location or GPS, no call recording, no call log.
 - **Contacts (optional):** only phone numbers are read, and they are hashed on the device before upload, to connect people who have each other saved.
 - **Driving detection (optional, off by default):** uses on-device motion sensors or the car's Bluetooth.

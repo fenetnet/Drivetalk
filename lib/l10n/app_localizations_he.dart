@@ -1853,6 +1853,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realNameTitle => 'השם שלי';
 
   @override
+  String get realPhotoTitle => 'התמונה שלי';
+
+  @override
+  String get realPhotoNone => 'בלי תמונה. לחיצה כדי להוסיף';
+
+  @override
+  String get realPhotoSet => 'רק החברים שלך רואים אותה';
+
+  @override
+  String get realPhotoSaved => 'התמונה נשמרה';
+
+  @override
+  String get realPhotoRemoved => 'התמונה הוסרה';
+
+  @override
   String get realPrivacyNote =>
       'השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.';
 

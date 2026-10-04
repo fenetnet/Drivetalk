@@ -64,6 +64,11 @@ https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnr
 ### 2ב‴. קובץ רביעי — חברים מאנשי הקשר
 https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnrxc1/supabase/migrations/20261005000000_contacts.sql
 
+### 2ב⁗. הקבצים הבאים — באותה דרך, לפי הסדר
+- https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnrxc1/supabase/migrations/20261006000000_device_stop.sql
+- https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnrxc1/supabase/migrations/20261007000000_quick_button.sql (כפתור "אני פנוי" בלחיצה אחת)
+- https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnrxc1/supabase/migrations/20261008000000_photos.sql (תמונות פרופיל)
+
 ### 2ג. הפעלת כניסה בלי סיסמה
 1. בתפריט משמאל: **Authentication** ‹ **Sign In / Providers**.
 2. מפעילים את **Allow anonymous sign-ins**.

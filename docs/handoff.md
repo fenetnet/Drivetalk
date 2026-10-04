@@ -1,6 +1,6 @@
 # Handoff — איפה אנחנו עומדים
 
-_עודכן: 2026-10-02 (Phase 2 נבנה)_
+_עודכן: 2026-10-04_
 
 ## מצב נוכחי
 
@@ -58,6 +58,18 @@ _עודכן: 2026-10-02 (Phase 2 נבנה)_
   - `flutter build web -t lib/debug/real_preview.dart`
   - בכתובת `#home` / `#offer` / `#connected` / `#driving` וכו'.
 
+### 2026-10-04 (שדרוגים 1–6)
+- **כפתור "אני פנוי" בלחיצה אחת:** וידג'ט ואריח בהגדרות המהירות (D-052).
+- **רכב לפי בלוטות'** (D-053).
+- **הצעות חכמות:** "לא דיברתם 3 שבועות" (D-054).
+- **אייקון:** חזרה לאייקון המקורי (D-055).
+- **בנייה ל-Google Play:** קובץ `drivetalk.aab`.
+- **שגרות:** זמינות שנדלקת לבד בשעות קבועות (D-056).
+- **"השבוע שלך"** (D-057).
+- **תמונות פרופיל, רק לחברים** (D-058).
+- **צריך מהבעלים:** להדביק את הקבצים 7 (`quick_button`) ו-8 (`photos`). יש דף העתקה.
+- **הבא:** Google Play, בדיקה פנימית (D-059, לפי אישור עלות).
+
 ### בדיקות
 - **70 בדיקות אוטומטיות עוברות:**
   - שני טלפונים מדומים מול שרת בזיכרון.
@@ -94,7 +106,7 @@ _עודכן: 2026-10-02 (Phase 2 נבנה)_
 - Flutter 3.47.6 ב-`/opt/sdk/flutter` (לא נשמר בין sessions).
 - Supabase מקומי:
   - מפעילים קודם את `dockerd`.
-  - `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start -x studio,storage-api,imgproxy,edge-runtime,logflare,vector,mailpit,postgres-meta,supavisor` (ה-CLI נמצא ב-`/opt/supa`).
+  - `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,postgres-meta,supavisor` (ה-CLI נמצא ב-`/opt/supa`).
   - `supabase db reset` מריץ את ה-migration מחדש.
 - בדיקת שרת:
   - `cd tool/e2e && SUPABASE_ANON_KEY=<local publishable> dart run bin/e2e.dart`

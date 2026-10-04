@@ -10,6 +10,12 @@ on:
 permissions:
   contents: write # to publish the APK as a simple download link
 
+# A newer push replaces an older build still running (both would publish
+# the same download link at once).
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest

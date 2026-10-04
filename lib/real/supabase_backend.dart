@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -91,7 +92,15 @@ class SupabaseRealBackend implements RealBackend {
         .subtract(const Duration(hours: 12))
         .toIso8601String();
     final results = await Future.wait([
-      _c.from('profiles').select('id, display_name, gender'),
+      _c
+          .from('profiles')
+          .select('id, display_name, gender, photo_version')
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            // Older server (before photos).
+            onError: (Object _) =>
+                _c.from('profiles').select('id, display_name, gender'),
+          ),
       _c
           .from('availability')
           .select('user_id, mode, started_at, expires_at, circle_id, source')
@@ -346,6 +355,45 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() async => _c.rpc('revoke_device_tokens'));
 
   @override
+  Future<void> setPhoto(Uint8List? jpeg) => _guard(() async {
+    final me = userId;
+    if (me == null) throw const RealBackendException('not_authenticated');
+    final bucket = _c.storage.from('avatars');
+    try {
+      if (jpeg == null) {
+        await bucket.remove(['$me.jpg']);
+      } else {
+        await bucket.uploadBinary(
+          '$me.jpg',
+          jpeg,
+          fileOptions: const FileOptions(
+            upsert: true,
+            contentType: 'image/jpeg',
+          ),
+        );
+      }
+    } on StorageException catch (e) {
+      // No "avatars" storage yet = the photos server update wasn't added.
+      final m = e.message.toLowerCase();
+      throw RealBackendException(
+        m.contains('bucket') || e.statusCode == '404'
+            ? 'schema_missing'
+            : 'unknown',
+      );
+    }
+    await _c.rpc('set_photo', params: {'p_has': jpeg != null});
+  });
+
+  @override
+  Future<Uint8List?> downloadPhoto(String userId) async {
+    try {
+      return await _c.storage.from('avatars').download('$userId.jpg');
+    } catch (_) {
+      return null; // No photo, not allowed, or offline — show the letter.
+    }
+  }
+
+  @override
   Future<void> block(String userId) =>
       _guard(() async => _c.rpc('block_user', params: {'p_user': userId}));
 
@@ -497,6 +545,7 @@ class SupabaseRealBackend implements RealBackend {
     id: r['id'] as String,
     name: r['display_name'] as String,
     gender: genderFromKey(r['gender'] as String?),
+    photoVersion: (r['photo_version'] as num?)?.toInt() ?? 0,
   );
 
   static RealOffer _offer(Map<String, dynamic> r) => RealOffer(

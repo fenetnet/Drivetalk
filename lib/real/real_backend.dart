@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../domain/models.dart';
 import 'real_models.dart';
 
@@ -62,6 +64,12 @@ abstract class RealBackend {
   /// Upload hashed contact numbers; returns names of new connections
   /// (people who have my number too).
   Future<List<String>> syncContacts(List<String> hashes);
+
+  /// My profile photo (a small JPEG); null removes it.
+  Future<void> setPhoto(Uint8List? jpeg);
+
+  /// A friend's (or my) photo; null if there is none or I may not see it.
+  Future<Uint8List?> downloadPhoto(String userId);
 
   Future<void> block(String userId);
 

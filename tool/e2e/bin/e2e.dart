@@ -8,6 +8,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 import 'package:supabase/supabase.dart';
@@ -362,6 +363,33 @@ Future<void> main() async {
   }
   final again = List.from(await noa.rpc('sync_contacts', params: {'p_hashes': [h(aviPhone)]}));
   check(again.isEmpty, 'syncing again creates nothing new');
+
+  // --- profile photos: private, friends only
+  final pic = Uint8List.fromList(List.generate(300, (i) => i % 256));
+  final avatars = avi.storage.from('avatars');
+  await avatars.uploadBinary('${uid(avi)}.jpg', pic,
+      fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'));
+  final v = await avi.rpc('set_photo', params: {'p_has': true});
+  check(v == 1, 'uploading my photo bumps its version');
+  final picSeen = await noa.storage.from('avatars').download('${uid(avi)}.jpg');
+  check(picSeen.length == pic.length, 'a friend can download my photo');
+  try {
+    await eve.storage.from('avatars').download('${uid(avi)}.jpg');
+    check(false, "a stranger can't download my photo");
+  } on StorageException {
+    check(true, "a stranger can't download my photo");
+  }
+  try {
+    await eve.storage.from('avatars').uploadBinary('${uid(avi)}.jpg', pic,
+        fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'));
+    check(false, "nobody can replace someone else's photo");
+  } on StorageException {
+    check(true, "nobody can replace someone else's photo");
+  }
+  final noaRow = (await rows(noa, 'profiles')).firstWhere((p) => p['id'] == uid(avi));
+  check(noaRow['photo_version'] == 1, 'a friend sees the photo version');
+  await avatars.remove(['${uid(avi)}.jpg']);
+  check(await avi.rpc('set_photo', params: {'p_has': false}) == 0, 'removing the photo resets it');
   await avi.dispose();
   await noa.dispose();
 
