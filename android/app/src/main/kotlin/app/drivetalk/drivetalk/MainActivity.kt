@@ -21,6 +21,8 @@ class MainActivity : FlutterActivity() {
     private val drivingPermissionRequest = 4712
     private val contactsPermissionRequest = 4713
     private val notificationPermissionRequest = 4714
+    private val bluetoothPermissionRequest = 4715
+    private var pendingBluetoothResult: MethodChannel.Result? = null
     private var pendingNotificationResult: MethodChannel.Result? = null
     private var pendingContactsResult: MethodChannel.Result? = null
     private var pendingNumber: String? = null
@@ -97,6 +99,7 @@ class MainActivity : FlutterActivity() {
                         "enabled" to store.enabled,
                         "inVehicle" to store.inVehicle,
                         "configured" to store.configured,
+                        "carName" to store.carName,
                     ),
                 )
                 "requestPermission" -> requestDrivingPermissions(result)
@@ -148,12 +151,30 @@ class MainActivity : FlutterActivity() {
                     } else {
                         store.availableUntil = (call.argument<Number>("until") ?: 0).toLong()
                         DrivingService.startManual(this)
+                        QuickFree.refreshAll(this)
                         result.success(true)
                     }
                 }
                 "stopAvailable" -> {
                     store.availableUntil = 0L
                     DrivingService.quietEnd(this)
+                    QuickFree.refreshAll(this)
+                    result.success(true)
+                }
+                "bondedDevices" -> withBluetooth(result) {
+                    val adapter = (getSystemService(BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager)?.adapter
+                    val list = try {
+                        adapter?.bondedDevices?.map {
+                            mapOf("name" to (it.name ?: it.address), "address" to it.address)
+                        } ?: emptyList()
+                    } catch (e: SecurityException) {
+                        emptyList()
+                    }
+                    result.success(list)
+                }
+                "setCar" -> {
+                    store.carAddress = call.argument<String>("address") ?: ""
+                    store.carName = call.argument<String>("name") ?: ""
                     result.success(true)
                 }
                 "notificationPermission" -> requestNotificationPermission(result)
@@ -212,6 +233,20 @@ class MainActivity : FlutterActivity() {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
             checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
+    private fun withBluetooth(result: MethodChannel.Result, body: () -> Unit) {
+        if (Build.VERSION.SDK_INT < 31 ||
+            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        ) {
+            body()
+            return
+        }
+        pendingBluetoothResult = result
+        pendingBluetoothBody = body
+        requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), bluetoothPermissionRequest)
+    }
+
+    private var pendingBluetoothBody: (() -> Unit)? = null
+
     private fun requestNotificationPermission(result: MethodChannel.Result) {
         if (Build.VERSION.SDK_INT < 33 ||
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
@@ -249,6 +284,18 @@ class MainActivity : FlutterActivity() {
         grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == bluetoothPermissionRequest) {
+            val r = pendingBluetoothResult
+            val body = pendingBluetoothBody
+            pendingBluetoothResult = null
+            pendingBluetoothBody = null
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                body?.invoke()
+            } else {
+                r?.success(emptyList<Map<String, String>>())
+            }
+            return
+        }
         if (requestCode == notificationPermissionRequest) {
             val r = pendingNotificationResult
             pendingNotificationResult = null

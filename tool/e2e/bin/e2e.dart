@@ -247,6 +247,19 @@ Future<void> main() async {
       'a manual "I\'m free" is not overridden by the car');
   check(await background.rpc('auto_stop', params: {'p_token': device}) == 'nothing',
       'nor stopped when the trip ends');
+  // One-tap button (widget / quick tile), app closed.
+  await me.rpc('clear_availability');
+  check(await background.rpc('device_status', params: {'p_token': device}) == null,
+      'button shows "not free"');
+  final until = await background.rpc('device_start', params: {'p_token': device, 'p_minutes': 30});
+  check(until != null, 'one tap → free for 30 minutes');
+  check(await background.rpc('device_status', params: {'p_token': device}) != null,
+      'button shows "free"');
+  check(await background.rpc('device_start', params: {'p_token': 'z' * 43}) == null,
+      'a wrong token cannot make anyone free');
+  await background.rpc('device_stop', params: {'p_token': device});
+  check(await background.rpc('device_status', params: {'p_token': device}) == null,
+      'second tap → not free');
   await me.rpc('revoke_device_tokens');
   check(await background.rpc('auto_start', params: {'p_token': device}) == 'bad_token',
       'turning the feature off revokes the device token');

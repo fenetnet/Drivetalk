@@ -130,7 +130,12 @@ class RealSnapshot {
     required this.offers,
     required this.fetchedAt,
     this.circles = const [],
+    this.lastTalk = const {},
   });
+
+  /// When I last talked with each friend through the app (both said yes).
+  /// Only real history — the source of "you haven't talked in a while".
+  final Map<String, DateTime> lastTalk;
   final RealProfile me;
   final List<RealProfile> friends;
 

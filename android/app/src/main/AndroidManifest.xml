@@ -16,6 +16,9 @@
     <!-- Friends from contacts (owner decision D-047): numbers only, hashed
          in the app; names never leave the phone. -->
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <!-- Optional: the car's Bluetooth as an extra "trip" signal (D-052). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <!-- Profile photo from the camera (gallery needs no permission). -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
@@ -73,6 +76,31 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".CarBluetoothReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED"/>
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED"/>
+            </intent-filter>
+        </receiver>
+        <!-- One tap "I'm free": home-screen widget and quick-settings tile. -->
+        <receiver android:name=".QuickWidget" android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_free_info"/>
+        </receiver>
+        <service
+            android:name=".QuickTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_stat_drivetalk"
+            android:label="DriveTalk"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE"/>
+            </intent-filter>
+        </service>
         <service
             android:name=".DrivingService"
             android:exported="false"

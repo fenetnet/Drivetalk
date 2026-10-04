@@ -73,6 +73,18 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : (v) => setAutoDriving(context, ref, v),
               ),
+              if (s.driving.supported)
+                ListTile(
+                  leading: const Icon(Icons.bluetooth_rounded),
+                  title: Text(l.realCarTitle),
+                  subtitle: Text(
+                    s.driving.carName.isEmpty
+                        ? l.realCarBody
+                        : s.driving.carName,
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => _pickCar(context, ref),
+                ),
               SwitchListTile(
                 secondary: const Icon(Icons.record_voice_over_rounded),
                 title: Text(l.settingsVoiceReadout),
@@ -180,6 +192,44 @@ class RealSettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _pickCar(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final devices = await c.carCandidates();
+    if (!context.mounted) return;
+    final picked = await showModalBottomSheet<(String, String)>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          children: [
+            Text(l.realCarPick, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            if (devices.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Text(l.realCarNoDevices),
+              ),
+            for (final (name, address) in devices)
+              ListTile(
+                leading: const Icon(Icons.directions_car_rounded),
+                title: Text(name),
+                onTap: () => Navigator.pop(sheet, (address, name)),
+              ),
+            ListTile(
+              leading: const Icon(Icons.close_rounded),
+              title: Text(l.realCarRemove),
+              onTap: () => Navigator.pop(sheet, ('', '')),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (picked != null) await c.setCar(picked.$1, picked.$2);
   }
 
   Future<void> _editName(BuildContext context, WidgetRef ref) async {

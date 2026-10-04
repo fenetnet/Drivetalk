@@ -61,6 +61,11 @@ class RealOfferScreen extends ConsumerWidget {
             style: style,
             soft: true,
           ),
+          if (!dark)
+            if (talkReason(l, s.snapshot!, other.id, now) case final r?) ...[
+              const SizedBox(height: 14),
+              MomentChip(text: r, style: style, icon: Icons.history_rounded),
+            ],
         ],
       ),
       actions: [

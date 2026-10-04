@@ -108,6 +108,13 @@ class SupabaseRealBackend implements RealBackend {
           .gt('updated_at', since)
           .order('updated_at', ascending: false)
           .limit(50),
+      // Talk history (both said yes), for "you haven't talked in a while".
+      _c
+          .from('match_offers')
+          .select('user_a, user_b, updated_at')
+          .eq('status', 'accepted')
+          .order('updated_at', ascending: false)
+          .limit(300),
       // Circles are optional: an older server without them still works.
       _c
           .from('circles')
@@ -140,8 +147,9 @@ class SupabaseRealBackend implements RealBackend {
           ),
       },
       offers: [for (final r in results[2]) _offer(r)],
+      lastTalk: _lastTalk(results[3], me),
       circles: [
-        for (final r in results[3])
+        for (final r in results[4])
           RealCircle(
             id: r['id'] as String,
             name: r['name'] as String,
@@ -462,6 +470,20 @@ class SupabaseRealBackend implements RealBackend {
       return 'schema_missing';
     }
     return 'server';
+  }
+
+  static Map<String, DateTime> _lastTalk(
+    List<Map<String, dynamic>> rows,
+    String me,
+  ) {
+    final out = <String, DateTime>{};
+    for (final r in rows) {
+      final other = r['user_a'] == me ? r['user_b'] : r['user_a'];
+      final t = _time(r['updated_at']);
+      final prev = out[other as String];
+      if (prev == null || t.isAfter(prev)) out[other] = t;
+    }
+    return out;
   }
 
   static RealProfile _profile(Map<String, dynamic> r) => RealProfile(

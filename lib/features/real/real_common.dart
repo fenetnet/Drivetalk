@@ -25,6 +25,24 @@ class RealNow extends Notifier<DateTime> {
   }
 }
 
+/// "You haven't talked in a while" — only from real talk history.
+/// Null when you talked recently (no reason to point it out).
+String? talkReason(
+  AppLocalizations l,
+  RealSnapshot snap,
+  String friendId,
+  DateTime now,
+) {
+  final last = snap.lastTalk[friendId];
+  if (last == null) return l.realReasonNever;
+  final days = now.difference(last).inDays;
+  if (days < 7) return null;
+  if (days < 14) return l.realReasonDays(days);
+  if (days < 30) return l.realReasonWeeks(days ~/ 7);
+  if (days < 60) return l.realReasonMonth;
+  return l.realReasonMonths(days ~/ 30);
+}
+
 /// Simple words for an error code. Never shows technical details.
 String realErrorText(AppLocalizations l, String code) => switch (code) {
   'offline' => l.realErrorOffline,

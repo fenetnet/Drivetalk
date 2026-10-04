@@ -3453,6 +3453,84 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הזמנה עם קוד (למי שלא שמור אצלך)'**
   String get realInviteWithCode;
+
+  /// No description provided for @realQuickOff.
+  ///
+  /// In he, this message translates to:
+  /// **'אני פנוי'**
+  String get realQuickOff;
+
+  /// No description provided for @realQuickOn.
+  ///
+  /// In he, this message translates to:
+  /// **'פנוי · לעצירה'**
+  String get realQuickOn;
+
+  /// No description provided for @realCarTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הרכב שלי (בלוטות׳)'**
+  String get realCarTitle;
+
+  /// No description provided for @realCarBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשהטלפון מתחבר לרכב — נסיעה מתחילה. מהיר ומדויק יותר מזיהוי התנועה.'**
+  String get realCarBody;
+
+  /// No description provided for @realCarNone.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נבחר'**
+  String get realCarNone;
+
+  /// No description provided for @realCarPick.
+  ///
+  /// In he, this message translates to:
+  /// **'בחירת הרכב'**
+  String get realCarPick;
+
+  /// No description provided for @realCarNoDevices.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.'**
+  String get realCarNoDevices;
+
+  /// No description provided for @realCarRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי רכב'**
+  String get realCarRemove;
+
+  /// No description provided for @realReasonNever.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד לא דיברתם כאן'**
+  String get realReasonNever;
+
+  /// No description provided for @realReasonDays.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברתם {count} ימים'**
+  String realReasonDays(int count);
+
+  /// No description provided for @realReasonWeeks.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברתם {count} שבועות'**
+  String realReasonWeeks(int count);
+
+  /// No description provided for @realReasonMonths.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברתם {count} חודשים'**
+  String realReasonMonths(int count);
+
+  /// No description provided for @realReasonMonth.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברתם כבר חודש'**
+  String get realReasonMonth;
 }
 
 class _AppLocalizationsDelegate

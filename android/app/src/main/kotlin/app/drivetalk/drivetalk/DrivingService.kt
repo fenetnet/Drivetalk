@@ -52,9 +52,13 @@ class DrivingService : Service() {
                     context.startService(i)
                 }
             } catch (e: Exception) {
-                // Not allowed right now: at least keep the server in sync.
-                if (action == ACTION_END) {
-                    Thread { DrivingApi(DrivingStore(context)).stop() }.start()
+                // Not allowed right now: at least keep the server in sync
+                // (no background alerts until the app is opened).
+                val api = DrivingApi(DrivingStore(context))
+                when (action) {
+                    ACTION_END -> Thread { api.stop() }.start()
+                    ACTION_START -> Thread { api.start() }.start()
+                    ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
                 }
             }
         }
@@ -165,6 +169,8 @@ class DrivingService : Service() {
         }
         tts?.shutdown()
         tts = null
+        if (manual) store.availableUntil = 0L
+        QuickFree.refreshAll(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {

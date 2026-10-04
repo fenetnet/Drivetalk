@@ -72,7 +72,19 @@ class RealHomeScreen extends ConsumerWidget {
     final snap = s.snapshot;
     final me = snap?.me;
     final mine = myActiveAvailability(s, now);
-    final free = freeFriends(s, now);
+    // People I haven't talked with in a while come first.
+    final free = [...freeFriends(s, now)]
+      ..sort((a, b) {
+        final ta = snap?.lastTalk[a.$1.id];
+        final tb = snap?.lastTalk[b.$1.id];
+        if (ta == null) return tb == null ? 0 : -1;
+        if (tb == null) return 1;
+        return ta.compareTo(tb);
+      });
+    final reasons = {
+      if (snap != null)
+        for (final (p, _) in free) p.id: talkReason(l, snap, p.id, now),
+    };
     final g = genderKey(me?.gender ?? Gender.unspecified);
     final hour = now.hour;
     final greet = hour < 5
@@ -138,7 +150,7 @@ class RealHomeScreen extends ConsumerWidget {
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
                 else
-                  _FreeNowCard(free: free, now: now),
+                  _FreeNowCard(free: free, now: now, reasons: reasons),
                 const SizedBox(height: 28),
                 Center(
                   child: mine == null
@@ -177,9 +189,14 @@ class _Blob extends StatelessWidget {
 
 /// "Free now" card: friends' faces with a green ring.
 class _FreeNowCard extends StatelessWidget {
-  const _FreeNowCard({required this.free, required this.now});
+  const _FreeNowCard({
+    required this.free,
+    required this.now,
+    this.reasons = const {},
+  });
   final List<(RealProfile, RealAvailability)> free;
   final DateTime now;
+  final Map<String, String?> reasons;
 
   @override
   Widget build(BuildContext context) {
@@ -223,7 +240,7 @@ class _FreeNowCard extends StatelessWidget {
             )
           else
             SizedBox(
-              height: 118,
+              height: 138,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: free.length,
@@ -255,6 +272,17 @@ class _FreeNowCard extends StatelessWidget {
                             color: AppColors.inkSoft,
                           ),
                         ),
+                        if (reasons[p.id] case final r?)
+                          Text(
+                            r,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.coralDeep,
+                            ),
+                          ),
                       ],
                     ),
                   );

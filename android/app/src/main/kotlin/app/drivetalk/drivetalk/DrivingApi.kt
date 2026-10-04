@@ -35,6 +35,11 @@ class DrivingApi(private val store: DrivingStore) {
 
     fun stop(): String? = rpc("auto_stop", JSONObject())?.trim('"')
 
+    /** One tap (widget / tile): free for [minutes]. False if not allowed. */
+    fun startManual(minutes: Int): Boolean =
+        rpc("device_start", JSONObject().put("p_minutes", minutes))
+            ?.let { it.trim() != "null" } ?: false
+
     /** "Stop" on the notification: end any availability (manual too). */
     fun stopAll(): String? = rpc("device_stop", JSONObject())?.trim('"')
 

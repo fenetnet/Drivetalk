@@ -27,6 +27,17 @@ class DrivingStore(context: Context) {
 
     val configured: Boolean get() = token.isNotEmpty() && url.isNotEmpty()
 
+    /** Free right now (as far as this phone knows). */
+    val freeNow: Boolean get() = availableUntil > System.currentTimeMillis()
+
+    /** The car's Bluetooth (optional, extra trip signal). */
+    var carAddress: String
+        get() = prefs.getString("carAddress", "") ?: ""
+        set(v) = prefs.edit().putString("carAddress", v).apply()
+    var carName: String
+        get() = prefs.getString("carName", "") ?: ""
+        set(v) = prefs.edit().putString("carName", v).apply()
+
     val url: String get() = prefs.getString("url", "") ?: ""
     val key: String get() = prefs.getString("key", "") ?: ""
     val token: String get() = prefs.getString("token", "") ?: ""

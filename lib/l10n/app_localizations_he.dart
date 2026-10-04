@@ -2114,4 +2114,51 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realInviteWithCode => 'הזמנה עם קוד (למי שלא שמור אצלך)';
+
+  @override
+  String get realQuickOff => 'אני פנוי';
+
+  @override
+  String get realQuickOn => 'פנוי · לעצירה';
+
+  @override
+  String get realCarTitle => 'הרכב שלי (בלוטות׳)';
+
+  @override
+  String get realCarBody =>
+      'כשהטלפון מתחבר לרכב — נסיעה מתחילה. מהיר ומדויק יותר מזיהוי התנועה.';
+
+  @override
+  String get realCarNone => 'לא נבחר';
+
+  @override
+  String get realCarPick => 'בחירת הרכב';
+
+  @override
+  String get realCarNoDevices =>
+      'לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.';
+
+  @override
+  String get realCarRemove => 'בלי רכב';
+
+  @override
+  String get realReasonNever => 'עוד לא דיברתם כאן';
+
+  @override
+  String realReasonDays(int count) {
+    return 'לא דיברתם $count ימים';
+  }
+
+  @override
+  String realReasonWeeks(int count) {
+    return 'לא דיברתם $count שבועות';
+  }
+
+  @override
+  String realReasonMonths(int count) {
+    return 'לא דיברתם $count חודשים';
+  }
+
+  @override
+  String get realReasonMonth => 'לא דיברתם כבר חודש';
 }

@@ -10,7 +10,11 @@ class DrivingStatus {
     this.enabled = false,
     this.inVehicle = false,
     this.configured = false,
+    this.carName = '',
   });
+
+  /// The car's Bluetooth the user picked ('' = none).
+  final String carName;
   final bool supported;
 
   /// This phone has its background device token (for notifications).
@@ -60,6 +64,10 @@ abstract class DrivingDetector {
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
+  /// Paired Bluetooth devices (name, address) — to pick the car.
+  Future<List<(String, String)>> bondedDevices();
+  Future<void> setCar(String address, String name);
+
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
 
@@ -89,6 +97,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         enabled: m?['enabled'] == true,
         inVehicle: m?['inVehicle'] == true,
         configured: m?['configured'] == true,
+        carName: '${m?['carName'] ?? ''}',
       );
     } catch (_) {
       return const DrivingStatus();
@@ -166,6 +175,24 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> stopAvailable() => _call('stopAvailable');
 
   @override
+  Future<List<(String, String)>> bondedDevices() async {
+    if (!_android) return const [];
+    try {
+      final list = await _channel.invokeListMethod<Object?>('bondedDevices');
+      return [
+        for (final d in list ?? const [])
+          if (d is Map) ('${d['name']}', '${d['address']}'),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  @override
+  Future<void> setCar(String address, String name) =>
+      _call('setCar', {'address': address, 'name': name});
+
+  @override
   Future<bool> requestNotificationPermission() async {
     if (!_android) return false;
     try {
@@ -241,6 +268,7 @@ class FakeDrivingDetector implements DrivingDetector {
     enabled: enabled,
     inVehicle: inVehicle,
     configured: token != null,
+    carName: carName,
   );
 
   @override
@@ -297,6 +325,15 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<bool> requestNotificationPermission() async => true;
+
+  List<(String, String)> devices = const [('Car Audio', 'AA:BB')];
+  String carName = '';
+
+  @override
+  Future<List<(String, String)>> bondedDevices() async => devices;
+
+  @override
+  Future<void> setCar(String address, String name) async => carName = name;
 
   @override
   Future<void> simulate({required bool enter}) async {

@@ -496,7 +496,7 @@ class RealController extends Notifier<RealState> {
     final st = await detector.status();
     if (!ref.mounted) return;
     // Keep the notification texts current after app updates.
-    if (st.enabled && !state.driving.enabled) {
+    if (st.configured && !state.driving.configured) {
       unawaited(detector.updateTexts(_nativeTexts()));
     }
     state = state.copyWith(driving: st);
@@ -546,6 +546,9 @@ class RealController extends Notifier<RealState> {
     'quickBody': _l.realQuickWhy,
     'voiceQuick': _l.realVoiceQuick('{name}'),
     'manualTitle': _l.realNotifManualTitle,
+    'quickOff': _l.realQuickOff,
+    'quickOn': _l.realQuickOn,
+    'tileLabel': 'DriveTalk',
     'manualBody': _l.realNotifManualBody,
   };
 
@@ -585,6 +588,22 @@ class RealController extends Notifier<RealState> {
     _notify(RealNoticeKind.autoDrivingOff);
     await _loadDriving();
     await refresh();
+  }
+
+  /// Paired Bluetooth devices, to pick the car.
+  Future<List<(String, String)>> carCandidates() =>
+      ref.read(drivingDetectorProvider).bondedDevices();
+
+  /// The car's Bluetooth as an extra trip signal (turns automatic driving
+  /// availability on if it was off).
+  Future<void> setCar(String address, String name) async {
+    if (!state.driving.enabled && address.isNotEmpty) {
+      final ok = await enableAutoDriving();
+      if (!ok) return;
+    }
+    await ref.read(drivingDetectorProvider).setCar(address, name);
+    await _loadDriving();
+    _notify(RealNoticeKind.saved);
   }
 
   /// Developer tools: pretend a trip started / ended.

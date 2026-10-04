@@ -1244,5 +1244,39 @@
       }
     }
   },
-  "realInviteWithCode": "הזמנה עם קוד (למי שלא שמור אצלך)"
+  "realInviteWithCode": "הזמנה עם קוד (למי שלא שמור אצלך)",
+  "realQuickOff": "אני פנוי",
+  "realQuickOn": "פנוי · לעצירה",
+  "realCarTitle": "הרכב שלי (בלוטות׳)",
+  "realCarBody": "כשהטלפון מתחבר לרכב — נסיעה מתחילה. מהיר ומדויק יותר מזיהוי התנועה.",
+  "realCarNone": "לא נבחר",
+  "realCarPick": "בחירת הרכב",
+  "realCarNoDevices": "לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.",
+  "realCarRemove": "בלי רכב",
+  "realReasonNever": "עוד לא דיברתם כאן",
+  "realReasonDays": "לא דיברתם {count} ימים",
+  "@realReasonDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realReasonWeeks": "לא דיברתם {count} שבועות",
+  "@realReasonWeeks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realReasonMonths": "לא דיברתם {count} חודשים",
+  "@realReasonMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realReasonMonth": "לא דיברתם כבר חודש"
 }
