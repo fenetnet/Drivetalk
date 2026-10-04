@@ -64,6 +64,9 @@ abstract class DrivingDetector {
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
+  /// Routines for the phone's alarm (JSON from RealController).
+  Future<void> setRoutines(String json);
+
   /// Paired Bluetooth devices (name, address) — to pick the car.
   Future<List<(String, String)>> bondedDevices();
   Future<void> setCar(String address, String name);
@@ -191,6 +194,9 @@ class AndroidDrivingDetector implements DrivingDetector {
   @override
   Future<void> setCar(String address, String name) =>
       _call('setCar', {'address': address, 'name': name});
+
+  @override
+  Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
 
   @override
   Future<bool> requestNotificationPermission() async {
@@ -334,6 +340,10 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> setCar(String address, String name) async => carName = name;
+
+  String routinesJson = '[]';
+  @override
+  Future<void> setRoutines(String json) async => routinesJson = json;
 
   @override
   Future<void> simulate({required bool enter}) async {

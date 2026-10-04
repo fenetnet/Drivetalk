@@ -4,19 +4,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
+import '../../real/real_controller.dart';
 import '../common/labels.dart';
 
 /// "I usually drive at 08:00 on Sun–Thu." At those times Home offers a
 /// one-tap "become available". (Real reminders come with notifications.)
 class RoutinesScreen extends ConsumerWidget {
-  const RoutinesScreen({super.key});
+  const RoutinesScreen({super.key, this.real = false});
+
+  /// Real mode: the phone turns availability on by itself at these times.
+  final bool real;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     ref.watch(dataVersionProvider);
     final profile = ref.watch(profileServiceProvider);
-    final routines = profile.prefs.routines;
+    final routines = real
+        ? ref.watch(realProvider.select((s) => s.routines))
+        : profile.prefs.routines;
+    Future<void> save(List<Routine> list) => real
+        ? ref.read(realProvider.notifier).saveRoutines(list)
+        : profile.updatePrefs(profile.prefs.copyWith(routines: list));
 
     return Scaffold(
       appBar: AppBar(title: Text(l.routinesTitle)),
@@ -28,11 +37,7 @@ class RoutinesScreen extends ConsumerWidget {
             showDragHandle: true,
             builder: (_) => const _RoutineEditor(),
           );
-          if (r != null) {
-            await profile.updatePrefs(
-              profile.prefs.copyWith(routines: [...routines, r]),
-            );
-          }
+          if (r != null) await save([...routines, r]);
         },
         icon: const Icon(Icons.add_rounded),
         label: Text(l.routineAdd),
@@ -41,7 +46,7 @@ class RoutinesScreen extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
           Text(
-            l.routinesIntro,
+            real ? l.realRoutinesIntro : l.routinesIntro,
             style: const TextStyle(color: AppColors.inkSoft),
           ),
           const SizedBox(height: 12),
@@ -61,14 +66,10 @@ class RoutinesScreen extends ConsumerWidget {
                 subtitle: Text(weekdaysText(l, r.weekdays)),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),
-                  onPressed: () => profile.updatePrefs(
-                    profile.prefs.copyWith(
-                      routines: [
-                        for (final x in routines)
-                          if (x.id != r.id) x,
-                      ],
-                    ),
-                  ),
+                  onPressed: () => save([
+                    for (final x in routines)
+                      if (x.id != r.id) x,
+                  ]),
                 ),
               ),
             ),

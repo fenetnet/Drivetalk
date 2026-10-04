@@ -131,7 +131,21 @@ class RealSnapshot {
     required this.fetchedAt,
     this.circles = const [],
     this.lastTalk = const {},
+    this.talks = const [],
   });
+
+  /// Every talk (both said yes): friend id and when — newest first.
+  final List<(String, DateTime)> talks;
+
+  /// This week's talks (last 7 days): (talks, different friends).
+  (int, int) weekAt(DateTime now) {
+    final since = now.subtract(const Duration(days: 7));
+    final recent = [
+      for (final t in talks)
+        if (t.$2.isAfter(since)) t,
+    ];
+    return (recent.length, {for (final t in recent) t.$1}.length);
+  }
 
   /// When I last talked with each friend through the app (both said yes).
   /// Only real history — the source of "you haven't talked in a while".

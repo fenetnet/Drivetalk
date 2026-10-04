@@ -30,6 +30,11 @@ class DrivingStore(context: Context) {
     /** Free right now (as far as this phone knows). */
     val freeNow: Boolean get() = availableUntil > System.currentTimeMillis()
 
+    /** My routines as JSON (set by the app): see Routines.kt. */
+    var routines: String
+        get() = prefs.getString("routines", "[]") ?: "[]"
+        set(v) = prefs.edit().putString("routines", v).apply()
+
     /** The car's Bluetooth (optional, extra trip signal). */
     var carAddress: String
         get() = prefs.getString("carAddress", "") ?: ""

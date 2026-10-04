@@ -148,6 +148,13 @@ class SupabaseRealBackend implements RealBackend {
       },
       offers: [for (final r in results[2]) _offer(r)],
       lastTalk: _lastTalk(results[3], me),
+      talks: [
+        for (final r in results[3])
+          (
+            (r['user_a'] == me ? r['user_b'] : r['user_a']) as String,
+            _time(r['updated_at']),
+          ),
+      ],
       circles: [
         for (final r in results[4])
           RealCircle(

@@ -644,6 +644,65 @@ void main() {
     });
   });
 
+  group('routines and the week', () {
+    test('a routine is handed to the phone and offered at its time', () async {
+      await connect();
+      final r = Routine(
+        id: 'r1',
+        weekdays: {now.weekday},
+        minuteOfDay: now.hour * 60 + now.minute,
+        durationMinutes: 45,
+        mode: AvailabilityMode.driving,
+      );
+      await me.c.saveRoutines([r]);
+      expect(me.s.routines.single.id, 'r1');
+      expect(me.driving.routinesJson, contains('"minutes":45'));
+      expect(me.c.dueRoutine(now.add(const Duration(minutes: 5)))?.id, 'r1');
+      expect(me.c.dueRoutine(now.add(const Duration(minutes: 40))), isNull);
+      await me.c.startAvailability(AvailabilityMode.driving, 45);
+      expect(me.c.dueRoutine(now), isNull, reason: 'already free');
+    });
+
+    test('routines survive a restart', () async {
+      await connect();
+      await me.c.saveRoutines([
+        Routine(
+          id: 'r2',
+          weekdays: {1, 2},
+          minuteOfDay: 8 * 60,
+          durationMinutes: 30,
+          mode: AvailabilityMode.free,
+        ),
+      ]);
+      final again = ProviderContainer(
+        overrides: [
+          realBackendProvider.overrideWithValue(me.backend),
+          localStoreProvider.overrideWithValue(me.store),
+          realClockProvider.overrideWithValue(clock),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+          contactsReaderProvider.overrideWithValue(FakeContactsReader()),
+        ],
+      );
+      expect(again.read(realProvider).routines.single.id, 'r2');
+      await pump();
+      again.dispose();
+    });
+
+    test('this week: talks and different friends', () async {
+      await connect();
+      expect(me.s.snapshot!.weekAt(now), (0, 0));
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      expect(me.s.snapshot!.weekAt(now), (1, 1));
+      expect(me.s.snapshot!.weekAt(now.add(const Duration(days: 8))), (0, 0));
+    });
+  });
+
   group('invitation codes', () {
     const t = 'AbCdEfGhIjKlMnOpQrStUv';
     test('from all kinds of links and messages', () {

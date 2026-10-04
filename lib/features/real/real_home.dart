@@ -151,6 +151,10 @@ class RealHomeScreen extends ConsumerWidget {
                   const _NoFriendsCard()
                 else
                   _FreeNowCard(free: free, now: now, reasons: reasons),
+                if (c.dueRoutine(now) case final r?) ...[
+                  const SizedBox(height: 16),
+                  _RoutineCard(routine: r),
+                ],
                 const SizedBox(height: 28),
                 Center(
                   child: mine == null
@@ -163,6 +167,10 @@ class RealHomeScreen extends ConsumerWidget {
                       : _MyStatus(mine: mine, now: now, gender: g),
                 ),
                 const SizedBox(height: 28),
+                if (snap != null && snap.friends.isNotEmpty) ...[
+                  _WeekCard(week: snap.weekAt(now)),
+                  const SizedBox(height: 12),
+                ],
                 if (s.driving.supported)
                   _AutoDrivingRow(on: s.driving.enabled, busy: s.busy),
               ],
@@ -463,6 +471,117 @@ class _MyStatus extends ConsumerWidget {
           label: Text(l.stopAvailability),
         ),
       ],
+    );
+  }
+}
+
+/// "It's your usual time for driving — be available for 30 min?"
+class _RoutineCard extends ConsumerWidget {
+  const _RoutineCard({required this.routine});
+  final Routine routine;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: AppColors.blush,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(modeIcon(routine.mode), color: AppColors.coralDeep),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              l.routineDue(modeLabel(l, routine.mode), routine.durationMinutes),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 8),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
+            onPressed: () => ref
+                .read(realProvider.notifier)
+                .startAvailability(routine.mode, routine.durationMinutes),
+            child: Text(l.routineStart),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "Your week": how many talks, with how many different friends.
+class _WeekCard extends StatelessWidget {
+  const _WeekCard({required this.week});
+  final (int, int) week;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final (talks, friends) = week;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.mint,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: AppColors.sageDark,
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              '$talks',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.realWeekTitle,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.sageDark,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  talks == 0
+                      ? l.realWeekTalks(0)
+                      : '${l.realWeekTalks(talks)} ${l.realWeekFriends(friends)}',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (talks == 0)
+                  Text(
+                    l.realWeekNudge,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.inkSoft,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

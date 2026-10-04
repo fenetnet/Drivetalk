@@ -306,6 +306,13 @@ class MemoryRealBackend implements RealBackend {
         for (final c in server.circles.values)
           if (c.$1 == me) c.$2,
       ],
+      talks: [
+        for (final o
+            in server.offers.values.toList()
+              ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt)))
+          if (o.status == OfferStatus.accepted && (o.a == me || o.b == me))
+            (o.a == me ? o.b : o.a, o.updatedAt),
+      ],
       lastTalk: {
         for (final o
             in server.offers.values.toList()

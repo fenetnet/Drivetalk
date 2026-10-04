@@ -137,6 +137,7 @@ class MainActivity : FlutterActivity() {
                         texts = call.argument<Map<String, String>>("texts") ?: emptyMap(),
                     )
                     DrivingNotifications.ensureChannels(this)
+                    Routines.schedule(this)
                     result.success(true)
                 }
                 "forget" -> {
@@ -171,6 +172,11 @@ class MainActivity : FlutterActivity() {
                         emptyList()
                     }
                     result.success(list)
+                }
+                "setRoutines" -> {
+                    store.routines = call.argument<String>("json") ?: "[]"
+                    Routines.schedule(this)
+                    result.success(true)
                 }
                 "setCar" -> {
                     store.carAddress = call.argument<String>("address") ?: ""

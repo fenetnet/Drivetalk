@@ -3531,6 +3531,48 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא דיברתם כבר חודש'**
   String get realReasonMonth;
+
+  /// No description provided for @realWeekTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע שלך'**
+  String get realWeekTitle;
+
+  /// No description provided for @realWeekTalks.
+  ///
+  /// In he, this message translates to:
+  /// **'{talks, plural, =0{עוד אין שיחות השבוע} =1{שיחה אחת} other{{talks} שיחות}}'**
+  String realWeekTalks(int talks);
+
+  /// No description provided for @realWeekFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'{friends, plural, =1{עם חבר אחד} other{עם {friends} חברים}}'**
+  String realWeekFriends(int friends);
+
+  /// No description provided for @realWeekNudge.
+  ///
+  /// In he, this message translates to:
+  /// **'לחיצה על \"אני פנוי\" בדרך הבאה — ונמצא לך עם מי'**
+  String get realWeekNudge;
+
+  /// No description provided for @realRoutinesIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'בזמנים האלה הטלפון יסמן אותך כזמין לבד — גם כשהאפליקציה סגורה (בערך בזמן, אנדרואיד יכול להזיז בכמה דקות).'**
+  String get realRoutinesIntro;
+
+  /// No description provided for @realRoutineNotifTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'DriveTalk · השגרה שלך'**
+  String get realRoutineNotifTitle;
+
+  /// No description provided for @realRoutineNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'סימנו אותך כזמין לשיחה. \"עצור\" בהתראה כדי לבטל.'**
+  String get realRoutineNotifBody;
 }
 
 class _AppLocalizationsDelegate

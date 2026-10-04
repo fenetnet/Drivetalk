@@ -2161,4 +2161,45 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realReasonMonth => 'לא דיברתם כבר חודש';
+
+  @override
+  String get realWeekTitle => 'השבוע שלך';
+
+  @override
+  String realWeekTalks(int talks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      talks,
+      locale: localeName,
+      other: '$talks שיחות',
+      one: 'שיחה אחת',
+      zero: 'עוד אין שיחות השבוע',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String realWeekFriends(int friends) {
+    String _temp0 = intl.Intl.pluralLogic(
+      friends,
+      locale: localeName,
+      other: 'עם $friends חברים',
+      one: 'עם חבר אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get realWeekNudge =>
+      'לחיצה על \"אני פנוי\" בדרך הבאה — ונמצא לך עם מי';
+
+  @override
+  String get realRoutinesIntro =>
+      'בזמנים האלה הטלפון יסמן אותך כזמין לבד — גם כשהאפליקציה סגורה (בערך בזמן, אנדרואיד יכול להזיז בכמה דקות).';
+
+  @override
+  String get realRoutineNotifTitle => 'DriveTalk · השגרה שלך';
+
+  @override
+  String get realRoutineNotifBody =>
+      'סימנו אותך כזמין לשיחה. \"עצור\" בהתראה כדי לבטל.';
 }

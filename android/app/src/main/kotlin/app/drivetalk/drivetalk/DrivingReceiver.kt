@@ -77,5 +77,6 @@ class DrivingBootReceiver : BroadcastReceiver() {
         val store = DrivingStore(context)
         store.inVehicle = false
         if (store.enabled) DrivingDetection.register(context)
+        Routines.schedule(context)
     }
 }

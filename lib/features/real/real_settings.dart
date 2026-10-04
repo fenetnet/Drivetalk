@@ -10,6 +10,7 @@ import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
+import '../settings/routines_screen.dart';
 import 'real_common.dart';
 import 'real_home.dart';
 
@@ -72,6 +73,17 @@ class RealSettingsScreen extends ConsumerWidget {
                 onChanged: !s.driving.supported || s.busy
                     ? null
                     : (v) => setAutoDriving(context, ref, v),
+              ),
+              ListTile(
+                leading: const Icon(Icons.schedule_rounded),
+                title: Text(l.routinesTitle),
+                subtitle: Text(l.routinesCount(s.routines.length)),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const RoutinesScreen(real: true),
+                  ),
+                ),
               ),
               if (s.driving.supported)
                 ListTile(

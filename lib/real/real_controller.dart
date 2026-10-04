@@ -199,7 +199,11 @@ class RealState {
     this.dismissedOffers = const {},
     this.listening = false,
     this.driving = const DrivingStatus(),
+    this.routines = const [],
   });
+
+  /// My routines ("every weekday at 8:00, driving").
+  final List<Routine> routines;
 
   final RealPhase phase;
   final RealSnapshot? snapshot;
@@ -247,6 +251,7 @@ class RealState {
     Set<String>? dismissedOffers,
     bool? listening,
     DrivingStatus? driving,
+    List<Routine>? routines,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -271,6 +276,7 @@ class RealState {
     dismissedOffers: dismissedOffers ?? this.dismissedOffers,
     listening: listening ?? this.listening,
     driving: driving ?? this.driving,
+    routines: routines ?? this.routines,
   );
 }
 
@@ -389,11 +395,20 @@ class RealController extends Notifier<RealState> {
       }
     } catch (_) {}
 
+    final routines = _loadRoutines();
     if (!_backend.isConfigured) {
-      return RealState(phase: RealPhase.notConfigured, prefs: prefs);
+      return RealState(
+        phase: RealPhase.notConfigured,
+        prefs: prefs,
+        routines: routines,
+      );
     }
     Future.microtask(_start);
-    return RealState(phase: RealPhase.starting, prefs: prefs);
+    return RealState(
+      phase: RealPhase.starting,
+      prefs: prefs,
+      routines: routines,
+    );
   }
 
   void _dispose() {
@@ -549,6 +564,8 @@ class RealController extends Notifier<RealState> {
     'quickOff': _l.realQuickOff,
     'quickOn': _l.realQuickOn,
     'tileLabel': 'DriveTalk',
+    'routineTitle': _l.realRoutineNotifTitle,
+    'routineBody': _l.realRoutineNotifBody,
     'manualBody': _l.realNotifManualBody,
   };
 
@@ -1150,6 +1167,64 @@ class RealController extends Notifier<RealState> {
       _notify(RealNoticeKind.blocked, name: p.name, gender: p.gender);
     });
     await refresh();
+  }
+
+  // ------------------------------------------------------------ routines
+
+  static const _routinesKey = 'real.routines.v1';
+
+  List<Routine> _loadRoutines() {
+    try {
+      final raw = _store.getString(_routinesKey);
+      if (raw == null) return const [];
+      return [
+        for (final r in jsonDecode(raw) as List)
+          Routine.fromJson((r as Map).cast<String, Object?>()),
+      ];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Save routines here and hand them to the phone's alarm.
+  Future<void> saveRoutines(List<Routine> list) async {
+    state = state.copyWith(routines: list);
+    await _store.setString(
+      _routinesKey,
+      jsonEncode([for (final r in list) r.toJson()]),
+    );
+    await _ensureDevice();
+    await ref
+        .read(drivingDetectorProvider)
+        .setRoutines(
+          jsonEncode([
+            for (final r in list)
+              {
+                'id': r.id,
+                'days': r.weekdays.toList(),
+                'hour': r.minuteOfDay ~/ 60,
+                'minute': r.minuteOfDay % 60,
+                'mode': r.mode.name,
+                'minutes': r.durationMinutes,
+                'enabled': true,
+              },
+          ]),
+        );
+    _notify(RealNoticeKind.saved);
+  }
+
+  /// A routine whose time is now, while I'm not free yet.
+  Routine? dueRoutine(DateTime now) {
+    if (myActiveAvailability(state, now) != null) return null;
+    for (final r in state.routines) {
+      final minutes = now.hour * 60 + now.minute;
+      if (r.weekdays.contains(now.weekday) &&
+          minutes >= r.minuteOfDay &&
+          minutes - r.minuteOfDay <= 20) {
+        return r;
+      }
+    }
+    return null;
   }
 
   // ------------------------------------------------------------ contacts
