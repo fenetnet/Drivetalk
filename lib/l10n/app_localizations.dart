@@ -2449,7 +2449,7 @@ abstract class AppLocalizations {
   /// No description provided for @realMeAvailableTitle.
   ///
   /// In he, this message translates to:
-  /// **'{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{את/ה פנוי/ה לשיחה}}'**
+  /// **'{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{יש לך זמן לשיחה}}'**
   String realMeAvailableTitle(String gender);
 
   /// No description provided for @realWaitingForFriends.
@@ -2557,7 +2557,7 @@ abstract class AppLocalizations {
   /// No description provided for @realOfferTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו. רוצה לדבר?'**
+  /// **'{gender, select, female{{name} פנויה עכשיו. רוצה לדבר?} male{{name} פנוי עכשיו. רוצה לדבר?} other{ל{name} יש זמן עכשיו. רוצה לדבר?}}'**
   String realOfferTitle(String name, String gender);
 
   /// No description provided for @realTalkNow.
@@ -2587,7 +2587,7 @@ abstract class AppLocalizations {
   /// No description provided for @realWaitingBody.
   ///
   /// In he, this message translates to:
-  /// **'ברגע ש{name} {gender, select, female{תאשר} male{יאשר} other{יאשר/תאשר}} — מתחברים.'**
+  /// **'{gender, select, female{ברגע ש{name} תאשר — מתחברים.} male{ברגע ש{name} יאשר — מתחברים.} other{ברגע שתגיע תשובה מ{name} — מתחברים.}}'**
   String realWaitingBody(String name, String gender);
 
   /// No description provided for @realStopWaiting.
@@ -2611,7 +2611,7 @@ abstract class AppLocalizations {
   /// No description provided for @realVoiceTheyCall.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך.'**
+  /// **'{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}'**
   String realVoiceTheyCall(String name, String gender);
 
   /// No description provided for @realBothSaidYes.
@@ -2643,6 +2643,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
+
+  /// No description provided for @settingsGeneral.
+  ///
+  /// In he, this message translates to:
+  /// **'כללי'**
+  String get settingsGeneral;
+
+  /// No description provided for @adminTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ניהול'**
+  String get adminTitle;
+
+  /// No description provided for @adminEnter.
+  ///
+  /// In he, this message translates to:
+  /// **'ניהול'**
+  String get adminEnter;
+
+  /// No description provided for @adminCode.
+  ///
+  /// In he, this message translates to:
+  /// **'קוד'**
+  String get adminCode;
+
+  /// No description provided for @adminWrong.
+  ///
+  /// In he, this message translates to:
+  /// **'קוד שגוי'**
+  String get adminWrong;
+
+  /// No description provided for @adminLock.
+  ///
+  /// In he, this message translates to:
+  /// **'לסגור את הניהול'**
+  String get adminLock;
 
   /// No description provided for @updateAvailable.
   ///
@@ -2923,7 +2959,7 @@ abstract class AppLocalizations {
   /// No description provided for @intentExplain.
   ///
   /// In he, this message translates to:
-  /// **'{name} לא {gender, select, female{תקבל} male{יקבל} other{יקבל/תקבל}} שום הודעה. כששניכם תהיו פנויים — {gender, select, female{היא} male{הוא} other{הוא/היא}} יוצע לך קודם.'**
+  /// **'{gender, select, female{{name} לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.} male{{name} לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.} other{שום הודעה לא נשלחת ל{name}. כששניכם תהיו פנויים — נציע את {name} קודם.}}'**
   String intentExplain(String name, String gender);
 
   /// No description provided for @intentToday.
@@ -3037,7 +3073,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTheyCallTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך עכשיו'**
+  /// **'{gender, select, female{{name} מתקשרת אליך עכשיו} male{{name} מתקשר אליך עכשיו} other{שיחה מ{name} מגיעה עכשיו}}'**
   String realTheyCallTitle(String name, String gender);
 
   /// No description provided for @realTheyCallBody.
@@ -3079,7 +3115,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{הזמינה} male{הזמין} other{הזמין/ה}} אותך'**
+  /// **'{gender, select, female{{name} הזמינה אותך} male{{name} הזמין אותך} other{הזמנה מ{name}}}'**
   String realInviteTitle(String name, String gender);
 
   /// No description provided for @realInviteBody.
@@ -3199,13 +3235,13 @@ abstract class AppLocalizations {
   /// No description provided for @realFreeFor.
   ///
   /// In he, this message translates to:
-  /// **'פנוי/ה · {minutes} דק׳'**
+  /// **'יש זמן · {minutes} דק׳'**
   String realFreeFor(int minutes);
 
   /// No description provided for @realNotFree.
   ///
   /// In he, this message translates to:
-  /// **'לא פנוי/ה כרגע'**
+  /// **'אין זמינות כרגע'**
   String get realNotFree;
 
   /// No description provided for @realTestIntro.
@@ -3475,13 +3511,13 @@ abstract class AppLocalizations {
   /// No description provided for @realPrivacyNote.
   ///
   /// In he, this message translates to:
-  /// **'השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.'**
+  /// **'השרת יודע רק: שם, מי החברים שלך, ואם יש לך זמן עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.'**
   String get realPrivacyNote;
 
   /// No description provided for @realVoiceOffer.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?'**
+  /// **'{gender, select, female{{name} פנויה. לדבר?} male{{name} פנוי. לדבר?} other{ל{name} יש זמן. לדבר?}}'**
   String realVoiceOffer(String name, String gender);
 
   /// No description provided for @realVoiceCalling.
@@ -3661,7 +3697,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.'**
+  /// **'קבוצות פרטיות שרק לך נראות. אפשר לסמן זמן פנוי רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.'**
   String get realCirclesIntro;
 
   /// No description provided for @realCircleNew.
@@ -3793,7 +3829,7 @@ abstract class AppLocalizations {
   /// No description provided for @realOfferName.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו'**
+  /// **'{gender, select, female{{name} פנויה עכשיו} male{{name} פנוי עכשיו} other{ל{name} יש זמן עכשיו}}'**
   String realOfferName(String name, String gender);
 
   /// No description provided for @realOfferAsk.
@@ -3805,7 +3841,7 @@ abstract class AppLocalizations {
   /// No description provided for @realOfferAskShort.
   ///
   /// In he, this message translates to:
-  /// **'{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{פנוי/ה. לדבר?}}'**
+  /// **'{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{יש זמן. לדבר?}}'**
   String realOfferAskShort(String gender);
 
   /// No description provided for @realQuickWhyShort.

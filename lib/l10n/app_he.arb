@@ -837,7 +837,7 @@
   "realInviteWaitingAfterJoin": "יש לך הזמנה — היא תיפתח מיד אחרי הכניסה",
   "realTabPeople": "האנשים שלי",
   "realTabTest": "בדיקה",
-  "realMeAvailableTitle": "{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{את/ה פנוי/ה לשיחה}}",
+  "realMeAvailableTitle": "{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{יש לך זמן לשיחה}}",
   "@realMeAvailableTitle": {
     "placeholders": {
       "gender": {
@@ -872,7 +872,7 @@
   },
   "realInviteShareSubject": "הזמנה ל-DriveTalk",
   "realInviteCopied": "ההזמנה הועתקה — אפשר להדביק בוואטסאפ",
-  "realOfferTitle": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו. רוצה לדבר?",
+  "realOfferTitle": "{gender, select, female{{name} פנויה עכשיו. רוצה לדבר?} male{{name} פנוי עכשיו. רוצה לדבר?} other{ל{name} יש זמן עכשיו. רוצה לדבר?}}",
   "@realOfferTitle": {
     "placeholders": {
       "name": {
@@ -894,7 +894,7 @@
       }
     }
   },
-  "realWaitingBody": "ברגע ש{name} {gender, select, female{תאשר} male{יאשר} other{יאשר/תאשר}} — מתחברים.",
+  "realWaitingBody": "{gender, select, female{ברגע ש{name} תאשר — מתחברים.} male{ברגע ש{name} יאשר — מתחברים.} other{ברגע שתגיע תשובה מ{name} — מתחברים.}}",
   "@realWaitingBody": {
     "placeholders": {
       "name": {
@@ -908,7 +908,7 @@
   "realStopWaiting": "לא לחכות",
   "realDidNotWorkOut": "לא הסתדר הפעם. נחפש הזדמנות אחרת.",
   "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
-  "realVoiceTheyCall": "{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך.",
+  "realVoiceTheyCall": "{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}",
   "@realVoiceTheyCall": {
     "placeholders": {
       "name": {
@@ -922,9 +922,21 @@
   "realBothSaidYes": "שניכם אמרתם כן!",
   "realConnecting": "מתחברים…",
   "realQuickConnecting": "מתחברים ל{name}…",
-  "@realQuickConnecting": {"placeholders": {"name": {"type": "String"}}},
+  "@realQuickConnecting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
   "realQuickCancelled": "החיבור בוטל",
+  "settingsGeneral": "כללי",
+  "adminTitle": "ניהול",
+  "adminEnter": "ניהול",
+  "adminCode": "קוד",
+  "adminWrong": "קוד שגוי",
+  "adminLock": "לסגור את הניהול",
   "updateAvailable": "יש גרסה חדשה של DriveTalk",
   "updateNow": "לעדכן",
   "updateCheck": "בדיקת עדכון",
@@ -934,12 +946,30 @@
   "realBgFailedTitle": "לא הצלחנו לסמן אותך כפנוי ברקע",
   "realBgFailedBody": "הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".",
   "routineHint": "נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?",
-  "@routineHint": {"placeholders": {"day": {"type": "String"}, "time": {"type": "String"}}},
+  "@routineHint": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "routineHintYes": "להפעיל",
   "routineHintNo": "לא, תודה",
   "realStatusServerVersion": "גרסת השרת",
   "realServerOutdated": "השרת צריך עדכון: בשרת {have}, נדרש {need}",
-  "@realServerOutdated": {"placeholders": {"have": {"type": "int"}, "need": {"type": "int"}}},
+  "@realServerOutdated": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      }
+    }
+  },
   "realClearContacts": "מחק מידע שסונכרן מאנשי הקשר",
   "realClearContactsBody": "החברים נשארים. אפשר לחפש שוב מתי שרוצים.",
   "realVoiceOfferAnon": "חבר פנוי עכשיו. לדבר?",
@@ -957,7 +987,13 @@
   "firstRunContactsBody": "נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.",
   "firstRunContactsGo": "לחפש באנשי הקשר",
   "firstRunFound": "{count, plural, =1{מצאנו אדם אחד שאתה מכיר} other{מצאנו {count} אנשים שאתה מכיר}}",
-  "@firstRunFound": {"placeholders": {"count": {"type": "int"}}},
+  "@firstRunFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "firstRunNoneTitle": "כדי לנסות את DriveTalk צריך לפחות חבר אחד",
   "firstRunNoneBody": "שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.",
   "firstRunLater": "אחר כך",
@@ -974,8 +1010,17 @@
   "outcomeNotSoon": "לא להציע בקרוב",
   "outcomeNoTalk": "לא דיברנו בפועל",
   "intentTitle": "אשמח לדבר",
-  "intentExplain": "{name} לא {gender, select, female{תקבל} male{יקבל} other{יקבל/תקבל}} שום הודעה. כששניכם תהיו פנויים — {gender, select, female{היא} male{הוא} other{הוא/היא}} יוצע לך קודם.",
-  "@intentExplain": {"placeholders": {"name": {"type": "String"}, "gender": {"type": "String"}}},
+  "intentExplain": "{gender, select, female{{name} לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.} male{{name} לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.} other{שום הודעה לא נשלחת ל{name}. כששניכם תהיו פנויים — נציע את {name} קודם.}}",
+  "@intentExplain": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
   "intentToday": "היום",
   "intentWeek": "השבוע",
   "intentAlways": "עד שאבטל",
@@ -990,7 +1035,13 @@
   "realDirectCallOn": "פעיל — השיחה מתחילה מיד",
   "realDirectCallOff": "כבוי — החייגן נפתח עם המספר",
   "realCallingNow": "מתקשרים ל{name}…",
-  "@realCallingNow": {"placeholders": {"name": {"type": "String"}}},
+  "@realCallingNow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "realCallingIn": "מתקשרים ל{name} בעוד {seconds}…",
   "@realCallingIn": {
     "placeholders": {
@@ -1005,7 +1056,7 @@
   "realCallNow": "להתקשר עכשיו",
   "realDialedTitle": "השיחה נפתחה בטלפון",
   "realDialedBody": "כשתסיימו — חזרו לכאן.",
-  "realTheyCallTitle": "{name} {gender, select, female{מתקשרת} male{מתקשר} other{מתקשר/ת}} אליך עכשיו",
+  "realTheyCallTitle": "{gender, select, female{{name} מתקשרת אליך עכשיו} male{{name} מתקשר אליך עכשיו} other{שיחה מ{name} מגיעה עכשיו}}",
   "@realTheyCallTitle": {
     "placeholders": {
       "name": {
@@ -1036,7 +1087,7 @@
       }
     }
   },
-  "realInviteTitle": "{name} {gender, select, female{הזמינה} male{הזמין} other{הזמין/ה}} אותך",
+  "realInviteTitle": "{gender, select, female{{name} הזמינה אותך} male{{name} הזמין אותך} other{הזמנה מ{name}}}",
   "@realInviteTitle": {
     "placeholders": {
       "name": {
@@ -1087,7 +1138,7 @@
       }
     }
   },
-  "realFreeFor": "פנוי/ה · {minutes} דק׳",
+  "realFreeFor": "יש זמן · {minutes} דק׳",
   "@realFreeFor": {
     "placeholders": {
       "minutes": {
@@ -1095,7 +1146,7 @@
       }
     }
   },
-  "realNotFree": "לא פנוי/ה כרגע",
+  "realNotFree": "אין זמינות כרגע",
   "realTestIntro": "כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.",
   "realTestSteps": "1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"",
   "realStatusServer": "שרת",
@@ -1140,8 +1191,8 @@
   "realPhotoSet": "רק החברים שלך רואים אותה",
   "realPhotoSaved": "התמונה נשמרה",
   "realPhotoRemoved": "התמונה הוסרה",
-  "realPrivacyNote": "השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.",
-  "realVoiceOffer": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}}. לדבר?",
+  "realPrivacyNote": "השרת יודע רק: שם, מי החברים שלך, ואם יש לך זמן עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.",
+  "realVoiceOffer": "{gender, select, female{{name} פנויה. לדבר?} male{{name} פנוי. לדבר?} other{ל{name} יש זמן. לדבר?}}",
   "@realVoiceOffer": {
     "placeholders": {
       "name": {
@@ -1219,7 +1270,7 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "מעגלים",
-  "realCirclesIntro": "קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.",
+  "realCirclesIntro": "קבוצות פרטיות שרק לך נראות. אפשר לסמן זמן פנוי רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.",
   "realCircleNew": "מעגל חדש",
   "realCircleName": "שם המעגל (למשל: משפחה)",
   "realCircleQuick": "חיבור מהיר",
@@ -1262,7 +1313,7 @@
   "realContactsNoPermission": "בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.",
   "realNotifManualTitle": "DriveTalk · זמין לשיחה",
   "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.",
-  "realOfferName": "{name} {gender, select, female{פנויה} male{פנוי} other{פנוי/ה}} עכשיו",
+  "realOfferName": "{gender, select, female{{name} פנויה עכשיו} male{{name} פנוי עכשיו} other{ל{name} יש זמן עכשיו}}",
   "@realOfferName": {
     "placeholders": {
       "name": {
@@ -1274,7 +1325,7 @@
     }
   },
   "realOfferAsk": "רוצה לדבר?",
-  "realOfferAskShort": "{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{פנוי/ה. לדבר?}}",
+  "realOfferAskShort": "{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{יש זמן. לדבר?}}",
   "@realOfferAskShort": {
     "placeholders": {
       "gender": {
@@ -1315,7 +1366,16 @@
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
   "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.",
   "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}",
-  "@realInviteSimple": {"placeholders": {"apkUrl": {"type": "String"}, "guideUrl": {"type": "String"}}},
+  "@realInviteSimple": {
+    "placeholders": {
+      "apkUrl": {
+        "type": "String"
+      },
+      "guideUrl": {
+        "type": "String"
+      }
+    }
+  },
   "realInviteWithCode": "הזמנה עם קוד (למי שלא שמור אצלך)",
   "realQuickOff": "אני פנוי",
   "realQuickOn": "פנוי · לעצירה",

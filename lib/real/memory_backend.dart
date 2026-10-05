@@ -915,6 +915,9 @@ class MemoryRealBackend implements RealBackend {
     server._changed();
   }
 
+  @override
+  Map<String, bool> get realtimeTables => const {};
+
   /// Tests can pretend the server is older.
   int schema = 13;
 

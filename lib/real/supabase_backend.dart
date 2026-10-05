@@ -21,7 +21,12 @@ class SupabaseRealBackend implements RealBackend {
 
   SupabaseClient? _client;
   final bool _injected;
-  RealtimeChannel? _channel;
+  final _channels = <String, RealtimeChannel>{};
+
+  /// Realtime per table: subscribed or not (a failing table never breaks the
+  /// others). For the test tab / diagnostics.
+  @override
+  final realtimeTables = <String, bool>{};
   final _changes = StreamController<void>.broadcast();
   final _live = StreamController<LiveStatus>.broadcast();
 
@@ -597,10 +602,13 @@ class SupabaseRealBackend implements RealBackend {
 
   // ------------------------------------------------------------ realtime
 
+  /// The core tables: without them, "instant updates" really don't work.
+  static const _coreTables = {'availability', 'match_offers'};
+
   void _subscribe() {
-    if (_channel != null || _client == null) return;
+    if (_channels.isNotEmpty || _client == null) return;
     _live.add(LiveStatus.connecting);
-    var ch = _c.channel('drivetalk-${DateTime.now().millisecondsSinceEpoch}');
+    final stamp = DateTime.now().millisecondsSinceEpoch;
     for (final table in const [
       'availability',
       'match_offers',
@@ -609,32 +617,47 @@ class SupabaseRealBackend implements RealBackend {
       'circles',
       'circle_members',
     ]) {
-      ch = ch.onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: table,
-        callback: (_) => _changes.add(null),
-      );
+      // One channel per table: if one table can't be watched (e.g. not
+      // enabled for Realtime on the server), the others still work.
+      final ch = _c
+          .channel('drivetalk-$table-$stamp')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: table,
+            callback: (_) => _changes.add(null),
+          );
+      _channels[table] = ch;
+      ch.subscribe((status, [error]) {
+        switch (status) {
+          case RealtimeSubscribeStatus.subscribed:
+            realtimeTables[table] = true;
+            // Catch up on anything missed while (re)connecting.
+            _changes.add(null);
+          case RealtimeSubscribeStatus.closed:
+          case RealtimeSubscribeStatus.channelError:
+          case RealtimeSubscribeStatus.timedOut:
+            realtimeTables[table] = false;
+        }
+        _reportLive();
+      });
     }
-    _channel = ch.subscribe((status, [error]) {
-      switch (status) {
-        case RealtimeSubscribeStatus.subscribed:
-          _live.add(LiveStatus.connected);
-          // Catch up on anything missed while (re)connecting.
-          _changes.add(null);
-        case RealtimeSubscribeStatus.closed:
-          _live.add(LiveStatus.disconnected);
-        case RealtimeSubscribeStatus.channelError:
-        case RealtimeSubscribeStatus.timedOut:
-          _live.add(LiveStatus.error);
-      }
-    });
+  }
+
+  void _reportLive() {
+    final core = [for (final t in _coreTables) realtimeTables[t]];
+    if (core.every((v) => v == true)) {
+      _live.add(LiveStatus.connected);
+    } else if (core.any((v) => v == false)) {
+      _live.add(LiveStatus.error);
+    }
   }
 
   Future<void> _unsubscribe() async {
-    final ch = _channel;
-    _channel = null;
-    if (ch != null) {
+    final all = [..._channels.values];
+    _channels.clear();
+    realtimeTables.clear();
+    for (final ch in all) {
       try {
         await _c.removeChannel(ch);
       } catch (_) {}

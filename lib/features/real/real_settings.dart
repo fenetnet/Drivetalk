@@ -149,30 +149,8 @@ class RealSettingsScreen extends ConsumerWidget {
             ],
           ),
           SettingsGroup(
-            title: l.realSettingsMode,
+            title: l.settingsGeneral,
             children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.verified_rounded,
-                  color: AppColors.sageDark,
-                ),
-                title: Text(l.realModeReal),
-                subtitle: Text(l.realPrivacyNote),
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.fact_check_rounded),
-                title: Text(l.realTestModeToggle),
-                subtitle: Text(l.realTestModeBody),
-                value: s.prefs.testTab,
-                onChanged: (v) => c.setPrefs(s.prefs.copyWith(testTab: v)),
-              ),
-              ListTile(
-                leading: const Icon(Icons.theater_comedy_rounded),
-                title: Text(l.realSwitchToDemo),
-                subtitle: Text(l.realModeDemo),
-                onTap: () =>
-                    ref.read(appModeProvider.notifier).set(AppMode.demo),
-              ),
               ListTile(
                 leading: const Icon(Icons.system_update_rounded),
                 title: Text(l.updateCheck),
@@ -194,31 +172,6 @@ class RealSettingsScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.download_rounded),
-                title: Text(l.realDownloadLink),
-                subtitle: Text(
-                  apk,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textDirection: TextDirection.ltr,
-                ),
-                trailing: IconButton(
-                  tooltip: l.realShareApp,
-                  icon: const Icon(Icons.share_rounded),
-                  onPressed: () async {
-                    if (!kIsWeb &&
-                        defaultTargetPlatform == TargetPlatform.android) {
-                      await SharePlus.instance.share(ShareParams(text: apk));
-                    } else {
-                      await Clipboard.setData(ClipboardData(text: apk));
-                      messengerKey.currentState?.showSnackBar(
-                        SnackBar(content: Text(l.realCopied)),
-                      );
-                    }
-                  },
-                ),
-              ),
-              ListTile(
                 leading: const Icon(Icons.block_rounded),
                 title: Text(l.realBlockedTitle),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -228,39 +181,97 @@ class RealSettingsScreen extends ConsumerWidget {
                   builder: (_) => const _BlockedSheet(),
                 ),
               ),
-            ],
-          ),
-          SettingsGroup(
-            children: [
               ListTile(
                 leading: const Icon(
-                  Icons.restart_alt_rounded,
-                  color: AppColors.danger,
+                  Icons.verified_user_rounded,
+                  color: AppColors.sageDark,
                 ),
-                title: Text(l.realStartOver),
-                onTap: () async {
-                  final ok = await showDialog<bool>(
-                    context: context,
-                    builder: (d) => AlertDialog(
-                      content: Text(l.realStartOverConfirm),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(d, false),
-                          child: Text(l.cancel),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.danger,
-                          ),
-                          onPressed: () => Navigator.pop(d, true),
-                          child: Text(l.confirm),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (ok ?? false) await c.signOut();
-                },
+                title: Text(l.settingsPrivacy),
+                subtitle: Text(l.realPrivacyNote),
               ),
+            ],
+          ),
+          if (s.admin)
+            SettingsGroup(
+              title: l.adminTitle,
+              children: [
+                SwitchListTile(
+                  secondary: const Icon(Icons.fact_check_rounded),
+                  title: Text(l.realTestModeToggle),
+                  subtitle: Text(l.realTestModeBody),
+                  value: s.prefs.testTab,
+                  onChanged: (v) => c.setPrefs(s.prefs.copyWith(testTab: v)),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.theater_comedy_rounded),
+                  title: Text(l.realSwitchToDemo),
+                  subtitle: Text(l.realModeDemo),
+                  onTap: () =>
+                      ref.read(appModeProvider.notifier).set(AppMode.demo),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.download_rounded),
+                  title: Text(l.realDownloadLink),
+                  subtitle: Text(
+                    apk,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textDirection: TextDirection.ltr,
+                  ),
+                  trailing: IconButton(
+                    tooltip: l.realShareApp,
+                    icon: const Icon(Icons.share_rounded),
+                    onPressed: () async {
+                      if (!kIsWeb &&
+                          defaultTargetPlatform == TargetPlatform.android) {
+                        await SharePlus.instance.share(ShareParams(text: apk));
+                      } else {
+                        await Clipboard.setData(ClipboardData(text: apk));
+                        messengerKey.currentState?.showSnackBar(
+                          SnackBar(content: Text(l.realCopied)),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.restart_alt_rounded,
+                    color: AppColors.danger,
+                  ),
+                  title: Text(l.realStartOver),
+                  onTap: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (d) => AlertDialog(
+                        content: Text(l.realStartOverConfirm),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(d, false),
+                            child: Text(l.cancel),
+                          ),
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.danger,
+                            ),
+                            onPressed: () => Navigator.pop(d, true),
+                            child: Text(l.confirm),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (ok ?? false) await c.signOut();
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.lock_rounded),
+                  title: Text(l.adminLock),
+                  onTap: c.lockAdmin,
+                ),
+              ],
+            ),
+          SettingsGroup(
+            children: [
               ListTile(
                 leading: const Icon(
                   Icons.delete_forever_rounded,
@@ -274,7 +285,60 @@ class RealSettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
+          if (!s.admin)
+            Center(
+              child: TextButton(
+                onPressed: () => _askAdminCode(context, ref),
+                child: Text(
+                  l.adminEnter,
+                  style: const TextStyle(color: AppColors.inkSoft),
+                ),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+
+  /// The owner's tools, behind the owner's code.
+  Future<void> _askAdminCode(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final code = TextEditingController();
+    var wrong = false;
+    await showDialog<void>(
+      context: context,
+      builder: (d) => StatefulBuilder(
+        builder: (d, setState) {
+          void submit() {
+            if (ref.read(realProvider.notifier).unlockAdmin(code.text)) {
+              Navigator.pop(d);
+            } else {
+              setState(() => wrong = true);
+            }
+          }
+
+          return AlertDialog(
+            title: Text(l.adminTitle),
+            content: TextField(
+              controller: code,
+              autofocus: true,
+              obscureText: true,
+              keyboardType: TextInputType.number,
+              onSubmitted: (_) => submit(),
+              decoration: InputDecoration(
+                labelText: l.adminCode,
+                errorText: wrong ? l.adminWrong : null,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(d),
+                child: Text(l.cancel),
+              ),
+              FilledButton(onPressed: submit, child: Text(l.confirm)),
+            ],
+          );
+        },
       ),
     );
   }

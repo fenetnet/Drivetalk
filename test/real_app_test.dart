@@ -142,6 +142,26 @@ void main() {
       expect(find.text('תודה!'), findsOneWidget);
       expect(server.feedback, hasLength(1));
 
+      // Friends don't see the test tab; the owner's code opens it.
+      expect(find.text('בדיקה'), findsNothing);
+      await pumpFor(t, 4500); // the "thanks" message goes away
+      await t.tap(find.text('הגדרות'));
+      await pumpFor(t, 400);
+      await t.scrollUntilVisible(
+        find.text('ניהול'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await t.tap(find.text('ניהול'));
+      await pumpFor(t, 300);
+      await t.enterText(find.byType(TextField).last, '1234');
+      await t.tap(find.text('אישור'));
+      await pumpFor(t, 300);
+      expect(find.text('קוד שגוי'), findsOneWidget);
+      await t.enterText(find.byType(TextField).last, '97869786');
+      await t.tap(find.text('אישור'));
+      await pumpFor(t, 300);
+
       // The test tab shows everything is fine.
       await t.tap(find.text('בדיקה'));
       await pumpFor(t, 400);

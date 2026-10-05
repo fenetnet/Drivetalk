@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -238,6 +239,7 @@ class RealState {
     this.firstRun,
     this.serverSchema,
     this.newBuild,
+    this.admin = false,
   });
 
   /// My routines ("every weekday at 8:00, driving").
@@ -255,6 +257,9 @@ class RealState {
 
   /// A newer version of the app is out (its build number).
   final int? newBuild;
+
+  /// The owner's tools are open on this phone (test tab, demo, links…).
+  final bool admin;
 
   bool get serverOutdated =>
       serverSchema != null && serverSchema! < kRequiredSchema;
@@ -308,6 +313,7 @@ class RealState {
     Object? firstRun = _keep,
     int? serverSchema,
     int? newBuild,
+    bool? admin,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -335,6 +341,7 @@ class RealState {
     directCall: directCall ?? this.directCall,
     serverSchema: serverSchema ?? this.serverSchema,
     newBuild: newBuild ?? this.newBuild,
+    admin: admin ?? this.admin,
     firstRun: identical(firstRun, _keep)
         ? this.firstRun
         : firstRun as FirstRunStep?,
@@ -415,6 +422,12 @@ const _prefsKey = 'real.prefs.v1';
 /// The server version this app needs (supabase/migrations, schema_version()).
 const kRequiredSchema = 13;
 const _firstRunKey = 'real.firstRun.v1';
+const _adminKey = 'real.admin.v1';
+
+/// SHA-256 of "drivetalk-admin:<code>" — the code itself is not in the app.
+/// It only hides the owner's tools from friends; it protects no data.
+const _adminCodeHash =
+    '5b054ffe210bfa737ef580c8bbcce8ffac40785b71306fc8cac11a89cb851d73';
 const _handledKey = 'real.handledOffers.v1';
 
 class RealController extends Notifier<RealState> {
@@ -474,6 +487,7 @@ class RealController extends Notifier<RealState> {
     final routines = _loadRoutines();
     if (!_backend.isConfigured) {
       return RealState(
+        admin: _store.getString(_adminKey) == 'on',
         phase: RealPhase.notConfigured,
         prefs: prefs,
         routines: routines,
@@ -481,6 +495,7 @@ class RealController extends Notifier<RealState> {
     }
     Future.microtask(_start);
     return RealState(
+      admin: _store.getString(_adminKey) == 'on',
       phase: RealPhase.starting,
       prefs: prefs,
       routines: routines,
@@ -706,6 +721,24 @@ class RealController extends Notifier<RealState> {
     final latest = await ref.read(updateCheckerProvider).latestBuild();
     if (!ref.mounted || latest == null) return;
     if (latest > mine) state = state.copyWith(newBuild: latest);
+  }
+
+  // ------------------------------------------------------------ admin
+
+  /// The owner's code opens the test tab and the other tools on this phone.
+  bool unlockAdmin(String code) {
+    final hash = sha256
+        .convert(utf8.encode('drivetalk-admin:${code.trim()}'))
+        .toString();
+    if (hash != _adminCodeHash) return false;
+    _store.setString(_adminKey, 'on');
+    state = state.copyWith(admin: true);
+    return true;
+  }
+
+  void lockAdmin() {
+    _store.setString(_adminKey, null);
+    state = state.copyWith(admin: false);
   }
 
   // ------------------------------------------------------------ first run
@@ -1885,6 +1918,7 @@ class RealController extends Notifier<RealState> {
       'phase: ${s.phase.name}',
       'user: ${short(_backend.userId)}',
       'live: ${s.live.name}',
+      'realtime tables: ${_backend.realtimeTables.isEmpty ? '—' : [for (final e in _backend.realtimeTables.entries) '${e.key}=${e.value ? 'ok' : 'FAILED'}'].join(', ')}',
       'friends: ${snap?.friends.length ?? 0}',
       'me available: ${mine == null ? 'no' : '${mine.mode.name}, ${mine.minutesLeftAt(now)} min left'}',
       'friends free now: ${freeFriends(s, now).length}',

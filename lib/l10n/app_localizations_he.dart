@@ -1488,7 +1488,7 @@ class AppLocalizationsHe extends AppLocalizations {
     String _temp0 = intl.Intl.selectLogic(gender, {
       'female': 'את פנויה לשיחה',
       'male': 'אתה פנוי לשיחה',
-      'other': 'את/ה פנוי/ה לשיחה',
+      'other': 'יש לך זמן לשיחה',
     });
     return '$_temp0';
   }
@@ -1552,11 +1552,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realOfferTitle(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'פנויה',
-      'male': 'פנוי',
-      'other': 'פנוי/ה',
+      'female': '$name פנויה עכשיו. רוצה לדבר?',
+      'male': '$name פנוי עכשיו. רוצה לדבר?',
+      'other': 'ל$name יש זמן עכשיו. רוצה לדבר?',
     });
-    return '$name $_temp0 עכשיו. רוצה לדבר?';
+    return '$_temp0';
   }
 
   @override
@@ -1576,11 +1576,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realWaitingBody(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'תאשר',
-      'male': 'יאשר',
-      'other': 'יאשר/תאשר',
+      'female': 'ברגע ש$name תאשר — מתחברים.',
+      'male': 'ברגע ש$name יאשר — מתחברים.',
+      'other': 'ברגע שתגיע תשובה מ$name — מתחברים.',
     });
-    return 'ברגע ש$name $_temp0 — מתחברים.';
+    return '$_temp0';
   }
 
   @override
@@ -1595,11 +1595,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realVoiceTheyCall(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'מתקשרת',
-      'male': 'מתקשר',
-      'other': 'מתקשר/ת',
+      'female': '$name מתקשרת אליך.',
+      'male': '$name מתקשר אליך.',
+      'other': 'שיחה מ$name מגיעה.',
     });
-    return '$name $_temp0 אליך.';
+    return '$_temp0';
   }
 
   @override
@@ -1618,6 +1618,24 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realQuickCancelled => 'החיבור בוטל';
+
+  @override
+  String get settingsGeneral => 'כללי';
+
+  @override
+  String get adminTitle => 'ניהול';
+
+  @override
+  String get adminEnter => 'ניהול';
+
+  @override
+  String get adminCode => 'קוד';
+
+  @override
+  String get adminWrong => 'קוד שגוי';
+
+  @override
+  String get adminLock => 'לסגור את הניהול';
 
   @override
   String get updateAvailable => 'יש גרסה חדשה של DriveTalk';
@@ -1779,16 +1797,14 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String intentExplain(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'תקבל',
-      'male': 'יקבל',
-      'other': 'יקבל/תקבל',
+      'female':
+          '$name לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.',
+      'male':
+          '$name לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.',
+      'other':
+          'שום הודעה לא נשלחת ל$name. כששניכם תהיו פנויים — נציע את $name קודם.',
     });
-    String _temp1 = intl.Intl.selectLogic(gender, {
-      'female': 'היא',
-      'male': 'הוא',
-      'other': 'הוא/היא',
-    });
-    return '$name לא $_temp0 שום הודעה. כששניכם תהיו פנויים — $_temp1 יוצע לך קודם.';
+    return '$_temp0';
   }
 
   @override
@@ -1853,11 +1869,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realTheyCallTitle(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'מתקשרת',
-      'male': 'מתקשר',
-      'other': 'מתקשר/ת',
+      'female': '$name מתקשרת אליך עכשיו',
+      'male': '$name מתקשר אליך עכשיו',
+      'other': 'שיחה מ$name מגיעה עכשיו',
     });
-    return '$name $_temp0 אליך עכשיו';
+    return '$_temp0';
   }
 
   @override
@@ -1887,11 +1903,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realInviteTitle(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'הזמינה',
-      'male': 'הזמין',
-      'other': 'הזמין/ה',
+      'female': '$name הזמינה אותך',
+      'male': '$name הזמין אותך',
+      'other': 'הזמנה מ$name',
     });
-    return '$name $_temp0 אותך';
+    return '$_temp0';
   }
 
   @override
@@ -1964,11 +1980,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realFreeFor(int minutes) {
-    return 'פנוי/ה · $minutes דק׳';
+    return 'יש זמן · $minutes דק׳';
   }
 
   @override
-  String get realNotFree => 'לא פנוי/ה כרגע';
+  String get realNotFree => 'אין זמינות כרגע';
 
   @override
   String get realTestIntro =>
@@ -2107,16 +2123,16 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realPrivacyNote =>
-      'השרת יודע רק: שם, מי החברים שלך, ואם את/ה פנוי/ה עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.';
+      'השרת יודע רק: שם, מי החברים שלך, ואם יש לך זמן עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.';
 
   @override
   String realVoiceOffer(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'פנויה',
-      'male': 'פנוי',
-      'other': 'פנוי/ה',
+      'female': '$name פנויה. לדבר?',
+      'male': '$name פנוי. לדבר?',
+      'other': 'ל$name יש זמן. לדבר?',
     });
-    return '$name $_temp0. לדבר?';
+    return '$_temp0';
   }
 
   @override
@@ -2221,7 +2237,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCirclesIntro =>
-      'קבוצות פרטיות שרק את/ה רואה. אפשר להיות זמין רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.';
+      'קבוצות פרטיות שרק לך נראות. אפשר לסמן זמן פנוי רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.';
 
   @override
   String get realCircleNew => 'מעגל חדש';
@@ -2300,11 +2316,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String realOfferName(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'פנויה',
-      'male': 'פנוי',
-      'other': 'פנוי/ה',
+      'female': '$name פנויה עכשיו',
+      'male': '$name פנוי עכשיו',
+      'other': 'ל$name יש זמן עכשיו',
     });
-    return '$name $_temp0 עכשיו';
+    return '$_temp0';
   }
 
   @override
@@ -2315,7 +2331,7 @@ class AppLocalizationsHe extends AppLocalizations {
     String _temp0 = intl.Intl.selectLogic(gender, {
       'female': 'פנויה. לדבר?',
       'male': 'פנוי. לדבר?',
-      'other': 'פנוי/ה. לדבר?',
+      'other': 'יש זמן. לדבר?',
     });
     return '$_temp0';
   }

@@ -141,7 +141,9 @@ class _RealShellState extends ConsumerState<RealShell> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    final testTab = ref.watch(realProvider.select((s) => s.prefs.testTab));
+    final testTab = ref.watch(
+      realProvider.select((s) => s.admin && s.prefs.testTab),
+    );
     final pages = [
       const RealHomeScreen(),
       const RealPeopleScreen(),

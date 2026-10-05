@@ -82,6 +82,9 @@ abstract class RealBackend {
   Future<void> setTalkIntent(String userId, DateTime? until);
   Future<void> clearTalkIntent(String userId);
 
+  /// Realtime per table (true = watching). Empty when not applicable.
+  Map<String, bool> get realtimeTables => const {};
+
   /// The server's version (see schema_version()); 0 = older than that.
   Future<int> schemaVersion();
 

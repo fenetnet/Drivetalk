@@ -140,7 +140,7 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   const _UpdateCard(),
                 ],
-                if (s.serverOutdated) ...[
+                if (s.serverOutdated && s.admin) ...[
                   const SizedBox(height: 10),
                   MomentChip(
                     text: l.realServerOutdated(
