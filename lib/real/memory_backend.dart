@@ -123,6 +123,8 @@ class MemoryServer {
   void _createOffersFor(String user) {
     if (!_activeAvail(user)) return;
     if (_hasOpenOffer(user) || _inCall(user)) return;
+    // 5 quiet minutes after a question that didn't become a call.
+    if (_quietGap(user)) return;
     final mine = availability[user]!;
     bool mutualQuick(String o) => _isQuick(user, o) && _isQuick(o, user);
     final candidates = [
@@ -153,12 +155,16 @@ class MemoryServer {
       if (!inAudience(mine.circleId, other) ||
           !inAudience(theirs.circleId, user) ||
           _hasOpenOffer(other) ||
-          _inCall(other)) {
+          _inCall(other) ||
+          _quietGap(other)) {
         continue;
       }
       final pair = _pair(user, other).split('|');
       bool samePair(_Offer o) => o.a == pair[0] && o.b == pair[1];
       final since = now();
+      final windowStart = mine.startedAt.isAfter(theirs.startedAt)
+          ? mine.startedAt
+          : theirs.startedAt;
       final blocking = offers.values.any(
         (o) =>
             samePair(o) &&
@@ -168,7 +174,9 @@ class MemoryServer {
                 (o.status == OfferStatus.accepted &&
                     o.acceptedAt != null &&
                     since.difference(o.acceptedAt!) <
-                        const Duration(minutes: 30))),
+                        const Duration(minutes: 30)) ||
+                // Once per trip / free window for the same pair.
+                (_endedWithoutCall(o) && !o.createdAt.isBefore(windowStart))),
       );
       if (blocking) continue;
       bool quickInWindow(String u, DateTime from) => offers.values.any(
@@ -207,6 +215,18 @@ class MemoryServer {
     }
   }
 
+  static bool _endedWithoutCall(_Offer o) =>
+      o.status == OfferStatus.declined ||
+      o.status == OfferStatus.expired ||
+      o.status == OfferStatus.cancelled;
+
+  bool _quietGap(String user) => offers.values.any(
+    (o) =>
+        (o.a == user || o.b == user) &&
+        _endedWithoutCall(o) &&
+        now().difference(o.updatedAt) < const Duration(minutes: 5),
+  );
+
   /// Quick connect: a phone shows it. The 5 seconds start once both did.
   void markSeen(String offerId, String user) {
     final o = offers[offerId];
@@ -242,11 +262,21 @@ class MemoryServer {
     if (cur != null && now().isBefore(cur.expiresAt) && !autoSet.contains(me)) {
       return 'already_available';
     }
+    // A renewal extends the same trip (its start stays).
+    final renewing =
+        cur != null &&
+        now().isBefore(cur.expiresAt) &&
+        autoSet.contains(me) &&
+        now().difference(cur.startedAt) < const Duration(minutes: 170);
+    final start = renewing ? cur.startedAt : now();
+    var until = now().add(Duration(minutes: minutes.clamp(15, 180)));
+    final cap = start.add(const Duration(hours: 3));
+    if (until.isAfter(cap)) until = cap;
     availability[me] = RealAvailability(
       userId: me,
       mode: AvailabilityMode.driving,
-      startedAt: now(),
-      expiresAt: now().add(Duration(minutes: minutes.clamp(15, 180))),
+      startedAt: start,
+      expiresAt: until,
     );
     autoSet.add(me);
     _createOffersFor(me);
@@ -919,7 +949,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 13;
+  int schema = 14;
 
   @override
   Future<int> schemaVersion() async => schema;

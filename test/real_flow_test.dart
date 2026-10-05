@@ -511,6 +511,22 @@ void main() {
       expect(waitingOffer(me.s, now)?.id, offer.id);
     });
 
+    test('renewing during a drive keeps the same trip', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final token = me.driving.token!;
+      final id = me.backend.userId!;
+      server.autoStart(token, minutes: 15);
+      final start = server.availability[id]!.startedAt;
+      now = now.add(const Duration(minutes: 4));
+      server.autoStart(token, minutes: 15);
+      expect(server.availability[id]!.startedAt, start);
+      expect(
+        server.availability[id]!.expiresAt,
+        now.add(const Duration(minutes: 15)),
+      );
+    });
+
     test('trip ended stops only what the car started', () async {
       await connect();
       await me.c.enableAutoDriving();
@@ -559,21 +575,40 @@ void main() {
   });
 
   group('owner feedback round', () {
-    test(
-      'after "not now", a new offer comes by itself after 2 minutes',
-      () async {
-        await connect();
-        await me.c.startAvailability(AvailabilityMode.free, 60);
-        await yoni.c.startAvailability(AvailabilityMode.free, 60);
-        await me.c.refresh();
-        await me.c.respond(currentOffer(me.s, now)!, accept: false);
-        await yoni.c.refresh();
-        expect(currentOffer(yoni.s, now), isNull);
-        now = now.add(const Duration(minutes: 3));
-        await yoni.c.refresh(); // nudges the server while free
-        expect(currentOffer(yoni.s, now), isNotNull);
-      },
-    );
+    test('after "not now": 5 quiet minutes, then someone else; '
+        'the same friend only in a new window', () async {
+      await connect();
+      final dana = Phone(server, clock);
+      await dana.boot();
+      await dana.c.signIn('דנה', Gender.female);
+      final msg = await me.c.createInviteMessage();
+      dana.c.openInviteText(msg!);
+      await pump();
+      await dana.c.acceptInvite();
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.startAvailability(AvailabilityMode.free, 60);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: false);
+      await dana.c.startAvailability(AvailabilityMode.free, 60);
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNull, reason: 'quiet for a while');
+      now = now.add(const Duration(minutes: 3));
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNull, reason: 'still quiet');
+      now = now.add(const Duration(minutes: 3));
+      await me.c.refresh(); // nudges the server while free
+      final next = currentOffer(me.s, now)!;
+      expect(next.otherId(me.backend.userId!), dana.backend.userId);
+      await me.c.respond(next, accept: false);
+      now = now.add(const Duration(minutes: 6));
+      await yoni.c.refresh();
+      expect(currentOffer(yoni.s, now), isNull, reason: 'once per window');
+      // A new window (e.g. the next trip): Yoni may come up again.
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.refresh();
+      expect(currentOffer(yoni.s, now), isNotNull);
+      dana.dispose();
+    });
 
     test(
       'quick-connect circles on both sides → connected without asking',
@@ -939,7 +974,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 13)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 14)'));
     });
 
     test(
