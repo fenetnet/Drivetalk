@@ -2626,6 +2626,48 @@ abstract class AppLocalizations {
   /// **'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.'**
   String get realDirectCallNeedsOk;
 
+  /// No description provided for @realContactsRequested.
+  ///
+  /// In he, this message translates to:
+  /// **'שלחנו בקשת חיבור ל: {names}. כשיאשרו, הם יופיעו כאן.'**
+  String realContactsRequested(String names);
+
+  /// No description provided for @realRequestTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} רוצה להתחבר'**
+  String realRequestTitle(String name);
+
+  /// No description provided for @realRequestBody.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר שלך שמור אצל {name}. אחרי אישור תקבלו הצעות לדבר כששניכם פנויים.'**
+  String realRequestBody(String name);
+
+  /// No description provided for @realRequestYes.
+  ///
+  /// In he, this message translates to:
+  /// **'לאשר'**
+  String get realRequestYes;
+
+  /// No description provided for @realRequestNo.
+  ///
+  /// In he, this message translates to:
+  /// **'לא'**
+  String get realRequestNo;
+
+  /// No description provided for @firstRunRequestedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שלחנו בקשה ל: {names}'**
+  String firstRunRequestedTitle(String names);
+
+  /// No description provided for @firstRunRequestedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשיאשרו, תתחברו. בינתיים אפשר להזמין עוד מישהו.'**
+  String get firstRunRequestedBody;
+
   /// No description provided for @realNoAnswer.
   ///
   /// In he, this message translates to:
@@ -3835,7 +3877,7 @@ abstract class AppLocalizations {
   /// No description provided for @realContactsBody.
   ///
   /// In he, this message translates to:
-  /// **'מי ששמור אצלך ושומר גם אותך — מתחבר לבד.'**
+  /// **'אנשי קשר שיש להם DriveTalk: מי ששמר גם אותך מתחבר מיד, והשאר מקבלים בקשה לאשר. לא צריך את המספר שלך.'**
   String get realContactsBody;
 
   /// No description provided for @realContactsButton.

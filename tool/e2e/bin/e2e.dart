@@ -1073,9 +1073,87 @@ Future<void> main() async {
     (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
     'deleting synced contacts keeps the friends',
   );
+  // Without my number: the friend gets a request and decides (D-070).
+  final gil = await newUser('גיל', 'male'); // no number
+  final found = List<Map<String, dynamic>>.from(
+    await gil.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h(noaPhone)],
+      },
+    ),
+  );
   check(
-    await eve.rpc('schema_version') == 14,
-    'the server says its version (14)',
+    found.length == 1 &&
+        found.single['kind'] == 'requested' &&
+        found.single['display_name'] == 'נועה',
+    'without my number: a saved contact gets a request',
+  );
+  check(
+    (await rows(gil, 'profiles')).length == 1,
+    'a request alone connects nobody',
+  );
+  final inbox = List<Map<String, dynamic>>.from(
+    await noa.rpc('incoming_requests'),
+  );
+  check(
+    inbox.length == 1 && inbox.single['display_name'] == 'גיל',
+    'Noa sees "Gil wants to connect"',
+  );
+  check(
+    List.from(await eve.rpc('incoming_requests')).isEmpty,
+    'nobody else sees the request',
+  );
+  check(
+    await eve.rpc(
+          'answer_request',
+          params: {'p_from': uid(gil), 'p_accept': true},
+        ) ==
+        false,
+    "a stranger can't answer someone else's request",
+  );
+  check(
+    (await rows(eve, 'connect_requests')).isEmpty,
+    "a stranger can't read requests",
+  );
+  check(
+    await noa.rpc(
+          'answer_request',
+          params: {'p_from': uid(gil), 'p_accept': true},
+        ) ==
+        true,
+    'Noa says yes',
+  );
+  check(
+    (await rows(gil, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+    '"yes" → Gil and Noa are friends',
+  );
+  final dor = await newUser('דור', 'male');
+  await dor.rpc(
+    'find_friends',
+    params: {
+      'p_hashes': [h(noaPhone)],
+    },
+  );
+  await noa.rpc(
+    'answer_request',
+    params: {'p_from': uid(dor), 'p_accept': false},
+  );
+  final askedAgain = List.from(
+    await dor.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h(noaPhone)],
+      },
+    ),
+  );
+  check(
+    askedAgain.isEmpty && List.from(await noa.rpc('incoming_requests')).isEmpty,
+    '"no" is never asked again',
+  );
+  check(
+    await eve.rpc('schema_version') == 15,
+    'the server says its version (15)',
   );
 
   // --- profile photos: private, friends only

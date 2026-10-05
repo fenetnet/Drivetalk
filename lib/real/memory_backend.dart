@@ -29,6 +29,10 @@ class MemoryServer {
   final deviceTokens = <String, String>{}; // token → user
   final wasConnected = <String>{}; // "blocker|blocked"
   final contactHashes = <String, Set<String>>{};
+
+  /// "from>to" → pending / accepted / declined.
+  final requests = <String, String>{};
+  final requestTimes = <String, DateTime>{};
   final photos = <String, Uint8List>{};
 
   /// Measurements: (name, ms).
@@ -495,6 +499,19 @@ class MemoryRealBackend implements RealBackend {
               until: e.value.$2,
             ),
       },
+      requests: [
+        for (final e in server.requests.entries)
+          if (e.value == 'pending' && e.key.endsWith('>$me'))
+            if (e.key.split('>')[0] case final from
+                when !server.blockedBetween(me, from) &&
+                    !server.connected(me, from) &&
+                    server.profiles.containsKey(from))
+              ConnectRequest(
+                from,
+                server.profiles[from]!.name,
+                server.requestTimes[e.key]!,
+              ),
+      ]..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
       fetchedAt: now,
     );
   }
@@ -787,27 +804,54 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<List<String>> syncContacts(List<String> hashes) async {
+  Future<FoundFriends> syncContacts(List<String> hashes) async {
     final me = _uid;
     server.contactHashes[me] = {...hashes};
     final myPhone = server.phones[me];
-    if (myPhone == null) return const [];
-    final myHash = hashPhone(myPhone);
-    final names = <String>[];
+    final myHash = myPhone == null ? null : hashPhone(myPhone);
+    final connected = <String>[];
+    final requested = <String>[];
     for (final e in server.phones.entries) {
       final other = e.key;
       if (other == me) continue;
       if (!hashes.contains(hashPhone(e.value))) continue;
-      if (!(server.contactHashes[other]?.contains(myHash) ?? false)) continue;
       if (server.blockedBetween(me, other) || server.connected(me, other)) {
         continue;
       }
-      server.connections.add(MemoryServer._pair(me, other));
-      names.add(server.profiles[other]!.name);
+      final hasMe =
+          myHash != null &&
+          (server.contactHashes[other]?.contains(myHash) ?? false);
+      final askedMe = server.requests['$other>$me'] == 'pending';
+      final name = server.profiles[other]!.name;
+      if (hasMe || askedMe) {
+        server.connections.add(MemoryServer._pair(me, other));
+        for (final k in ['$me>$other', '$other>$me']) {
+          if (server.requests[k] == 'pending') server.requests[k] = 'accepted';
+        }
+        connected.add(name);
+      } else if (!server.requests.containsKey('$me>$other')) {
+        // Asked once per pair (a "no" is never asked again).
+        server.requests['$me>$other'] = 'pending';
+        server.requestTimes['$me>$other'] = server.now();
+        requested.add(name);
+      }
     }
     server._createOffersFor(me);
     server._changed();
-    return names;
+    return FoundFriends(connected: connected, requested: requested);
+  }
+
+  @override
+  Future<void> answerRequest(String fromId, {required bool accept}) async {
+    final me = _uid;
+    final k = '$fromId>$me';
+    if (server.requests[k] != 'pending') return;
+    server.requests[k] = accept ? 'accepted' : 'declined';
+    if (accept && !server.blockedBetween(me, fromId)) {
+      server.connections.add(MemoryServer._pair(me, fromId));
+      server._createOffersFor(me);
+    }
+    server._changed();
   }
 
   @override
@@ -949,7 +993,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 14;
+  int schema = 15;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -968,6 +1012,7 @@ class MemoryRealBackend implements RealBackend {
     server.photos.remove(me);
     server.availability.remove(me);
     server.contactHashes.remove(me);
+    server.requests.removeWhere((k, _) => k.split('>').contains(me));
     server.deviceTokens.removeWhere((_, u) => u == me);
     server.connections.removeWhere((c) => c.split('|').contains(me));
     server.offers.removeWhere((_, o) => o.a == me || o.b == me);

@@ -117,6 +117,7 @@ class RealRoot extends ConsumerWidget {
       RealNoticeKind.unblocked => l.realUnblocked(n.name ?? ''),
       RealNoticeKind.contactsFound => l.realContactsFound(n.name ?? ''),
       RealNoticeKind.contactsNone => l.realContactsNone,
+      RealNoticeKind.contactsRequested => l.realContactsRequested(n.name ?? ''),
       RealNoticeKind.contactsNoPermission => l.realContactsNoPermission,
       RealNoticeKind.unblockedReconnected => l.realUnblockedBack(n.name ?? ''),
     };

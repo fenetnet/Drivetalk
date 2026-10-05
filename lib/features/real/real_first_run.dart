@@ -86,7 +86,13 @@ class RealFirstRunScreen extends ConsumerWidget {
           children: [
             icon(Icons.person_add_alt_1_rounded),
             const SizedBox(height: 32),
-            texts(l.firstRunNoneTitle, l.firstRunNoneBody),
+            if (c.lastRequested.isNotEmpty)
+              texts(
+                l.firstRunRequestedTitle(c.lastRequested.take(3).join(', ')),
+                l.firstRunRequestedBody,
+              )
+            else
+              texts(l.firstRunNoneTitle, l.firstRunNoneBody),
           ],
         ),
         actions: [

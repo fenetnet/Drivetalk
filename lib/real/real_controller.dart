@@ -163,6 +163,7 @@ enum RealNoticeKind {
   unblocked,
   contactsFound,
   contactsNone,
+  contactsRequested,
   contactsNoPermission,
   unblockedReconnected,
 }
@@ -433,7 +434,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 14;
+const kRequiredSchema = 15;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1889,12 +1890,18 @@ class RealController extends Notifier<RealState> {
     if (!ref.mounted) return;
     final hashes = {for (final n in numbers) ?hashPhone(n)}.toList();
     await _run(() async {
-      final names = await _backend.syncContacts(hashes);
+      final found = await _backend.syncContacts(hashes);
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
+      if (found.requested.isNotEmpty) lastRequested = found.requested;
       if (quiet) return;
-      if (names.isNotEmpty) {
-        _notify(RealNoticeKind.contactsFound, name: names.join(', '));
+      if (found.connected.isNotEmpty) {
+        _notify(RealNoticeKind.contactsFound, name: found.connected.join(', '));
+      } else if (found.requested.isNotEmpty) {
+        _notify(
+          RealNoticeKind.contactsRequested,
+          name: found.requested.join(', '),
+        );
       } else if (ask) {
         _notify(RealNoticeKind.contactsNone);
       }
@@ -1903,6 +1910,21 @@ class RealController extends Notifier<RealState> {
   }
 
   /// Quietly again every 12 hours (only if permission was given before).
+  /// Who the last contacts search asked to connect (they decide).
+  List<String> lastRequested = const [];
+
+  /// "X wants to connect": yes → friends; no → closed quietly.
+  Future<void> answerRequest(ConnectRequest r, {required bool accept}) async {
+    final ok = await _run(
+      () => _backend.answerRequest(r.fromId, accept: accept),
+    );
+    if (ok && accept) {
+      _event('request_accepted');
+      _notify(RealNoticeKind.connected, name: r.name);
+    }
+    await refresh();
+  }
+
   Future<void> _maybeSyncContacts() async {
     final last = DateTime.tryParse(_store.getString(_contactsSyncKey) ?? '');
     // Permission taken away since the last sync: remove what was uploaded.

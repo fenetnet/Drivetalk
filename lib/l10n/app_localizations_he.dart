@@ -1607,6 +1607,36 @@ class AppLocalizationsHe extends AppLocalizations {
       'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.';
 
   @override
+  String realContactsRequested(String names) {
+    return 'שלחנו בקשת חיבור ל: $names. כשיאשרו, הם יופיעו כאן.';
+  }
+
+  @override
+  String realRequestTitle(String name) {
+    return '$name רוצה להתחבר';
+  }
+
+  @override
+  String realRequestBody(String name) {
+    return 'המספר שלך שמור אצל $name. אחרי אישור תקבלו הצעות לדבר כששניכם פנויים.';
+  }
+
+  @override
+  String get realRequestYes => 'לאשר';
+
+  @override
+  String get realRequestNo => 'לא';
+
+  @override
+  String firstRunRequestedTitle(String names) {
+    return 'שלחנו בקשה ל: $names';
+  }
+
+  @override
+  String get firstRunRequestedBody =>
+      'כשיאשרו, תתחברו. בינתיים אפשר להזמין עוד מישהו.';
+
+  @override
   String get realNoAnswer => 'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.';
 
   @override
@@ -2315,7 +2345,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realContactsTitle => 'חברים מאנשי הקשר';
 
   @override
-  String get realContactsBody => 'מי ששמור אצלך ושומר גם אותך — מתחבר לבד.';
+  String get realContactsBody =>
+      'אנשי קשר שיש להם DriveTalk: מי ששמר גם אותך מתחבר מיד, והשאר מקבלים בקשה לאשר. לא צריך את המספר שלך.';
 
   @override
   String get realContactsButton => 'חיפוש באנשי הקשר';

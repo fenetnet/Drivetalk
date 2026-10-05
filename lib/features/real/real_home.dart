@@ -194,7 +194,7 @@ class RealHomeScreen extends ConsumerWidget {
   }
 }
 
-/// The one card under "Now": update > routine now > routine idea >
+/// The one card under "Now": update > "X wants to connect" > routine now > routine idea >
 /// the home-screen button tip.
 Widget? _tipCard(
   RealState s,
@@ -203,6 +203,7 @@ Widget? _tipCard(
   RealSnapshot? snap,
 ) {
   if (s.newBuild != null) return const _UpdateCard();
+  if (snap?.requests.firstOrNull case final r?) return RequestCard(request: r);
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
     return _RoutineHintCard(hint: hint);

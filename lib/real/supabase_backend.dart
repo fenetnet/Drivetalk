@@ -156,6 +156,13 @@ class SupabaseRealBackend implements RealBackend {
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // "X wants to connect" (optional on an older server).
+      _c
+          .rpc('incoming_requests')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -209,6 +216,14 @@ class SupabaseRealBackend implements RealBackend {
             },
           ),
       ]..sort((a, b) => a.name.compareTo(b.name)),
+      requests: [
+        for (final r in results[6])
+          ConnectRequest(
+            r['from_user'] as String,
+            r['display_name'] as String,
+            _time(r['created_at']),
+          ),
+      ],
       fetchedAt: DateTime.now(),
     );
   });
@@ -479,11 +494,39 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
-  Future<List<String>> syncContacts(List<String> hashes) => _guard(() async {
-    final rows =
-        await _c.rpc('sync_contacts', params: {'p_hashes': hashes}) as List;
-    return [for (final r in rows) (r as Map)['display_name'] as String];
+  Future<FoundFriends> syncContacts(List<String> hashes) => _guard(() async {
+    try {
+      final rows =
+          await _c.rpc('find_friends', params: {'p_hashes': hashes}) as List;
+      String name(Object? r) => (r as Map)['display_name'] as String;
+      return FoundFriends(
+        connected: [
+          for (final r in rows)
+            if ((r as Map)['kind'] == 'connected') name(r),
+        ],
+        requested: [
+          for (final r in rows)
+            if ((r as Map)['kind'] == 'requested') name(r),
+        ],
+      );
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+      // Older server: only "both saved each other".
+      final rows =
+          await _c.rpc('sync_contacts', params: {'p_hashes': hashes}) as List;
+      return FoundFriends(
+        connected: [for (final r in rows) (r as Map)['display_name'] as String],
+      );
+    }
   });
+
+  @override
+  Future<void> answerRequest(String fromId, {required bool accept}) => _guard(
+    () => _c.rpc(
+      'answer_request',
+      params: {'p_from': fromId, 'p_accept': accept},
+    ),
+  );
 
   @override
   Future<String> createDeviceToken() =>
@@ -616,6 +659,7 @@ class SupabaseRealBackend implements RealBackend {
       'profiles',
       'circles',
       'circle_members',
+      'connect_requests',
     ]) {
       // One channel per table: if one table can't be watched (e.g. not
       // enabled for Realtime on the server), the others still work.

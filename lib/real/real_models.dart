@@ -150,6 +150,22 @@ class RealOffer {
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
 }
 
+/// Someone who saved my number asks to connect (I decide).
+class ConnectRequest {
+  const ConnectRequest(this.fromId, this.name, this.createdAt);
+  final String fromId;
+  final String name;
+  final DateTime createdAt;
+}
+
+/// The result of a contacts search: new friends now, and people who were
+/// asked (they decide).
+class FoundFriends {
+  const FoundFriends({this.connected = const [], this.requested = const []});
+  final List<String> connected;
+  final List<String> requested;
+}
+
 /// What I can see right now.
 class RealSnapshot {
   const RealSnapshot({
@@ -162,7 +178,11 @@ class RealSnapshot {
     this.lastTalk = const {},
     this.talks = const [],
     this.intents = const {},
+    this.requests = const [],
   });
+
+  /// "X wants to connect" — waiting for my answer (oldest first).
+  final List<ConnectRequest> requests;
 
   /// "I'd like to talk" (mine only): friend id → until when (null = until
   /// I remove it). Only active ones.
@@ -213,6 +233,7 @@ class RealSnapshot {
       lastTalk: lastTalk,
       talks: talks,
       intents: intents,
+      requests: requests,
     );
   }
 

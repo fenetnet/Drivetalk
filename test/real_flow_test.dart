@@ -771,6 +771,51 @@ void main() {
       expect(yoni.s.snapshot!.friends, isEmpty);
     });
 
+    test('without my number: they get a request; "yes" → friends', () async {
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      me.contacts.numbers = ['053-222-2222'];
+      await me.c.signIn('נתנאל', Gender.male); // no number
+      await me.c.firstRunFindPeople();
+      await pump(10);
+      expect(me.c.lastRequested, ['יוני']);
+      expect(me.s.snapshot!.friends, isEmpty, reason: 'he decides');
+      await yoni.c.refresh();
+      final r = yoni.s.snapshot!.requests.single;
+      expect(r.name, 'נתנאל');
+      await yoni.c.answerRequest(r, accept: true);
+      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+      expect(yoni.s.snapshot!.requests, isEmpty);
+      await me.c.refresh();
+      expect(me.s.snapshot!.friends.single.name, 'יוני');
+    });
+
+    test('"no" closes it quietly and is not asked again', () async {
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      me.contacts.numbers = ['0532222222'];
+      await me.c.signIn('נתנאל', Gender.male);
+      await me.c.syncContacts();
+      expect(me.s.notice?.kind, RealNoticeKind.contactsRequested);
+      await yoni.c.refresh();
+      await yoni.c.answerRequest(
+        yoni.s.snapshot!.requests.single,
+        accept: false,
+      );
+      await me.c.syncContacts();
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.requests, isEmpty);
+      expect(yoni.s.snapshot!.friends, isEmpty);
+    });
+
+    test('someone without a number can still ask me', () async {
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await yoni.c.signIn('יוני', Gender.male); // no number
+      yoni.contacts.numbers = ['0521111111'];
+      await yoni.c.syncContacts(); // Yoni asks me
+      me.contacts.numbers = ['0532222222']; // Yoni has no number to find
+      await me.c.refresh();
+      expect(me.s.snapshot!.requests.single.name, 'יוני');
+    });
+
     test('no permission → explained, nothing sent', () async {
       me.contacts.granted = false;
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
@@ -974,7 +1019,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 14)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 15)'));
     });
 
     test(

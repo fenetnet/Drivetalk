@@ -158,6 +158,10 @@ class RealPeopleScreen extends ConsumerWidget {
               style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
+            for (final r in snap?.requests ?? const <ConnectRequest>[]) ...[
+              RequestCard(request: r),
+              const SizedBox(height: 12),
+            ],
             FilledButton.icon(
               onPressed: () => shareInvite(context, ref),
               icon: const Icon(Icons.share_rounded),
@@ -454,5 +458,72 @@ Future<void> openTalkIntentSheet(
       await c.setTalkIntent(f, TalkIntentSpan.always);
     case 'remove':
       await c.clearTalkIntent(f);
+  }
+}
+
+/// "X wants to connect" — someone who saved my number. Yes / No.
+class RequestCard extends ConsumerWidget {
+  const RequestCard({super.key, required this.request});
+  final ConnectRequest request;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.person_add_alt_1_rounded,
+                  color: AppColors.terracotta,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.realRequestTitle(request.name),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l.realRequestBody(request.name),
+              style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy
+                        ? null
+                        : () => c.answerRequest(request, accept: true),
+                    child: Text(l.realRequestYes),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: busy
+                      ? null
+                      : () => c.answerRequest(request, accept: false),
+                  child: Text(l.realRequestNo),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

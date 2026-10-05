@@ -68,9 +68,13 @@ abstract class RealBackend {
   Future<String> createDeviceToken();
   Future<void> revokeDeviceTokens();
 
-  /// Upload hashed contact numbers; returns names of new connections
-  /// (people who have my number too).
-  Future<List<String>> syncContacts(List<String> hashes);
+  /// Upload hashed contact numbers. People who saved me too are connected
+  /// at once; others who use DriveTalk get a request (my number isn't
+  /// needed for that).
+  Future<FoundFriends> syncContacts(List<String> hashes);
+
+  /// Answer "X wants to connect".
+  Future<void> answerRequest(String fromId, {required bool accept});
 
   /// My profile photo (a small JPEG); null removes it.
   Future<void> setPhoto(Uint8List? jpeg);
