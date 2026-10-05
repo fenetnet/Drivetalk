@@ -2644,6 +2644,42 @@ abstract class AppLocalizations {
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
 
+  /// No description provided for @updateAvailable.
+  ///
+  /// In he, this message translates to:
+  /// **'יש גרסה חדשה של DriveTalk'**
+  String get updateAvailable;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In he, this message translates to:
+  /// **'לעדכן'**
+  String get updateNow;
+
+  /// No description provided for @updateCheck.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקת עדכון'**
+  String get updateCheck;
+
+  /// No description provided for @updateCurrent.
+  ///
+  /// In he, this message translates to:
+  /// **'הגרסה שלך:'**
+  String get updateCurrent;
+
+  /// No description provided for @updateNone.
+  ///
+  /// In he, this message translates to:
+  /// **'יש לך את הגרסה האחרונה'**
+  String get updateNone;
+
+  /// No description provided for @updateHow.
+  ///
+  /// In he, this message translates to:
+  /// **'הקובץ יורד, ואז לוחצים עליו ← \"עדכון\". החברים וההגדרות נשארים.'**
+  String get updateHow;
+
   /// No description provided for @realBgFailedTitle.
   ///
   /// In he, this message translates to:
@@ -3841,8 +3877,8 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteSimple.
   ///
   /// In he, this message translates to:
-  /// **'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.'**
-  String realInviteSimple(String apkUrl);
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאם הטלפון מבקש אישור או מזהיר — כאן מוסבר בדיוק מה ללחוץ: {guideUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.'**
+  String realInviteSimple(String apkUrl, String guideUrl);
 
   /// No description provided for @realInviteWithCode.
   ///

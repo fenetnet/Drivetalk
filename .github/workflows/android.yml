@@ -122,9 +122,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # The app reads version.json to say "a new version is out".
+          echo '{"build": ${{ github.run_number }}}' > version.json
           gh release delete prototype --yes --cleanup-tag || true
-          gh release create prototype drivetalk-prototype.apk drivetalk.aab \
+          gh release create prototype drivetalk-prototype.apk drivetalk.aab version.json \
             --prerelease \
             --target "${{ github.sha }}" \
             --title "DriveTalk — גרסת ניסיון" \
-            --notes "גרסת ניסיון: הדגמה עם אנשים מדומים + בדיקה אמיתית עם חבר. להורדה: ללחוץ על drivetalk-prototype.apk למטה, ואז לפתוח את הקובץ בטלפון."
+            --notes-file docs/install-guide-release.md

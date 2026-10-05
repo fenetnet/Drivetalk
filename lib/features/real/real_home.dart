@@ -136,6 +136,10 @@ class RealHomeScreen extends ConsumerWidget {
                     height: 1.1,
                   ),
                 ),
+                if (s.newBuild != null) ...[
+                  const SizedBox(height: 12),
+                  const _UpdateCard(),
+                ],
                 if (s.serverOutdated) ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -591,6 +595,57 @@ class _RoutineHintCard extends ConsumerWidget {
                 child: Text(l.routineHintYes),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "A new version of DriveTalk is out" → opens the download (the phone
+/// installs it over this one; friends and settings stay).
+class _UpdateCard extends StatelessWidget {
+  const _UpdateCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+      decoration: BoxDecoration(
+        color: AppColors.mint,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.system_update_rounded, color: AppColors.sageDark),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l.updateAvailable,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  l.updateHow,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.inkSoft,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
+            onPressed: openAppUpdate,
+            child: Text(l.updateNow),
           ),
         ],
       ),

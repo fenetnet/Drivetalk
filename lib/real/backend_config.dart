@@ -33,6 +33,16 @@ class BackendConfig {
     defaultValue: 'https://github.com/fenetnet/Drivetalk/releases/download/prototype/drivetalk-prototype.apk',
   );
 
+  /// The download page (with the install steps), next to the APK.
+  static String get downloadPageUrl => apkUrl.contains('/releases/download/')
+      ? '${apkUrl.substring(0, apkUrl.indexOf('/releases/download/'))}'
+            '/releases/tag/prototype'
+      : apkUrl;
+
+  /// {"build": N} of the newest published version (written by CI).
+  static String get latestVersionUrl =>
+      '${apkUrl.substring(0, apkUrl.lastIndexOf('/'))}/version.json';
+
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 

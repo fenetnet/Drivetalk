@@ -1620,6 +1620,25 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickCancelled => 'החיבור בוטל';
 
   @override
+  String get updateAvailable => 'יש גרסה חדשה של DriveTalk';
+
+  @override
+  String get updateNow => 'לעדכן';
+
+  @override
+  String get updateCheck => 'בדיקת עדכון';
+
+  @override
+  String get updateCurrent => 'הגרסה שלך:';
+
+  @override
+  String get updateNone => 'יש לך את הגרסה האחרונה';
+
+  @override
+  String get updateHow =>
+      'הקובץ יורד, ואז לוחצים עליו ← \"עדכון\". החברים וההגדרות נשארים.';
+
+  @override
   String get realBgFailedTitle => 'לא הצלחנו לסמן אותך כפנוי ברקע';
 
   @override
@@ -2342,8 +2361,8 @@ class AppLocalizationsHe extends AppLocalizations {
       'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.';
 
   @override
-  String realInviteSimple(String apkUrl) {
-    return 'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): $apkUrl\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.';
+  String realInviteSimple(String apkUrl, String guideUrl) {
+    return 'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): $apkUrl\nאם הטלפון מבקש אישור או מזהיר — כאן מוסבר בדיוק מה ללחוץ: $guideUrl\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.';
   }
 
   @override

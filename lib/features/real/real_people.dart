@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
@@ -28,7 +29,10 @@ Future<void> shareInvite(
   final l = context.l10n;
   final text = withCode
       ? await ref.read(realProvider.notifier).createInviteMessage()
-      : l.realInviteSimple(ref.read(apkUrlProvider));
+      : l.realInviteSimple(
+          ref.read(apkUrlProvider),
+          BackendConfig.downloadPageUrl,
+        );
   if (text == null) return;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     try {

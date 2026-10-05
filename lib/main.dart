@@ -63,9 +63,11 @@ Future<void> main() async {
   }
 
   var version = '?';
+  int? build;
   try {
     final info = await PackageInfo.fromPlatform();
     version = '${info.version} (${info.buildNumber})';
+    build = int.tryParse(info.buildNumber);
   } catch (_) {}
 
   runApp(
@@ -73,6 +75,7 @@ Future<void> main() async {
       overrides: [
         localStoreProvider.overrideWithValue(PrefsLocalStore(store)),
         appVersionProvider.overrideWithValue(version),
+        appBuildProvider.overrideWithValue(build),
         matchingConfigProvider.overrideWithValue(config),
         startersProvider.overrideWithValue(starters),
         fakeWorldProvider.overrideWithValue(world),

@@ -925,6 +925,12 @@
   "@realQuickConnecting": {"placeholders": {"name": {"type": "String"}}},
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
   "realQuickCancelled": "החיבור בוטל",
+  "updateAvailable": "יש גרסה חדשה של DriveTalk",
+  "updateNow": "לעדכן",
+  "updateCheck": "בדיקת עדכון",
+  "updateCurrent": "הגרסה שלך:",
+  "updateNone": "יש לך את הגרסה האחרונה",
+  "updateHow": "הקובץ יורד, ואז לוחצים עליו ← \"עדכון\". החברים וההגדרות נשארים.",
   "realBgFailedTitle": "לא הצלחנו לסמן אותך כפנוי ברקע",
   "realBgFailedBody": "הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".",
   "routineHint": "נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?",
@@ -1308,14 +1314,8 @@
   "realGroupAccount": "החשבון שלי",
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
   "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.",
-  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.",
-  "@realInviteSimple": {
-    "placeholders": {
-      "apkUrl": {
-        "type": "String"
-      }
-    }
-  },
+  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאם הטלפון מבקש אישור או מזהיר — כאן מוסבר בדיוק מה ללחוץ: {guideUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.",
+  "@realInviteSimple": {"placeholders": {"apkUrl": {"type": "String"}, "guideUrl": {"type": "String"}}},
   "realInviteWithCode": "הזמנה עם קוד (למי שלא שמור אצלך)",
   "realQuickOff": "אני פנוי",
   "realQuickOn": "פנוי · לעצירה",

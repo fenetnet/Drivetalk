@@ -20,6 +20,7 @@ import 'real_backend.dart';
 import 'real_models.dart';
 import 'routine_suggest.dart';
 import 'supabase_backend.dart';
+import 'update_checker.dart';
 
 // ---------------------------------------------------------------------------
 // Demo (fake people) vs. real (two-user test). Kept completely separate: the
@@ -80,6 +81,14 @@ final drivingDetectorProvider = Provider<DrivingDetector>(
 
 /// App version for diagnostics (overridden in main from package_info).
 final appVersionProvider = Provider<String>((ref) => '?');
+
+/// This build's number (CI run number); null when unknown (e.g. tests).
+final appBuildProvider = Provider<int?>((ref) => null);
+
+/// "Is there a newer version?" (version.json next to the APK).
+final updateCheckerProvider = Provider<UpdateChecker>(
+  (ref) => HttpUpdateChecker(),
+);
 
 // ---------------------------------------------------------------------------
 // State
@@ -228,6 +237,7 @@ class RealState {
     this.directCall,
     this.firstRun,
     this.serverSchema,
+    this.newBuild,
   });
 
   /// My routines ("every weekday at 8:00, driving").
@@ -242,6 +252,10 @@ class RealState {
   /// The server's version (null = not checked yet). Below
   /// [kRequiredSchema]: the server needs an update — said clearly.
   final int? serverSchema;
+
+  /// A newer version of the app is out (its build number).
+  final int? newBuild;
+
   bool get serverOutdated =>
       serverSchema != null && serverSchema! < kRequiredSchema;
 
@@ -293,6 +307,7 @@ class RealState {
     bool? directCall,
     Object? firstRun = _keep,
     int? serverSchema,
+    int? newBuild,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -319,6 +334,7 @@ class RealState {
     routines: routines ?? this.routines,
     directCall: directCall ?? this.directCall,
     serverSchema: serverSchema ?? this.serverSchema,
+    newBuild: newBuild ?? this.newBuild,
     firstRun: identical(firstRun, _keep)
         ? this.firstRun
         : firstRun as FirstRunStep?,
@@ -522,6 +538,7 @@ class RealController extends Notifier<RealState> {
     _ticker = Timer.periodic(const Duration(seconds: 5), (_) => _onTick());
     try {
       _lifecycle = AppLifecycleListener(onResume: _onResume);
+      unawaited(checkForUpdate());
     } catch (_) {
       // No binding (pure unit tests).
     }
@@ -566,6 +583,7 @@ class RealController extends Notifier<RealState> {
   }
 
   void _onResume() {
+    unawaited(checkForUpdate());
     if (state.phase != RealPhase.ready) return;
     // Back from the phone call → ask how it went.
     if (state.callStage == CallStage.dialed) {
@@ -668,6 +686,26 @@ class RealController extends Notifier<RealState> {
   void dismissRoutineSuggestion(RoutineSuggestion r) {
     _store.setString(_hintNoKey, jsonEncode([..._hintNo(), r.key]));
     state = state.copyWith();
+  }
+
+  // ------------------------------------------------------------ app update
+
+  DateTime? _lastUpdateCheck;
+
+  /// Is a newer version published? (At start, and on return after 3 hours.)
+  Future<void> checkForUpdate({bool force = false}) async {
+    final mine = ref.read(appBuildProvider);
+    if (mine == null) return;
+    final now = DateTime.now();
+    if (!force &&
+        _lastUpdateCheck != null &&
+        now.difference(_lastUpdateCheck!) < const Duration(hours: 3)) {
+      return;
+    }
+    _lastUpdateCheck = now;
+    final latest = await ref.read(updateCheckerProvider).latestBuild();
+    if (!ref.mounted || latest == null) return;
+    if (latest > mine) state = state.copyWith(newBuild: latest);
   }
 
   // ------------------------------------------------------------ first run

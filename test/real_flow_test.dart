@@ -12,6 +12,7 @@ import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
 import 'package:drivetalk/real/photo_cache.dart';
+import 'package:drivetalk/real/update_checker.dart';
 import 'package:drivetalk/real/real_controller.dart';
 import 'package:drivetalk/real/real_models.dart';
 import 'package:flutter/widgets.dart';
@@ -42,10 +43,13 @@ class Phone {
         drivingDetectorProvider.overrideWithValue(driving),
         contactsReaderProvider.overrideWithValue(contacts),
         photoCacheProvider.overrideWithValue(photos),
+        appBuildProvider.overrideWithValue(10),
+        updateCheckerProvider.overrideWithValue(updates),
       ],
     );
   }
   final photos = MemoryPhotoCache();
+  final updates = FakeUpdateChecker();
   final driving = FakeDrivingDetector();
   final contacts = FakeContactsReader();
   final MemoryServer server;
@@ -871,6 +875,16 @@ void main() {
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
     await me.c.refresh();
     expect(currentOffer(me.s, now), isNotNull);
+  });
+
+  test('a newer version is announced (and only a newer one)', () async {
+    await connect();
+    me.updates.build = 10;
+    await me.c.checkForUpdate(force: true);
+    expect(me.s.newBuild, isNull, reason: 'same version');
+    me.updates.build = 11;
+    await me.c.checkForUpdate(force: true);
+    expect(me.s.newBuild, 11);
   });
 
   group('stage 5', () {

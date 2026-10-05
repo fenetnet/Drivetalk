@@ -174,6 +174,26 @@ class RealSettingsScreen extends ConsumerWidget {
                     ref.read(appModeProvider.notifier).set(AppMode.demo),
               ),
               ListTile(
+                leading: const Icon(Icons.system_update_rounded),
+                title: Text(l.updateCheck),
+                subtitle: Text(
+                  s.newBuild != null
+                      ? l.updateAvailable
+                      : '${l.updateCurrent} ${ref.watch(appVersionProvider)}',
+                ),
+                onTap: () async {
+                  final c = ref.read(realProvider.notifier);
+                  await c.checkForUpdate(force: true);
+                  if (ref.read(realProvider).newBuild != null) {
+                    await openAppUpdate();
+                  } else {
+                    messengerKey.currentState?.showSnackBar(
+                      SnackBar(content: Text(l.updateNone)),
+                    );
+                  }
+                },
+              ),
+              ListTile(
                 leading: const Icon(Icons.download_rounded),
                 title: Text(l.realDownloadLink),
                 subtitle: Text(

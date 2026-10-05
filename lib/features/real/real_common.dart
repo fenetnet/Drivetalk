@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../l10n/app_localizations.dart';
+import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 
@@ -606,5 +608,18 @@ class SettingsGroup extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Download the newest APK in the browser; Android then offers to install
+/// it over this version.
+Future<void> openAppUpdate() async {
+  try {
+    await launchUrl(
+      Uri.parse(BackendConfig.apkUrl),
+      mode: LaunchMode.externalApplication,
+    );
+  } catch (_) {
+    // No browser: nothing else to do.
   }
 }
