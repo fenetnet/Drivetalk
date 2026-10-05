@@ -136,10 +136,6 @@ class RealHomeScreen extends ConsumerWidget {
                     height: 1.1,
                   ),
                 ),
-                if (s.newBuild != null) ...[
-                  const SizedBox(height: 12),
-                  const _UpdateCard(),
-                ],
                 if (s.serverOutdated && s.admin) ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -166,18 +162,10 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   _IntentsCard(snap: snap, now: now),
                 ],
-                if (c.dueRoutine(now) case final r?) ...[
+                // At most ONE small card at a time (the most useful one).
+                if (_tipCard(s, c, now, snap) case final tip?) ...[
                   const SizedBox(height: 16),
-                  _RoutineCard(routine: r),
-                ],
-                if (c.dueRoutine(now) == null)
-                  if (c.routineSuggestion(now) case final hint?) ...[
-                    const SizedBox(height: 16),
-                    _RoutineHintCard(hint: hint),
-                  ],
-                if (c.showDirectCallTip) ...[
-                  const SizedBox(height: 16),
-                  const _DirectCallCard(),
+                  tip,
                 ],
                 const SizedBox(height: 28),
                 Center(
@@ -202,6 +190,66 @@ class RealHomeScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The one card under "Now": update > routine now > routine idea >
+/// direct calls > the home-screen button tip.
+Widget? _tipCard(
+  RealState s,
+  RealController c,
+  DateTime now,
+  RealSnapshot? snap,
+) {
+  if (s.newBuild != null) return const _UpdateCard();
+  if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
+  if (c.routineSuggestion(now) case final hint?) {
+    return _RoutineHintCard(hint: hint);
+  }
+  if (c.showDirectCallTip) return const _DirectCallCard();
+  if (c.showWidgetTip && (snap?.friends.isNotEmpty ?? false)) {
+    return const _WidgetTipCard();
+  }
+  return null;
+}
+
+/// Once: "a one-tap 'I'm free' button for the home screen".
+class _WidgetTipCard extends ConsumerWidget {
+  const _WidgetTipCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 8),
+      decoration: BoxDecoration(
+        color: AppColors.mint,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.widgets_rounded, color: AppColors.sageDark),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(l.widgetTip, style: const TextStyle(fontSize: 15)),
+              ),
+            ],
+          ),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton(
+              onPressed: c.dismissWidgetTip,
+              child: Text(l.gotIt),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

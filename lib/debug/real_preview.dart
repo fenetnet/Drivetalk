@@ -32,7 +32,9 @@ Future<void> main() async {
   );
   final server = MemoryServer();
   final me = MemoryRealBackend(server);
-  final store = MemoryLocalStore()..values['app.mode'] = 'real';
+  final store = MemoryLocalStore()
+    ..values['app.mode'] = 'real'
+    ..values['real.contactsSyncedAt'] = DateTime.now().toIso8601String();
 
   Future<MemoryRealBackend> friend(String name, Gender g, String phone) async {
     final b = MemoryRealBackend(server);
@@ -90,7 +92,9 @@ Future<void> main() async {
       drivingDetectorProvider.overrideWithValue(
         FakeDrivingDetector()..enabled = true,
       ),
-      contactsReaderProvider.overrideWithValue(FakeContactsReader()),
+      contactsReaderProvider.overrideWithValue(
+        FakeContactsReader()..asked = true,
+      ),
       incomingLinksProvider.overrideWithValue(const Stream.empty()),
       appVersionProvider.overrideWithValue('preview'),
     ],

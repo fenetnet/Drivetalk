@@ -314,8 +314,6 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         size: 32,
                       ),
                     ),
-                    const Spacer(),
-                    MomentChip(text: l.realWelcomeTitle),
                   ],
                 ),
                 const SizedBox(height: 28),
@@ -365,6 +363,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         maxLength: 40,
                         textInputAction: TextInputAction.next,
                         decoration: InputDecoration(
+                          counterText: '',
                           labelText: l.onbNameLabel,
                           prefixIcon: const Icon(Icons.person_rounded),
                         ),
@@ -407,11 +406,6 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                     color: AppColors.inkSoft,
                     fontSize: 13,
                   ),
-                ),
-                TextButton(
-                  onPressed: () =>
-                      ref.read(appModeProvider.notifier).set(AppMode.demo),
-                  child: Text(l.realBackToDemo),
                 ),
               ],
             ),

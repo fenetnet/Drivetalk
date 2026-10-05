@@ -832,7 +832,7 @@
   "realWelcomeTitle": "בדיקה עם חבר",
   "realWelcomeBody": "בלי סיסמה ובלי מייל. רק שם, כדי שחברים יזהו אותך.",
   "realPhoneLabel": "מספר טלפון (לא חובה)",
-  "realPhoneHelp": "נמסר רק לחבר ששניכם הסכמתם לדבר, ברגע השיחה — כדי לדבר בשיחה רגילה. בלי מספר: שיחה מדומה.",
+  "realPhoneHelp": "החבר מקבל אותו רק כששניכם אמרתם \"כן\".",
   "realJoin": "יאללה",
   "realInviteWaitingAfterJoin": "יש לך הזמנה — היא תיפתח מיד אחרי הכניסה",
   "realTabPeople": "האנשים שלי",
@@ -931,6 +931,9 @@
   },
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
   "realQuickCancelled": "החיבור בוטל",
+  "widgetTip": "אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג'טים ← DriveTalk.",
+  "gotIt": "הבנתי",
+  "realContactsAgain": "חיפוש שוב באנשי הקשר",
   "settingsGeneral": "כללי",
   "adminTitle": "ניהול",
   "adminEnter": "ניהול",
@@ -942,9 +945,9 @@
   "updateCheck": "בדיקת עדכון",
   "updateCurrent": "הגרסה שלך:",
   "updateNone": "יש לך את הגרסה האחרונה",
-  "updateHow": "הקובץ יורד, ואז לוחצים עליו ← \"עדכון\". החברים וההגדרות נשארים.",
+  "updateHow": "מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.",
   "realBgFailedTitle": "לא הצלחנו לסמן אותך כפנוי ברקע",
-  "realBgFailedBody": "הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".",
+  "realBgFailedBody": "הטלפון חסם את זה. פותחים את DriveTalk ולוחצים \"יש לי זמן\".",
   "routineHint": "נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?",
   "@routineHint": {
     "placeholders": {
@@ -977,14 +980,14 @@
   "realVoiceCallingAnon": "מתקשרים.",
   "realVoiceTheyCallAnon": "מתקשרים אליך עכשיו.",
   "settingsSpeakNames": "להקריא שמות",
-  "settingsSpeakNamesBody": "כבוי: \"חבר פנוי עכשיו. לדבר?\" בלי שם",
+  "settingsSpeakNamesBody": "כשכבוי — בלי שמות",
   "realDeleteAccount": "מחק את החשבון והמידע שלי",
-  "realDeleteAccountConfirm": "נמחקים מהשרת: השם, המספר, החברים, המעגלים, התמונה וכל ההצעות. אי אפשר לבטל את זה.",
+  "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.",
   "realDeleteAccountGo": "למחוק",
   "realDeleteAccountDone": "החשבון והמידע נמחקו",
   "realNotifPublic": "יש הצעה חדשה ב-DriveTalk",
   "firstRunContactsTitle": "בוא נראה מי מהאנשים שלך כבר כאן",
-  "firstRunContactsBody": "נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.",
+  "firstRunContactsBody": "רק מספרים, מוצפנים. שמות לא יוצאים מהטלפון.",
   "firstRunContactsGo": "לחפש באנשי הקשר",
   "firstRunFound": "{count, plural, =1{מצאנו אדם אחד שאתה מכיר} other{מצאנו {count} אנשים שאתה מכיר}}",
   "@firstRunFound": {
@@ -1029,7 +1032,7 @@
   "intentBadgeWeek": "אשמח לדבר · השבוע",
   "intentBadgeAlways": "אשמח לדבר",
   "realDirectCallTitle": "שהשיחה תתחיל מיד",
-  "realDirectCallBody": "כששניכם אומרים כן, הטלפון יחייג לבד — בלי עוד לחיצה. צריך לאשר פעם אחת \"שיחות טלפון\".",
+  "realDirectCallBody": "כששניכם אומרים כן — הטלפון מחייג לבד, בלי עוד לחיצה.",
   "realDirectCallAllow": "לאשר",
   "realDirectCallSetting": "חיוג מיידי",
   "realDirectCallOn": "פעיל — השיחה מתחילה מיד",
@@ -1067,7 +1070,7 @@
       }
     }
   },
-  "realTheyCallBody": "שיחה רגילה, מהטלפון. אם לא הגיעה שיחה תוך דקה — לחצו למטה.",
+  "realTheyCallBody": "אם השיחה לא מגיעה תוך דקה — לחצו למטה.",
   "realTheyDidNotCall": "לא הגיעה שיחה",
   "realInAppTitle": "מדברים עם {name}",
   "@realInAppTitle": {
@@ -1077,7 +1080,7 @@
       }
     }
   },
-  "realInAppBody": "לא שותפו מספרי טלפון, לכן זו שיחה מדומה. בשלב הבא תהיה כאן שיחת קול אמיתית.",
+  "realInAppBody": "לא שותפו מספרים, לכן זו שיחה מדומה.",
   "realFeedbackThanks": "תודה!",
   "realConnected": "מעולה! {name} עכשיו ברשימת האנשים שלך.",
   "@realConnected": {
@@ -1191,7 +1194,7 @@
   "realPhotoSet": "רק החברים שלך רואים אותה",
   "realPhotoSaved": "התמונה נשמרה",
   "realPhotoRemoved": "התמונה הוסרה",
-  "realPrivacyNote": "השרת יודע רק: שם, מי החברים שלך, ואם יש לך זמן עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.",
+  "realPrivacyNote": "בלי מיקום ובלי הקלטות. השרת יודע רק את השם שלך, מי החברים שלך, ואם יש לך זמן עכשיו.",
   "realVoiceOffer": "{gender, select, female{{name} פנויה. לדבר?} male{{name} פנוי. לדבר?} other{ל{name} יש זמן. לדבר?}}",
   "@realVoiceOffer": {
     "placeholders": {
@@ -1216,13 +1219,13 @@
   "realNotifStatusTitle": "DriveTalk · זמין לשיחה בנסיעה",
   "realNotifStatusBody": "נסיעה טובה! נודיע כשחבר פנוי.",
   "realAutoDriving": "זמין אוטומטית בנסיעה",
-  "realAutoDrivingBody": "כשהטלפון מזהה נסיעה — תהיה זמין לשיחה עד סוף הנסיעה. בלי GPS.",
+  "realAutoDrivingBody": "בנסיעה הזמינות נדלקת לבד. בלי GPS.",
   "realAutoDrivingUnsupported": "לא זמין במכשיר הזה",
   "realAutoDrivingDialogTitle": "זמינות אוטומטית בנסיעה",
-  "realAutoDrivingDialogBody": "הטלפון מזהה לבד שהוא כנראה ברכב (לפי חיישני התנועה — בלי GPS ובלי מיקום) ומסמן אותך כזמין עד סוף הנסיעה.\n\nכשחבר פנוי — תקבל התראה \"רוצה לדבר?\". שיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
+  "realAutoDrivingDialogBody": "הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
   "realAutoDrivingOn": "מעולה. בנסיעה הבאה תהיה זמין לבד.",
   "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
-  "realAutoDrivingNoPermission": "בלי הרשאת \"פעילות גופנית\" אי אפשר לזהות נסיעה. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.",
+  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.",
   "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.",
   "realStatusAutoDriving": "זיהוי נסיעה",
   "realAutoOn": "פעיל",
@@ -1270,11 +1273,11 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "מעגלים",
-  "realCirclesIntro": "קבוצות פרטיות שרק לך נראות. אפשר לסמן זמן פנוי רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.",
+  "realCirclesIntro": "קבוצות פרטיות. אפשר לסמן זמן פנוי רק לקבוצה.",
   "realCircleNew": "מעגל חדש",
   "realCircleName": "שם המעגל (למשל: משפחה)",
   "realCircleQuick": "חיבור מהיר",
-  "realCircleQuickBody": "אם גם הם שמו אותך במעגל מהיר — כששניכם פנויים מתחברים מיד (עם 5 שניות לביטול). עד פעם ביום לכל אדם.",
+  "realCircleQuickBody": "אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.",
   "realCircleMembers": "מי במעגל",
   "realCircleCount": "{count} אנשים",
   "@realCircleCount": {
@@ -1289,7 +1292,7 @@
   "realAvailableTo": "זמין ל:",
   "realAvailableToAll": "כל החברים",
   "realPhoneRequired": "מספר טלפון",
-  "realPhoneRequiredHelp": "כדי לדבר בשיחה רגילה. החבר מקבל את המספר רק ברגע ששניכם אמרתם \"כן\".",
+  "realPhoneRequiredHelp": "החבר מקבל אותו רק כששניכם אמרתם \"כן\".",
   "realQuickNotif": "{name} — חיבור מהיר. לחצו כדי להתחבר",
   "@realQuickNotif": {
     "placeholders": {
@@ -1299,7 +1302,7 @@
     }
   },
   "realContactsTitle": "חברים מאנשי הקשר",
-  "realContactsBody": "מי ששמור אצלך ושומר גם אותך — מתחבר אוטומטית. רק מספרים מוצפנים יוצאים מהטלפון, בלי שמות.",
+  "realContactsBody": "מי ששמור אצלך ושומר גם אותך — מתחבר לבד.",
   "realContactsButton": "חיפוש באנשי הקשר",
   "realContactsFound": "מצאנו: {names} — כבר ברשימה שלך",
   "@realContactsFound": {
@@ -1310,7 +1313,7 @@
     }
   },
   "realContactsNone": "עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.",
-  "realContactsNoPermission": "בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.",
+  "realContactsNoPermission": "בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.",
   "realNotifManualTitle": "DriveTalk · זמין לשיחה",
   "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.",
   "realOfferName": "{gender, select, female{{name} פנויה עכשיו} male{{name} פנוי עכשיו} other{ל{name} יש זמן עכשיו}}",
@@ -1364,7 +1367,7 @@
   },
   "realGroupAccount": "החשבון שלי",
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
-  "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.",
+  "realWelcomeSub": "כששניכם פנויים באותו רגע — נציע לכם לדבר.",
   "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}",
   "@realInviteSimple": {
     "placeholders": {
@@ -1380,7 +1383,7 @@
   "realQuickOff": "אני פנוי",
   "realQuickOn": "פנוי · לעצירה",
   "realCarTitle": "הרכב שלי (בלוטות׳)",
-  "realCarBody": "כשהטלפון מתחבר לרכב — נסיעה מתחילה. מהיר ומדויק יותר מזיהוי התנועה.",
+  "realCarBody": "חיבור לבלוטות׳ של הרכב = נסיעה התחילה.",
   "realCarNone": "לא נבחר",
   "realCarPick": "בחירת הרכב",
   "realCarNoDevices": "לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.",
@@ -1402,7 +1405,7 @@
       }
     }
   },
-  "realRoutinesIntro": "בזמנים האלה הטלפון יסמן אותך כזמין לבד — גם כשהאפליקציה סגורה (בערך בזמן, אנדרואיד יכול להזיז בכמה דקות).",
+  "realRoutinesIntro": "בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.",
   "realRoutineNotifTitle": "DriveTalk · השגרה שלך",
   "realRoutineNotifBody": "סימנו אותך כזמין לשיחה. \"עצור\" בהתראה כדי לבטל."
 }

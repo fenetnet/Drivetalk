@@ -319,6 +319,21 @@ class _ContactsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final busy = ref.watch(realProvider.select((s) => s.busy));
+    final c = ref.read(realProvider.notifier);
+    // Searched before: just a small button, so the people come first.
+    if (c.contactsSynced && ref.watch(realProvider).snapshot != null) {
+      return Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: TextButton.icon(
+          onPressed: busy ? null : c.syncContacts,
+          icon: const Icon(Icons.refresh_rounded, color: AppColors.sageDark),
+          label: Text(
+            l.realContactsAgain,
+            style: const TextStyle(color: AppColors.sageDark),
+          ),
+        ),
+      );
+    }
     return Card(
       color: const Color(0xFFDCEBE3),
       child: Padding(

@@ -805,6 +805,20 @@ class RealController extends Notifier<RealState> {
     return ok;
   }
 
+  static const _widgetTipKey = 'real.widgetTip.v1';
+
+  /// Once: the home-screen button / quick tile exist (Android).
+  bool get showWidgetTip =>
+      state.driving.supported && _store.getString(_widgetTipKey) == null;
+
+  void dismissWidgetTip() {
+    _store.setString(_widgetTipKey, 'seen');
+    state = state.copyWith();
+  }
+
+  /// Contacts were searched before (then "My people" shows a small button).
+  bool get contactsSynced => _store.getString(_contactsSyncKey) != null;
+
   void dismissDirectCallTip() {
     _store.setString(_directTipKey, 'dismissed');
     state = state.copyWith();

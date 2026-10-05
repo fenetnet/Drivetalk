@@ -39,57 +39,34 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.realGroupAccount,
             children: [
+              // One row: my picture, name and number. Tap to change.
               ListTile(
                 leading: me == null
                     ? const Icon(Icons.person_rounded)
-                    : PersonAvatar(person: me.toPerson(), size: 40),
-                title: Text(l.realPhotoTitle),
-                subtitle: Text(
-                  me?.photo == null ? l.realPhotoNone : l.realPhotoSet,
+                    : PersonAvatar(person: me.toPerson(), size: 44),
+                title: Text(
+                  me?.name ?? '—',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                trailing: const Icon(Icons.photo_camera_rounded),
+                subtitle: Text(
+                  s.myPhone ?? l.realNotShared,
+                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign.end,
+                ),
+                trailing: const Icon(Icons.edit_rounded),
                 onTap: me == null || s.busy
                     ? null
-                    : () => _editPhoto(context, ref, me.photo != null),
+                    : () => _editProfile(context, ref, me.photo != null),
               ),
-              ListTile(
-                leading: const Icon(Icons.badge_rounded),
-                title: Text(l.realNameTitle),
-                subtitle: Text(me?.name ?? '—'),
-                trailing: const Icon(Icons.edit_rounded),
-                onTap: me == null ? null : () => _editName(context, ref),
-              ),
-              ListTile(
-                leading: const Icon(Icons.phone_rounded),
-                title: Text(l.realMyNumber),
-                subtitle: Text(
-                  s.myPhone == null ? l.realNotShared : l.realShared,
-                ),
-                trailing: const Icon(Icons.edit_rounded),
-                onTap: () => _editPhone(context, ref),
-              ),
-              ListTile(
-                leading: const Icon(Icons.contacts_rounded),
-                title: Text(l.realClearContacts),
-                subtitle: Text(l.realClearContactsBody),
-                onTap: s.busy
-                    ? null
-                    : () => ref.read(realProvider.notifier).clearContacts(),
-              ),
-              if (s.directCall != null)
+              if (s.directCall == false)
                 ListTile(
                   leading: const Icon(Icons.bolt_rounded),
-                  title: Text(l.realDirectCallSetting),
-                  subtitle: Text(
-                    s.directCall! ? l.realDirectCallOn : l.realDirectCallOff,
+                  title: Text(l.realDirectCallTitle),
+                  trailing: TextButton(
+                    onPressed: () =>
+                        ref.read(realProvider.notifier).askDirectCall(),
+                    child: Text(l.realDirectCallAllow),
                   ),
-                  trailing: s.directCall!
-                      ? const Icon(Icons.check_circle_rounded)
-                      : TextButton(
-                          onPressed: () =>
-                              ref.read(realProvider.notifier).askDirectCall(),
-                          child: Text(l.realDirectCallAllow),
-                        ),
                 ),
             ],
           ),
@@ -120,7 +97,7 @@ class RealSettingsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              if (s.driving.supported)
+              if (s.driving.supported && s.driving.enabled)
                 ListTile(
                   leading: const Icon(Icons.bluetooth_rounded),
                   title: Text(l.realCarTitle),
@@ -139,13 +116,14 @@ class RealSettingsScreen extends ConsumerWidget {
                 value: s.prefs.voice,
                 onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
               ),
-              SwitchListTile(
-                secondary: const Icon(Icons.badge_outlined),
-                title: Text(l.settingsSpeakNames),
-                subtitle: Text(l.settingsSpeakNamesBody),
-                value: s.prefs.speakNames,
-                onChanged: (v) => c.setPrefs(s.prefs.copyWith(speakNames: v)),
-              ),
+              if (s.prefs.voice)
+                SwitchListTile(
+                  secondary: const Icon(Icons.badge_outlined),
+                  title: Text(l.settingsSpeakNames),
+                  subtitle: Text(l.settingsSpeakNamesBody),
+                  value: s.prefs.speakNames,
+                  onChanged: (v) => c.setPrefs(s.prefs.copyWith(speakNames: v)),
+                ),
             ],
           ),
           SettingsGroup(
@@ -187,7 +165,8 @@ class RealSettingsScreen extends ConsumerWidget {
                   color: AppColors.sageDark,
                 ),
                 title: Text(l.settingsPrivacy),
-                subtitle: Text(l.realPrivacyNote),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _privacySheet(context, ref),
               ),
             ],
           ),
@@ -381,6 +360,81 @@ class RealSettingsScreen extends ConsumerWidget {
     if (picked != null) await c.setCar(picked.$1, picked.$2);
   }
 
+  /// Name / picture / number, from the one profile row.
+  Future<void> _editProfile(
+    BuildContext context,
+    WidgetRef ref,
+    bool hasPhoto,
+  ) async {
+    final l = context.l10n;
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.badge_rounded),
+              title: Text(l.realNameTitle),
+              onTap: () => Navigator.pop(sheet, 'name'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: Text(l.realPhotoTitle),
+              onTap: () => Navigator.pop(sheet, 'photo'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.phone_rounded),
+              title: Text(l.realMyNumber),
+              onTap: () => Navigator.pop(sheet, 'phone'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (!context.mounted) return;
+    switch (choice) {
+      case 'name':
+        await _editName(context, ref);
+      case 'photo':
+        await _editPhoto(context, ref, hasPhoto);
+      case 'phone':
+        await _editPhone(context, ref);
+    }
+  }
+
+  /// What the server knows (short), and "delete what was synced".
+  Future<void> _privacySheet(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l.realPrivacyNote, style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.contacts_rounded),
+                label: Text(l.realClearContacts),
+                onPressed: () {
+                  Navigator.pop(sheet);
+                  ref.read(realProvider.notifier).clearContacts();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _editPhoto(
     BuildContext context,
     WidgetRef ref,
@@ -533,7 +587,7 @@ class RealSettingsScreen extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l.realPhoneLabel,
             helperText: l.realPhoneHelp,
-            helperMaxLines: 5,
+            helperMaxLines: 2,
           ),
         ),
         actions: [

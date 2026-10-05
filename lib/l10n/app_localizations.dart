@@ -2419,7 +2419,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneHelp.
   ///
   /// In he, this message translates to:
-  /// **'נמסר רק לחבר ששניכם הסכמתם לדבר, ברגע השיחה — כדי לדבר בשיחה רגילה. בלי מספר: שיחה מדומה.'**
+  /// **'החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
   String get realPhoneHelp;
 
   /// No description provided for @realJoin.
@@ -2644,6 +2644,24 @@ abstract class AppLocalizations {
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
 
+  /// No description provided for @widgetTip.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג\'טים ← DriveTalk.'**
+  String get widgetTip;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In he, this message translates to:
+  /// **'הבנתי'**
+  String get gotIt;
+
+  /// No description provided for @realContactsAgain.
+  ///
+  /// In he, this message translates to:
+  /// **'חיפוש שוב באנשי הקשר'**
+  String get realContactsAgain;
+
   /// No description provided for @settingsGeneral.
   ///
   /// In he, this message translates to:
@@ -2713,7 +2731,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateHow.
   ///
   /// In he, this message translates to:
-  /// **'הקובץ יורד, ואז לוחצים עליו ← \"עדכון\". החברים וההגדרות נשארים.'**
+  /// **'מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.'**
   String get updateHow;
 
   /// No description provided for @realBgFailedTitle.
@@ -2725,7 +2743,7 @@ abstract class AppLocalizations {
   /// No description provided for @realBgFailedBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".'**
+  /// **'הטלפון חסם את זה. פותחים את DriveTalk ולוחצים \"יש לי זמן\".'**
   String get realBgFailedBody;
 
   /// No description provided for @routineHint.
@@ -2803,7 +2821,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSpeakNamesBody.
   ///
   /// In he, this message translates to:
-  /// **'כבוי: \"חבר פנוי עכשיו. לדבר?\" בלי שם'**
+  /// **'כשכבוי — בלי שמות'**
   String get settingsSpeakNamesBody;
 
   /// No description provided for @realDeleteAccount.
@@ -2815,7 +2833,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDeleteAccountConfirm.
   ///
   /// In he, this message translates to:
-  /// **'נמחקים מהשרת: השם, המספר, החברים, המעגלים, התמונה וכל ההצעות. אי אפשר לבטל את זה.'**
+  /// **'הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.'**
   String get realDeleteAccountConfirm;
 
   /// No description provided for @realDeleteAccountGo.
@@ -2845,7 +2863,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunContactsBody.
   ///
   /// In he, this message translates to:
-  /// **'נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.'**
+  /// **'רק מספרים, מוצפנים. שמות לא יוצאים מהטלפון.'**
   String get firstRunContactsBody;
 
   /// No description provided for @firstRunContactsGo.
@@ -3013,7 +3031,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDirectCallBody.
   ///
   /// In he, this message translates to:
-  /// **'כששניכם אומרים כן, הטלפון יחייג לבד — בלי עוד לחיצה. צריך לאשר פעם אחת \"שיחות טלפון\".'**
+  /// **'כששניכם אומרים כן — הטלפון מחייג לבד, בלי עוד לחיצה.'**
   String get realDirectCallBody;
 
   /// No description provided for @realDirectCallAllow.
@@ -3079,7 +3097,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTheyCallBody.
   ///
   /// In he, this message translates to:
-  /// **'שיחה רגילה, מהטלפון. אם לא הגיעה שיחה תוך דקה — לחצו למטה.'**
+  /// **'אם השיחה לא מגיעה תוך דקה — לחצו למטה.'**
   String get realTheyCallBody;
 
   /// No description provided for @realTheyDidNotCall.
@@ -3097,7 +3115,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInAppBody.
   ///
   /// In he, this message translates to:
-  /// **'לא שותפו מספרי טלפון, לכן זו שיחה מדומה. בשלב הבא תהיה כאן שיחת קול אמיתית.'**
+  /// **'לא שותפו מספרים, לכן זו שיחה מדומה.'**
   String get realInAppBody;
 
   /// No description provided for @realFeedbackThanks.
@@ -3511,7 +3529,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPrivacyNote.
   ///
   /// In he, this message translates to:
-  /// **'השרת יודע רק: שם, מי החברים שלך, ואם יש לך זמן עכשיו (עם תוקף). בלי מיקום, בלי הקלטות.'**
+  /// **'בלי מיקום ובלי הקלטות. השרת יודע רק את השם שלך, מי החברים שלך, ואם יש לך זמן עכשיו.'**
   String get realPrivacyNote;
 
   /// No description provided for @realVoiceOffer.
@@ -3559,7 +3577,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingBody.
   ///
   /// In he, this message translates to:
-  /// **'כשהטלפון מזהה נסיעה — תהיה זמין לשיחה עד סוף הנסיעה. בלי GPS.'**
+  /// **'בנסיעה הזמינות נדלקת לבד. בלי GPS.'**
   String get realAutoDrivingBody;
 
   /// No description provided for @realAutoDrivingUnsupported.
@@ -3577,7 +3595,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingDialogBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מזהה לבד שהוא כנראה ברכב (לפי חיישני התנועה — בלי GPS ובלי מיקום) ומסמן אותך כזמין עד סוף הנסיעה.\n\nכשחבר פנוי — תקבל התראה \"רוצה לדבר?\". שיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
+  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
   String get realAutoDrivingDialogBody;
 
   /// No description provided for @realAutoDrivingOn.
@@ -3595,7 +3613,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingNoPermission.
   ///
   /// In he, this message translates to:
-  /// **'בלי הרשאת \"פעילות גופנית\" אי אפשר לזהות נסיעה. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.'**
+  /// **'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.'**
   String get realAutoDrivingNoPermission;
 
   /// No description provided for @realAutoDrivingFailed.
@@ -3697,7 +3715,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'קבוצות פרטיות שרק לך נראות. אפשר לסמן זמן פנוי רק למעגל, ובמעגל \"חיבור מהיר\" מתחברים מיד בלי לשאול.'**
+  /// **'קבוצות פרטיות. אפשר לסמן זמן פנוי רק לקבוצה.'**
   String get realCirclesIntro;
 
   /// No description provided for @realCircleNew.
@@ -3721,7 +3739,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCircleQuickBody.
   ///
   /// In he, this message translates to:
-  /// **'אם גם הם שמו אותך במעגל מהיר — כששניכם פנויים מתחברים מיד (עם 5 שניות לביטול). עד פעם ביום לכל אדם.'**
+  /// **'אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.'**
   String get realCircleQuickBody;
 
   /// No description provided for @realCircleMembers.
@@ -3769,7 +3787,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneRequiredHelp.
   ///
   /// In he, this message translates to:
-  /// **'כדי לדבר בשיחה רגילה. החבר מקבל את המספר רק ברגע ששניכם אמרתם \"כן\".'**
+  /// **'החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
   String get realPhoneRequiredHelp;
 
   /// No description provided for @realQuickNotif.
@@ -3787,7 +3805,7 @@ abstract class AppLocalizations {
   /// No description provided for @realContactsBody.
   ///
   /// In he, this message translates to:
-  /// **'מי ששמור אצלך ושומר גם אותך — מתחבר אוטומטית. רק מספרים מוצפנים יוצאים מהטלפון, בלי שמות.'**
+  /// **'מי ששמור אצלך ושומר גם אותך — מתחבר לבד.'**
   String get realContactsBody;
 
   /// No description provided for @realContactsButton.
@@ -3811,7 +3829,7 @@ abstract class AppLocalizations {
   /// No description provided for @realContactsNoPermission.
   ///
   /// In he, this message translates to:
-  /// **'בלי הרשאה לאנשי קשר אי אפשר למצוא חברים אוטומטית. אפשר תמיד להזמין עם קישור.'**
+  /// **'בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.'**
   String get realContactsNoPermission;
 
   /// No description provided for @realNotifManualTitle.
@@ -3907,7 +3925,7 @@ abstract class AppLocalizations {
   /// No description provided for @realWelcomeSub.
   ///
   /// In he, this message translates to:
-  /// **'כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.'**
+  /// **'כששניכם פנויים באותו רגע — נציע לכם לדבר.'**
   String get realWelcomeSub;
 
   /// No description provided for @realInviteSimple.
@@ -3943,7 +3961,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCarBody.
   ///
   /// In he, this message translates to:
-  /// **'כשהטלפון מתחבר לרכב — נסיעה מתחילה. מהיר ומדויק יותר מזיהוי התנועה.'**
+  /// **'חיבור לבלוטות׳ של הרכב = נסיעה התחילה.'**
   String get realCarBody;
 
   /// No description provided for @realCarNone.
@@ -3991,7 +4009,7 @@ abstract class AppLocalizations {
   /// No description provided for @realRoutinesIntro.
   ///
   /// In he, this message translates to:
-  /// **'בזמנים האלה הטלפון יסמן אותך כזמין לבד — גם כשהאפליקציה סגורה (בערך בזמן, אנדרואיד יכול להזיז בכמה דקות).'**
+  /// **'בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.'**
   String get realRoutinesIntro;
 
   /// No description provided for @realRoutineNotifTitle.

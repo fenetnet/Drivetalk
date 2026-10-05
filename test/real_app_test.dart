@@ -53,7 +53,7 @@ void main() {
       await pumpFor(t, 300);
 
       // Join: just a name.
-      expect(find.text('בדיקה עם חבר'), findsOneWidget);
+      expect(find.text('זמן מת?\nשיחה טובה.'), findsOneWidget);
       expect(
         Directionality.of(t.element(find.byType(Scaffold).first)),
         TextDirection.rtl,
