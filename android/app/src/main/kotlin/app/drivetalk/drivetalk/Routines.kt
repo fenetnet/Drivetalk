@@ -27,6 +27,7 @@ object Routines {
         val mode: String,
         val minutes: Int,
         val enabled: Boolean,
+        val circle: String = "",
     )
 
     fun parse(json: String): List<Routine> = try {
@@ -42,6 +43,7 @@ object Routines {
                 mode = o.optString("mode", "free"),
                 minutes = o.optInt("minutes", 30),
                 enabled = o.optBoolean("enabled", true),
+                circle = o.optString("circle", ""),
             )
         }
     } catch (e: Exception) {
@@ -125,7 +127,7 @@ class RoutineReceiver : BroadcastReceiver() {
         io.execute {
             try {
                 if (r != null && store.configured && !store.freeNow) {
-                    val ok = DrivingApi(store).startManual(r.minutes, r.mode)
+                    val ok = DrivingApi(store).startManual(r.minutes, r.mode, r.circle)
                     if (ok) {
                         store.availableUntil = now + r.minutes * 60_000L
                         DrivingService.startManual(app)

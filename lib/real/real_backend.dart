@@ -56,12 +56,9 @@ abstract class RealBackend {
   /// The call is over for me (frees me for the next offer).
   Future<void> endCall(String offerId);
 
-  Future<void> sendFeedback({
-    required String? offerId,
-    required bool talked,
-    FeedbackRating? rating,
-    bool? wantAgain,
-  });
+  /// After a call (also ends it for me). "Not soon" quietly pauses the
+  /// pair for a while; "no talk" doesn't count as a talk.
+  Future<void> sendCallOutcome(String offerId, CallOutcome outcome);
 
   /// My phone number for regular calls (null = not shared).
   Future<String?> getMyPhone();

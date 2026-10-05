@@ -241,7 +241,10 @@ Future<void> main() async {
   check(await waiting.rpc('nudge_offers') == 0 &&
           (await rows(waiting, 'match_offers')).where((o) => o['status'] == 'pending').isEmpty,
       'while I am in a call, nobody gets an offer with me');
-  await me.rpc('end_call', params: {'p_offer': oneId});
+  // After the call: "we didn't actually talk" → not counted as a talk.
+  await me.rpc('call_feedback', params: {'p_offer': oneId, 'p_result': 'no_talk'});
+  check((await rows(me, 'match_offers')).firstWhere((o) => o['id'] == oneId)['talked'] == false,
+      '"we didn\'t talk" → not counted as a talk (accepted ≠ talked)');
   await waiting.rpc('nudge_offers');
   check((await rows(waiting, 'match_offers')).where((o) => o['status'] == 'pending').length == 1,
       'after my call ends, the next friend is offered');
@@ -252,8 +255,23 @@ Future<void> main() async {
       await waiting.rpc('answer_offer', params: {'p_offer': nextId, 'p_accept': true}));
   check(callerReply['i_call'] == true && callerReply['phone'] == '+972509876543',
       'the caller gets my number in the same reply');
-  await me.rpc('end_call', params: {'p_offer': nextId});
-  await waiting.rpc('end_call', params: {'p_offer': nextId});
+  await me.rpc('call_feedback', params: {'p_offer': nextId, 'p_result': 'not_soon'});
+  await waiting.rpc('call_feedback', params: {'p_offer': nextId, 'p_result': 'good'});
+  await waiting.rpc('call_feedback', params: {'p_offer': nextId, 'p_result': 'good'});
+  check((await rows(me, 'match_offers')).firstWhere((o) => o['id'] == nextId)['talked'] == true,
+      '"it was good" → a real talk');
+  try {
+    await waiting.from('pair_snoozes').select();
+    check(false, '"not again soon" is never visible to anyone');
+  } on PostgrestException {
+    check(true, '"not again soon" is never visible to anyone');
+  }
+  try {
+    await eve.rpc('call_feedback', params: {'p_offer': nextId, 'p_result': 'good'});
+    check(false, 'a stranger cannot answer for our call');
+  } on PostgrestException {
+    check(true, 'a stranger cannot answer for our call');
+  }
   for (final x in [x1, x2]) {
     await x.rpc('clear_availability');
     await x.dispose();

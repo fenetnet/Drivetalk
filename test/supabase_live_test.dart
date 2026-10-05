@@ -104,7 +104,7 @@ void main() {
     expect(me.read(realProvider).call?.role, CallRole.iCall);
     expect(meDialer.dialed, ['0507654321']);
     m.finishCall();
-    await m.sendFeedback(talked: true, rating: FeedbackRating.good);
+    await m.sendOutcome(CallOutcome.good);
     expect(me.read(realProvider).lastError, isNull);
 
     expect(m.diagnostics(), isNot(contains('0507654321')));

@@ -31,6 +31,14 @@ class MemoryServer {
   final contactHashes = <String, Set<String>>{};
   final photos = <String, Uint8List>{};
 
+  /// "Not again soon" after a call: "from|to" → until.
+  final snoozes = <String, DateTime>{};
+
+  bool _snoozed(String x, String y) => [
+    snoozes['$x|$y'],
+    snoozes['$y|$x'],
+  ].any((u) => u != null && now().isBefore(u));
+
   /// "from|to" → (created, until or null).
   final intents = <String, (DateTime, DateTime?)>{};
 
@@ -102,6 +110,7 @@ class MemoryServer {
     for (final o in offers.values) {
       if (o.a != pair[0] || o.b != pair[1]) continue;
       if (o.status != OfferStatus.accepted || o.acceptedAt == null) continue;
+      if (o.talked != true) continue;
       if (last == null || o.acceptedAt!.isAfter(last)) last = o.acceptedAt;
     }
     return last;
@@ -118,7 +127,8 @@ class MemoryServer {
         if (other != user &&
             _activeAvail(other) &&
             connected(user, other) &&
-            !blockedBetween(user, other))
+            !blockedBetween(user, other) &&
+            !_snoozed(user, other))
           other,
     ];
     // Quietly: quick-connect friends first, then least recently talked.
@@ -315,6 +325,7 @@ class _Offer {
   DateTime? seenB;
   bool endedA = false;
   bool endedB = false;
+  bool? talked;
 
   RealOffer toReal() => RealOffer(
     id: id,
@@ -428,14 +439,18 @@ class MemoryRealBackend implements RealBackend {
         for (final o
             in server.offers.values.toList()
               ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt)))
-          if (o.status == OfferStatus.accepted && (o.a == me || o.b == me))
+          if (o.status == OfferStatus.accepted &&
+              o.talked == true &&
+              (o.a == me || o.b == me))
             (o.a == me ? o.b : o.a, o.updatedAt),
       ],
       lastTalk: {
         for (final o
             in server.offers.values.toList()
               ..sort((a, b) => a.updatedAt.compareTo(b.updatedAt)))
-          if (o.status == OfferStatus.accepted && (o.a == me || o.b == me))
+          if (o.status == OfferStatus.accepted &&
+              o.talked == true &&
+              (o.a == me || o.b == me))
             o.a == me ? o.b : o.a: o.updatedAt,
       },
       intents: {
@@ -692,19 +707,35 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<void> sendFeedback({
-    required String? offerId,
-    required bool talked,
-    FeedbackRating? rating,
-    bool? wantAgain,
-  }) async {
+  Future<void> sendCallOutcome(String offerId, CallOutcome outcome) async {
+    final me = _uid;
+    if (offline) throw const RealBackendException('offline');
+    final o = server.offers[offerId];
+    if (o == null ||
+        (o.a != me && o.b != me) ||
+        o.status != OfferStatus.accepted) {
+      throw const RealBackendException('not_found');
+    }
+    final other = o.a == me ? o.b : o.a;
+    server.feedback.removeWhere((f) => f['user'] == me && f['offer'] == o.id);
     server.feedback.add({
-      'user': _uid,
-      'offer': offerId,
-      'talked': talked,
-      'rating': rating?.name,
-      'wantAgain': wantAgain,
+      'user': me,
+      'offer': o.id,
+      'talked': outcome != CallOutcome.noTalk,
+      'outcome': outcome.name,
     });
+    if (outcome != CallOutcome.noTalk) {
+      o.talked = true;
+    } else {
+      o.talked ??= false;
+    }
+    if (o.a == me) o.endedA = true;
+    if (o.b == me) o.endedB = true;
+    if (outcome == CallOutcome.notSoon) {
+      server.snoozes['$me|$other'] = server.now().add(const Duration(days: 7));
+    }
+    o.updatedAt = server.now();
+    server._changed();
   }
 
   @override

@@ -265,7 +265,6 @@ class RealFeedbackScreen extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final call = s.call;
-    final me = s.snapshot?.me;
     return MomentLayout(
       header: Align(
         alignment: AlignmentDirectional.centerEnd,
@@ -275,46 +274,32 @@ class RealFeedbackScreen extends ConsumerWidget {
         children: [
           if (call != null) HeroAvatar(person: call.other.toPerson()),
           const SizedBox(height: 28),
-          MomentText(
-            l.feedbackQuestion(genderKey(me?.gender ?? Gender.unspecified)),
-            size: 30,
-          ),
+          MomentText(l.outcomeQuestion, size: 30),
         ],
       ),
       actions: [
         Row(
           children: [
-            for (final (r, label, icon) in [
-              (
-                FeedbackRating.veryGood,
-                l.feedbackVeryGood,
-                Icons.sentiment_very_satisfied_rounded,
+            Expanded(
+              child: _RatingTile(
+                label: l.outcomeGood,
+                icon: Icons.sentiment_very_satisfied_rounded,
+                onTap: () => c.sendOutcome(CallOutcome.good),
               ),
-              (
-                FeedbackRating.good,
-                l.feedbackGood,
-                Icons.sentiment_satisfied_rounded,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _RatingTile(
+                label: l.outcomeNotSoon,
+                icon: Icons.snooze_rounded,
+                onTap: () => c.sendOutcome(CallOutcome.notSoon),
               ),
-              (
-                FeedbackRating.notReally,
-                l.feedbackNotReally,
-                Icons.sentiment_neutral_rounded,
-              ),
-            ]) ...[
-              Expanded(
-                child: _RatingTile(
-                  label: label,
-                  icon: icon,
-                  onTap: () => c.sendFeedback(talked: true, rating: r),
-                ),
-              ),
-              if (r != FeedbackRating.notReally) const SizedBox(width: 10),
-            ],
+            ),
           ],
         ),
         TextButton(
-          onPressed: () => c.sendFeedback(talked: false),
-          child: Text(l.feedbackDidNotTalk),
+          onPressed: () => c.sendOutcome(CallOutcome.noTalk),
+          child: Text(l.outcomeNoTalk),
         ),
       ],
     );

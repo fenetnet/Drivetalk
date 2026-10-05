@@ -265,7 +265,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeImFreeNow.
   ///
   /// In he, this message translates to:
-  /// **'{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{אני פנוי/ה עכשיו}}'**
+  /// **'{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{יש לי זמן עכשיו}}'**
   String homeImFreeNow(String gender);
 
   /// No description provided for @homeAvailableCount.
@@ -1651,7 +1651,7 @@ abstract class AppLocalizations {
   /// No description provided for @availableTo.
   ///
   /// In he, this message translates to:
-  /// **'זמין ל:'**
+  /// **'עם מי מתאים לדבר עכשיו?'**
   String get availableTo;
 
   /// No description provided for @availableToEveryone.
@@ -2047,7 +2047,7 @@ abstract class AppLocalizations {
   /// No description provided for @circleNameHint.
   ///
   /// In he, this message translates to:
-  /// **'למשל: חברים מהצבא'**
+  /// **'למשל: קרובים, משפחה, עבודה'**
   String get circleNameHint;
 
   /// No description provided for @filterNotInCircle.
@@ -2461,14 +2461,32 @@ abstract class AppLocalizations {
   /// No description provided for @realFreeFriendsTitle.
   ///
   /// In he, this message translates to:
-  /// **'פנויים עכשיו'**
+  /// **'עכשיו'**
   String get realFreeFriendsTitle;
 
   /// No description provided for @realNobodyFree.
   ///
   /// In he, this message translates to:
-  /// **'אף חבר לא פנוי כרגע'**
+  /// **'יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.'**
   String get realNobodyFree;
+
+  /// No description provided for @realNobodyFreeYet.
+  ///
+  /// In he, this message translates to:
+  /// **'נעדכן ברגע שמישהו מתאים יתפנה.'**
+  String get realNobodyFreeYet;
+
+  /// No description provided for @homeIntentsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אשמח לדבר'**
+  String get homeIntentsTitle;
+
+  /// No description provided for @homeIntentsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשתהיו פנויים יחד — נציע אותם קודם.'**
+  String get homeIntentsBody;
 
   /// No description provided for @realNoFriendsTitle.
   ///
@@ -2515,7 +2533,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteMessage.
   ///
   /// In he, this message translates to:
-  /// **'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.'**
   String get realInviteMessage;
 
   /// No description provided for @realInviteMessageNoSite.
@@ -2625,6 +2643,120 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
+
+  /// No description provided for @firstRunContactsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בוא נראה מי מהאנשים שלך כבר כאן'**
+  String get firstRunContactsTitle;
+
+  /// No description provided for @firstRunContactsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.'**
+  String get firstRunContactsBody;
+
+  /// No description provided for @firstRunContactsGo.
+  ///
+  /// In he, this message translates to:
+  /// **'לחפש באנשי הקשר'**
+  String get firstRunContactsGo;
+
+  /// No description provided for @firstRunFound.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =1{מצאנו אדם אחד שאתה מכיר} other{מצאנו {count} אנשים שאתה מכיר}}'**
+  String firstRunFound(int count);
+
+  /// No description provided for @firstRunNoneTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי לנסות את DriveTalk צריך לפחות חבר אחד'**
+  String get firstRunNoneTitle;
+
+  /// No description provided for @firstRunNoneBody.
+  ///
+  /// In he, this message translates to:
+  /// **'שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.'**
+  String get firstRunNoneBody;
+
+  /// No description provided for @firstRunLater.
+  ///
+  /// In he, this message translates to:
+  /// **'אחר כך'**
+  String get firstRunLater;
+
+  /// No description provided for @firstRunMagicTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ככה זה עובד'**
+  String get firstRunMagicTitle;
+
+  /// No description provided for @firstRunMagicBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.'**
+  String get firstRunMagicBody;
+
+  /// No description provided for @firstRunMagicGo.
+  ///
+  /// In he, this message translates to:
+  /// **'יאללה'**
+  String get firstRunMagicGo;
+
+  /// No description provided for @routineNameToWork.
+  ///
+  /// In he, this message translates to:
+  /// **'בדרך לעבודה'**
+  String get routineNameToWork;
+
+  /// No description provided for @routineNameHome.
+  ///
+  /// In he, this message translates to:
+  /// **'בדרך הביתה'**
+  String get routineNameHome;
+
+  /// No description provided for @routineNameWalk.
+  ///
+  /// In he, this message translates to:
+  /// **'הליכת ערב'**
+  String get routineNameWalk;
+
+  /// No description provided for @routineNameBreak.
+  ///
+  /// In he, this message translates to:
+  /// **'הפסקת צהריים'**
+  String get routineNameBreak;
+
+  /// No description provided for @routineEveryone.
+  ///
+  /// In he, this message translates to:
+  /// **'כולם'**
+  String get routineEveryone;
+
+  /// No description provided for @outcomeQuestion.
+  ///
+  /// In he, this message translates to:
+  /// **'איך היה?'**
+  String get outcomeQuestion;
+
+  /// No description provided for @outcomeGood.
+  ///
+  /// In he, this message translates to:
+  /// **'היה טוב'**
+  String get outcomeGood;
+
+  /// No description provided for @outcomeNotSoon.
+  ///
+  /// In he, this message translates to:
+  /// **'לא להציע בקרוב'**
+  String get outcomeNotSoon;
+
+  /// No description provided for @outcomeNoTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברנו בפועל'**
+  String get outcomeNoTalk;
 
   /// No description provided for @intentTitle.
   ///
@@ -3589,7 +3721,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteSimple.
   ///
   /// In he, this message translates to:
-  /// **'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: {apkUrl}\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.'**
   String realInviteSimple(String apkUrl);
 
   /// No description provided for @realInviteWithCode.

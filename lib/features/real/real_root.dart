@@ -9,6 +9,7 @@ import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
 import 'real_common.dart';
+import 'real_first_run.dart';
 import 'real_home.dart';
 import 'real_moments.dart';
 import 'real_people.dart';
@@ -69,6 +70,8 @@ class RealRoot extends ConsumerWidget {
           body = RealCallScreen(dark: dark);
         } else if (s.invite != null) {
           body = RealInviteScreen(invite: s.invite!);
+        } else if (s.firstRun != null && offer == null && waiting == null) {
+          body = const RealFirstRunScreen();
         } else if (offer != null) {
           body = RealOfferScreen(offer: offer, dark: dark);
         } else if (waiting != null) {
@@ -252,7 +255,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
   // No gender question (owner decision D-044).
-  final _gender = Gender.male;
+  final _gender = Gender.unspecified;
 
   @override
   void dispose() {

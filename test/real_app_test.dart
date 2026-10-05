@@ -63,6 +63,19 @@ void main() {
       await t.pump();
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 500);
+      // First steps: look for my people → nobody yet → how it works.
+      expect(find.text('בוא נראה מי מהאנשים שלך כבר כאן'), findsOneWidget);
+      await t.tap(find.text('לחפש באנשי הקשר'));
+      await pumpFor(t, 500);
+      expect(
+        find.text('כדי לנסות את DriveTalk צריך לפחות חבר אחד'),
+        findsOneWidget,
+      );
+      await t.tap(find.text('אחר כך'));
+      await pumpFor(t, 300);
+      expect(find.text('ככה זה עובד'), findsOneWidget);
+      await t.tap(find.text('יאללה'));
+      await pumpFor(t, 300);
       expect(find.text('נתנאל, עם מי\nמדברים היום?'), findsOneWidget);
       expect(find.text('עוד אין פה חברים'), findsOneWidget);
 
@@ -82,11 +95,15 @@ void main() {
       await t.runAsync(() async {
         await Future<void>.delayed(Duration.zero);
         await y.signIn('יוני', Gender.male, phone: '0532222222');
+        await y.firstRunFindPeople();
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await pumpFor(t, 800);
       // No code, no invitation: we're connected.
-      expect(find.text('אף חבר לא פנוי כרגע'), findsOneWidget);
+      expect(
+        find.text('יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.'),
+        findsOneWidget,
+      );
 
       // Yoni becomes free → I see him.
       await t.runAsync(() => y.startAvailability(AvailabilityMode.walking, 20));
@@ -94,7 +111,7 @@ void main() {
       expect(find.text('יוני'), findsOneWidget);
 
       // I become free → both are asked.
-      await t.tap(find.text('אני פנוי עכשיו'));
+      await t.tap(find.text('יש לי זמן עכשיו'));
       await pumpFor(t, 500);
       await t.tap(find.text('סתם פנוי'));
       await pumpFor(t, 500);
@@ -119,8 +136,8 @@ void main() {
       expect(find.text('סיימנו'), findsOneWidget);
       await t.tap(find.text('סיימנו'));
       await pumpFor(t, 500);
-      expect(find.text('מאוד'), findsOneWidget);
-      await t.tap(find.text('מאוד'));
+      expect(find.text('היה טוב'), findsOneWidget);
+      await t.tap(find.text('היה טוב'));
       await pumpFor(t, 500);
       expect(find.text('תודה!'), findsOneWidget);
       expect(server.feedback, hasLength(1));

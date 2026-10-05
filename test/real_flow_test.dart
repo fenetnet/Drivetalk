@@ -191,9 +191,9 @@ void main() {
 
       me.c.finishCall();
       expect(me.s.callStage, CallStage.feedback);
-      await me.c.sendFeedback(talked: true, rating: FeedbackRating.veryGood);
+      await me.c.sendOutcome(CallOutcome.good);
       expect(me.s.callStage, CallStage.none);
-      expect(server.feedback.single['rating'], 'veryGood');
+      expect(server.feedback.single['outcome'], 'good');
     },
   );
 
@@ -251,7 +251,7 @@ void main() {
     await pump();
     expect(me.s.callStage, CallStage.waitingForTheirCall);
     me.c.finishCall();
-    await me.c.sendFeedback(talked: true);
+    await me.c.sendOutcome(CallOutcome.good);
     now = now.add(const Duration(seconds: 16));
     await third.c.refresh();
     expect(currentOffer(third.s, now), isNotNull, reason: 'call over → next');
@@ -640,12 +640,18 @@ void main() {
       me.contacts.numbers = ['053-222-2222', '+972 54 000 0000'];
       yoni.contacts.numbers = ['+972521111111'];
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.firstRunFindPeople();
       await pump(10);
       expect(me.s.snapshot!.friends, isEmpty, reason: 'Yoni not here yet');
       await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      await yoni.c.firstRunFindPeople();
       await pump(10);
       expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
-      expect(yoni.s.notice?.kind, RealNoticeKind.contactsFound);
+      expect(
+        yoni.s.firstRun,
+        FirstRunStep.result,
+        reason: 'the screen says it',
+      );
       await me.c.refresh();
       expect(me.s.snapshot!.friends.single.name, 'יוני');
     });
@@ -654,7 +660,9 @@ void main() {
       me.contacts.numbers = ['0532222222'];
       yoni.contacts.numbers = [];
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.firstRunFindPeople();
       await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      await yoni.c.firstRunFindPeople();
       await pump(10);
       expect(yoni.s.snapshot!.friends, isEmpty);
     });
@@ -662,14 +670,19 @@ void main() {
     test('no permission → explained, nothing sent', () async {
       me.contacts.granted = false;
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.firstRunFindPeople();
       await pump(10);
-      expect(me.s.notice?.kind, RealNoticeKind.contactsNoPermission);
       expect(server.contactHashes, isEmpty);
+      expect(me.s.firstRun, FirstRunStep.result);
+      // Later, from "My people": explained.
+      await me.c.syncContacts();
+      expect(me.s.notice?.kind, RealNoticeKind.contactsNoPermission);
     });
 
     test('only hashes leave the phone', () async {
       me.contacts.numbers = ['0532222222'];
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.firstRunFindPeople();
       await pump(10);
       final sent = server.contactHashes[me.backend.userId]!;
       expect(sent.single, hasLength(64));
@@ -695,6 +708,10 @@ void main() {
       await me.c.refresh();
       await me.c.respond(currentOffer(me.s, now)!, accept: true);
       await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      expect(me.s.snapshot!.lastTalk[yoniId], isNull, reason: 'yes ≠ talked');
+      me.c.finishCall();
+      await me.c.sendOutcome(CallOutcome.good);
       await me.c.refresh();
       expect(me.s.snapshot!.lastTalk[yoniId], isNotNull);
     });
@@ -763,6 +780,9 @@ void main() {
       await me.c.respond(currentOffer(me.s, now)!, accept: true);
       await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
       await me.c.refresh();
+      me.c.finishCall();
+      await me.c.sendOutcome(CallOutcome.good);
+      await me.c.refresh();
       expect(me.s.snapshot!.weekAt(now), (1, 1));
       expect(me.s.snapshot!.weekAt(now.add(const Duration(days: 8))), (0, 0));
     });
@@ -795,6 +815,43 @@ void main() {
     await me.c.refresh();
     expect(me.s.snapshot!.intents, isEmpty);
     dad.dispose();
+  });
+
+  test('only real talks count; "not soon" pauses the pair quietly', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    Future<void> talk(CallOutcome outcome) async {
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      await pump();
+      me.c.finishCall();
+      await me.c.sendOutcome(outcome);
+      yoni.c.finishCall();
+      await yoni.c.sendOutcome(outcome);
+      await me.c.refresh();
+    }
+
+    await talk(CallOutcome.noTalk);
+    expect(me.s.snapshot!.weekAt(now), (0, 0), reason: 'two yeses ≠ a talk');
+    now = now.add(const Duration(minutes: 31));
+    await talk(CallOutcome.notSoon);
+    expect(me.s.snapshot!.weekAt(now), (1, 1));
+    // An hour later both are free again: not offered (paused for a while).
+    now = now.add(const Duration(hours: 1));
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    expect(currentOffer(me.s, now), isNull);
+    // After a week, again.
+    now = now.add(const Duration(days: 8));
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    expect(currentOffer(me.s, now), isNotNull);
   });
 
   group('profile photos', () {

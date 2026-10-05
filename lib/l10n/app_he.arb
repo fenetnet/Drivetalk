@@ -35,7 +35,7 @@
   },
   "homeGreetingNoName": "שלום",
   "homeStatusUnavailable": "כרגע לא זמין לשיחות",
-  "homeImFreeNow": "{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{אני פנוי/ה עכשיו}}",
+  "homeImFreeNow": "{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{יש לי זמן עכשיו}}",
   "@homeImFreeNow": {
     "placeholders": {
       "gender": {
@@ -554,7 +554,7 @@
     }
   },
   "routineStart": "כן",
-  "availableTo": "זמין ל:",
+  "availableTo": "עם מי מתאים לדבר עכשיו?",
   "availableToEveryone": "כולם",
   "driverListening": "מקשיב… אפשר לומר \"כן\" או \"לא\"",
   "quickConnectTitle": "מתקשרים ל{name}",
@@ -749,7 +749,7 @@
     }
   },
   "circleDelete": "מחיקת המעגל",
-  "circleNameHint": "למשל: חברים מהצבא",
+  "circleNameHint": "למשל: קרובים, משפחה, עבודה",
   "filterNotInCircle": "לא במעגל שבחרת",
   "quickConnectToggle": "חיבור מהיר",
   "quickConnectExplain": "כששניכם פנויים — מתקשרים מיד, בלי לחכות לאישור (עם 5 שניות לביטול). עובד רק אם גם {name} יסמן אותך.",
@@ -846,8 +846,11 @@
     }
   },
   "realWaitingForFriends": "כשחבר יהיה פנוי — נשאל את שניכם.",
-  "realFreeFriendsTitle": "פנויים עכשיו",
-  "realNobodyFree": "אף חבר לא פנוי כרגע",
+  "realFreeFriendsTitle": "עכשיו",
+  "realNobodyFree": "יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.",
+  "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
+  "homeIntentsTitle": "אשמח לדבר",
+  "homeIntentsBody": "כשתהיו פנויים יחד — נציע אותם קודם.",
   "realNoFriendsTitle": "עוד אין פה חברים",
   "realNoFriendsBody": "הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.",
   "realInviteFriend": "הזמן חבר",
@@ -855,7 +858,7 @@
   "realCodeHint": "הדביקו כאן את הקישור או הקוד",
   "realCodeInvalid": "לא מצאנו קוד הזמנה בטקסט הזה",
   "realOpen": "פתיחה",
-  "realInviteMessage": "אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?",
+  "realInviteMessage": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.",
   "realInviteMessageNoSite": "להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}",
   "@realInviteMessageNoSite": {
     "placeholders": {
@@ -922,6 +925,26 @@
   "@realQuickConnecting": {"placeholders": {"name": {"type": "String"}}},
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
   "realQuickCancelled": "החיבור בוטל",
+  "firstRunContactsTitle": "בוא נראה מי מהאנשים שלך כבר כאן",
+  "firstRunContactsBody": "נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.",
+  "firstRunContactsGo": "לחפש באנשי הקשר",
+  "firstRunFound": "{count, plural, =1{מצאנו אדם אחד שאתה מכיר} other{מצאנו {count} אנשים שאתה מכיר}}",
+  "@firstRunFound": {"placeholders": {"count": {"type": "int"}}},
+  "firstRunNoneTitle": "כדי לנסות את DriveTalk צריך לפחות חבר אחד",
+  "firstRunNoneBody": "שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.",
+  "firstRunLater": "אחר כך",
+  "firstRunMagicTitle": "ככה זה עובד",
+  "firstRunMagicBody": "כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.",
+  "firstRunMagicGo": "יאללה",
+  "routineNameToWork": "בדרך לעבודה",
+  "routineNameHome": "בדרך הביתה",
+  "routineNameWalk": "הליכת ערב",
+  "routineNameBreak": "הפסקת צהריים",
+  "routineEveryone": "כולם",
+  "outcomeQuestion": "איך היה?",
+  "outcomeGood": "היה טוב",
+  "outcomeNotSoon": "לא להציע בקרוב",
+  "outcomeNoTalk": "לא דיברנו בפועל",
   "intentTitle": "אשמח לדבר",
   "intentExplain": "{name} לא {gender, select, female{תקבל} male{יקבל} other{יקבל/תקבל}} שום הודעה. כששניכם תהיו פנויים — {gender, select, female{היא} male{הוא} other{הוא/היא}} יוצע לך קודם.",
   "@intentExplain": {"placeholders": {"name": {"type": "String"}, "gender": {"type": "String"}}},
@@ -1263,7 +1286,7 @@
   "realGroupAccount": "החשבון שלי",
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
   "realWelcomeSub": "כשאתה ומישהו קרוב פנויים באותו רגע — נציע לכם לדבר.",
-  "realInviteSimple": "אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: {apkUrl}\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)",
+  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.",
   "@realInviteSimple": {
     "placeholders": {
       "apkUrl": {

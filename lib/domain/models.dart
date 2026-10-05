@@ -200,9 +200,17 @@ class Routine {
     required this.minuteOfDay,
     required this.durationMinutes,
     required this.mode,
+    this.name,
+    this.circleId,
   });
 
   final String id;
+
+  /// "On the way to work" (optional).
+  final String? name;
+
+  /// Real mode: available only to this circle (null = everyone).
+  final String? circleId;
 
   /// DateTime.weekday values (Mon=1 … Sun=7).
   final Set<int> weekdays;
@@ -223,6 +231,8 @@ class Routine {
     'minuteOfDay': minuteOfDay,
     'durationMinutes': durationMinutes,
     'mode': mode.name,
+    'name': ?name,
+    'circleId': ?circleId,
   };
 
   static Routine fromJson(Map<String, Object?> j) => Routine(
@@ -231,6 +241,8 @@ class Routine {
     minuteOfDay: j['minuteOfDay'] as int,
     durationMinutes: j['durationMinutes'] as int,
     mode: AvailabilityMode.values.byName(j['mode'] as String),
+    name: j['name'] as String?,
+    circleId: j['circleId'] as String?,
   );
 }
 

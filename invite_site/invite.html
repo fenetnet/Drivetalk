@@ -20,8 +20,9 @@
 <body>
 <main>
   <div class="logo">🚗💬</div>
-  <h1>קיבלת הזמנה ל-DriveTalk</h1>
-  <p class="lead">אפליקציה שמחברת בין חברים כששניהם פנויים לשיחה.<br>שיחה מתחילה רק אם שניכם אומרים כן.</p>
+  <h1 id="title">קיבלת הזמנה ל-DriveTalk</h1>
+  <p class="lead">כששניכם פנויים, DriveTalk פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
+  <p class="small">אחרי ההתקנה: אם אתם שמורים זה אצל זה בטלפון, תתחברו לבד. שיחה מתחילה רק אם שניכם אומרים כן.</p>
 
   <section class="card" id="has-app">
     <h2>כבר יש לך את האפליקציה?</h2>
@@ -54,6 +55,12 @@
   var m = location.pathname.match(/\/i\/([A-Za-z0-9_-]{16,64})/);
   var code = m ? m[1] : new URLSearchParams(location.search).get('t');
   if (!code || !/^[A-Za-z0-9_-]{16,64}$/.test(code)) code = null;
+
+  // Who invited me (their own first name, put in the link by their app).
+  var from = new URLSearchParams(location.search).get('from');
+  if (from && from.length <= 40) {
+    document.getElementById('title').textContent = from + ' הזמין/ה אותך ל-DriveTalk';
+  }
 
   function start() {
     var cfg = window.DT_CONFIG || {};

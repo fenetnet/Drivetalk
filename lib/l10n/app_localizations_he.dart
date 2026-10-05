@@ -103,7 +103,7 @@ class AppLocalizationsHe extends AppLocalizations {
     String _temp0 = intl.Intl.selectLogic(gender, {
       'female': 'אני פנויה עכשיו',
       'male': 'אני פנוי עכשיו',
-      'other': 'אני פנוי/ה עכשיו',
+      'other': 'יש לי זמן עכשיו',
     });
     return '$_temp0';
   }
@@ -978,7 +978,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get routineStart => 'כן';
 
   @override
-  String get availableTo => 'זמין ל:';
+  String get availableTo => 'עם מי מתאים לדבר עכשיו?';
 
   @override
   String get availableToEveryone => 'כולם';
@@ -1259,7 +1259,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get circleDelete => 'מחיקת המעגל';
 
   @override
-  String get circleNameHint => 'למשל: חברים מהצבא';
+  String get circleNameHint => 'למשל: קרובים, משפחה, עבודה';
 
   @override
   String get filterNotInCircle => 'לא במעגל שבחרת';
@@ -1497,10 +1497,20 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realWaitingForFriends => 'כשחבר יהיה פנוי — נשאל את שניכם.';
 
   @override
-  String get realFreeFriendsTitle => 'פנויים עכשיו';
+  String get realFreeFriendsTitle => 'עכשיו';
 
   @override
-  String get realNobodyFree => 'אף חבר לא פנוי כרגע';
+  String get realNobodyFree =>
+      'יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.';
+
+  @override
+  String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
+
+  @override
+  String get homeIntentsTitle => 'אשמח לדבר';
+
+  @override
+  String get homeIntentsBody => 'כשתהיו פנויים יחד — נציע אותם קודם.';
 
   @override
   String get realNoFriendsTitle => 'עוד אין פה חברים';
@@ -1526,7 +1536,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realInviteMessage =>
-      'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?';
+      'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.';
 
   @override
   String realInviteMessageNoSite(String apkUrl, String code) {
@@ -1608,6 +1618,74 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realQuickCancelled => 'החיבור בוטל';
+
+  @override
+  String get firstRunContactsTitle => 'בוא נראה מי מהאנשים שלך כבר כאן';
+
+  @override
+  String get firstRunContactsBody =>
+      'נבדוק רק מספרי טלפון — מוצפנים בטלפון שלך. שמות לא יוצאים מהטלפון. מתחברים רק אנשים ששמורים זה אצל זה.';
+
+  @override
+  String get firstRunContactsGo => 'לחפש באנשי הקשר';
+
+  @override
+  String firstRunFound(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'מצאנו $count אנשים שאתה מכיר',
+      one: 'מצאנו אדם אחד שאתה מכיר',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get firstRunNoneTitle => 'כדי לנסות את DriveTalk צריך לפחות חבר אחד';
+
+  @override
+  String get firstRunNoneBody =>
+      'שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.';
+
+  @override
+  String get firstRunLater => 'אחר כך';
+
+  @override
+  String get firstRunMagicTitle => 'ככה זה עובד';
+
+  @override
+  String get firstRunMagicBody =>
+      'כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.';
+
+  @override
+  String get firstRunMagicGo => 'יאללה';
+
+  @override
+  String get routineNameToWork => 'בדרך לעבודה';
+
+  @override
+  String get routineNameHome => 'בדרך הביתה';
+
+  @override
+  String get routineNameWalk => 'הליכת ערב';
+
+  @override
+  String get routineNameBreak => 'הפסקת צהריים';
+
+  @override
+  String get routineEveryone => 'כולם';
+
+  @override
+  String get outcomeQuestion => 'איך היה?';
+
+  @override
+  String get outcomeGood => 'היה טוב';
+
+  @override
+  String get outcomeNotSoon => 'לא להציע בקרוב';
+
+  @override
+  String get outcomeNoTalk => 'לא דיברנו בפועל';
 
   @override
   String get intentTitle => 'אשמח לדבר';
@@ -2198,7 +2276,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realInviteSimple(String apkUrl) {
-    return 'אני בודק אפליקציה חדשה שמחברת בין חברים כששניהם פנויים לשיחה. בא לך לבדוק אותה איתי?\nלהורדה: $apkUrl\n(אם אנחנו שמורים זה אצל זה בטלפון — נתחבר לבד)';
+    return 'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): $apkUrl\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.';
   }
 
   @override

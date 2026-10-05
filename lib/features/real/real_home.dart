@@ -146,7 +146,11 @@ class RealHomeScreen extends ConsumerWidget {
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
                 else
-                  _FreeNowCard(free: free, now: now),
+                  _FreeNowCard(free: free, now: now, meFree: mine != null),
+                if (snap != null && snap.intents.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _IntentsCard(snap: snap, now: now),
+                ],
                 if (c.dueRoutine(now) case final r?) ...[
                   const SizedBox(height: 16),
                   _RoutineCard(routine: r),
@@ -197,9 +201,14 @@ class _Blob extends StatelessWidget {
 
 /// "Free now" card: friends' faces with a green ring.
 class _FreeNowCard extends StatelessWidget {
-  const _FreeNowCard({required this.free, required this.now});
+  const _FreeNowCard({
+    required this.free,
+    required this.now,
+    required this.meFree,
+  });
   final List<(RealProfile, RealAvailability)> free;
   final DateTime now;
+  final bool meFree;
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +247,7 @@ class _FreeNowCard extends StatelessWidget {
           const SizedBox(height: 16),
           if (free.isEmpty)
             Text(
-              l.realNobodyFree,
+              meFree ? l.realNobodyFreeYet : l.realNobodyFree,
               style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
             )
           else
@@ -281,6 +290,66 @@ class _FreeNowCard extends StatelessWidget {
                 },
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// "I'd like to talk": the people I marked (only I see this).
+class _IntentsCard extends ConsumerWidget {
+  const _IntentsCard({required this.snap, required this.now});
+  final RealSnapshot snap;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final people = [
+      for (final f in snap.friends)
+        if (snap.intents[f.id]?.isActiveAt(now) ?? false) f,
+    ];
+    if (people.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: AppColors.blush,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.favorite_rounded, color: AppColors.coralDeep),
+              const SizedBox(width: 8),
+              Text(
+                l.homeIntentsTitle,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final f in people)
+                ActionChip(
+                  avatar: PersonAvatar(person: f.toPerson(), size: 24),
+                  label: Text(f.name),
+                  onPressed: () => openTalkIntentSheet(context, ref, f),
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l.homeIntentsBody,
+            style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
+          ),
         ],
       ),
     );
@@ -542,7 +611,11 @@ class _RoutineCard extends ConsumerWidget {
             style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
             onPressed: () => ref
                 .read(realProvider.notifier)
-                .startAvailability(routine.mode, routine.durationMinutes),
+                .startAvailability(
+                  routine.mode,
+                  routine.durationMinutes,
+                  circleId: routine.circleId,
+                ),
             child: Text(l.routineStart),
           ),
         ],

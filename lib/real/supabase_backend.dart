@@ -117,13 +117,24 @@ class SupabaseRealBackend implements RealBackend {
           .gt('updated_at', since)
           .order('updated_at', ascending: false)
           .limit(50),
-      // Talk history (both said yes), for "you haven't talked in a while".
+      // Talk history: only real talks (someone said "we talked").
       _c
           .from('match_offers')
           .select('user_a, user_b, updated_at')
           .eq('status', 'accepted')
+          .eq('talked', true)
           .order('updated_at', ascending: false)
-          .limit(300),
+          .limit(300)
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            // Older server (no "talked" yet): both said yes.
+            onError: (Object _) => _c
+                .from('match_offers')
+                .select('user_a, user_b, updated_at')
+                .eq('status', 'accepted')
+                .order('updated_at', ascending: false)
+                .limit(300),
+          ),
       // "I'd like to talk" (mine only); optional on an older server.
       _c
           .from('talk_intents')
@@ -394,19 +405,29 @@ class SupabaseRealBackend implements RealBackend {
       e.message.toLowerCase().contains('could not find the function');
 
   @override
-  Future<void> sendFeedback({
-    required String? offerId,
-    required bool talked,
-    FeedbackRating? rating,
-    bool? wantAgain,
-  }) => _guard(() async {
-    await _c.from('feedback').insert({
-      'offer_id': ?offerId,
-      'talked': talked,
-      'rating': ?rating?.name,
-      'want_again': ?wantAgain,
-    });
-  });
+  Future<void> sendCallOutcome(String offerId, CallOutcome outcome) =>
+      _guard(() async {
+        final key = switch (outcome) {
+          CallOutcome.good => 'good',
+          CallOutcome.notSoon => 'not_soon',
+          CallOutcome.noTalk => 'no_talk',
+        };
+        try {
+          await _c.rpc(
+            'call_feedback',
+            params: {'p_offer': offerId, 'p_result': key},
+          );
+        } on PostgrestException catch (e) {
+          if (!_missingFunction(e)) rethrow;
+          // Older server: the plain feedback row.
+          await _c.from('feedback').insert({
+            'offer_id': offerId,
+            'talked': outcome != CallOutcome.noTalk,
+            if (outcome == CallOutcome.good) 'rating': 'good',
+            if (outcome == CallOutcome.notSoon) 'rating': 'notReally',
+          });
+        }
+      });
 
   @override
   Future<String?> getMyPhone() => _guard(() async {

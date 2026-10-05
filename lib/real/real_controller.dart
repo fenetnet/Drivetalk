@@ -94,6 +94,9 @@ enum CallRole {
   inApp,
 }
 
+/// After joining: find people from contacts → result → how it works.
+enum FirstRunStep { contacts, result, magic }
+
 enum CallStage {
   none,
   connecting,
@@ -202,6 +205,7 @@ class RealState {
     this.driving = const DrivingStatus(),
     this.routines = const [],
     this.directCall,
+    this.firstRun,
   });
 
   /// My routines ("every weekday at 8:00, driving").
@@ -209,6 +213,9 @@ class RealState {
 
   /// May calls start without an extra tap (asked ahead)? null = unknown.
   final bool? directCall;
+
+  /// First steps after joining (until a first friend + how it works).
+  final FirstRunStep? firstRun;
 
   final RealPhase phase;
   final RealSnapshot? snapshot;
@@ -256,6 +263,7 @@ class RealState {
     DrivingStatus? driving,
     List<Routine>? routines,
     bool? directCall,
+    Object? firstRun = _keep,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -281,6 +289,9 @@ class RealState {
     driving: driving ?? this.driving,
     routines: routines ?? this.routines,
     directCall: directCall ?? this.directCall,
+    firstRun: identical(firstRun, _keep)
+        ? this.firstRun
+        : firstRun as FirstRunStep?,
   );
 }
 
@@ -354,6 +365,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 );
 
 const _prefsKey = 'real.prefs.v1';
+const _firstRunKey = 'real.firstRun.v1';
 const _handledKey = 'real.handledOffers.v1';
 
 class RealController extends Notifier<RealState> {
@@ -416,6 +428,8 @@ class RealController extends Notifier<RealState> {
       phase: RealPhase.starting,
       prefs: prefs,
       routines: routines,
+      firstRun: FirstRunStep.values
+          .asNameMap()[_store.getString(_firstRunKey) ?? ''],
     );
   }
 
@@ -512,6 +526,26 @@ class RealController extends Notifier<RealState> {
   }
 
   // ------------------------------------------------------------ auto driving
+
+  // ------------------------------------------------------------ first run
+
+  /// "Let's see who of your people is already here" → contacts.
+  Future<void> firstRunFindPeople() async {
+    await syncContacts(quiet: true);
+    _setFirstRun(FirstRunStep.result);
+  }
+
+  void firstRunNext() => _setFirstRun(switch (state.firstRun) {
+    FirstRunStep.contacts => FirstRunStep.result,
+    FirstRunStep.result => FirstRunStep.magic,
+    _ => null,
+  });
+
+  void _setFirstRun(FirstRunStep? step) {
+    if (!ref.mounted) return;
+    _store.setString(_firstRunKey, step?.name);
+    state = state.copyWith(firstRun: step);
+  }
 
   // ------------------------------------------------------------ talk intent
 
@@ -708,19 +742,20 @@ class RealController extends Notifier<RealState> {
     try {
       await _backend.signIn(name, gender);
       if (phone != null && phone.trim().isNotEmpty) {
-        try {
-          await _backend.setMyPhone(phone);
-          state = state.copyWith(myPhone: normalizePhone(phone));
-        } on RealBackendException catch (e) {
-          _setError(e.code, show: true);
-        }
+        // Joining is complete only with the number saved (friends find
+        // each other by it). On failure: stay here and try again.
+        await _backend.setMyPhone(phone);
+        state = state.copyWith(myPhone: normalizePhone(phone));
       }
       if (!ref.mounted) return;
-      state = state.copyWith(phase: RealPhase.ready, busy: false);
+      await _store.setString(_firstRunKey, FirstRunStep.contacts.name);
+      state = state.copyWith(
+        phase: RealPhase.ready,
+        busy: false,
+        firstRun: FirstRunStep.contacts,
+      );
       await refresh();
       _openPendingInvite();
-      // Right away: friends who are already here, from my contacts.
-      unawaited(syncContacts());
       unawaited(_ensureDevice());
     } on RealBackendException catch (e) {
       if (!ref.mounted) return;
@@ -1275,22 +1310,17 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(callStage: CallStage.feedback);
   }
 
-  Future<void> sendFeedback({
-    required bool talked,
-    FeedbackRating? rating,
-  }) async {
+  /// After the call: it was good / not again soon / we didn't talk.
+  Future<void> sendOutcome(CallOutcome outcome) async {
     final call = state.call;
     state = state.copyWith(callStage: CallStage.none, call: null);
-    if (call != null) unawaited(_quietly(() => _backend.endCall(call.offerId)));
+    if (call == null) return;
     try {
-      await _backend.sendFeedback(
-        offerId: call?.offerId,
-        talked: talked,
-        rating: rating,
-        wantAgain: rating == null ? null : rating != FeedbackRating.notReally,
-      );
+      await _backend.sendCallOutcome(call.offerId, outcome);
       if (ref.mounted) _notify(RealNoticeKind.feedbackThanks);
     } on RealBackendException catch (e) {
+      // At least free me for the next offer.
+      await _quietly(() => _backend.endCall(call.offerId));
       if (ref.mounted) _setError(e.code);
     }
   }
@@ -1420,6 +1450,7 @@ class RealController extends Notifier<RealState> {
                 'minute': r.minuteOfDay % 60,
                 'mode': r.mode.name,
                 'minutes': r.durationMinutes,
+                'circle': r.circleId ?? '',
                 'enabled': true,
               },
           ]),
@@ -1448,14 +1479,15 @@ class RealController extends Notifier<RealState> {
   /// Friends from the phone's contacts: whoever has my number and whose
   /// number I have becomes a friend automatically (owner decision D-047).
   /// Only hashes of numbers leave the phone; names never do.
-  Future<void> syncContacts({bool ask = true}) async {
+  /// [quiet]: no pop-up about the result (the first-run screen shows it).
+  Future<void> syncContacts({bool ask = true, bool quiet = false}) async {
     final reader = ref.read(contactsReaderProvider);
     final allowed = ask
         ? await reader.requestPermission()
         : await reader.hasPermission();
     if (!ref.mounted) return;
     if (!allowed) {
-      if (ask) _notify(RealNoticeKind.contactsNoPermission);
+      if (ask && !quiet) _notify(RealNoticeKind.contactsNoPermission);
       return;
     }
     final numbers = await reader.phoneNumbers();
@@ -1465,6 +1497,7 @@ class RealController extends Notifier<RealState> {
       final names = await _backend.syncContacts(hashes);
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
+      if (quiet) return;
       if (names.isNotEmpty) {
         _notify(RealNoticeKind.contactsFound, name: names.join(', '));
       } else if (ask) {

@@ -5,6 +5,7 @@ import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../real/real_controller.dart';
+import '../../real/real_models.dart';
 import '../common/labels.dart';
 
 /// "I usually drive at 08:00 on Sun–Thu." At those times Home offers a
@@ -23,6 +24,17 @@ class RoutinesScreen extends ConsumerWidget {
     final routines = real
         ? ref.watch(realProvider.select((s) => s.routines))
         : profile.prefs.routines;
+    final circles = real
+        ? [
+            for (final c
+                in ref.watch(realProvider).snapshot?.circles ??
+                    const <RealCircle>[])
+              (c.id, c.name),
+          ]
+        : const <(String, String)>[];
+    String circleName(String? id) => id == null
+        ? l.routineEveryone
+        : circles.where((c) => c.$1 == id).firstOrNull?.$2 ?? l.routineEveryone;
     Future<void> save(List<Routine> list) => real
         ? ref.read(realProvider.notifier).saveRoutines(list)
         : profile.updatePrefs(profile.prefs.copyWith(routines: list));
@@ -35,7 +47,7 @@ class RoutinesScreen extends ConsumerWidget {
             context: context,
             isScrollControlled: true,
             showDragHandle: true,
-            builder: (_) => const _RoutineEditor(),
+            builder: (_) => _RoutineEditor(circles: circles),
           );
           if (r != null) await save([...routines, r]);
         },
@@ -60,10 +72,15 @@ class RoutinesScreen extends ConsumerWidget {
               child: ListTile(
                 leading: Icon(modeIcon(r.mode), color: AppColors.terracotta),
                 title: Text(
-                  '${_time(r.minuteOfDay)} · ${modeLabel(l, r.mode)} · '
-                  '${l.minutesShort(r.durationMinutes)}',
+                  r.name ?? modeLabel(l, r.mode),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text(weekdaysText(l, r.weekdays)),
+                subtitle: Text(
+                  '${weekdaysText(l, r.weekdays)} · '
+                  '${_clock(r.minuteOfDay)}–'
+                  '${_clock((r.minuteOfDay + r.durationMinutes) % (24 * 60))}'
+                  '${real ? ' · ${circleName(r.circleId)}' : ''}',
+                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),
                   onPressed: () => save([
@@ -79,12 +96,15 @@ class RoutinesScreen extends ConsumerWidget {
   }
 }
 
-String _time(int minuteOfDay) =>
+String _clock(int minuteOfDay) =>
     '${(minuteOfDay ~/ 60).toString().padLeft(2, '0')}:'
     '${(minuteOfDay % 60).toString().padLeft(2, '0')}';
 
 class _RoutineEditor extends StatefulWidget {
-  const _RoutineEditor();
+  const _RoutineEditor({this.circles = const []});
+
+  /// Real mode: my circles as (id, name).
+  final List<(String, String)> circles;
 
   @override
   State<_RoutineEditor> createState() => _RoutineEditorState();
@@ -94,7 +114,9 @@ class _RoutineEditorState extends State<_RoutineEditor> {
   var _days = {7, 1, 2, 3, 4}; // Sun–Thu
   var _time = const TimeOfDay(hour: 8, minute: 0);
   var _mode = AvailabilityMode.driving;
-  var _minutes = 30;
+  var _minutes = 45;
+  String? _name;
+  String? _circleId;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +129,28 @@ class _RoutineEditorState extends State<_RoutineEditor> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(l.routineAdd, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                for (final (name, mode, hour, minute) in [
+                  (l.routineNameToWork, AvailabilityMode.driving, 7, 30),
+                  (l.routineNameHome, AvailabilityMode.driving, 17, 0),
+                  (l.routineNameWalk, AvailabilityMode.walking, 19, 0),
+                  (l.routineNameBreak, AvailabilityMode.breakTime, 12, 30),
+                ])
+                  ChoiceChip(
+                    label: Text(name),
+                    selected: _name == name,
+                    onSelected: (_) => setState(() {
+                      _name = name;
+                      _mode = mode;
+                      _time = TimeOfDay(hour: hour, minute: minute);
+                    }),
+                  ),
+              ],
+            ),
             const SizedBox(height: 12),
             Wrap(
               spacing: 6,
@@ -126,7 +170,10 @@ class _RoutineEditorState extends State<_RoutineEditor> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               icon: const Icon(Icons.schedule_rounded),
-              label: Text(_time.format(context)),
+              label: Text(
+                '${_clock(_time.hour * 60 + _time.minute)}–'
+                '${_clock((_time.hour * 60 + _time.minute + _minutes) % 1440)}',
+              ),
               onPressed: () async {
                 final t = await showTimePicker(
                   context: context,
@@ -151,7 +198,7 @@ class _RoutineEditorState extends State<_RoutineEditor> {
             Wrap(
               spacing: 6,
               children: [
-                for (final m in const [15, 30, 45, 60])
+                for (final m in const [15, 30, 45, 60, 90])
                   ChoiceChip(
                     label: Text(l.minutesShort(m)),
                     selected: _minutes == m,
@@ -159,6 +206,31 @@ class _RoutineEditorState extends State<_RoutineEditor> {
                   ),
               ],
             ),
+            if (widget.circles.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                l.availableTo,
+                style: const TextStyle(color: AppColors.inkSoft),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: [
+                  ChoiceChip(
+                    label: Text(l.routineEveryone),
+                    selected: _circleId == null,
+                    onSelected: (_) => setState(() => _circleId = null),
+                  ),
+                  for (final (id, name) in widget.circles)
+                    ChoiceChip(
+                      label: Text(name),
+                      selected: _circleId == id,
+                      onSelected: (_) => setState(() => _circleId = id),
+                    ),
+                ],
+              ),
+            ],
             const SizedBox(height: 20),
             FilledButton(
               onPressed: _days.isEmpty
@@ -171,6 +243,8 @@ class _RoutineEditorState extends State<_RoutineEditor> {
                         minuteOfDay: _time.hour * 60 + _time.minute,
                         durationMinutes: _minutes,
                         mode: _mode,
+                        name: _name,
+                        circleId: _circleId,
                       ),
                     ),
               child: Text(l.save),
