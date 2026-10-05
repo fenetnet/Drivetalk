@@ -15,7 +15,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'no_server.dart';
-import 'session_flow_test.dart' show config;
 
 Future<void> pumpFor(WidgetTester t, int ms) async {
   for (var i = 0; i < ms ~/ 100; i++) {
@@ -32,11 +31,10 @@ void main() {
       addTearDown(t.view.reset);
 
       final server = MemoryServer();
-      final store = MemoryLocalStore()..values['app.mode'] = 'real';
+      final store = MemoryLocalStore();
       await t.pumpWidget(
         ProviderScope(
           overrides: [
-            matchingConfigProvider.overrideWithValue(config),
             voiceServiceProvider.overrideWithValue(SilentVoiceService()),
             realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
             localStoreProvider.overrideWithValue(store),
@@ -179,14 +177,11 @@ void main() {
     },
   );
 
-  testWidgets('real mode without a server says so and offers the demo', (
-    t,
-  ) async {
-    final store = MemoryLocalStore()..values['app.mode'] = 'real';
+  testWidgets('without a server: says so clearly', (t) async {
+    final store = MemoryLocalStore();
     await t.pumpWidget(
       ProviderScope(
         overrides: [
-          matchingConfigProvider.overrideWithValue(config),
           voiceServiceProvider.overrideWithValue(SilentVoiceService()),
           localStoreProvider.overrideWithValue(store),
           realBackendProvider.overrideWithValue(NoServerBackend()),
@@ -197,9 +192,6 @@ void main() {
     );
     await t.pump();
     expect(find.text('הבדיקה עם חבר עוד לא מחוברת'), findsOneWidget);
-    await t.tap(find.text('למצב הדגמה'));
-    await pumpFor(t, 300);
-    expect(store.values['app.mode'], 'demo');
     await t.pumpWidget(const SizedBox());
   });
 }

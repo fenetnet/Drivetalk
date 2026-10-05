@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app/session_controller.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../common/labels.dart';
@@ -11,7 +10,7 @@ Future<void> confirmBlock(
   BuildContext context,
   WidgetRef ref,
   Person person, {
-  Future<void> Function()? onBlock,
+  required Future<void> Function() onBlock,
 }) async {
   final l = context.l10n;
   final ok = await showDialog<bool>(
@@ -31,13 +30,7 @@ Future<void> confirmBlock(
       ],
     ),
   );
-  if (ok ?? false) {
-    if (onBlock != null) {
-      await onBlock();
-    } else {
-      await ref.read(sessionProvider.notifier).blockPerson(person);
-    }
-  }
+  if (ok ?? false) await onBlock();
 }
 
 /// Report with a short reason list, and an option to block too.
@@ -45,20 +38,14 @@ Future<void> showReportSheet(
   BuildContext context,
   WidgetRef ref,
   Person person, {
-  Future<void> Function(ReportReason reason, bool alsoBlock)? onReport,
+  required Future<void> Function(ReportReason reason, bool alsoBlock) onReport,
 }) async {
   final result = await showModalBottomSheet<(ReportReason, bool)>(
     context: context,
     showDragHandle: true,
     builder: (c) => _ReportSheet(person: person),
   );
-  if (result != null && onReport != null) {
-    await onReport(result.$1, result.$2);
-  } else if (result != null) {
-    await ref
-        .read(sessionProvider.notifier)
-        .reportPerson(person, result.$1, alsoBlock: result.$2);
-  }
+  if (result != null) await onReport(result.$1, result.$2);
 }
 
 class _ReportSheet extends StatefulWidget {

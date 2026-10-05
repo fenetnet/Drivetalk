@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/real/real_root.dart';
 import '../l10n/app_localizations.dart';
 import '../real/deep_links.dart';
-import '../real/real_controller.dart';
-import 'root.dart';
 import 'theme.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -26,20 +23,7 @@ class DriveTalkApp extends StatelessWidget {
       supportedLocales: const [Locale('he')],
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: buildTheme(),
-      home: const DeepLinkListener(child: ModeGate()),
+      home: const DeepLinkListener(child: RealRoot()),
     );
-  }
-}
-
-/// Demo (fake people) or the real test with friends — never mixed.
-class ModeGate extends ConsumerWidget {
-  const ModeGate({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return switch (ref.watch(appModeProvider)) {
-      AppMode.demo => const RootGate(),
-      AppMode.real => const RealRoot(),
-    };
   }
 }

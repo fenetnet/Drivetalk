@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../app/providers.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../real/real_controller.dart';
@@ -11,33 +10,22 @@ import '../common/labels.dart';
 /// "I usually drive at 08:00 on Sun–Thu." At those times Home offers a
 /// one-tap "become available". (Real reminders come with notifications.)
 class RoutinesScreen extends ConsumerWidget {
-  const RoutinesScreen({super.key, this.real = false});
-
-  /// Real mode: the phone turns availability on by itself at these times.
-  final bool real;
+  const RoutinesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
-    ref.watch(dataVersionProvider);
-    final profile = ref.watch(profileServiceProvider);
-    final routines = real
-        ? ref.watch(realProvider.select((s) => s.routines))
-        : profile.prefs.routines;
-    final circles = real
-        ? [
-            for (final c
-                in ref.watch(realProvider).snapshot?.circles ??
-                    const <RealCircle>[])
-              (c.id, c.name),
-          ]
-        : const <(String, String)>[];
+    final routines = ref.watch(realProvider.select((s) => s.routines));
+    final circles = [
+      for (final c
+          in ref.watch(realProvider).snapshot?.circles ?? const <RealCircle>[])
+        (c.id, c.name),
+    ];
     String circleName(String? id) => id == null
         ? l.routineEveryone
         : circles.where((c) => c.$1 == id).firstOrNull?.$2 ?? l.routineEveryone;
-    Future<void> save(List<Routine> list) => real
-        ? ref.read(realProvider.notifier).saveRoutines(list)
-        : profile.updatePrefs(profile.prefs.copyWith(routines: list));
+    Future<void> save(List<Routine> list) =>
+        ref.read(realProvider.notifier).saveRoutines(list);
 
     return Scaffold(
       appBar: AppBar(title: Text(l.routinesTitle)),
@@ -58,7 +46,7 @@ class RoutinesScreen extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
         children: [
           Text(
-            real ? l.realRoutinesIntro : l.routinesIntro,
+            l.realRoutinesIntro,
             style: const TextStyle(color: AppColors.inkSoft),
           ),
           const SizedBox(height: 12),
@@ -79,7 +67,7 @@ class RoutinesScreen extends ConsumerWidget {
                   '${weekdaysText(l, r.weekdays)} · '
                   '${_clock(r.minuteOfDay)}–'
                   '${_clock((r.minuteOfDay + r.durationMinutes) % (24 * 60))}'
-                  '${real ? ' · ${circleName(r.circleId)}' : ''}',
+                  ' · ${circleName(r.circleId)}',
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),

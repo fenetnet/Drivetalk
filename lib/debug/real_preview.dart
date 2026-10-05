@@ -3,17 +3,14 @@
 //   flutter build web -t lib/debug/real_preview.dart
 //   open …/#home | #offer | #waiting | #connected | #driving | #drivingOffer
 //        | #people | #settings | #test | #onboarding | #feedback
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../app/app.dart';
 import '../app/providers.dart';
 import '../domain/models.dart';
 import '../features/real/real_root.dart';
-import '../matching/matching_config.dart';
 import '../platform/contacts_reader.dart';
 import '../platform/driving_detector.dart';
 import '../platform/voice_service.dart';
@@ -26,14 +23,9 @@ import '../real/real_models.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final screen = Uri.base.fragment.isEmpty ? 'home' : Uri.base.fragment;
-  final config = MatchingConfig.fromJson(
-    jsonDecode(await rootBundle.loadString('assets/config/matching.json'))
-        as Map<String, dynamic>,
-  );
   final server = MemoryServer();
   final me = MemoryRealBackend(server);
   final store = MemoryLocalStore()
-    ..values['app.mode'] = 'real'
     ..values['real.contactsSyncedAt'] = DateTime.now().toIso8601String();
 
   Future<MemoryRealBackend> friend(String name, Gender g, String phone) async {
@@ -85,7 +77,6 @@ Future<void> main() async {
 
   final container = ProviderContainer(
     overrides: [
-      matchingConfigProvider.overrideWithValue(config),
       realBackendProvider.overrideWithValue(me),
       localStoreProvider.overrideWithValue(store),
       voiceServiceProvider.overrideWithValue(SilentVoiceService()),

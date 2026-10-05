@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../domain/models.dart';
 import '../../l10n/app_localizations.dart';
-import '../../matching/match_reason.dart';
-import '../../matching/matching_engine.dart';
 
 /// Turns domain values into localized text. All user-facing wording lives in
 /// the ARB files; this file only picks the right message.
@@ -89,54 +87,6 @@ String relationshipLine(
   if (sharedGroups.isNotEmpty) return l.relSharedGroup;
   return l.relUnclassified;
 }
-
-String reasonText(AppLocalizations l, MatchReason r, Person person) =>
-    switch (r) {
-      AvailableForReason(:final minutes) => l.reasonAvailable(
-        person.name,
-        genderKey(person.gender),
-        minutes,
-      ),
-      DormantReason(:final days) => l.reasonDormant(durationText(l, days)),
-      NeverTalkedInAppReason() => l.reasonNeverTalked,
-      MutualFriendsReason(:final count) => l.reasonMutualFriends(count),
-      SharedGroupReason(:final groupName) => l.reasonSharedGroup(groupName),
-      SharedInterestsReason(:final interests) => l.reasonSharedInterests(
-        joinList(l, interests),
-      ),
-      BothOpenToFriendsOfFriendsReason() => l.reasonBothFof,
-      EnjoyedLastTimeReason() => l.reasonEnjoyedLastTime,
-      AnsweredYourInvitationReason() => l.reasonAnswered(
-        person.name,
-        genderKey(person.gender),
-      ),
-    };
-
-IconData reasonIcon(MatchReason r) => switch (r) {
-  AvailableForReason() => Icons.schedule_rounded,
-  DormantReason() => Icons.history_rounded,
-  NeverTalkedInAppReason() => Icons.waving_hand_rounded,
-  MutualFriendsReason() => Icons.people_alt_rounded,
-  SharedGroupReason() => Icons.groups_rounded,
-  SharedInterestsReason() => Icons.interests_rounded,
-  BothOpenToFriendsOfFriendsReason() => Icons.handshake_rounded,
-  EnjoyedLastTimeReason() => Icons.favorite_rounded,
-  AnsweredYourInvitationReason() => Icons.check_circle_rounded,
-};
-
-String filterLabel(AppLocalizations l, FilterReason r) => switch (r) {
-  FilterReason.blocked => l.filterBlocked,
-  FilterReason.skippedThisSession => l.filterSkipped,
-  FilterReason.safety => l.filterSafety,
-  FilterReason.notToday => l.filterNotToday,
-  FilterReason.doNotSuggest => l.filterDoNotSuggest,
-  FilterReason.relationshipExcluded => l.filterRelExcluded,
-  FilterReason.noSharedLanguage => l.filterLanguage,
-  FilterReason.notAvailable => l.filterNotAvailable,
-  FilterReason.friendsOfFriendsNotMutual => l.filterFof,
-  FilterReason.tierNotOpen => l.filterTier,
-  FilterReason.notInCircle => l.filterNotInCircle,
-};
 
 String featureLabel(AppLocalizations l, String feature) => switch (feature) {
   'closeness' => l.featCloseness,

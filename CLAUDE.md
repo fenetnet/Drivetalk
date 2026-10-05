@@ -79,30 +79,28 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 
 ```
 lib/
-  app/            providers (THE fake↔real wiring file), session controller,
-                  root gate, theme, dev-tools flag
-  features/       UI per feature (home, availability, match, driver, call,
-                  feedback, invitation, connections, discover, settings, onboarding)
-  domain/         models (pure Dart, no Flutter imports)
-  matching/       matching engine + config + reasons (pure Dart, unit-tested)
-  services/       abstract service interfaces
-  services/fake/  Phase 1 in-memory implementations + seed data
-  real/           Phase 2 real mode: backend interface, Supabase + in-memory
-                  backends, RealController, deep links, local store
-  features/real/  real-mode screens (onboarding, home, people, offer,
+  app/            app shell, theme, device providers (dialer, voice),
+                  dev-tools flag
+  real/           backend interface, Supabase + in-memory backends,
+                  RealController (all app logic), deep links, local store
+  features/real/  the screens (onboarding, first run, home, people, offer,
                   waiting, call, feedback, invite, test, settings)
-  platform/       device signals (vehicle detection) behind interfaces
-  debug/          developer screen + matching inspector (kDevTools only)
+  features/       shared widgets/labels, availability picker, routines,
+                  block/report sheets
+  domain/         shared models (pure Dart)
+  platform/       device bridges (driving detection, contacts, dialer, voice)
+  debug/          real_preview.dart (web preview with sample friends)
   l10n/           app_he.arb (template) + generated localizations
-assets/config/matching.json   all matching weights / limits / cooldowns
 supabase/migrations/          the whole server schema (RLS, functions, realtime)
+                              — matching rules/limits live in SQL there
 invite_site/                  static invitation page (published to gh-pages)
 tool/e2e/                     backend end-to-end check against a local Supabase
-test/             engine unit tests, session-flow tests, app smoke test
+test/             two-phone flow tests (in-memory server), screen tests,
+                  live test against a local Supabase
 ```
 
-UI depends only on service **interfaces**; fake → real swap happens in
-`lib/app/providers.dart`. All user-facing text lives in `lib/l10n/app_he.arb`.
+The Phase 1 demo (fake people) was removed (D-071); it is in git history
+before that commit. All user-facing text lives in `lib/l10n/app_he.arb`.
 
 ## Commands
 
@@ -139,7 +137,7 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Work phases
 
-1. Interactive local prototype, fake data only  ✅
+1. Interactive local prototype, fake data only  ✅ (removed, D-071)
 2. Auth + users + social graph + backend  ← **current** (built; owner must
    set up Supabase + variables — `docs/setup-guide.md`)
 3. Realtime availability + matchmaking

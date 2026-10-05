@@ -23,36 +23,6 @@ import 'routine_suggest.dart';
 import 'supabase_backend.dart';
 import 'update_checker.dart';
 
-// ---------------------------------------------------------------------------
-// Demo (fake people) vs. real (two-user test). Kept completely separate: the
-// demo world is never sent to the server, real friends never appear in demo.
-// ---------------------------------------------------------------------------
-
-enum AppMode { demo, real }
-
-const _modeKey = 'app.mode';
-
-final appModeProvider = NotifierProvider<AppModeNotifier, AppMode>(
-  AppModeNotifier.new,
-);
-
-class AppModeNotifier extends Notifier<AppMode> {
-  @override
-  AppMode build() {
-    final stored = ref.watch(localStoreProvider).getString(_modeKey);
-    if (stored == 'real') return AppMode.real;
-    if (stored == 'demo') return AppMode.demo;
-    return ref.watch(realBackendProvider).isConfigured
-        ? AppMode.real
-        : AppMode.demo;
-  }
-
-  void set(AppMode mode) {
-    state = mode;
-    ref.read(localStoreProvider).setString(_modeKey, mode.name);
-  }
-}
-
 final realBackendProvider = Provider<RealBackend>(
   (ref) => SupabaseRealBackend(),
 );

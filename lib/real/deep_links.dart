@@ -50,7 +50,6 @@ class _DeepLinkListenerState extends ConsumerState<DeepLinkListener> {
     }
     _lastToken = token;
     _lastAt = now;
-    ref.read(appModeProvider.notifier).set(AppMode.real);
     ref.read(realProvider.notifier).openInvite(token);
   }
 

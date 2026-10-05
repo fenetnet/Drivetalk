@@ -97,7 +97,7 @@ class RealSettingsScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => const RoutinesScreen(real: true),
+                    builder: (_) => const RoutinesScreen(),
                   ),
                 ),
               ),
@@ -186,13 +186,6 @@ class RealSettingsScreen extends ConsumerWidget {
                   subtitle: Text(l.realTestModeBody),
                   value: s.prefs.testTab,
                   onChanged: (v) => c.setPrefs(s.prefs.copyWith(testTab: v)),
-                ),
-                ListTile(
-                  leading: const Icon(Icons.theater_comedy_rounded),
-                  title: Text(l.realSwitchToDemo),
-                  subtitle: Text(l.realModeDemo),
-                  onTap: () =>
-                      ref.read(appModeProvider.notifier).set(AppMode.demo),
                 ),
                 ListTile(
                   leading: const Icon(Icons.download_rounded),

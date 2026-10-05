@@ -233,12 +233,6 @@ class _NotConfigured extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.inkSoft),
               ),
-              const SizedBox(height: 28),
-              FilledButton(
-                onPressed: () =>
-                    ref.read(appModeProvider.notifier).set(AppMode.demo),
-                child: Text(l.realBackToDemo),
-              ),
             ],
           ),
         ),
