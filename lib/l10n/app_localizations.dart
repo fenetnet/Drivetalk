@@ -2608,6 +2608,66 @@ abstract class AppLocalizations {
   /// **'מתחברים…'**
   String get realConnecting;
 
+  /// No description provided for @realQuickConnecting.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים ל{name}…'**
+  String realQuickConnecting(String name);
+
+  /// No description provided for @realQuickConnectingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר — אפשר לבטל'**
+  String get realQuickConnectingBody;
+
+  /// No description provided for @realQuickCancelled.
+  ///
+  /// In he, this message translates to:
+  /// **'החיבור בוטל'**
+  String get realQuickCancelled;
+
+  /// No description provided for @realDirectCallTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שהשיחה תתחיל מיד'**
+  String get realDirectCallTitle;
+
+  /// No description provided for @realDirectCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם אומרים כן, הטלפון יחייג לבד — בלי עוד לחיצה. צריך לאשר פעם אחת \"שיחות טלפון\".'**
+  String get realDirectCallBody;
+
+  /// No description provided for @realDirectCallAllow.
+  ///
+  /// In he, this message translates to:
+  /// **'לאשר'**
+  String get realDirectCallAllow;
+
+  /// No description provided for @realDirectCallSetting.
+  ///
+  /// In he, this message translates to:
+  /// **'חיוג מיידי'**
+  String get realDirectCallSetting;
+
+  /// No description provided for @realDirectCallOn.
+  ///
+  /// In he, this message translates to:
+  /// **'פעיל — השיחה מתחילה מיד'**
+  String get realDirectCallOn;
+
+  /// No description provided for @realDirectCallOff.
+  ///
+  /// In he, this message translates to:
+  /// **'כבוי — החייגן נפתח עם המספר'**
+  String get realDirectCallOff;
+
+  /// No description provided for @realCallingNow.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים ל{name}…'**
+  String realCallingNow(String name);
+
   /// No description provided for @realCallingIn.
   ///
   /// In he, this message translates to:
@@ -3205,7 +3265,7 @@ abstract class AppLocalizations {
   /// No description provided for @realVoiceQuick.
   ///
   /// In he, this message translates to:
-  /// **'מתחברים ל{name}. לביטול — בטל.'**
+  /// **'מתחברים ל{name}. אפשר לבטל בכפתור.'**
   String realVoiceQuick(String name);
 
   /// No description provided for @realQuickIn.

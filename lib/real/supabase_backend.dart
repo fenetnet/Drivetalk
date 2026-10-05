@@ -281,15 +281,100 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() async => _c.rpc('clear_availability'));
 
   @override
-  Future<OfferStatus> respondOffer(String offerId, {required bool accept}) =>
+  Future<OfferAnswer> answerOffer(String offerId, {required bool accept}) =>
       _guard(() async {
-        final r = await _c.rpc(
-          'respond_offer',
-          params: {'p_offer': offerId, 'p_accept': accept},
+        final params = {'p_offer': offerId, 'p_accept': accept};
+        Object? r;
+        try {
+          r = await _c.rpc('answer_offer', params: params);
+        } on PostgrestException catch (e) {
+          if (!_missingFunction(e)) rethrow;
+          // Server not updated yet: the older two-step way.
+          final status = _status(
+            await _c.rpc('respond_offer', params: params) as String?,
+          );
+          if (status != OfferStatus.accepted) return OfferAnswer(status);
+          final rows = await _c.rpc(
+            'call_details',
+            params: {'p_offer': offerId},
+          );
+          final d = Map<String, dynamic>.from((rows as List).single as Map);
+          final phone = d['other_phone'] as String?;
+          return OfferAnswer(status, iCall: phone != null, phone: phone);
+        }
+        final m = Map<String, dynamic>.from(r as Map);
+        if (m['status'] == 'not_found') {
+          throw const RealBackendException('not_found');
+        }
+        return OfferAnswer(
+          _status(m['status'] as String?),
+          iCall: m['i_call'] == true,
+          phone: m['phone'] as String?,
         );
-        if (r == 'not_found') throw const RealBackendException('not_found');
-        return _status(r as String?);
       });
+
+  @override
+  Future<void> seenCall(String offerId) => _guard(() async {
+    try {
+      await _c.rpc('seen_call', params: {'p_offer': offerId});
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+    }
+  });
+
+  @override
+  Future<bool> cancelCall(String offerId) => _guard(() async {
+    try {
+      return await _c.rpc('cancel_call', params: {'p_offer': offerId}) == true;
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+      return true; // Older server: the countdown was only on the phone.
+    }
+  });
+
+  @override
+  Future<CallStart> startCall(String offerId) => _guard(() async {
+    try {
+      final m = Map<String, dynamic>.from(
+        await _c.rpc('start_call', params: {'p_offer': offerId}) as Map,
+      );
+      return CallStart(
+        switch (m['state']) {
+          'ready' => CallStartState.ready,
+          'wait' => CallStartState.wait,
+          'cancelled' => CallStartState.cancelled,
+          _ => CallStartState.gone,
+        },
+        iCall: m['i_call'] == true,
+        phone: m['phone'] as String?,
+        waitMs: (m['wait_ms'] as num?)?.toInt(),
+      );
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+      final rows = await _c.rpc('call_details', params: {'p_offer': offerId});
+      final d = Map<String, dynamic>.from((rows as List).single as Map);
+      final phone = d['other_phone'] as String?;
+      return CallStart(
+        CallStartState.ready,
+        iCall: phone != null,
+        phone: phone,
+      );
+    }
+  });
+
+  @override
+  Future<void> endCall(String offerId) => _guard(() async {
+    try {
+      await _c.rpc('end_call', params: {'p_offer': offerId});
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+    }
+  });
+
+  /// The server doesn't have this function yet (an update wasn't pasted).
+  static bool _missingFunction(PostgrestException e) =>
+      e.code == 'PGRST202' ||
+      e.message.toLowerCase().contains('could not find the function');
 
   @override
   Future<void> sendFeedback({
@@ -327,16 +412,6 @@ class SupabaseRealBackend implements RealBackend {
       'phone': n,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
-  });
-
-  @override
-  Future<CallDetails> callDetails(String offerId) => _guard(() async {
-    final rows = await _c.rpc('call_details', params: {'p_offer': offerId});
-    final r = Map<String, dynamic>.from((rows as List).single as Map);
-    return CallDetails(
-      otherPhone: r['other_phone'] as String?,
-      iShare: r['i_share'] == true,
-    );
   });
 
   @override
@@ -559,6 +634,8 @@ class SupabaseRealBackend implements RealBackend {
     aAccepted: _answer(r['a_response']),
     bAccepted: _answer(r['b_response']),
     quick: r['quick'] == true,
+    caller: r['caller'] as String?,
+    notBefore: r['not_before'] == null ? null : _time(r['not_before']),
   );
 
   static bool? _answer(Object? v) => switch (v) {

@@ -1599,6 +1599,41 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realConnecting => 'מתחברים…';
 
   @override
+  String realQuickConnecting(String name) {
+    return 'מתחברים ל$name…';
+  }
+
+  @override
+  String get realQuickConnectingBody => 'חיבור מהיר — אפשר לבטל';
+
+  @override
+  String get realQuickCancelled => 'החיבור בוטל';
+
+  @override
+  String get realDirectCallTitle => 'שהשיחה תתחיל מיד';
+
+  @override
+  String get realDirectCallBody =>
+      'כששניכם אומרים כן, הטלפון יחייג לבד — בלי עוד לחיצה. צריך לאשר פעם אחת \"שיחות טלפון\".';
+
+  @override
+  String get realDirectCallAllow => 'לאשר';
+
+  @override
+  String get realDirectCallSetting => 'חיוג מיידי';
+
+  @override
+  String get realDirectCallOn => 'פעיל — השיחה מתחילה מיד';
+
+  @override
+  String get realDirectCallOff => 'כבוי — החייגן נפתח עם המספר';
+
+  @override
+  String realCallingNow(String name) {
+    return 'מתקשרים ל$name…';
+  }
+
+  @override
   String realCallingIn(String name, int seconds) {
     return 'מתקשרים ל$name בעוד $seconds…';
   }
@@ -1948,7 +1983,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realVoiceQuick(String name) {
-    return 'מתחברים ל$name. לביטול — בטל.';
+    return 'מתחברים ל$name. אפשר לבטל בכפתור.';
   }
 
   @override

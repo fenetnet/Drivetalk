@@ -23,7 +23,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final url = Platform.environment['SUPABASE_LIVE_URL'];
 final key = Platform.environment['SUPABASE_LIVE_KEY'];
 
-class _Dialer implements PhoneDialer {
+class _Dialer extends PhoneDialer {
   final dialed = <String>[];
   @override
   Future<DialResult> call(String number) async {
@@ -100,8 +100,8 @@ void main() {
     // Realtime or the next refresh brings "accepted" to me.
     await m.refresh();
     await settle();
+    // Only Yoni shared a number → I dial, at once (no countdown).
     expect(me.read(realProvider).call?.role, CallRole.iCall);
-    await m.dialNow();
     expect(meDialer.dialed, ['0507654321']);
     m.finishCall();
     await m.sendFeedback(talked: true, rating: FeedbackRating.good);

@@ -918,6 +918,18 @@
   },
   "realBothSaidYes": "שניכם אמרתם כן!",
   "realConnecting": "מתחברים…",
+  "realQuickConnecting": "מתחברים ל{name}…",
+  "@realQuickConnecting": {"placeholders": {"name": {"type": "String"}}},
+  "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
+  "realQuickCancelled": "החיבור בוטל",
+  "realDirectCallTitle": "שהשיחה תתחיל מיד",
+  "realDirectCallBody": "כששניכם אומרים כן, הטלפון יחייג לבד — בלי עוד לחיצה. צריך לאשר פעם אחת \"שיחות טלפון\".",
+  "realDirectCallAllow": "לאשר",
+  "realDirectCallSetting": "חיוג מיידי",
+  "realDirectCallOn": "פעיל — השיחה מתחילה מיד",
+  "realDirectCallOff": "כבוי — החייגן נפתח עם המספר",
+  "realCallingNow": "מתקשרים ל{name}…",
+  "@realCallingNow": {"placeholders": {"name": {"type": "String"}}},
   "realCallingIn": "מתקשרים ל{name} בעוד {seconds}…",
   "@realCallingIn": {
     "placeholders": {
@@ -1106,7 +1118,7 @@
   "realInVehicleNow": "ברכב עכשיו",
   "realSimEnter": "דמה: נכנסתי לרכב",
   "realSimExit": "דמה: יצאתי מהרכב",
-  "realVoiceQuick": "מתחברים ל{name}. לביטול — בטל.",
+  "realVoiceQuick": "מתחברים ל{name}. אפשר לבטל בכפתור.",
   "@realVoiceQuick": {
     "placeholders": {
       "name": {

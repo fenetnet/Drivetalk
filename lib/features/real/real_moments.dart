@@ -189,52 +189,19 @@ class RealCallScreen extends ConsumerWidget {
       CallStage.connecting => MomentLayout(
         style: style,
         top: header(
-          call.quick ? l.realQuickWhyShort : l.realBothSaidYes,
-          body: call.quick && s.dialCountdown > 0
-              ? l.realQuickIn(call.other.name, s.dialCountdown)
-              : call.role == CallRole.iCall && s.dialCountdown > 0
-              ? l.realCallingIn(call.other.name, s.dialCountdown)
-              : l.realConnecting,
-          extra: s.dialCountdown > 0
-              ? Padding(
-                  padding: const EdgeInsets.only(top: 40),
-                  child: Container(
-                    width: 96,
-                    height: 96,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 6,
-                      ),
-                    ),
-                    child: Text(
-                      '${s.dialCountdown}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 46,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                )
-              : null,
+          call.quick
+              ? l.realQuickConnecting(call.other.name)
+              : l.realCallingNow(call.other.name),
+          body: call.quick ? l.realQuickConnectingBody : null,
         ),
         actions: [
-          if (call.role == CallRole.iCall)
-            PrimaryPill(
-              label: l.realCallNow,
-              icon: Icons.call_rounded,
-              style: style,
-              onTap: c.dialNow,
-            ),
-          SecondaryPill(label: l.cancel, style: style, onTap: c.cancelCall),
+          if (call.quick)
+            SecondaryPill(label: l.cancel, style: style, onTap: c.cancelCall),
         ],
       ),
       CallStage.dialed => MomentLayout(
         style: style,
-        top: header(l.realDialedTitle, body: l.realDialedBody),
+        top: header(l.realCallingNow(call.other.name), body: l.realDialedBody),
         actions: [done],
       ),
       CallStage.waitingForTheirCall => MomentLayout(

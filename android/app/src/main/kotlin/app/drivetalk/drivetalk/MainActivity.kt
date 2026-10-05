@@ -25,7 +25,6 @@ class MainActivity : FlutterActivity() {
     private var pendingBluetoothResult: MethodChannel.Result? = null
     private var pendingNotificationResult: MethodChannel.Result? = null
     private var pendingContactsResult: MethodChannel.Result? = null
-    private var pendingNumber: String? = null
     private var pendingResult: MethodChannel.Result? = null
     private var pendingDrivingResult: MethodChannel.Result? = null
 
@@ -64,23 +63,31 @@ class MainActivity : FlutterActivity() {
         // Returns "calling", "dialer" or "failed".
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/phone")
             .setMethodCallHandler { call, result ->
-                if (call.method != "call") {
-                    result.notImplemented()
-                    return@setMethodCallHandler
-                }
-                val number = call.argument<String>("number")
-                if (number.isNullOrBlank()) {
-                    result.success("failed")
-                    return@setMethodCallHandler
-                }
-                if (hasCallPermission()) {
-                    result.success(place(number, direct = true))
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    pendingNumber = number
-                    pendingResult = result
-                    requestPermissions(arrayOf(Manifest.permission.CALL_PHONE), callPermissionRequest)
-                } else {
-                    result.success(place(number, direct = false))
+                when (call.method) {
+                    // Never asks for a permission here: the call starts at once,
+                    // directly if allowed, otherwise in the dialer.
+                    "call" -> {
+                        val number = call.argument<String>("number")
+                        if (number.isNullOrBlank()) {
+                            result.success("failed")
+                        } else {
+                            result.success(place(number, direct = hasCallPermission()))
+                        }
+                    }
+                    "canCallDirectly" -> result.success(hasCallPermission())
+                    // Asked ahead, on a calm screen (not during an offer).
+                    "requestDirectCall" -> {
+                        if (hasCallPermission() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                            result.success(hasCallPermission())
+                        } else {
+                            pendingResult = result
+                            requestPermissions(
+                                arrayOf(Manifest.permission.CALL_PHONE),
+                                callPermissionRequest,
+                            )
+                        }
+                    }
+                    else -> result.notImplemented()
                 }
             }
     }
@@ -321,14 +328,12 @@ class MainActivity : FlutterActivity() {
             return
         }
         if (requestCode != callPermissionRequest) return
-        val number = pendingNumber
         val result = pendingResult
-        pendingNumber = null
         pendingResult = null
-        if (number == null || result == null) return
-        val granted = grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        result.success(place(number, direct = granted))
+        if (result == null) return
+        result.success(
+            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED,
+        )
     }
 
     private fun hasCallPermission(): Boolean =

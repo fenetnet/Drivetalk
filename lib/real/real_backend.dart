@@ -41,7 +41,20 @@ abstract class RealBackend {
   Future<void> clearAvailability();
 
   /// Returns the offer's new status.
-  Future<OfferStatus> respondOffer(String offerId, {required bool accept});
+  /// Yes / not now. The second "yes" gets the number back at once.
+  Future<OfferAnswer> answerOffer(String offerId, {required bool accept});
+
+  /// Quick connect: my phone shows it (the 5 seconds start once both saw it).
+  Future<void> seenCall(String offerId);
+
+  /// Quick connect: cancel during the 5 seconds. False if too late.
+  Future<bool> cancelCall(String offerId);
+
+  /// Quick connect (or after a restart): may we dial now, and who dials?
+  Future<CallStart> startCall(String offerId);
+
+  /// The call is over for me (frees me for the next offer).
+  Future<void> endCall(String offerId);
 
   Future<void> sendFeedback({
     required String? offerId,
@@ -53,9 +66,6 @@ abstract class RealBackend {
   /// My phone number for regular calls (null = not shared).
   Future<String?> getMyPhone();
   Future<void> setMyPhone(String? phone);
-
-  /// After both accepted: the other side's number (if they share it).
-  Future<CallDetails> callDetails(String offerId);
 
   /// Automatic driving: a token this phone uses in the background.
   Future<String> createDeviceToken();

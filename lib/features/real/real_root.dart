@@ -95,6 +95,7 @@ class RealRoot extends ConsumerWidget {
     final g = genderKey(n.gender ?? Gender.unspecified);
     return switch (n.kind) {
       RealNoticeKind.didNotWorkOut => l.realDidNotWorkOut,
+      RealNoticeKind.quickCancelled => l.realQuickCancelled,
       RealNoticeKind.connected => l.realConnected(n.name ?? ''),
       RealNoticeKind.inviteProblem => inviteProblemText(l, n.code),
       RealNoticeKind.error => realErrorText(l, n.code ?? 'unknown'),

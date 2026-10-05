@@ -159,15 +159,26 @@ Future<void> main() async {
 
   check(await yoni.rpc('respond_offer', params: {'p_offer': offerId, 'p_accept': true}) == 'accepted',
       'Yoni accepts → match accepted');
+  // Only Yoni shared a number → I am the caller (only one side dials).
   final details = List<Map<String, dynamic>>.from(
     await me.rpc('call_details', params: {'p_offer': offerId}),
   ).single;
   check(details['other_phone'] == '+972501234567' && details['i_share'] == false,
-      'after both accepted I get the number Yoni chose to share');
+      'after both accepted the caller (me) gets the number Yoni shared');
+  final yoniDetails = List<Map<String, dynamic>>.from(
+    await yoni.rpc('call_details', params: {'p_offer': offerId}),
+  ).single;
+  check(yoniDetails['other_phone'] == null, 'the side that is called gets no number');
+  final agreed = (await rows(me, 'match_offers')).firstWhere((o) => o['id'] == offerId);
+  check(agreed['caller'] == uid(me), 'the server chose exactly one caller');
   final eveDetails = List<Map<String, dynamic>>.from(
     await eve.rpc('call_details', params: {'p_offer': offerId}),
   ).single;
   check(eveDetails['other_phone'] == null, "a stranger can't get numbers from our offer");
+
+  // The call is over for both (after the feedback question).
+  await me.rpc('end_call', params: {'p_offer': offerId});
+  await yoni.rpc('end_call', params: {'p_offer': offerId});
 
   // --- right after a call: not the same pair again (30-minute pause)
   await me.rpc('clear_availability');
@@ -194,6 +205,60 @@ Future<void> main() async {
       'no new offer right after a decline (cooldown)');
   await tal.rpc('clear_availability');
   await tal.dispose();
+
+  // --- instant call, one at a time (D-060)
+  await me.rpc('clear_availability');
+  await yoni.rpc('clear_availability');
+  final x1 = await newUser('איתי', 'male');
+  final x2 = await newUser('נוי', 'female');
+  var xPhone = 0;
+  for (final x in [x1, x2]) {
+    final inv = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+    await x.rpc('accept_invitation', params: {'p_token': inv['token']});
+    await x.from('phone_numbers').upsert({'user_id': uid(x), 'phone': '+97253000000${xPhone++}'});
+    await x.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  }
+  await me.from('phone_numbers').upsert({'user_id': uid(me), 'phone': '+972509876543'});
+  await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  final myOpen = (await rows(me, 'match_offers')).where((o) => o['status'] == 'pending').toList();
+  check(myOpen.length == 1, 'two friends free → still only ONE offer at a time');
+  final oneId = myOpen.single['id'] as String;
+  final who = myOpen.single['user_a'] == uid(me) ? myOpen.single['user_b'] : myOpen.single['user_a'];
+  final picked = who == uid(x1) ? x1 : x2;
+  final waiting = who == uid(x1) ? x2 : x1;
+  final firstYes = Map<String, dynamic>.from(
+      await picked.rpc('answer_offer', params: {'p_offer': oneId, 'p_accept': true}));
+  check(firstYes['status'] == 'pending' && firstYes['phone'] == null, 'first "yes" → no number yet');
+  final t0 = DateTime.now();
+  final secondYes = Map<String, dynamic>.from(
+      await me.rpc('answer_offer', params: {'p_offer': oneId, 'p_accept': true}));
+  final ms = DateTime.now().difference(t0).inMilliseconds;
+  check(secondYes['status'] == 'accepted' && secondYes['i_call'] == true &&
+          (secondYes['phone'] as String).startsWith('+97253'),
+      'second "yes" → I am the caller, in the same reply ($ms ms)');
+  final pickedSees = (await rows(picked, 'match_offers')).firstWhere((o) => o['id'] == oneId);
+  check(pickedSees['caller'] == uid(me), 'the other side sees that I am calling');
+  check(await waiting.rpc('nudge_offers') == 0 &&
+          (await rows(waiting, 'match_offers')).where((o) => o['status'] == 'pending').isEmpty,
+      'while I am in a call, nobody gets an offer with me');
+  await me.rpc('end_call', params: {'p_offer': oneId});
+  await waiting.rpc('nudge_offers');
+  check((await rows(waiting, 'match_offers')).where((o) => o['status'] == 'pending').length == 1,
+      'after my call ends, the next friend is offered');
+  // Number only to the caller: the picked friend dials me in the next case.
+  final nextId = (await rows(me, 'match_offers')).firstWhere((o) => o['status'] == 'pending')['id'];
+  await me.rpc('answer_offer', params: {'p_offer': nextId, 'p_accept': true});
+  final callerReply = Map<String, dynamic>.from(
+      await waiting.rpc('answer_offer', params: {'p_offer': nextId, 'p_accept': true}));
+  check(callerReply['i_call'] == true && callerReply['phone'] == '+972509876543',
+      'the caller gets my number in the same reply');
+  await me.rpc('end_call', params: {'p_offer': nextId});
+  await waiting.rpc('end_call', params: {'p_offer': nextId});
+  for (final x in [x1, x2]) {
+    await x.rpc('clear_availability');
+    await x.dispose();
+  }
+  await me.from('phone_numbers').delete().eq('user_id', uid(me));
 
   // --- clearing availability cancels and hides
   await yoni.rpc('clear_availability');
@@ -307,10 +372,55 @@ Future<void> main() async {
       .toList();
   check(quickOffer.length == 1 && quickOffer.single['status'] == 'accepted',
       'both in each other\'s quick circle → connected at once (no question)');
+  final qid = quickOffer.single['id'] as String;
+  final qEarly = List<Map<String, dynamic>>.from(
+      await me.rpc('call_details', params: {'p_offer': qid})).single;
+  check(qEarly['other_phone'] == null, 'quick connect: no number during the countdown');
+  final w1 = Map<String, dynamic>.from(await me.rpc('start_call', params: {'p_offer': qid}));
+  check(w1['state'] == 'wait', 'quick connect: waits until both phones saw it');
+  await mom.rpc('seen_call', params: {'p_offer': qid});
+  final w2 = Map<String, dynamic>.from(await mom.rpc('start_call', params: {'p_offer': qid}));
+  check(w2['state'] == 'wait' && (w2['wait_ms'] as int) > 3000,
+      'both saw it → 5 seconds to cancel (${w2['wait_ms']} ms left)');
+  check(await mom.rpc('cancel_call', params: {'p_offer': qid}) == true, 'either side can cancel');
+  final w3 = Map<String, dynamic>.from(await me.rpc('start_call', params: {'p_offer': qid}));
+  check(w3['state'] == 'cancelled', 'after cancel: no call, the other side knows');
   await mom.rpc('nudge_offers');
   check((await rows(me, 'match_offers')).where((o) => o['quick'] == true).length == 1,
       'quick connect at most once a day per pair');
   check(await mom.rpc('nudge_offers') == 0, 'nudge is harmless when nothing is new');
+  // A new quick pair in a NEW availability window: countdown, then one caller.
+  await me.rpc('clear_availability');
+  final shira = await newUser('שירה', 'female');
+  final invShira = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await shira.rpc('accept_invitation', params: {'p_token': invShira['token']});
+  await me.from('circle_members').insert({'circle_id': family['id'], 'member': uid(shira)});
+  final shiras = await shira.from('circles').insert({'name': 'קרובים', 'quick': true}).select().single();
+  await shira.from('circle_members').insert({'circle_id': shiras['id'], 'member': uid(me)});
+  await mom.rpc('clear_availability');
+  await shira.from('phone_numbers').upsert({'user_id': uid(shira), 'phone': '+972521112233'});
+  await shira.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  final q2 = (await rows(me, 'match_offers'))
+      .where((o) => o['quick'] == true && o['status'] == 'accepted' && o['caller'] == null)
+      .toList();
+  check(q2.length == 1, 'quick connect again in a new availability window');
+  final q2id = q2.single['id'] as String;
+  await me.rpc('seen_call', params: {'p_offer': q2id});
+  await shira.rpc('seen_call', params: {'p_offer': q2id});
+  await Future<void>.delayed(const Duration(milliseconds: 5600));
+  final r1 = Map<String, dynamic>.from(await me.rpc('start_call', params: {'p_offer': q2id}));
+  final r2 = Map<String, dynamic>.from(await shira.rpc('start_call', params: {'p_offer': q2id}));
+  check(r1['state'] == 'ready' && r1['i_call'] == true && r1['phone'] == '+972521112233',
+      'after 5 seconds the first to ask dials (gets the number)');
+  check(r2['state'] == 'ready' && r2['i_call'] == false && r2['phone'] == null,
+      'the other side is told they will be called (no number)');
+  check(await shira.rpc('cancel_call', params: {'p_offer': q2id}) == false,
+      'no cancel after the 5 seconds');
+  await me.rpc('end_call', params: {'p_offer': q2id});
+  await shira.rpc('end_call', params: {'p_offer': q2id});
+  await shira.rpc('clear_availability');
+  await shira.dispose();
   await mom.rpc('clear_availability');
   await mom.dispose();
   await dani.dispose();

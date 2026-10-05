@@ -5,7 +5,7 @@ import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
-/** The four background calls (device token only). Never on the main thread. */
+/** The background calls (device token only). Never on the main thread. */
 class DrivingApi(private val store: DrivingStore) {
 
     /** kind: "ask" (talk?) or "quick" (quick connect, already agreed). */
@@ -42,6 +42,10 @@ class DrivingApi(private val store: DrivingStore) {
 
     /** "Stop" on the notification: end any availability (manual too). */
     fun stopAll(): String? = rpc("device_stop", JSONObject())?.trim('"')
+
+    /** Quick connect: cancel during the 5 seconds (reaches the other side). */
+    fun cancelCall(offerId: String): Boolean =
+        rpc("device_cancel_call", JSONObject().put("p_offer", offerId))?.trim() == "true"
 
     fun decline(offerId: String): String? =
         rpc("auto_decline", JSONObject().put("p_offer", offerId))?.trim('"')

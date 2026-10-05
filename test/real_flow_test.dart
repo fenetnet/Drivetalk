@@ -17,7 +17,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-class RecordingDialer implements PhoneDialer {
+class RecordingDialer extends PhoneDialer {
   final dialed = <String>[];
   DialResult result = DialResult.calling;
   @override
@@ -182,12 +182,10 @@ void main() {
       await me.c.refresh();
       await pump();
 
-      // Yoni shared his number, I didn't → I call him.
-      expect(me.s.callStage, CallStage.connecting);
+      // Yoni shared his number, I didn't → I call him, right away.
       expect(me.s.call?.role, CallRole.iCall);
-      expect(yoni.s.callStage, CallStage.waitingForTheirCall);
-      await me.c.dialNow();
       expect(me.dialer.dialed, ['0501234567']);
+      expect(yoni.s.callStage, CallStage.waitingForTheirCall);
       expect(me.s.callStage, CallStage.dialed);
       expect(yoni.dialer.dialed, isEmpty);
 
@@ -211,6 +209,53 @@ void main() {
     await pump();
     final roles = {me.s.call?.role, yoni.s.call?.role};
     expect(roles, {CallRole.iCall, CallRole.theyCall});
+    // The second "yes" (Yoni) dials immediately, in the same step.
+    expect(yoni.s.call?.role, CallRole.iCall);
+    expect(yoni.dialer.dialed, ['0521111111']);
+    expect(me.dialer.dialed, isEmpty);
+  });
+
+  test('one offer at a time, and never two calls at once', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    final dana = Phone(server, clock);
+    await dana.boot();
+    await dana.c.signIn('דנה', Gender.female, phone: '0543333333');
+    final msg = await me.c.createInviteMessage();
+    dana.c.openInviteText(msg!);
+    await pump();
+    await dana.c.acceptInvite();
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await dana.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    final mine = me.s.snapshot!.offers
+        .where((o) => o.status == OfferStatus.pending)
+        .toList();
+    expect(mine, hasLength(1), reason: 'two friends free → one question');
+    final first = mine.single;
+    final other = first.otherId(me.backend.userId!) == yoni.backend.userId
+        ? yoni
+        : dana;
+    final third = identical(other, yoni) ? dana : yoni;
+    await me.c.respond(first, accept: true);
+    await other.c.refresh();
+    await other.c.respond(currentOffer(other.s, now)!, accept: true);
+    now = now.add(const Duration(seconds: 16)); // the app nudges every 15s
+    await third.c.refresh();
+    expect(
+      currentOffer(third.s, now),
+      isNull,
+      reason: 'I am in a call → nobody else is offered to me',
+    );
+    await me.c.refresh(); // Realtime tells me the call started
+    await pump();
+    expect(me.s.callStage, CallStage.waitingForTheirCall);
+    me.c.finishCall();
+    await me.c.sendFeedback(talked: true);
+    now = now.add(const Duration(seconds: 16));
+    await third.c.refresh();
+    expect(currentOffer(third.s, now), isNotNull, reason: 'call over → next');
+    dana.dispose();
   });
 
   test('no numbers shared → simulated in-app call', () async {
@@ -476,19 +521,61 @@ void main() {
         await me.c.startAvailability(AvailabilityMode.driving, 30);
         await yoni.c.startAvailability(AvailabilityMode.free, 30);
         await me.c.refresh();
-        await pump();
+        await yoni.c.refresh();
+        await pump(50);
         expect(currentOffer(me.s, now), isNull, reason: 'no question');
         expect(me.s.callStage, CallStage.connecting);
         expect(me.s.call?.quick, isTrue);
-        expect(me.s.dialCountdown, 5);
         expect(me.voice.spoken.last, contains('יוני'));
-        // Only one side dials.
+        // Nobody dials during the 5 seconds (server rule).
+        await pump(700);
+        expect(me.s.callStage, CallStage.connecting);
+        expect([...me.dialer.dialed, ...yoni.dialer.dialed], isEmpty);
+        now = now.add(const Duration(seconds: 6));
+        await pump(700);
+        // Exactly one side dials.
         expect(
           {me.s.call?.role, yoni.s.call?.role},
           {CallRole.iCall, CallRole.theyCall},
         );
+        expect(me.dialer.dialed.length + yoni.dialer.dialed.length, 1);
       },
     );
+
+    test('quick connect: either side can cancel in the 5 seconds', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.saveCircle(
+        RealCircle(
+          id: '',
+          name: 'קרובים',
+          quick: true,
+          memberIds: {yoni.backend.userId!},
+        ),
+      );
+      await yoni.c.saveCircle(
+        RealCircle(
+          id: '',
+          name: 'משפחה',
+          quick: true,
+          memberIds: {me.backend.userId!},
+        ),
+      );
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await yoni.c.refresh();
+      await pump(50);
+      expect(yoni.s.callStage, CallStage.connecting);
+      await yoni.c.cancelCall();
+      expect(yoni.s.callStage, CallStage.none);
+      await me.c.refresh();
+      await pump(600);
+      expect(me.s.callStage, CallStage.none);
+      expect(me.s.notice?.kind, RealNoticeKind.quickCancelled);
+      now = now.add(const Duration(seconds: 10));
+      await pump(600);
+      expect([...me.dialer.dialed, ...yoni.dialer.dialed], isEmpty);
+    });
 
     test('one-sided quick circle is just a normal question', () async {
       await connect();

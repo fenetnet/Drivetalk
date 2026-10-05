@@ -126,6 +126,7 @@ class RealCall {
 
 enum RealNoticeKind {
   didNotWorkOut,
+  quickCancelled,
   connected,
   inviteProblem,
   error,
@@ -192,7 +193,6 @@ class RealState {
     this.invite,
     this.callStage = CallStage.none,
     this.call,
-    this.dialCountdown = 0,
     this.notice,
     this.prefs = const RealPrefs(),
     this.myPhone,
@@ -201,10 +201,14 @@ class RealState {
     this.listening = false,
     this.driving = const DrivingStatus(),
     this.routines = const [],
+    this.directCall,
   });
 
   /// My routines ("every weekday at 8:00, driving").
   final List<Routine> routines;
+
+  /// May calls start without an extra tap (asked ahead)? null = unknown.
+  final bool? directCall;
 
   final RealPhase phase;
   final RealSnapshot? snapshot;
@@ -215,7 +219,6 @@ class RealState {
   final PendingInvite? invite;
   final CallStage callStage;
   final RealCall? call;
-  final int dialCountdown;
   final RealNotice? notice;
   final RealPrefs prefs;
   final String? myPhone;
@@ -244,7 +247,6 @@ class RealState {
     Object? invite = _keep,
     CallStage? callStage,
     Object? call = _keep,
-    int? dialCountdown,
     Object? notice = _keep,
     RealPrefs? prefs,
     Object? myPhone = _keep,
@@ -253,6 +255,7 @@ class RealState {
     bool? listening,
     DrivingStatus? driving,
     List<Routine>? routines,
+    bool? directCall,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -269,7 +272,6 @@ class RealState {
     invite: identical(invite, _keep) ? this.invite : invite as PendingInvite?,
     callStage: callStage ?? this.callStage,
     call: identical(call, _keep) ? this.call : call as RealCall?,
-    dialCountdown: dialCountdown ?? this.dialCountdown,
     notice: identical(notice, _keep) ? this.notice : notice as RealNotice?,
     prefs: prefs ?? this.prefs,
     myPhone: identical(myPhone, _keep) ? this.myPhone : myPhone as String?,
@@ -278,6 +280,7 @@ class RealState {
     listening: listening ?? this.listening,
     driving: driving ?? this.driving,
     routines: routines ?? this.routines,
+    directCall: directCall ?? this.directCall,
   );
 }
 
@@ -360,7 +363,6 @@ class RealController extends Notifier<RealState> {
   final _subs = <StreamSubscription<Object?>>[];
   Timer? _debounce;
   Timer? _ticker;
-  Timer? _dialTimer;
   AppLifecycleListener? _lifecycle;
   var _noticeSeq = 0;
   var _voiceSeq = 0;
@@ -423,7 +425,6 @@ class RealController extends Notifier<RealState> {
     }
     _debounce?.cancel();
     _ticker?.cancel();
-    _dialTimer?.cancel();
     _lifecycle?.dispose();
   }
 
@@ -512,7 +513,35 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ auto driving
 
+  // ------------------------------------------------------------ direct call
+
+  static const _directTipKey = 'real.directCallTip.v1';
+
+  /// Show the "calls start at once" card? (Not while an offer is open.)
+  bool get showDirectCallTip =>
+      state.directCall == false && _store.getString(_directTipKey) == null;
+
+  Future<void> _loadDirectCall() async {
+    final ok = await ref.read(phoneDialerProvider).canCallDirectly();
+    if (ref.mounted) state = state.copyWith(directCall: ok);
+  }
+
+  /// Ask for direct calls now (a calm moment), so later a call starts at once.
+  Future<bool> askDirectCall() async {
+    final ok = await ref.read(phoneDialerProvider).requestDirectCall();
+    if (!ref.mounted) return ok;
+    state = state.copyWith(directCall: ok);
+    if (ok) await _store.setString(_directTipKey, 'done');
+    return ok;
+  }
+
+  void dismissDirectCallTip() {
+    _store.setString(_directTipKey, 'dismissed');
+    state = state.copyWith();
+  }
+
   Future<void> _loadDriving() async {
+    unawaited(_loadDirectCall());
     final detector = ref.read(drivingDetectorProvider);
     final st = await detector.status();
     if (!ref.mounted) return;
@@ -563,8 +592,9 @@ class RealController extends Notifier<RealState> {
     'talk': _l.realTalkNow,
     'notNow': _l.realNotNow,
     'voiceOffer': _l.realVoiceOffer('{name}', 'male'),
-    'quickTitle': _l.realQuickNotif('{name}'),
-    'quickBody': _l.realQuickWhy,
+    'quickTitle': _l.realQuickConnecting('{name}'),
+    'quickBody': _l.realQuickConnectingBody,
+    'cancel': _l.cancel,
     'voiceQuick': _l.realVoiceQuick('{name}'),
     'manualTitle': _l.realNotifManualTitle,
     'quickOff': _l.realQuickOff,
@@ -889,6 +919,12 @@ class RealController extends Notifier<RealState> {
     final me = snap.me.id;
     final now = _now();
     for (final o in snap.offers) {
+      // The other side cancelled the quick connect during the 5 seconds.
+      if (o.status == OfferStatus.cancelled &&
+          state.call?.offerId == o.id &&
+          state.callStage == CallStage.connecting) {
+        _endQuick(cancelledByOther: true);
+      }
       if (_handled.contains(o.id)) continue;
       final mine = state.localAnswers[o.id] ?? o.myAnswer(me);
       final other = snap.friend(o.otherId(me));
@@ -979,12 +1015,16 @@ class RealController extends Notifier<RealState> {
       _markHandled(offer.id);
     }
     try {
-      final status = await _backend.respondOffer(offer.id, accept: accept);
+      final answer = await _backend.answerOffer(offer.id, accept: accept);
+      final status = answer.status;
       if (!ref.mounted) return;
       if (accept && status == OfferStatus.accepted) {
         final other = state.snapshot?.friend(offer.otherId(state.myId!));
         _markHandled(offer.id);
-        if (other != null) unawaited(_beginCall(offer, other));
+        if (other != null) {
+          // I said the second "yes": I dial — now, not after a countdown.
+          _startCall(offer, other, iCall: answer.iCall, phone: answer.phone);
+        }
       } else if (accept &&
           (status == OfferStatus.expired ||
               status == OfferStatus.cancelled ||
@@ -1004,7 +1044,7 @@ class RealController extends Notifier<RealState> {
   /// Stop waiting for the other side (counts as "not now" for this offer).
   Future<void> cancelWaiting(RealOffer offer) async {
     _markHandled(offer.id);
-    await _run(() => _backend.respondOffer(offer.id, accept: false));
+    await _run(() => _backend.answerOffer(offer.id, accept: false));
     await refresh();
   }
 
@@ -1044,10 +1084,70 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ the call
 
+  /// An agreed call I learned about from the server (not from my own
+  /// "yes"): they dial me, or — after a restart — I still have to dial.
   Future<void> _beginCall(RealOffer offer, RealProfile other) async {
     if (!_callIdle(state)) return;
+    if (offer.quick && offer.caller == null) {
+      await _beginQuick(offer, other);
+      return;
+    }
+    final me = state.myId!;
+    if (offer.caller != null && offer.caller != me) {
+      _startCall(offer, other, iCall: false);
+      return;
+    }
+    // I'm the caller (or an older server): ask for the number.
+    try {
+      final r = await _backend.startCall(offer.id);
+      if (!ref.mounted || !_callIdle(state)) return;
+      if (r.state == CallStartState.ready) {
+        _startCall(offer, other, iCall: r.iCall, phone: r.phone);
+      }
+    } on RealBackendException catch (e) {
+      _setError(e.code);
+    }
+  }
+
+  /// Both agreed: go. The caller's phone dials at once; the other side is
+  /// told who is calling. No extra screens, no countdown.
+  void _startCall(
+    RealOffer offer,
+    RealProfile other, {
+    required bool iCall,
+    String? phone,
+  }) {
     _stopVoice();
-    // Show "connecting" at once; numbers are fetched only now.
+    final role = iCall
+        ? (phone != null ? CallRole.iCall : CallRole.inApp)
+        : (state.myPhone != null ? CallRole.theyCall : CallRole.inApp);
+    final call = RealCall(
+      offerId: offer.id,
+      other: other,
+      role: role,
+      startedAt: _now(),
+      phone: role == CallRole.iCall ? phone : null,
+      quick: offer.quick,
+    );
+    state = state.copyWith(call: call, callStage: CallStage.connecting);
+    switch (role) {
+      case CallRole.iCall:
+        unawaited(_dial());
+        if (_driving(_now())) _speak(_l.realVoiceCalling(other.name));
+      case CallRole.theyCall:
+        state = state.copyWith(callStage: CallStage.waitingForTheirCall);
+        if (_driving(_now())) {
+          _speak(_l.realVoiceTheyCall(other.name, _genderKey(other.gender)));
+        }
+      case CallRole.inApp:
+        state = state.copyWith(callStage: CallStage.inApp);
+    }
+  }
+
+  /// Quick connect: "Connecting to Dani…" with Cancel. The server decides
+  /// when the 5 seconds (after both phones saw it) are over.
+  Future<void> _beginQuick(RealOffer offer, RealProfile other) async {
+    _stopVoice();
     state = state.copyWith(
       callStage: CallStage.connecting,
       call: RealCall(
@@ -1055,97 +1155,80 @@ class RealController extends Notifier<RealState> {
         other: other,
         role: CallRole.inApp,
         startedAt: _now(),
+        quick: true,
       ),
-      dialCountdown: 0,
     );
-    var details = const CallDetails();
+    _speak(_l.realVoiceQuick(other.name));
     try {
-      details = await _backend.callDetails(offer.id);
-    } on RealBackendException catch (e) {
-      _setError(e.code);
+      await _backend.seenCall(offer.id);
+    } on RealBackendException {
+      // start_call below marks it seen too.
     }
-    if (!ref.mounted || state.call?.offerId != offer.id) return;
-    final me = state.myId!;
-    final role =
-        details.otherPhone != null && (!details.iShare || me == offer.userA)
-        ? CallRole.iCall
-        : details.iShare
-        ? CallRole.theyCall
-        : CallRole.inApp;
-    final call = RealCall(
-      offerId: offer.id,
-      other: other,
-      role: role,
-      startedAt: _now(),
-      phone: role == CallRole.iCall ? details.otherPhone : null,
-      quick: offer.quick,
-    );
-    // Quick connect: everyone gets 5 seconds to cancel. A normal match:
-    // only the side that dials gets 3 seconds.
-    final countdown = offer.quick ? 5 : (role == CallRole.iCall ? 3 : 0);
-    state = state.copyWith(call: call, dialCountdown: countdown);
-    if (countdown == 0) {
-      _proceed();
-      return;
-    }
-    if (_driving(_now()) || offer.quick) {
-      _speak(
-        offer.quick
-            ? _l.realVoiceQuick(other.name)
-            : _l.realVoiceCalling(other.name),
-      );
-    }
-    _dialTimer?.cancel();
-    _dialTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!ref.mounted || state.call?.offerId != offer.id) {
-        t.cancel();
+    await _pollQuick(offer, other);
+  }
+
+  Future<void> _pollQuick(RealOffer offer, RealProfile other) async {
+    for (var tries = 0; tries < 120; tries++) {
+      if (!ref.mounted ||
+          state.call?.offerId != offer.id ||
+          state.callStage != CallStage.connecting) {
         return;
       }
-      final left = state.dialCountdown - 1;
-      if (left > 0) {
-        state = state.copyWith(dialCountdown: left);
-      } else {
-        t.cancel();
-        state = state.copyWith(dialCountdown: 0);
-        _proceed();
+      CallStart r;
+      try {
+        r = await _backend.startCall(offer.id);
+      } on RealBackendException catch (e) {
+        _setError(e.code);
+        r = const CallStart(CallStartState.wait, waitMs: 1000);
       }
-    });
-  }
-
-  /// After the countdown: dial, wait for their call, or the in-app call.
-  void _proceed() {
-    final call = state.call;
-    if (call == null || state.callStage != CallStage.connecting) return;
-    switch (call.role) {
-      case CallRole.iCall:
-        unawaited(_dial());
-      case CallRole.theyCall:
-        state = state.copyWith(callStage: CallStage.waitingForTheirCall);
-        if (_driving(_now())) {
-          _speak(
-            _l.realVoiceTheyCall(
-              call.other.name,
-              _genderKey(call.other.gender),
-            ),
-          );
-        }
-      case CallRole.inApp:
-        state = state.copyWith(callStage: CallStage.inApp);
+      if (!ref.mounted ||
+          state.call?.offerId != offer.id ||
+          state.callStage != CallStage.connecting) {
+        return;
+      }
+      switch (r.state) {
+        case CallStartState.ready:
+          _startCall(offer, other, iCall: r.iCall, phone: r.phone);
+          return;
+        case CallStartState.cancelled:
+        case CallStartState.gone:
+          _endQuick(cancelledByOther: r.state == CallStartState.cancelled);
+          return;
+        case CallStartState.wait:
+          final ms = (r.waitMs ?? 500).clamp(100, 500);
+          await Future<void>.delayed(Duration(milliseconds: ms));
+      }
+    }
+    if (ref.mounted && state.call?.offerId == offer.id) {
+      _endQuick(cancelledByOther: false);
     }
   }
 
-  /// "Call now" without waiting for the countdown.
-  Future<void> dialNow() async {
-    _dialTimer?.cancel();
-    state = state.copyWith(dialCountdown: 0);
-    _proceed();
+  void _endQuick({required bool cancelledByOther}) {
+    _stopVoice();
+    final id = state.call?.offerId;
+    state = state.copyWith(callStage: CallStage.none, call: null);
+    if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
+    _notify(
+      cancelledByOther
+          ? RealNoticeKind.quickCancelled
+          : RealNoticeKind.didNotWorkOut,
+    );
+  }
+
+  Future<void> _quietly(Future<void> Function() body) async {
+    try {
+      await body();
+    } on RealBackendException {
+      // Not worth bothering the user.
+    }
   }
 
   Future<void> _dial() async {
     final call = state.call;
     if (call == null || call.phone == null) return;
     if (state.callStage != CallStage.connecting) return;
-    state = state.copyWith(callStage: CallStage.dialed, dialCountdown: 0);
+    state = state.copyWith(callStage: CallStage.dialed);
     final r = await ref.read(phoneDialerProvider).call(call.phone!);
     if (!ref.mounted) return;
     if (r == DialResult.failed || r == DialResult.unsupported) {
@@ -1155,17 +1238,21 @@ class RealController extends Notifier<RealState> {
     }
   }
 
-  /// Cancel during the countdown (before anything was dialed).
-  void cancelCall() {
-    _dialTimer?.cancel();
+  /// Quick connect: cancel during the 5 seconds (reaches the other side).
+  Future<void> cancelCall() async {
+    final call = state.call;
+    if (call == null || state.callStage != CallStage.connecting) return;
     _stopVoice();
-    state = state.copyWith(callStage: CallStage.feedback, dialCountdown: 0);
+    state = state.copyWith(callStage: CallStage.none, call: null);
+    await _quietly(() async {
+      await _backend.cancelCall(call.offerId);
+      await _backend.endCall(call.offerId);
+    });
   }
 
   void finishCall() {
-    _dialTimer?.cancel();
     _stopVoice();
-    state = state.copyWith(callStage: CallStage.feedback, dialCountdown: 0);
+    state = state.copyWith(callStage: CallStage.feedback);
   }
 
   Future<void> sendFeedback({
@@ -1174,6 +1261,7 @@ class RealController extends Notifier<RealState> {
   }) async {
     final call = state.call;
     state = state.copyWith(callStage: CallStage.none, call: null);
+    if (call != null) unawaited(_quietly(() => _backend.endCall(call.offerId)));
     try {
       await _backend.sendFeedback(
         offerId: call?.offerId,
@@ -1187,8 +1275,11 @@ class RealController extends Notifier<RealState> {
     }
   }
 
-  void skipFeedback() =>
-      state = state.copyWith(callStage: CallStage.none, call: null);
+  void skipFeedback() {
+    final call = state.call;
+    state = state.copyWith(callStage: CallStage.none, call: null);
+    if (call != null) unawaited(_quietly(() => _backend.endCall(call.offerId)));
+  }
 
   // ------------------------------------------------------------ invitations
 

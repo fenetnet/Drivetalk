@@ -63,15 +63,65 @@ class MemoryServer {
       circleId == null ||
       (circles[circleId]?.$2.memberIds.contains(viewer) ?? false);
 
+  bool _hasOpenOffer(String u) => offers.values.any(
+    (o) =>
+        o.status == OfferStatus.pending &&
+        now().isBefore(o.expiresAt) &&
+        (o.a == u || o.b == u),
+  );
+
+  /// In a call: agreed, not finished, not older than 20 minutes.
+  bool _inCall(String u, [String? except]) => offers.values.any(
+    (o) =>
+        o.status == OfferStatus.accepted &&
+        o.id != except &&
+        o.acceptedAt != null &&
+        now().difference(o.acceptedAt!) < const Duration(minutes: 20) &&
+        ((o.a == u && !o.endedA) || (o.b == u && !o.endedB)),
+  );
+
+  DateTime? _lastTalk(String x, String y) {
+    final pair = _pair(x, y).split('|');
+    DateTime? last;
+    for (final o in offers.values) {
+      if (o.a != pair[0] || o.b != pair[1]) continue;
+      if (o.status != OfferStatus.accepted || o.acceptedAt == null) continue;
+      if (last == null || o.acceptedAt!.isAfter(last)) last = o.acceptedAt;
+    }
+    return last;
+  }
+
+  /// ONE offer for this user (the best friend for now), like the server.
   void _createOffersFor(String user) {
     if (!_activeAvail(user)) return;
+    if (_hasOpenOffer(user) || _inCall(user)) return;
     final mine = availability[user]!;
-    for (final other in availability.keys.toList()) {
-      if (other == user || !_activeAvail(other)) continue;
-      if (!connected(user, other) || blockedBetween(user, other)) continue;
+    bool mutualQuick(String o) => _isQuick(user, o) && _isQuick(o, user);
+    final candidates = [
+      for (final other in availability.keys)
+        if (other != user &&
+            _activeAvail(other) &&
+            connected(user, other) &&
+            !blockedBetween(user, other))
+          other,
+    ];
+    // Quietly: quick-connect friends first, then least recently talked.
+    candidates.sort((x, y) {
+      final q = (mutualQuick(y) ? 1 : 0) - (mutualQuick(x) ? 1 : 0);
+      if (q != 0) return q;
+      final tx = _lastTalk(user, x);
+      final ty = _lastTalk(user, y);
+      if (tx == null && ty != null) return -1;
+      if (ty == null && tx != null) return 1;
+      if (tx != null && ty != null && tx != ty) return tx.compareTo(ty);
+      return x.compareTo(y);
+    });
+    for (final other in candidates) {
       final theirs = availability[other]!;
       if (!inAudience(mine.circleId, other) ||
-          !inAudience(theirs.circleId, user)) {
+          !inAudience(theirs.circleId, user) ||
+          _hasOpenOffer(other) ||
+          _inCall(other)) {
         continue;
       }
       final pair = _pair(user, other).split('|');
@@ -80,24 +130,28 @@ class MemoryServer {
       final blocking = offers.values.any(
         (o) =>
             samePair(o) &&
-            (o.status == OfferStatus.pending ||
-                (o.status == OfferStatus.declined &&
+            ((o.status == OfferStatus.declined &&
                     since.difference(o.updatedAt) <
                         const Duration(minutes: 2)) ||
                 (o.status == OfferStatus.accepted &&
-                    since.difference(o.updatedAt) <
+                    o.acceptedAt != null &&
+                    since.difference(o.acceptedAt!) <
                         const Duration(minutes: 30))),
       );
       if (blocking) continue;
+      bool quickInWindow(String u, DateTime from) => offers.values.any(
+        (o) => o.quick && (o.a == u || o.b == u) && !o.createdAt.isBefore(from),
+      );
       final quick =
-          _isQuick(user, other) &&
-          _isQuick(other, user) &&
+          mutualQuick(other) &&
           !offers.values.any(
             (o) =>
                 samePair(o) &&
                 o.quick &&
                 since.difference(o.createdAt) < const Duration(days: 1),
-          );
+          ) &&
+          !quickInWindow(user, mine.startedAt) &&
+          !quickInWindow(other, theirs.startedAt);
       final id = _newId('offer');
       offers[id] = _Offer(
         id: id,
@@ -114,9 +168,38 @@ class MemoryServer {
         offers[id]!
           ..status = OfferStatus.accepted
           ..aAccepted = true
-          ..bAccepted = true;
+          ..bAccepted = true
+          ..acceptedAt = since;
       }
+      return;
     }
+  }
+
+  /// Quick connect: a phone shows it. The 5 seconds start once both did.
+  void markSeen(String offerId, String user) {
+    final o = offers[offerId];
+    if (o == null || !o.quick || o.status != OfferStatus.accepted) return;
+    if (o.notBefore != null) return;
+    if (user == o.a) o.seenA ??= now();
+    if (user == o.b) o.seenB ??= now();
+    if (o.seenA != null && o.seenB != null) {
+      final last = o.seenA!.isAfter(o.seenB!) ? o.seenA! : o.seenB!;
+      o.notBefore = last.add(const Duration(seconds: 5));
+    }
+    o.updatedAt = now();
+    _changed();
+  }
+
+  bool cancelCallFor(String offerId, String user) {
+    final o = offers[offerId];
+    if (o == null || (o.a != user && o.b != user)) return false;
+    if (!o.quick || o.status != OfferStatus.accepted) return false;
+    if (o.notBefore != null && !now().isBefore(o.notBefore!)) return false;
+    o
+      ..status = OfferStatus.cancelled
+      ..updatedAt = now();
+    _changed();
+    return true;
   }
 
   /// The background calls of the driving service (device token only).
@@ -206,6 +289,13 @@ class _Offer {
   bool? aAccepted;
   bool? bAccepted;
   OfferStatus status = OfferStatus.pending;
+  String? caller;
+  DateTime? acceptedAt;
+  DateTime? notBefore;
+  DateTime? seenA;
+  DateTime? seenB;
+  bool endedA = false;
+  bool endedB = false;
 
   RealOffer toReal() => RealOffer(
     id: id,
@@ -217,6 +307,8 @@ class _Offer {
     expiresAt: expiresAt,
     aAccepted: aAccepted,
     bAccepted: bAccepted,
+    caller: caller,
+    notBefore: notBefore,
     quick: quick,
   );
 }
@@ -440,16 +532,29 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<OfferStatus> respondOffer(
+  Future<OfferAnswer> answerOffer(
     String offerId, {
     required bool accept,
   }) async {
     final me = _uid;
+    if (offline) throw const RealBackendException('offline');
     final o = server.offers[offerId];
     if (o == null || (o.a != me && o.b != me)) {
       throw const RealBackendException('not_found');
     }
-    if (o.status != OfferStatus.pending) return o.status;
+    String? phoneOfOther() => server.phones[o.a == me ? o.b : o.a];
+    if (o.status != OfferStatus.pending) {
+      final ready =
+          o.status == OfferStatus.accepted &&
+          o.caller == me &&
+          o.notBefore != null &&
+          !server.now().isBefore(o.notBefore!);
+      return OfferAnswer(
+        o.status,
+        iCall: o.caller == me,
+        phone: ready ? phoneOfOther() : null,
+      );
+    }
     if (!server.now().isBefore(o.expiresAt) ||
         !server._activeAvail(o.a) ||
         !server._activeAvail(o.b)) {
@@ -457,7 +562,7 @@ class MemoryRealBackend implements RealBackend {
         ..status = OfferStatus.expired
         ..updatedAt = server.now();
       server._changed();
-      return o.status;
+      return OfferAnswer(o.status);
     }
     if (me == o.a) {
       o.aAccepted = accept;
@@ -467,11 +572,95 @@ class MemoryRealBackend implements RealBackend {
     if (!accept) {
       o.status = OfferStatus.declined;
     } else if (o.aAccepted == true && o.bAccepted == true) {
-      o.status = OfferStatus.accepted;
+      if (server._inCall(o.a, o.id) || server._inCall(o.b, o.id)) {
+        o
+          ..status = OfferStatus.expired
+          ..updatedAt = server.now();
+        server._changed();
+        return OfferAnswer(o.status);
+      }
+      final other = o.a == me ? o.b : o.a;
+      final onlyIShare =
+          !server.phones.containsKey(other) && server.phones.containsKey(me);
+      o
+        ..status = OfferStatus.accepted
+        ..caller = onlyIShare ? other : me
+        ..acceptedAt = server.now()
+        ..notBefore = server.now();
+      for (final x in server.offers.values) {
+        if (x.id != o.id &&
+            x.status == OfferStatus.pending &&
+            {x.a, x.b}.intersection({o.a, o.b}).isNotEmpty) {
+          x
+            ..status = OfferStatus.cancelled
+            ..updatedAt = server.now();
+        }
+      }
     }
     o.updatedAt = server.now();
     server._changed();
-    return o.status;
+    final iCall = o.status == OfferStatus.accepted && o.caller == me;
+    return OfferAnswer(
+      o.status,
+      iCall: iCall,
+      phone: iCall ? phoneOfOther() : null,
+    );
+  }
+
+  @override
+  Future<void> seenCall(String offerId) async => server.markSeen(offerId, _uid);
+
+  @override
+  Future<bool> cancelCall(String offerId) async {
+    if (offline) throw const RealBackendException('offline');
+    return server.cancelCallFor(offerId, _uid);
+  }
+
+  @override
+  Future<CallStart> startCall(String offerId) async {
+    final me = _uid;
+    if (offline) throw const RealBackendException('offline');
+    final o = server.offers[offerId];
+    if (o == null || (o.a != me && o.b != me)) {
+      return const CallStart(CallStartState.gone);
+    }
+    if (o.status == OfferStatus.cancelled) {
+      return const CallStart(CallStartState.cancelled);
+    }
+    if (o.status != OfferStatus.accepted || server.blockedBetween(o.a, o.b)) {
+      return const CallStart(CallStartState.gone);
+    }
+    if (o.notBefore == null) server.markSeen(o.id, me);
+    final now = server.now();
+    if (o.notBefore == null || now.isBefore(o.notBefore!)) {
+      final wait = o.notBefore == null
+          ? 1000
+          : o.notBefore!.difference(now).inMilliseconds.clamp(100, 60000);
+      return CallStart(CallStartState.wait, waitMs: wait);
+    }
+    if (o.caller == null) {
+      o
+        ..caller = me
+        ..updatedAt = now;
+      server._changed();
+    }
+    final iCall = o.caller == me;
+    return CallStart(
+      CallStartState.ready,
+      iCall: iCall,
+      phone: iCall ? server.phones[o.a == me ? o.b : o.a] : null,
+    );
+  }
+
+  @override
+  Future<void> endCall(String offerId) async {
+    final me = _uid;
+    final o = server.offers[offerId];
+    if (o == null) return;
+    if (o.a == me) o.endedA = true;
+    if (o.b == me) o.endedB = true;
+    o.updatedAt = server.now();
+    server._changed();
   }
 
   @override
@@ -503,23 +692,6 @@ class MemoryRealBackend implements RealBackend {
       if (n == null) throw const RealBackendException('invalid_phone');
       server.phones[me] = n;
     }
-  }
-
-  @override
-  Future<CallDetails> callDetails(String offerId) async {
-    final me = _uid;
-    final o = server.offers[offerId];
-    if (o == null ||
-        (o.a != me && o.b != me) ||
-        o.status != OfferStatus.accepted) {
-      return const CallDetails();
-    }
-    final other = o.a == me ? o.b : o.a;
-    if (server.blockedBetween(me, other)) return const CallDetails();
-    return CallDetails(
-      otherPhone: server.phones[other],
-      iShare: server.phones.containsKey(me),
-    );
   }
 
   @override

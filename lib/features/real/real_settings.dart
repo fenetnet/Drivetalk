@@ -68,6 +68,21 @@ class RealSettingsScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.edit_rounded),
                 onTap: () => _editPhone(context, ref),
               ),
+              if (s.directCall != null)
+                ListTile(
+                  leading: const Icon(Icons.bolt_rounded),
+                  title: Text(l.realDirectCallSetting),
+                  subtitle: Text(
+                    s.directCall! ? l.realDirectCallOn : l.realDirectCallOff,
+                  ),
+                  trailing: s.directCall!
+                      ? const Icon(Icons.check_circle_rounded)
+                      : TextButton(
+                          onPressed: () =>
+                              ref.read(realProvider.notifier).askDirectCall(),
+                          child: Text(l.realDirectCallAllow),
+                        ),
+                ),
             ],
           ),
           SettingsGroup(

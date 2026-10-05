@@ -18,6 +18,7 @@ class DrivingReceiver : BroadcastReceiver() {
         const val ACTION_TRANSITION = "app.drivetalk.driving.TRANSITION"
         const val ACTION_STOP = "app.drivetalk.driving.STOP"
         const val ACTION_DECLINE = "app.drivetalk.driving.DECLINE"
+        const val ACTION_CANCEL_CALL = "app.drivetalk.driving.CANCEL_CALL"
         private val io = Executors.newSingleThreadExecutor()
 
         /** Shared by real detections and the developer "simulate" buttons. */
@@ -48,6 +49,19 @@ class DrivingReceiver : BroadcastReceiver() {
                 DrivingStore(context).inVehicle = false
                 DrivingEvents.send("exit")
                 DrivingService.stopAll(context)
+            }
+            ACTION_CANCEL_CALL -> {
+                val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return
+                DrivingNotifications.cancelOffer(context, offer)
+                val pending = goAsync()
+                val store = DrivingStore(context)
+                io.execute {
+                    try {
+                        DrivingApi(store).cancelCall(offer)
+                    } finally {
+                        pending.finish()
+                    }
+                }
             }
             ACTION_DECLINE -> {
                 val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return

@@ -120,6 +120,8 @@ class RealOffer {
     this.aAccepted,
     this.bAccepted,
     this.quick = false,
+    this.caller,
+    this.notBefore,
   });
   final String id;
   final String userA;
@@ -135,6 +137,14 @@ class RealOffer {
 
   /// Mutual quick connect: accepted at once, without asking.
   final bool quick;
+
+  /// Who dials (chosen by the server). null = not decided yet (quick
+  /// connect before its 5 seconds are over).
+  final String? caller;
+
+  /// Quick connect: nobody dials before this (null = not both phones saw
+  /// it yet).
+  final DateTime? notBefore;
 
   String otherId(String me) => me == userA ? userB : userA;
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
@@ -246,10 +256,27 @@ class CreatedInvitation {
 /// Connection to the realtime channel, for the test screen.
 enum LiveStatus { disconnected, connecting, connected, error }
 
-class CallDetails {
-  const CallDetails({this.otherPhone, this.iShare = false});
-  final String? otherPhone;
-  final bool iShare;
+/// The server's reply to "talk?" (yes/no).
+class OfferAnswer {
+  const OfferAnswer(this.status, {this.iCall = false, this.phone});
+  final OfferStatus status;
+
+  /// Both said yes and I answered last: I dial, right now.
+  final bool iCall;
+
+  /// The number to dial (only when [iCall]).
+  final String? phone;
+}
+
+enum CallStartState { ready, wait, cancelled, gone }
+
+/// The server's reply when a quick connect may start.
+class CallStart {
+  const CallStart(this.state, {this.iCall = false, this.phone, this.waitMs});
+  final CallStartState state;
+  final bool iCall;
+  final String? phone;
+  final int? waitMs;
 }
 
 /// Digits with an optional leading +, 6–15 digits (same rule as the server).

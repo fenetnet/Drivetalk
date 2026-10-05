@@ -151,6 +151,10 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   _RoutineCard(routine: r),
                 ],
+                if (c.showDirectCallTip) ...[
+                  const SizedBox(height: 16),
+                  const _DirectCallCard(),
+                ],
                 const SizedBox(height: 28),
                 Center(
                   child: mine == null
@@ -451,6 +455,60 @@ class _MyStatus extends ConsumerWidget {
           label: Text(l.stopAvailability),
         ),
       ],
+    );
+  }
+}
+
+/// Asked once, on a calm screen: allow calls to start without an extra tap.
+class _DirectCallCard extends ConsumerWidget {
+  const _DirectCallCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      decoration: BoxDecoration(
+        color: AppColors.mint,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: AppColors.sageDark),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l.realDirectCallTitle,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(l.realDirectCallBody, style: const TextStyle(fontSize: 14)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: c.dismissDirectCallTip,
+                child: Text(l.realNotNow),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
+                onPressed: c.askDirectCall,
+                child: Text(l.realDirectCallAllow),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

@@ -14,7 +14,7 @@ import java.util.concurrent.Executors
 
 /**
  * Runs only during a detected trip (with the feature turned on):
- * marks me available on the server, checks every 20 seconds whether a friend
+ * marks me available on the server, checks every 10 seconds whether a friend
  * is free too, and shows (and reads aloud) "X is free now. Talk?".
  * Stops when the trip ends, when "Stop" is tapped, or after 3 hours.
  */
@@ -25,7 +25,7 @@ class DrivingService : Service() {
         const val ACTION_MANUAL = "app.drivetalk.driving.MANUAL"
         const val ACTION_QUIET_END = "app.drivetalk.driving.QUIET_END"
         const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
-        private const val POLL_MS = 20_000L
+        private const val POLL_MS = 10_000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
 
         fun start(context: Context) = send(context, ACTION_START)
@@ -66,7 +66,8 @@ class DrivingService : Service() {
 
     private val io = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
-    private val shown = mutableSetOf<String>()
+    /** Quick connects on screen now (to remove them if cancelled). */
+    private val quickShown = mutableSetOf<String>()
     private var startedAt = 0L
     private var running = false
     private var manual = false
@@ -142,13 +143,20 @@ class DrivingService : Service() {
             io.execute {
                 val offers = DrivingApi(DrivingStore(ctx)).offers() ?: emptyList()
                 main.post {
+                    val store = DrivingStore(ctx)
                     for (o in offers) {
-                        if (shown.add(o.id)) {
+                        // Remembered on the phone: not repeated after a restart.
+                        if (store.markShown(o.id)) {
                             DrivingNotifications.showOffer(ctx, o)
                             val key = if (o.kind == "quick") "voiceQuick" else "voiceOffer"
-                            speak(DrivingStore(ctx).text(key, "{name}").replace("{name}", o.name))
+                            speak(store.text(key, "{name}").replace("{name}", o.name))
                         }
                     }
+                    // A quick connect that's gone (cancelled / answered): remove it.
+                    val now = offers.filter { it.kind == "quick" }.map { it.id }.toSet()
+                    for (id in quickShown - now) DrivingNotifications.cancelOffer(ctx, id)
+                    quickShown.clear()
+                    quickShown.addAll(now)
                 }
             }
             main.postDelayed(this, POLL_MS)

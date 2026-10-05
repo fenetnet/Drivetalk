@@ -48,6 +48,28 @@ class DrivingStore(context: Context) {
     val token: String get() = prefs.getString("token", "") ?: ""
     val minutes: Int get() = prefs.getInt("minutes", 120)
 
+    /**
+     * Offers already shown (and read aloud), so a restarted service doesn't
+     * show them again. id → when (ms); kept for 3 hours.
+     */
+    fun markShown(offerId: String): Boolean {
+        val now = System.currentTimeMillis()
+        val json = try {
+            org.json.JSONObject(prefs.getString("shownOffers", "{}") ?: "{}")
+        } catch (e: Exception) {
+            org.json.JSONObject()
+        }
+        if (json.has(offerId)) return false
+        val keep = org.json.JSONObject()
+        for (k in json.keys()) {
+            val t = json.optLong(k)
+            if (now - t < 3 * 60 * 60 * 1000L) keep.put(k, t)
+        }
+        keep.put(offerId, now)
+        prefs.edit().putString("shownOffers", keep.toString()).apply()
+        return true
+    }
+
     /** Texts come from the app (Hebrew strings live in the app's ARB file). */
     fun text(name: String, fallback: String): String =
         prefs.getString("text_$name", null) ?: fallback

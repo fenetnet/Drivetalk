@@ -104,15 +104,31 @@ object DrivingNotifications {
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_CALL)
             .setContentIntent(openApp(context, req, offer.id, accept = false))
-            .addAction(
+        if (quick) {
+            // Agreed in advance: 5 seconds to cancel (server-side), then
+            // opening the app starts the call.
+            b.addAction(
+                Notification.Action.Builder(
+                    null,
+                    store.text("cancel", "Cancel"),
+                    broadcast(context, DrivingReceiver.ACTION_CANCEL_CALL, req + 3, offer.id),
+                ).build(),
+            )
+            b.addAction(
                 Notification.Action.Builder(
                     null,
                     store.text("talk", "Talk now"),
-                    // Quick connect is already agreed: opening the app connects.
-                    openApp(context, req + 1, offer.id, accept = !quick),
+                    openApp(context, req + 1, offer.id, accept = false),
                 ).build(),
             )
-        if (!quick) {
+        } else {
+            b.addAction(
+                Notification.Action.Builder(
+                    null,
+                    store.text("talk", "Talk now"),
+                    openApp(context, req + 1, offer.id, accept = true),
+                ).build(),
+            )
             b.addAction(
                 Notification.Action.Builder(
                     null,
