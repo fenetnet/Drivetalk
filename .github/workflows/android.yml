@@ -75,7 +75,7 @@ jobs:
             echo "INVITE_PATH_PREFIX=$path/i/" >> "$GITHUB_ENV"
           fi
           if [ -z "$SUPABASE_URL" ]; then
-            echo "::warning::SUPABASE_URL variable not set — the app will run in demo mode only."
+            echo "::warning::SUPABASE_URL variable not set — the app uses the built-in default server."
           fi
 
       - name: Build APK
