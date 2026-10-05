@@ -3877,7 +3877,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteSimple.
   ///
   /// In he, this message translates to:
-  /// **'בא לך שנדבר יותר בלי לקבוע מראש?\nהתקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.\nלהורדה (אנדרואיד): {apkUrl}\nאם הטלפון מבקש אישור או מזהיר — כאן מוסבר בדיוק מה ללחוץ: {guideUrl}\nאחרי ההתקנה — אם אנחנו שמורים זה אצל זה בטלפון, נתחבר לבד.'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}'**
   String realInviteSimple(String apkUrl, String guideUrl);
 
   /// No description provided for @realInviteWithCode.
