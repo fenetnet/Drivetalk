@@ -18,6 +18,7 @@ import 'local_store.dart';
 import 'photo_cache.dart';
 import 'real_backend.dart';
 import 'real_models.dart';
+import 'routine_suggest.dart';
 import 'supabase_backend.dart';
 
 // ---------------------------------------------------------------------------
@@ -167,17 +168,33 @@ class RealNotice {
 }
 
 class RealPrefs {
-  const RealPrefs({this.voice = true, this.testTab = true});
+  const RealPrefs({
+    this.voice = true,
+    this.testTab = true,
+    this.speakNames = true,
+  });
   final bool voice;
   final bool testTab;
 
-  RealPrefs copyWith({bool? voice, bool? testTab}) =>
-      RealPrefs(voice: voice ?? this.voice, testTab: testTab ?? this.testTab);
+  /// Read friends' names aloud (off: "a friend is free — talk?").
+  final bool speakNames;
 
-  Map<String, Object?> toJson() => {'voice': voice, 'testTab': testTab};
+  RealPrefs copyWith({bool? voice, bool? testTab, bool? speakNames}) =>
+      RealPrefs(
+        voice: voice ?? this.voice,
+        testTab: testTab ?? this.testTab,
+        speakNames: speakNames ?? this.speakNames,
+      );
+
+  Map<String, Object?> toJson() => {
+    'voice': voice,
+    'testTab': testTab,
+    'speakNames': speakNames,
+  };
   static RealPrefs fromJson(Map<String, Object?> j) => RealPrefs(
     voice: j['voice'] as bool? ?? true,
     testTab: j['testTab'] as bool? ?? true,
+    speakNames: j['speakNames'] as bool? ?? true,
   );
 }
 
@@ -210,6 +227,7 @@ class RealState {
     this.routines = const [],
     this.directCall,
     this.firstRun,
+    this.serverSchema,
   });
 
   /// My routines ("every weekday at 8:00, driving").
@@ -220,6 +238,12 @@ class RealState {
 
   /// First steps after joining (until a first friend + how it works).
   final FirstRunStep? firstRun;
+
+  /// The server's version (null = not checked yet). Below
+  /// [kRequiredSchema]: the server needs an update — said clearly.
+  final int? serverSchema;
+  bool get serverOutdated =>
+      serverSchema != null && serverSchema! < kRequiredSchema;
 
   final RealPhase phase;
   final RealSnapshot? snapshot;
@@ -268,6 +292,7 @@ class RealState {
     List<Routine>? routines,
     bool? directCall,
     Object? firstRun = _keep,
+    int? serverSchema,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -293,6 +318,7 @@ class RealState {
     driving: driving ?? this.driving,
     routines: routines ?? this.routines,
     directCall: directCall ?? this.directCall,
+    serverSchema: serverSchema ?? this.serverSchema,
     firstRun: identical(firstRun, _keep)
         ? this.firstRun
         : firstRun as FirstRunStep?,
@@ -369,6 +395,9 @@ final realProvider = NotifierProvider<RealController, RealState>(
 );
 
 const _prefsKey = 'real.prefs.v1';
+
+/// The server version this app needs (supabase/migrations, schema_version()).
+const kRequiredSchema = 13;
 const _firstRunKey = 'real.firstRun.v1';
 const _handledKey = 'real.handledOffers.v1';
 
@@ -549,6 +578,98 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ auto driving
 
+  Future<void> _checkSchema() async {
+    try {
+      final v = await _backend.schemaVersion();
+      if (ref.mounted) state = state.copyWith(serverSchema: v);
+    } on RealBackendException {
+      // Checked again on the next refresh.
+    }
+  }
+
+  /// "Delete what was synced from my contacts" (connections stay).
+  Future<void> clearContacts() async {
+    await _run(() async {
+      await _backend.clearContactHashes();
+      await _store.setString(_contactsSyncKey, null);
+      _notify(RealNoticeKind.saved);
+    });
+  }
+
+  // ------------------------------------------------------------ routine hint
+
+  static const _freeLogKey = 'real.freeLog.v1';
+  static const _hintNoKey = 'real.routineHintNo.v1';
+
+  List<(DateTime, AvailabilityMode)> _freeLog() {
+    try {
+      final raw = _store.getString(_freeLogKey);
+      if (raw == null) return [];
+      return [
+        for (final e in jsonDecode(raw) as List)
+          (
+            DateTime.parse((e as List)[0] as String),
+            AvailabilityMode.values.byName(e[1] as String),
+          ),
+      ];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Only on this phone: when I marked myself free (for a routine hint).
+  void _logFree(AvailabilityMode mode) {
+    final now = _now();
+    final keep = [
+      for (final e in _freeLog())
+        if (now.difference(e.$1) < const Duration(days: 35)) e,
+      (now, mode),
+    ];
+    _store.setString(
+      _freeLogKey,
+      jsonEncode([
+        for (final e in keep) [e.$1.toIso8601String(), e.$2.name],
+      ]),
+    );
+  }
+
+  Set<String> _hintNo() {
+    try {
+      return {
+        ...(jsonDecode(_store.getString(_hintNoKey) ?? '[]') as List)
+            .cast<String>(),
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// "Usually free on Sundays around 17:30 — make it a routine?"
+  RoutineSuggestion? routineSuggestion(DateTime now) => suggestRoutine(
+    log: _freeLog(),
+    routines: state.routines,
+    dismissed: _hintNo(),
+    now: now,
+  );
+
+  Future<void> acceptRoutineSuggestion(RoutineSuggestion r) async {
+    await saveRoutines([
+      ...state.routines,
+      Routine(
+        id: _now().microsecondsSinceEpoch.toString(),
+        weekdays: {r.weekday},
+        minuteOfDay: r.minuteOfDay,
+        durationMinutes: 30,
+        mode: r.mode,
+      ),
+    ]);
+  }
+
+  void dismissRoutineSuggestion(RoutineSuggestion r) {
+    _store.setString(_hintNoKey, jsonEncode([..._hintNo(), r.key]));
+    state = state.copyWith();
+  }
+
   // ------------------------------------------------------------ first run
 
   /// "Let's see who of your people is already here" → contacts.
@@ -669,12 +790,18 @@ class RealController extends Notifier<RealState> {
     'offerBody': _l.realOfferNote,
     'talk': _l.realTalkNow,
     'notNow': _l.realNotNow,
-    'voiceOffer': _l.realVoiceOffer('{name}', 'male'),
+    'voiceOffer': state.prefs.speakNames
+        ? _l.realVoiceOffer('{name}', 'male')
+        : _l.realVoiceOfferAnon,
     'quickTitle': _l.realQuickConnecting('{name}'),
     'quickBody': _l.realQuickConnectingBody,
     'cancel': _l.cancel,
     'publicOffer': _l.realNotifPublic,
-    'voiceQuick': _l.realVoiceQuick('{name}'),
+    'bgFailedTitle': _l.realBgFailedTitle,
+    'bgFailedBody': _l.realBgFailedBody,
+    'voiceQuick': state.prefs.speakNames
+        ? _l.realVoiceQuick('{name}')
+        : _l.realVoiceQuickAnon,
     'manualTitle': _l.realNotifManualTitle,
     'quickOff': _l.realQuickOff,
     'quickOn': _l.realQuickOn,
@@ -691,6 +818,7 @@ class RealController extends Notifier<RealState> {
     if (!st.supported || st.configured || !ref.mounted) return;
     try {
       final token = await _backend.createDeviceToken();
+      if (!ref.mounted) return;
       await detector.configure(
         url: BackendConfig.supabaseUrl,
         key: BackendConfig.supabaseAnonKey,
@@ -873,8 +1001,12 @@ class RealController extends Notifier<RealState> {
       unawaited(_backend.logEvent(name, ms: ms));
 
   void setPrefs(RealPrefs prefs) {
+    final namesChanged = prefs.speakNames != state.prefs.speakNames;
     state = state.copyWith(prefs: prefs);
     _store.setString(_prefsKey, jsonEncode(prefs.toJson()));
+    if (namesChanged && state.driving.configured) {
+      unawaited(ref.read(drivingDetectorProvider).updateTexts(_nativeTexts()));
+    }
     if (!prefs.voice) _stopVoice();
   }
 
@@ -923,6 +1055,7 @@ class RealController extends Notifier<RealState> {
       );
       _react(snap);
       unawaited(_loadPhotos(snap));
+      if (state.serverSchema == null) unawaited(_checkSchema());
     } on RealBackendException catch (e) {
       if (ref.mounted) _setError(e.code);
     } finally {
@@ -1109,7 +1242,10 @@ class RealController extends Notifier<RealState> {
       ),
     );
     _lastNudge = null;
-    if (ok) _event('availability_started');
+    if (ok) {
+      _event('availability_started');
+      _logFree(mode);
+    }
     await refresh();
     if (ok && ref.mounted) unawaited(_watchWhileFree());
     return ok;
@@ -1182,7 +1318,11 @@ class RealController extends Notifier<RealState> {
   Future<void> _askByVoice(RealOffer offer, RealProfile p) async {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
-    await voice.speak(_l.realVoiceOffer(p.name, _genderKey(p.gender)));
+    await voice.speak(
+      state.prefs.speakNames
+          ? _l.realVoiceOffer(p.name, _genderKey(p.gender))
+          : _l.realVoiceOfferAnon,
+    );
     if (seq != _voiceSeq || !ref.mounted) return;
     state = state.copyWith(listening: true);
     final answer = await voice.listenYesNo();
@@ -1264,11 +1404,21 @@ class RealController extends Notifier<RealState> {
     switch (role) {
       case CallRole.iCall:
         unawaited(_dial());
-        if (_driving(_now())) _speak(_l.realVoiceCalling(other.name));
+        if (_driving(_now())) {
+          _speak(
+            state.prefs.speakNames
+                ? _l.realVoiceCalling(other.name)
+                : _l.realVoiceCallingAnon,
+          );
+        }
       case CallRole.theyCall:
         state = state.copyWith(callStage: CallStage.waitingForTheirCall);
         if (_driving(_now())) {
-          _speak(_l.realVoiceTheyCall(other.name, _genderKey(other.gender)));
+          _speak(
+            state.prefs.speakNames
+                ? _l.realVoiceTheyCall(other.name, _genderKey(other.gender))
+                : _l.realVoiceTheyCallAnon,
+          );
         }
       case CallRole.inApp:
         state = state.copyWith(callStage: CallStage.inApp);
@@ -1289,7 +1439,11 @@ class RealController extends Notifier<RealState> {
         quick: true,
       ),
     );
-    _speak(_l.realVoiceQuick(other.name));
+    _speak(
+      state.prefs.speakNames
+          ? _l.realVoiceQuick(other.name)
+          : _l.realVoiceQuickAnon,
+    );
     try {
       await _backend.seenCall(offer.id);
     } on RealBackendException {
@@ -1596,6 +1750,17 @@ class RealController extends Notifier<RealState> {
   /// Quietly again every 12 hours (only if permission was given before).
   Future<void> _maybeSyncContacts() async {
     final last = DateTime.tryParse(_store.getString(_contactsSyncKey) ?? '');
+    // Permission taken away since the last sync: remove what was uploaded.
+    if (last != null &&
+        !await ref.read(contactsReaderProvider).hasPermission()) {
+      try {
+        await _backend.clearContactHashes();
+        await _store.setString(_contactsSyncKey, null);
+      } on RealBackendException {
+        // Next time.
+      }
+      return;
+    }
     if (last != null && _now().difference(last) < const Duration(hours: 12)) {
       return;
     }
@@ -1678,6 +1843,7 @@ class RealController extends Notifier<RealState> {
       'mode: real',
       'server: ${BackendConfig.backendHost}',
       'configured: ${_backend.isConfigured}',
+      'server schema: ${state.serverSchema ?? '?'} (app needs $kRequiredSchema)',
       'phase: ${s.phase.name}',
       'user: ${short(_backend.userId)}',
       'live: ${s.live.name}',

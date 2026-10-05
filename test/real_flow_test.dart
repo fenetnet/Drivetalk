@@ -873,6 +873,91 @@ void main() {
     expect(currentOffer(me.s, now), isNotNull);
   });
 
+  group('stage 5', () {
+    test('an older server is said clearly', () async {
+      me.backend.schema = 12;
+      await connect();
+      await pump(10);
+      expect(me.s.serverOutdated, isTrue);
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 13)'));
+    });
+
+    test(
+      'delete what was synced from contacts; again if permission gone',
+      () async {
+        me.contacts.numbers = ['0532222222'];
+        await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+        await me.c.firstRunFindPeople();
+        expect(server.contactHashes[me.backend.userId], isNotEmpty);
+        await me.c.clearContacts();
+        expect(server.contactHashes[me.backend.userId], isNull);
+        // Synced again, then the permission is taken away → removed quietly.
+        await me.c.syncContacts();
+        expect(server.contactHashes[me.backend.userId], isNotEmpty);
+        me.contacts.granted = false;
+        now = now.add(const Duration(hours: 13));
+        final again = ProviderContainer(
+          overrides: [
+            realBackendProvider.overrideWithValue(me.backend),
+            localStoreProvider.overrideWithValue(me.store),
+            realClockProvider.overrideWithValue(clock),
+            voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+            drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+            contactsReaderProvider.overrideWithValue(me.contacts),
+            photoCacheProvider.overrideWithValue(me.photos),
+          ],
+        );
+        again.read(realProvider);
+        await pump(50);
+        expect(server.contactHashes[me.backend.userId], isNull);
+        again.dispose();
+      },
+    );
+
+    test('names are not read aloud when turned off', () async {
+      await connect();
+      me.c.setPrefs(me.s.prefs.copyWith(speakNames: false));
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await pump(10);
+      expect(me.voice.spoken.last, 'חבר פנוי עכשיו. לדבר?');
+      expect(me.voice.spoken.join(), isNot(contains('יוני')));
+    });
+
+    test('free at the same time 3 Sundays → a routine is suggested', () async {
+      await connect();
+      // Three Sundays at ~17:30 (2026-10-04 is a Sunday).
+      for (final d in [4, 11, 18]) {
+        now = DateTime(2026, 10, d, 17, 35);
+        await me.c.startAvailability(AvailabilityMode.driving, 20);
+        await me.c.stopAvailability();
+      }
+      now = DateTime(2026, 10, 20, 9);
+      final hint = me.c.routineSuggestion(now)!;
+      expect(hint.weekday, DateTime.sunday);
+      expect(hint.minuteOfDay, 17 * 60 + 30);
+      expect(hint.mode, AvailabilityMode.driving);
+      // Never by itself: only after "yes".
+      expect(me.s.routines, isEmpty);
+      await me.c.acceptRoutineSuggestion(hint);
+      expect(me.s.routines.single.weekdays, {DateTime.sunday});
+      expect(me.c.routineSuggestion(now), isNull, reason: 'covered now');
+    });
+
+    test('"no thanks" hides that suggestion for good', () async {
+      await connect();
+      for (final d in [5, 12, 19]) {
+        now = DateTime(2026, 10, d, 8, 0);
+        await me.c.startAvailability(AvailabilityMode.free, 20);
+        await me.c.stopAvailability();
+      }
+      now = DateTime(2026, 10, 21, 9);
+      me.c.dismissRoutineSuggestion(me.c.routineSuggestion(now)!);
+      expect(me.c.routineSuggestion(now), isNull);
+    });
+  });
+
   group('profile photos', () {
     final jpeg = Uint8List.fromList(List.generate(64, (i) => i));
     final jpeg2 = Uint8List.fromList(List.generate(64, (i) => 200 - i));

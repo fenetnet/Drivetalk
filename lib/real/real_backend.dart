@@ -82,6 +82,12 @@ abstract class RealBackend {
   Future<void> setTalkIntent(String userId, DateTime? until);
   Future<void> clearTalkIntent(String userId);
 
+  /// The server's version (see schema_version()); 0 = older than that.
+  Future<int> schemaVersion();
+
+  /// Remove the hashed contact numbers I uploaded (connections stay).
+  Future<void> clearContactHashes();
+
   /// Delete my account and everything that belongs to it (photo too).
   Future<void> deleteAccount();
 

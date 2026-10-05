@@ -2644,6 +2644,96 @@ abstract class AppLocalizations {
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
 
+  /// No description provided for @realBgFailedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לסמן אותך כפנוי ברקע'**
+  String get realBgFailedTitle;
+
+  /// No description provided for @realBgFailedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".'**
+  String get realBgFailedBody;
+
+  /// No description provided for @routineHint.
+  ///
+  /// In he, this message translates to:
+  /// **'נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?'**
+  String routineHint(String day, String time);
+
+  /// No description provided for @routineHintYes.
+  ///
+  /// In he, this message translates to:
+  /// **'להפעיל'**
+  String get routineHintYes;
+
+  /// No description provided for @routineHintNo.
+  ///
+  /// In he, this message translates to:
+  /// **'לא, תודה'**
+  String get routineHintNo;
+
+  /// No description provided for @realStatusServerVersion.
+  ///
+  /// In he, this message translates to:
+  /// **'גרסת השרת'**
+  String get realStatusServerVersion;
+
+  /// No description provided for @realServerOutdated.
+  ///
+  /// In he, this message translates to:
+  /// **'השרת צריך עדכון: בשרת {have}, נדרש {need}'**
+  String realServerOutdated(int have, int need);
+
+  /// No description provided for @realClearContacts.
+  ///
+  /// In he, this message translates to:
+  /// **'מחק מידע שסונכרן מאנשי הקשר'**
+  String get realClearContacts;
+
+  /// No description provided for @realClearContactsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'החברים נשארים. אפשר לחפש שוב מתי שרוצים.'**
+  String get realClearContactsBody;
+
+  /// No description provided for @realVoiceOfferAnon.
+  ///
+  /// In he, this message translates to:
+  /// **'חבר פנוי עכשיו. לדבר?'**
+  String get realVoiceOfferAnon;
+
+  /// No description provided for @realVoiceQuickAnon.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחברים לחבר. אפשר לבטל בכפתור.'**
+  String get realVoiceQuickAnon;
+
+  /// No description provided for @realVoiceCallingAnon.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים.'**
+  String get realVoiceCallingAnon;
+
+  /// No description provided for @realVoiceTheyCallAnon.
+  ///
+  /// In he, this message translates to:
+  /// **'מתקשרים אליך עכשיו.'**
+  String get realVoiceTheyCallAnon;
+
+  /// No description provided for @settingsSpeakNames.
+  ///
+  /// In he, this message translates to:
+  /// **'להקריא שמות'**
+  String get settingsSpeakNames;
+
+  /// No description provided for @settingsSpeakNamesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כבוי: \"חבר פנוי עכשיו. לדבר?\" בלי שם'**
+  String get settingsSpeakNamesBody;
+
   /// No description provided for @realDeleteAccount.
   ///
   /// In he, this message translates to:

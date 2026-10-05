@@ -1620,6 +1620,57 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickCancelled => 'החיבור בוטל';
 
   @override
+  String get realBgFailedTitle => 'לא הצלחנו לסמן אותך כפנוי ברקע';
+
+  @override
+  String get realBgFailedBody =>
+      'הטלפון חסם את זה (חיסכון בסוללה?). פותחים את DriveTalk ולוחצים \"יש לי זמן עכשיו\".';
+
+  @override
+  String routineHint(String day, String time) {
+    return 'נראה שבימי $day סביב $time יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?';
+  }
+
+  @override
+  String get routineHintYes => 'להפעיל';
+
+  @override
+  String get routineHintNo => 'לא, תודה';
+
+  @override
+  String get realStatusServerVersion => 'גרסת השרת';
+
+  @override
+  String realServerOutdated(int have, int need) {
+    return 'השרת צריך עדכון: בשרת $have, נדרש $need';
+  }
+
+  @override
+  String get realClearContacts => 'מחק מידע שסונכרן מאנשי הקשר';
+
+  @override
+  String get realClearContactsBody =>
+      'החברים נשארים. אפשר לחפש שוב מתי שרוצים.';
+
+  @override
+  String get realVoiceOfferAnon => 'חבר פנוי עכשיו. לדבר?';
+
+  @override
+  String get realVoiceQuickAnon => 'מתחברים לחבר. אפשר לבטל בכפתור.';
+
+  @override
+  String get realVoiceCallingAnon => 'מתקשרים.';
+
+  @override
+  String get realVoiceTheyCallAnon => 'מתקשרים אליך עכשיו.';
+
+  @override
+  String get settingsSpeakNames => 'להקריא שמות';
+
+  @override
+  String get settingsSpeakNamesBody => 'כבוי: \"חבר פנוי עכשיו. לדבר?\" בלי שם';
+
+  @override
   String get realDeleteAccount => 'מחק את החשבון והמידע שלי';
 
   @override

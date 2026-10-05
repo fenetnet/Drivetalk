@@ -6,6 +6,7 @@ import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
+import '../../real/routine_suggest.dart';
 import '../availability/pick_mode_screen.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
@@ -135,6 +136,16 @@ class RealHomeScreen extends ConsumerWidget {
                     height: 1.1,
                   ),
                 ),
+                if (s.serverOutdated) ...[
+                  const SizedBox(height: 10),
+                  MomentChip(
+                    text: l.realServerOutdated(
+                      s.serverSchema!,
+                      kRequiredSchema,
+                    ),
+                    icon: Icons.system_update_alt_rounded,
+                  ),
+                ],
                 if (s.lastError == 'offline') ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -155,6 +166,11 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   _RoutineCard(routine: r),
                 ],
+                if (c.dueRoutine(now) == null)
+                  if (c.routineSuggestion(now) case final hint?) ...[
+                    const SizedBox(height: 16),
+                    _RoutineHintCard(hint: hint),
+                  ],
                 if (c.showDirectCallTip) ...[
                   const SizedBox(height: 16),
                   const _DirectCallCard(),
@@ -524,6 +540,60 @@ class _MyStatus extends ConsumerWidget {
           label: Text(l.stopAvailability),
         ),
       ],
+    );
+  }
+}
+
+/// "Usually free on Sundays around 17:30 — make it a routine?" (asks; never
+/// does it by itself).
+class _RoutineHintCard extends ConsumerWidget {
+  const _RoutineHintCard({required this.hint});
+  final RoutineSuggestion hint;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final time =
+        '${(hint.minuteOfDay ~/ 60).toString().padLeft(2, '0')}:'
+        '${(hint.minuteOfDay % 60).toString().padLeft(2, '0')}';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+      decoration: BoxDecoration(
+        color: AppColors.blush,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.schedule_rounded, color: AppColors.coralDeep),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l.routineHint(weekdayShort(l, hint.weekday), time),
+                  style: const TextStyle(fontSize: 15),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => c.dismissRoutineSuggestion(hint),
+                child: Text(l.routineHintNo),
+              ),
+              FilledButton(
+                style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
+                onPressed: () => c.acceptRoutineSuggestion(hint),
+                child: Text(l.routineHintYes),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

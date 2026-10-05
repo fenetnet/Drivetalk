@@ -555,6 +555,10 @@ Future<void> main() async {
   }
   final again = List.from(await noa.rpc('sync_contacts', params: {'p_hashes': [h(aviPhone)]}));
   check(again.isEmpty, 'syncing again creates nothing new');
+  await noa.rpc('clear_contact_hashes');
+  check((await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+      'deleting synced contacts keeps the friends');
+  check(await eve.rpc('schema_version') == 13, 'the server says its version (13)');
 
   // --- profile photos: private, friends only
   final pic = Uint8List.fromList(List.generate(300, (i) => i % 256));

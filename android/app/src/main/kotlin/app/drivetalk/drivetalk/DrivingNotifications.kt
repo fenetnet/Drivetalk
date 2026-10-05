@@ -13,6 +13,7 @@ object DrivingNotifications {
     const val CHANNEL_STATUS = "driving_status"
     const val CHANNEL_OFFERS = "driving_offers"
     const val ID_STATUS = 7001
+    private const val ID_PROBLEM = 7002
     private const val ID_OFFER_BASE = 7100
 
     fun ensureChannels(context: Context) {
@@ -154,6 +155,20 @@ object DrivingNotifications {
             .build()
         context.getSystemService(NotificationManager::class.java)
             .notify(ID_OFFER_BASE + (offer.id.hashCode() and 0xff), n)
+    }
+
+    /** "Couldn't turn on availability in the background — open DriveTalk." */
+    fun showProblem(context: Context) {
+        ensureChannels(context)
+        val store = DrivingStore(context)
+        val n = builder(context, CHANNEL_STATUS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text("bgFailedTitle", "DriveTalk"))
+            .setContentText(store.text("bgFailedBody", ""))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 3))
+            .build()
+        context.getSystemService(NotificationManager::class.java).notify(ID_PROBLEM, n)
     }
 
     fun cancelOffer(context: Context, offerId: String) {

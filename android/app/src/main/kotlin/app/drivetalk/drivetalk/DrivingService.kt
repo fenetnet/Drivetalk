@@ -55,13 +55,20 @@ class DrivingService : Service() {
                     context.startService(i)
                 }
             } catch (e: Exception) {
-                // Not allowed right now: at least keep the server in sync
-                // (no background alerts until the app is opened).
+                // Android didn't let the service start (battery saver etc.).
+                // Never leave "free" on the server without alerts on this
+                // phone: undo it and say so.
                 val api = DrivingApi(DrivingStore(context))
                 when (action) {
                     ACTION_END -> Thread { api.stop() }.start()
-                    ACTION_START -> Thread { api.start() }.start()
                     ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
+                    ACTION_START -> DrivingNotifications.showProblem(context)
+                    ACTION_MANUAL -> {
+                        Thread { api.stopAll() }.start()
+                        DrivingStore(context).availableUntil = 0L
+                        QuickFree.refreshAll(context)
+                        DrivingNotifications.showProblem(context)
+                    }
                 }
             }
         }

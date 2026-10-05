@@ -915,6 +915,17 @@ class MemoryRealBackend implements RealBackend {
     server._changed();
   }
 
+  /// Tests can pretend the server is older.
+  int schema = 13;
+
+  @override
+  Future<int> schemaVersion() async => schema;
+
+  @override
+  Future<void> clearContactHashes() async {
+    server.contactHashes.remove(_uid);
+  }
+
   @override
   Future<void> deleteAccount() async {
     final me = _uid;

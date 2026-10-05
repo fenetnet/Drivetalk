@@ -47,6 +47,16 @@ class RealTestScreen extends ConsumerWidget {
             : snap != null,
       ),
       (
+        Icons.system_update_alt_rounded,
+        l.realStatusServerVersion,
+        s.serverSchema == null
+            ? '—'
+            : s.serverOutdated
+            ? l.realServerOutdated(s.serverSchema!, kRequiredSchema)
+            : '${s.serverSchema}',
+        s.serverSchema == null ? null : !s.serverOutdated,
+      ),
+      (
         Icons.person_rounded,
         l.realStatusAccount,
         snap == null ? '—' : snap.me.name,

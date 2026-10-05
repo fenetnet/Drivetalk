@@ -540,6 +540,20 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() => _c.rpc('clear_talk_intent', params: {'p_user': userId}));
 
   @override
+  Future<int> schemaVersion() => _guard(() async {
+    try {
+      return (await _c.rpc('schema_version') as num).toInt();
+    } on PostgrestException catch (e) {
+      if (_missingFunction(e)) return 0;
+      rethrow;
+    }
+  });
+
+  @override
+  Future<void> clearContactHashes() =>
+      _guard(() => _c.rpc('clear_contact_hashes'));
+
+  @override
   Future<void> deleteAccount() => _guard(() async {
     final me = userId;
     if (me == null) throw const RealBackendException('not_authenticated');

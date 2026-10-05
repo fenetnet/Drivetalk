@@ -68,6 +68,14 @@ class RealSettingsScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.edit_rounded),
                 onTap: () => _editPhone(context, ref),
               ),
+              ListTile(
+                leading: const Icon(Icons.contacts_rounded),
+                title: Text(l.realClearContacts),
+                subtitle: Text(l.realClearContactsBody),
+                onTap: s.busy
+                    ? null
+                    : () => ref.read(realProvider.notifier).clearContacts(),
+              ),
               if (s.directCall != null)
                 ListTile(
                   leading: const Icon(Icons.bolt_rounded),
@@ -130,6 +138,13 @@ class RealSettingsScreen extends ConsumerWidget {
                 subtitle: Text(l.settingsVoiceReadoutBody),
                 value: s.prefs.voice,
                 onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.badge_outlined),
+                title: Text(l.settingsSpeakNames),
+                subtitle: Text(l.settingsSpeakNamesBody),
+                value: s.prefs.speakNames,
+                onChanged: (v) => c.setPrefs(s.prefs.copyWith(speakNames: v)),
               ),
             ],
           ),
