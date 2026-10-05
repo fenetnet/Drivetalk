@@ -456,6 +456,7 @@ class RealController extends Notifier<RealState> {
   var _voiceSeq = 0;
   var _tick = 0;
   var _refreshing = false;
+  DateTime? _refreshStarted;
   var _refreshAgain = false;
   String? _spokenOfferId;
   String? _shownOfferId;
@@ -593,6 +594,7 @@ class RealController extends Notifier<RealState> {
     }
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
+    if (state.serverSchema == null) unawaited(_checkSchema());
     unawaited(_loadPhone());
     unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
@@ -1166,6 +1168,7 @@ class RealController extends Notifier<RealState> {
       return;
     }
     _refreshing = true;
+    _refreshStarted = _now();
     try {
       // While I'm free, let the server create offers that became possible
       // (a pause ended, someone's circle changed) — at most every 15s.
@@ -2011,6 +2014,7 @@ class RealController extends Notifier<RealState> {
           '${s.driving.permission ? '' : ' (no permission)'}'
           '${s.driving.inVehicle ? ', in vehicle' : ''}',
       'last refresh: ${time(snap?.fetchedAt)}',
+      if (_refreshing) 'refreshing since: ${time(_refreshStarted)}',
       'last error: ${s.lastError ?? '—'}${s.lastErrorAt == null ? '' : ' at ${time(s.lastErrorAt)}'}',
       'now: ${now.toIso8601String()}',
     ].join('\n');

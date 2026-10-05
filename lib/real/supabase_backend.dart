@@ -521,7 +521,7 @@ class SupabaseRealBackend implements RealBackend {
       );
     }
     await _c.rpc('set_photo', params: {'p_has': jpeg != null});
-  });
+  }, limit: const Duration(seconds: 60));
 
   @override
   Future<Uint8List?> downloadPhoto(String userId) async {
@@ -668,9 +668,14 @@ class SupabaseRealBackend implements RealBackend {
   // ------------------------------------------------------------- helpers
 
   /// Turns any failure into a short, secret-free code.
-  Future<T> _guard<T>(Future<T> Function() body) async {
+  /// A request that hangs (network switch, tunnel) must not block the app
+  /// forever: after [limit] it counts as "offline" and is retried later.
+  Future<T> _guard<T>(
+    Future<T> Function() body, {
+    Duration limit = const Duration(seconds: 20),
+  }) async {
     try {
-      return await body();
+      return await body().timeout(limit);
     } on RealBackendException {
       rethrow;
     } on PostgrestException catch (e) {
