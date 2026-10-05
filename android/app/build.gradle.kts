@@ -53,11 +53,27 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (testKeystore != null) {
-                signingConfigs.getByName("stableTest")
-            } else {
-                signingConfigs.getByName("debug")
+            // Never fall back to the debug key: a release without the real
+            // key fails (see the check below).
+            if (testKeystore != null) {
+                signingConfig = signingConfigs.getByName("stableTest")
             }
+        }
+    }
+}
+
+// A release build (APK / App Bundle) needs the signing key and its password.
+gradle.taskGraph.whenReady {
+    val release = allTasks.any { it.name.contains("Release") }
+    if (release) {
+        val path = System.getenv("DT_KEYSTORE_PATH")
+        if (path.isNullOrBlank() || !file(path).exists() ||
+            System.getenv("DT_KEYSTORE_PASSWORD").isNullOrBlank()
+        ) {
+            throw GradleException(
+                "Release build without the signing key (DT_KEYSTORE_PATH / " +
+                    "DT_KEYSTORE_PASSWORD). Refusing to sign with the debug key.",
+            )
         }
     }
 }

@@ -11,6 +11,7 @@ import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
+import 'package:drivetalk/real/photo_cache.dart';
 import 'package:drivetalk/real/real_controller.dart';
 import 'package:drivetalk/real/real_models.dart';
 import 'package:flutter/widgets.dart';
@@ -40,9 +41,11 @@ class Phone {
         inviteBaseUrlProvider.overrideWithValue('https://invite.example'),
         drivingDetectorProvider.overrideWithValue(driving),
         contactsReaderProvider.overrideWithValue(contacts),
+        photoCacheProvider.overrideWithValue(photos),
       ],
     );
   }
+  final photos = MemoryPhotoCache();
   final driving = FakeDrivingDetector();
   final contacts = FakeContactsReader();
   final MemoryServer server;
@@ -213,6 +216,22 @@ void main() {
     expect(yoni.s.call?.role, CallRole.iCall);
     expect(yoni.dialer.dialed, ['0521111111']);
     expect(me.dialer.dialed, isEmpty);
+    // Measured: "both said yes" → dialing (name + ms only).
+    final dial = server.events.where((e) => e.$1 == 'dial_started').single;
+    expect(dial.$2, isNotNull);
+    expect(dial.$2!, lessThan(1000));
+    expect(server.events.map((e) => e.$1), contains('both_accepted'));
+  });
+
+  test('delete my account: gone everywhere, back to the start', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    final myId = me.backend.userId!;
+    expect(await me.c.deleteAccount(), isNull);
+    expect(me.s.phase, RealPhase.signedOut);
+    await yoni.c.refresh();
+    expect(yoni.s.snapshot!.friends, isEmpty);
+    expect(server.phones.containsKey(myId), isFalse);
+    expect(server.profiles.containsKey(myId), isFalse);
   });
 
   test('one offer at a time, and never two calls at once', () async {
@@ -893,6 +912,7 @@ void main() {
           voiceServiceProvider.overrideWithValue(SilentVoiceService()),
           drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
           contactsReaderProvider.overrideWithValue(FakeContactsReader()),
+          photoCacheProvider.overrideWithValue(yoni.photos),
         ],
       );
       again.read(realProvider);

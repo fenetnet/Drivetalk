@@ -55,7 +55,8 @@ jobs:
             echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/test.jks"
             echo "DT_KEYSTORE_PATH=$RUNNER_TEMP/test.jks" >> "$GITHUB_ENV"
           else
-            echo "::warning::No stable signing key yet — updates will need uninstall/reinstall."
+            echo "::error::The signing key secret is missing (ANDROID_TEST_KEYSTORE_BASE64)."
+            exit 1
           fi
 
       # Real-mode server settings come from repository VARIABLES (Settings →

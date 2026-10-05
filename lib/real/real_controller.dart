@@ -15,6 +15,7 @@ import '../platform/voice_service.dart';
 import 'backend_config.dart';
 import 'contacts_hash.dart';
 import 'local_store.dart';
+import 'photo_cache.dart';
 import 'real_backend.dart';
 import 'real_models.dart';
 import 'supabase_backend.dart';
@@ -62,6 +63,9 @@ final inviteBaseUrlProvider = Provider<String>(
 );
 
 final apkUrlProvider = Provider<String>((ref) => BackendConfig.apkUrl);
+
+/// Friends' photos on this phone (cache folder, not backed up).
+final photoCacheProvider = Provider<PhotoCache>((ref) => FilePhotoCache());
 
 /// Phone contacts (numbers only, hashed before sending). Tests use a fake.
 final contactsReaderProvider = Provider<ContactsReader>(
@@ -371,6 +375,7 @@ const _handledKey = 'real.handledOffers.v1';
 class RealController extends Notifier<RealState> {
   late RealBackend _backend;
   late LocalStore _store;
+  late PhotoCache _photoCache;
   late DateTime Function() _now;
   final _subs = <StreamSubscription<Object?>>[];
   Timer? _debounce;
@@ -382,7 +387,12 @@ class RealController extends Notifier<RealState> {
   var _refreshing = false;
   var _refreshAgain = false;
   String? _spokenOfferId;
+  String? _shownOfferId;
   DateTime? _lastNudge;
+
+  /// When "both said yes" reached this phone (to measure the time to dial).
+  DateTime? _bothYesAt;
+  var _hadFriends = true;
 
   /// Downloaded profile photos: user id → (version, JPEG). Also kept on the
   /// phone so they don't download again on every launch.
@@ -398,6 +408,7 @@ class RealController extends Notifier<RealState> {
   RealState build() {
     _backend = ref.watch(realBackendProvider);
     _store = ref.watch(localStoreProvider);
+    _photoCache = ref.watch(photoCacheProvider);
     _now = ref.watch(realClockProvider);
     ref.onDispose(_dispose);
 
@@ -443,6 +454,17 @@ class RealController extends Notifier<RealState> {
   }
 
   Future<void> _start() async {
+    // Photos saved on the phone: in the background, never delaying startup.
+    unawaited(
+      _photoCache.loadAll().then((saved) {
+        if (!ref.mounted || saved.isEmpty) return;
+        for (final e in saved.entries) {
+          _photos.putIfAbsent(e.key, () => e.value);
+        }
+        final snap = state.snapshot;
+        if (snap != null) state = state.copyWith(snapshot: _withPhotos(snap));
+      }, onError: (Object _) {}),
+    );
     final detector = ref.read(drivingDetectorProvider);
     _subs.add(
       detector.events.listen((e) {
@@ -543,6 +565,7 @@ class RealController extends Notifier<RealState> {
 
   void _setFirstRun(FirstRunStep? step) {
     if (!ref.mounted) return;
+    if (step == null && state.firstRun != null) _event('onboarding_completed');
     _store.setString(_firstRunKey, step?.name);
     state = state.copyWith(firstRun: step);
   }
@@ -559,6 +582,7 @@ class RealController extends Notifier<RealState> {
       TalkIntentSpan.always => null,
     };
     await _run(() => _backend.setTalkIntent(friend.id, until));
+    _event('talk_intent_created');
     await refresh();
   }
 
@@ -649,6 +673,7 @@ class RealController extends Notifier<RealState> {
     'quickTitle': _l.realQuickConnecting('{name}'),
     'quickBody': _l.realQuickConnectingBody,
     'cancel': _l.cancel,
+    'publicOffer': _l.realNotifPublic,
     'voiceQuick': _l.realVoiceQuick('{name}'),
     'manualTitle': _l.realNotifManualTitle,
     'quickOff': _l.realQuickOff,
@@ -749,6 +774,7 @@ class RealController extends Notifier<RealState> {
       }
       if (!ref.mounted) return;
       await _store.setString(_firstRunKey, FirstRunStep.contacts.name);
+      _event('onboarding_started');
       state = state.copyWith(
         phase: RealPhase.ready,
         busy: false,
@@ -807,9 +833,44 @@ class RealController extends Notifier<RealState> {
       // Signing out anyway.
     }
     await _backend.signOut();
+    _photos.clear();
+    await _photoCache.clear();
     if (!ref.mounted) return;
     state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
   }
+
+  /// "Delete my account and my information": on the server (everything,
+  /// photo included) and on this phone. Returns an error code or null.
+  Future<String?> deleteAccount() async {
+    state = state.copyWith(busy: true);
+    try {
+      await ref.read(drivingDetectorProvider).setRoutines('[]');
+      await ref.read(drivingDetectorProvider).forget();
+      await _backend.deleteAccount();
+    } on RealBackendException catch (e) {
+      if (ref.mounted) state = state.copyWith(busy: false);
+      return e.code;
+    }
+    _photos.clear();
+    await _photoCache.clear();
+    for (final k in [
+      _firstRunKey,
+      _handledKey,
+      _directTipKey,
+      _routinesKey,
+      _contactsSyncKey,
+    ]) {
+      await _store.setString(k, null);
+    }
+    _handled.clear();
+    if (!ref.mounted) return null;
+    state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
+    return null;
+  }
+
+  /// A measurement (never content, numbers or names).
+  void _event(String name, {int? ms}) =>
+      unawaited(_backend.logEvent(name, ms: ms));
 
   void setPrefs(RealPrefs prefs) {
     state = state.copyWith(prefs: prefs);
@@ -875,20 +936,22 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ photos
 
-  static String _photoKey(String id) => 'real.photo.$id';
+  /// Older versions kept photos in the settings storage: move them out.
+  static String _oldPhotoKey(String id) => 'real.photo.$id';
 
   (int, Uint8List)? _cachedPhoto(String id) {
     final mem = _photos[id];
     if (mem != null) return mem;
     try {
-      final raw = _store.getString(_photoKey(id));
+      final raw = _store.getString(_oldPhotoKey(id));
       if (raw == null) return null;
+      _store.setString(_oldPhotoKey(id), null);
       final i = raw.indexOf(':');
       final hit = (
         int.parse(raw.substring(0, i)),
         base64Decode(raw.substring(i + 1)),
       );
-      _photos[id] = hit;
+      _keepPhoto(id, hit.$1, hit.$2);
       return hit;
     } catch (_) {
       return null;
@@ -898,10 +961,10 @@ class RealController extends Notifier<RealState> {
   void _keepPhoto(String id, int version, Uint8List? bytes) {
     if (bytes == null) {
       _photos.remove(id);
-      _store.setString(_photoKey(id), null);
+      unawaited(_photoCache.remove(id));
     } else {
       _photos[id] = (version, bytes);
-      _store.setString(_photoKey(id), '$version:${base64Encode(bytes)}');
+      unawaited(_photoCache.put(id, version, bytes));
     }
   }
 
@@ -919,12 +982,14 @@ class RealController extends Notifier<RealState> {
   /// Download new or changed photos in the background, then show them.
   Future<void> _loadPhotos(RealSnapshot snap) async {
     var got = false;
+    // Not my friend any more (blocked / removed): forget their photo.
+    final visible = {snap.me.id, for (final f in snap.friends) f.id};
+    for (final id in _photos.keys.toList()) {
+      if (!visible.contains(id)) _keepPhoto(id, 0, null);
+    }
     for (final p in [snap.me, ...snap.friends]) {
       if (p.photoVersion <= 0) {
-        if (_photos.containsKey(p.id) ||
-            _store.getString(_photoKey(p.id)) != null) {
-          _keepPhoto(p.id, 0, null);
-        }
+        if (_photos.containsKey(p.id)) _keepPhoto(p.id, 0, null);
         continue;
       }
       if (p.photo != null || _photoLoading.contains(p.id)) continue;
@@ -1006,6 +1071,13 @@ class RealController extends Notifier<RealState> {
     }
     // A new question for me → read it aloud when driving.
     final offer = currentOffer(state, now);
+    if (offer != null && offer.id != _shownOfferId) {
+      _shownOfferId = offer.id;
+      _event('offer_shown');
+    }
+    final hasFriends = snap.friends.isNotEmpty;
+    if (hasFriends && !_hadFriends) _event('first_friend_connected');
+    _hadFriends = hasFriends;
     if (offer != null && offer.id != _spokenOfferId && _driving(now)) {
       _spokenOfferId = offer.id;
       final p = snap.friend(offer.otherId(me))!;
@@ -1037,6 +1109,7 @@ class RealController extends Notifier<RealState> {
       ),
     );
     _lastNudge = null;
+    if (ok) _event('availability_started');
     await refresh();
     if (ok && ref.mounted) unawaited(_watchWhileFree());
     return ok;
@@ -1070,14 +1143,17 @@ class RealController extends Notifier<RealState> {
       _markHandled(offer.id);
     }
     try {
+      if (accept) _event('offer_accepted_local');
       final answer = await _backend.answerOffer(offer.id, accept: accept);
       final status = answer.status;
       if (!ref.mounted) return;
       if (accept && status == OfferStatus.accepted) {
         final other = state.snapshot?.friend(offer.otherId(state.myId!));
         _markHandled(offer.id);
+        _event('both_accepted');
         if (other != null) {
           // I said the second "yes": I dial — now, not after a countdown.
+          _bothYesAt = DateTime.now();
           _startCall(offer, other, iCall: answer.iCall, phone: answer.phone);
         }
       } else if (accept &&
@@ -1284,7 +1360,16 @@ class RealController extends Notifier<RealState> {
     if (call == null || call.phone == null) return;
     if (state.callStage != CallStage.connecting) return;
     state = state.copyWith(callStage: CallStage.dialed);
+    final since = _bothYesAt;
+    _bothYesAt = null;
     final r = await ref.read(phoneDialerProvider).call(call.phone!);
+    // The key number: from "both said yes" to the phone dialing.
+    _event(
+      'dial_started',
+      ms: since == null
+          ? null
+          : DateTime.now().difference(since).inMilliseconds,
+    );
     if (!ref.mounted) return;
     if (r == DialResult.failed || r == DialResult.unsupported) {
       // Couldn't open the phone: fall back to the in-app (simulated) call.
@@ -1317,6 +1402,7 @@ class RealController extends Notifier<RealState> {
     if (call == null) return;
     try {
       await _backend.sendCallOutcome(call.offerId, outcome);
+      _event('call_feedback_submitted');
       if (ref.mounted) _notify(RealNoticeKind.feedbackThanks);
     } on RealBackendException catch (e) {
       // At least free me for the next offer.

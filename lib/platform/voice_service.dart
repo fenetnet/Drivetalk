@@ -19,35 +19,55 @@ abstract class VoiceService {
   void simulateAnswer(VoiceAnswer answer);
 }
 
-/// Words we accept. Kept short and forgiving.
-const _yesWords = [
+/// Whole answers we accept — nothing else. "Yes… actually no", "let's not
+/// talk", "sure, but not now" or two voices are not clear answers, so
+/// nothing happens (the big buttons are always there).
+const _yesPhrases = {
   'כן',
+  'כן כן',
+  'כן בטח',
   'בטח',
   'יאללה',
-  'סבבה',
-  'לדבר',
-  'בוא',
+  'כן יאללה',
+  'בוא נדבר',
+  'כן בוא נדבר',
+  'בואי נדבר',
+  'כן בואי נדבר',
   'תתקשר',
+  'כן תתקשר',
   'yes',
   'ok',
-];
-const _noWords = [
+  'okay',
+};
+const _noPhrases = {
   'לא',
-  'הבא',
-  'אחר כך',
-  'בטל',
-  'עצור',
+  'לא לא',
+  'לא עכשיו',
+  'לא תודה',
   'תודה לא',
+  'אחר כך',
+  'לא כרגע',
+  'בטל',
   'no',
-  'cancel',
-];
+  'not now',
+};
+const _fillers = {'אה', 'אמ', 'אממ', 'אהה', 'אוקיי'};
 
 VoiceAnswer parseYesNo(String heard) {
-  final t = heard.trim().toLowerCase();
+  final words = heard
+      .toLowerCase()
+      .replaceAll(RegExp(r'[.,!?…:;"׳״\-]'), ' ')
+      .split(RegExp(r'\s+'))
+      .where((w) => w.isNotEmpty)
+      .toList();
+  // Leading "uh"/"um" don't change the answer.
+  while (words.isNotEmpty && _fillers.contains(words.first)) {
+    words.removeAt(0);
+  }
+  final t = words.join(' ');
   if (t.isEmpty) return VoiceAnswer.none;
-  // "No" wins if both appear (e.g. "לא, בטח שלא").
-  if (_noWords.any(t.contains)) return VoiceAnswer.no;
-  if (_yesWords.any(t.contains)) return VoiceAnswer.yes;
+  if (_yesPhrases.contains(t)) return VoiceAnswer.yes;
+  if (_noPhrases.contains(t)) return VoiceAnswer.no;
   return VoiceAnswer.none;
 }
 
@@ -55,13 +75,15 @@ class DeviceVoiceService implements VoiceService {
   final _tts = FlutterTts();
   final _stt = SpeechToText();
   bool? _sttReady;
+  bool _onDeviceFailed = false;
+  bool _heardSomething = false;
   Completer<VoiceAnswer>? _pending;
   VoiceAnswer? _simulatedNext;
 
   bool _configured = false;
 
-  /// Short, brisk and as natural as the phone allows: slightly faster than
-  /// default, and a high-quality (network/neural) Hebrew voice if available.
+  /// Short, brisk, slightly faster than default, with a Hebrew voice that
+  /// runs on the phone itself when there is one.
   Future<void> _configure() async {
     if (_configured) return;
     _configured = true;
@@ -76,7 +98,7 @@ class DeviceVoiceService implements VoiceService {
           if (v is Map && '${v['locale']}'.toLowerCase().startsWith('he')) v,
       ];
       if (hebrew.isEmpty) return;
-      // Prefer network / neural voices, which sound much less robotic.
+      // Prefer voices that work on the phone itself (nothing sent out).
       hebrew.sort((a, b) => _voiceScore(b).compareTo(_voiceScore(a)));
       final best = hebrew.first;
       await _tts.setVoice({
@@ -91,8 +113,8 @@ class DeviceVoiceService implements VoiceService {
   static int _voiceScore(Map<dynamic, dynamic> v) {
     final name = '${v['name']}'.toLowerCase();
     var score = 0;
-    if (name.contains('network') || name.contains('neural')) score += 2;
-    if (name.contains('local')) score -= 1;
+    if (name.contains('local')) score += 2;
+    if (name.contains('network')) score -= 2;
     if ('${v['quality']}'.toLowerCase().contains('high')) score += 1;
     return score;
   }
@@ -136,9 +158,20 @@ class DeviceVoiceService implements VoiceService {
     }
     final completer = _pending = Completer<VoiceAnswer>();
     try {
+      _heardSomething = false;
       _sttReady ??= await _stt.initialize(
-        onError: (_) {
-          if (!completer.isCompleted) completer.complete(VoiceAnswer.none);
+        onError: (e) {
+          // No offline Hebrew model: next time use the phone's recognizer.
+          final m = e.errorMsg.toLowerCase();
+          if (!_heardSomething &&
+              (m.contains('language') ||
+                  m.contains('server') ||
+                  m.contains('network') ||
+                  m.contains('not_supported'))) {
+            _onDeviceFailed = true;
+          }
+          final p = _pending;
+          if (p != null && !p.isCompleted) p.complete(VoiceAnswer.none);
         },
       );
       if (_sttReady != true) {
@@ -149,17 +182,17 @@ class DeviceVoiceService implements VoiceService {
         listenOptions: SpeechListenOptions(
           localeId: 'he_IL',
           listenFor: timeout,
-          partialResults: true,
+          // Only the finished sentence counts ("yes… actually no").
+          partialResults: false,
           cancelOnError: true,
-          onDevice: false,
+          // On the phone itself when it can; otherwise the phone's own
+          // recognizer service (see the privacy policy).
+          onDevice: !_onDeviceFailed,
         ),
         onResult: (r) {
-          final a = parseYesNo(r.recognizedWords);
-          if (a != VoiceAnswer.none && !completer.isCompleted) {
-            completer.complete(a);
-          } else if (r.finalResult && !completer.isCompleted) {
-            completer.complete(VoiceAnswer.none);
-          }
+          if (!r.finalResult || completer.isCompleted) return;
+          _heardSomething = true;
+          completer.complete(parseYesNo(r.recognizedWords));
         },
       );
     } catch (_) {

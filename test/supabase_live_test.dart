@@ -142,10 +142,14 @@ void main() {
     // "I'd like to talk": mine only, through the real server.
     final yoniP = me.read(realProvider).snapshot!.friends.single;
     await m.setTalkIntent(yoniP, TalkIntentSpan.week);
+    await settle();
+    await m.refresh();
     expect(me.read(realProvider).snapshot!.intents.keys, [yoniP.id]);
     await y.refresh();
     expect(yoni.read(realProvider).snapshot!.intents, isEmpty);
     await m.clearTalkIntent(yoniP);
+    await settle();
+    await m.refresh();
     expect(me.read(realProvider).snapshot!.intents, isEmpty);
 
     // Profile photo: mine → Yoni downloads and shows it.
@@ -158,6 +162,12 @@ void main() {
       pic,
     );
     expect(await m.setPhoto(null), isNull);
+
+    // Delete my account through the real server.
+    expect(await m.deleteAccount(), isNull);
+    expect(me.read(realProvider).phase, RealPhase.signedOut);
+    await y.refresh();
+    expect(yoni.read(realProvider).snapshot!.friends, isEmpty);
 
     me.dispose();
     yoni.dispose();

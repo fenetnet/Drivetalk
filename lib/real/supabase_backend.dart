@@ -276,6 +276,32 @@ class SupabaseRealBackend implements RealBackend {
 
   @override
   Future<RealCircle> saveCircle(RealCircle circle) => _guard(() async {
+    String id;
+    try {
+      // All or nothing, in one step.
+      id = await _c.rpc(
+        'save_circle',
+        params: {
+          'p_id': circle.id.isEmpty ? null : circle.id,
+          'p_name': circle.name.trim(),
+          'p_quick': circle.quick,
+          'p_members': circle.memberIds.toList(),
+        },
+      ) as String;
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+      id = await _saveCircleOld(circle);
+    }
+    return RealCircle(
+      id: id,
+      name: circle.name.trim(),
+      quick: circle.quick,
+      memberIds: circle.memberIds,
+    );
+  });
+
+  /// Older server: the same in three steps.
+  Future<String> _saveCircleOld(RealCircle circle) async {
     final values = {'name': circle.name.trim(), 'quick': circle.quick};
     final row = circle.id.isEmpty
         ? await _c.from('circles').insert(values).select('id').single()
@@ -292,13 +318,8 @@ class SupabaseRealBackend implements RealBackend {
         for (final m in circle.memberIds) {'circle_id': id, 'member': m},
       ]);
     }
-    return RealCircle(
-      id: id,
-      name: circle.name.trim(),
-      quick: circle.quick,
-      memberIds: circle.memberIds,
-    );
-  });
+    return id;
+  }
 
   @override
   Future<void> deleteCircle(String circleId) =>
@@ -517,6 +538,28 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<void> clearTalkIntent(String userId) =>
       _guard(() => _c.rpc('clear_talk_intent', params: {'p_user': userId}));
+
+  @override
+  Future<void> deleteAccount() => _guard(() async {
+    final me = userId;
+    if (me == null) throw const RealBackendException('not_authenticated');
+    try {
+      await _c.storage.from('avatars').remove(['$me.jpg']);
+    } catch (_) {
+      // No photo (or no storage): nothing to remove.
+    }
+    await _c.rpc('delete_my_account');
+    await signOut();
+  });
+
+  @override
+  Future<void> logEvent(String name, {int? ms}) async {
+    try {
+      await _c.rpc('log_event', params: {'p_name': name, 'p_ms': ms});
+    } catch (_) {
+      // Measurements never get in the way.
+    }
+  }
 
   @override
   Future<void> block(String userId) =>

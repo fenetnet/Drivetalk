@@ -78,8 +78,12 @@ _עודכן: 2026-10-04_
 - **צריך מהבעלים:** להדביק את `20261009000000_instant_call.sql`. בלי הקובץ, האפליקציה עובדת בדרך הישנה.
 - **שלב 2:** "אשמח לדבר" (D-061) ✅. צריך להדביק את `20261010000000_talk_intents.sql`.
 - **שלב 3:** חוויית שימוש (D-062) ✅. צריך להדביק את `20261011000000_after_call.sql`.
-- **הבא:**
-  - שלב 4: אמינות ופרטיות.
+- **שלב 4:** אמינות ופרטיות (D-063) ✅. צריך להדביק את `20261012000000_account_events.sql`.
+- **סיכום מה להדביק בשרת, לפי הסדר:**
+  - `20261009000000_instant_call.sql`
+  - `20261010000000_talk_intents.sql`
+  - `20261011000000_after_call.sql`
+  - `20261012000000_account_events.sql`
 
 ### בדיקות
 - **70 בדיקות אוטומטיות עוברות:**
@@ -118,7 +122,7 @@ _עודכן: 2026-10-04_
 - Supabase מקומי:
   - מפעילים קודם את `dockerd`.
   - `SUPABASE_INTERNAL_IMAGE_REGISTRY=docker.io supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,postgres-meta,supavisor` (ה-CLI נמצא ב-`/opt/supa`).
-  - `supabase db reset` מריץ את ה-migration מחדש.
+  - `supabase db reset` מריץ את ה-migration מחדש. (Storage מופעל ב-config.toml בשביל התמונות.)
 - בדיקת שרת:
   - `cd tool/e2e && SUPABASE_ANON_KEY=<local publishable> dart run bin/e2e.dart`
   - `SUPABASE_LIVE_URL=http://127.0.0.1:54321 SUPABASE_LIVE_KEY=<local publishable> flutter test test/supabase_live_test.dart`

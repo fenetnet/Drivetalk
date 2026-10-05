@@ -495,6 +495,38 @@ Future<void> main() async {
   }
   await me.rpc('clear_availability');
 
+  // --- circle saved in one step; measurements; delete my account (D-063)
+  final temp = await newUser('זמני', 'other');
+  final invTemp = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+  await temp.rpc('accept_invitation', params: {'p_token': invTemp['token']});
+  final cid = await me.rpc('save_circle', params: {
+    'p_id': null, 'p_name': 'עבודה', 'p_quick': false,
+    'p_members': [uid(temp), uid(eve)],
+  });
+  final saved = await me.from('circle_members').select('member').eq('circle_id', cid as String);
+  check(saved.length == 1 && saved.single['member'] == uid(temp),
+      'a circle is saved in one step, only with my connections');
+  try {
+    await eve.rpc('save_circle', params: {'p_id': cid, 'p_name': 'x', 'p_quick': false, 'p_members': []});
+    check(false, "nobody else can change my circle");
+  } on PostgrestException {
+    check(true, "nobody else can change my circle");
+  }
+  await temp.rpc('log_event', params: {'p_name': 'dial_started', 'p_ms': 420});
+  try {
+    final ev = await temp.from('app_events').select();
+    check(ev.isEmpty, 'measurements are not readable from the app');
+  } on PostgrestException {
+    check(true, 'measurements are not readable from the app');
+  }
+  await temp.rpc('delete_my_account');
+  check((await rows(me, 'profiles')).every((p) => p['id'] != uid(temp)),
+      'delete my account → gone for my friends too');
+  check((await me.from('circle_members').select('member').eq('circle_id', cid)).isEmpty,
+      '...and from their circles');
+  await me.from('circles').delete().eq('id', cid);
+  await temp.dispose();
+
   // --- friends from phone contacts (each must have the other's number)
   String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
   // Fresh numbers each run (earlier runs left users in the local database).

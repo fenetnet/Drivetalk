@@ -2644,6 +2644,36 @@ abstract class AppLocalizations {
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
 
+  /// No description provided for @realDeleteAccount.
+  ///
+  /// In he, this message translates to:
+  /// **'מחק את החשבון והמידע שלי'**
+  String get realDeleteAccount;
+
+  /// No description provided for @realDeleteAccountConfirm.
+  ///
+  /// In he, this message translates to:
+  /// **'נמחקים מהשרת: השם, המספר, החברים, המעגלים, התמונה וכל ההצעות. אי אפשר לבטל את זה.'**
+  String get realDeleteAccountConfirm;
+
+  /// No description provided for @realDeleteAccountGo.
+  ///
+  /// In he, this message translates to:
+  /// **'למחוק'**
+  String get realDeleteAccountGo;
+
+  /// No description provided for @realDeleteAccountDone.
+  ///
+  /// In he, this message translates to:
+  /// **'החשבון והמידע נמחקו'**
+  String get realDeleteAccountDone;
+
+  /// No description provided for @realNotifPublic.
+  ///
+  /// In he, this message translates to:
+  /// **'יש הצעה חדשה ב-DriveTalk'**
+  String get realNotifPublic;
+
   /// No description provided for @firstRunContactsTitle.
   ///
   /// In he, this message translates to:

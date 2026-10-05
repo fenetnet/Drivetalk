@@ -137,6 +137,13 @@ object DrivingNotifications {
                 ).build(),
             )
         }
+        // Lock screen: no name, just "a new suggestion in DriveTalk".
+        val public = builder(context, CHANNEL_OFFERS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text("publicOffer", "DriveTalk"))
+            .build()
+        b.setVisibility(Notification.VISIBILITY_PRIVATE)
+            .setPublicVersion(public)
         val n = b
             .apply {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {

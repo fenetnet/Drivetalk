@@ -414,11 +414,32 @@ void main() {
     expect(r.rejected.single.reason, FilterReason.notInCircle);
   });
 
-  test('voice: understands simple Hebrew yes / no', () {
+  test('voice: understands clear Hebrew yes / not now', () {
     expect(parseYesNo('כן'), VoiceAnswer.yes);
-    expect(parseYesNo('יאללה בוא'), VoiceAnswer.yes);
+    expect(parseYesNo('כן!'), VoiceAnswer.yes);
+    expect(parseYesNo('אה, כן'), VoiceAnswer.yes);
+    expect(parseYesNo('כן, בוא נדבר'), VoiceAnswer.yes);
     expect(parseYesNo('לא עכשיו'), VoiceAnswer.no);
+    expect(parseYesNo('לא.'), VoiceAnswer.no);
     expect(parseYesNo('בטל'), VoiceAnswer.no);
-    expect(parseYesNo('מה?'), VoiceAnswer.none);
+  });
+
+  test('voice: anything unclear does nothing', () {
+    for (final heard in [
+      'כן... בעצם לא',
+      'לא, בטח שלא',
+      'בוא לא נדבר',
+      'סבבה, אבל לא עכשיו',
+      'כן לא', // two people answering
+      'מה?',
+      'רגע',
+      'שששש',
+      '',
+      'יאללה בוא', // not one of the clear phrases
+      'כנראה',
+      'לדבר',
+    ]) {
+      expect(parseYesNo(heard), VoiceAnswer.none, reason: heard);
+    }
   });
 }

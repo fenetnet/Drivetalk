@@ -31,7 +31,15 @@ class DrivingApi(private val store: DrivingStore) {
         }
     }
 
-    fun start(): String? = rpc("auto_start", JSONObject().put("p_minutes", store.minutes))?.trim('"')
+    /**
+     * Trip availability is a short lease (15 minutes) that the running
+     * service renews: if the phone kills the service, it ends by itself soon.
+     */
+    fun start(): String? = rpc("auto_start", JSONObject().put("p_minutes", LEASE_MINUTES))?.trim('"')
+
+    companion object {
+        const val LEASE_MINUTES = 15
+    }
 
     fun stop(): String? = rpc("auto_stop", JSONObject())?.trim('"')
 

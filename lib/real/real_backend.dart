@@ -82,6 +82,12 @@ abstract class RealBackend {
   Future<void> setTalkIntent(String userId, DateTime? until);
   Future<void> clearTalkIntent(String userId);
 
+  /// Delete my account and everything that belongs to it (photo too).
+  Future<void> deleteAccount();
+
+  /// A measurement: an event name and maybe a duration. Never content.
+  Future<void> logEvent(String name, {int? ms});
+
   Future<void> block(String userId);
 
   /// People I blocked (to unblock them).

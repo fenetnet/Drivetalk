@@ -226,6 +226,17 @@ class RealSettingsScreen extends ConsumerWidget {
                   if (ok ?? false) await c.signOut();
                 },
               ),
+              ListTile(
+                leading: const Icon(
+                  Icons.delete_forever_rounded,
+                  color: AppColors.danger,
+                ),
+                title: Text(
+                  l.realDeleteAccount,
+                  style: const TextStyle(color: AppColors.danger),
+                ),
+                onTap: s.busy ? null : () => _deleteAccount(context, ref),
+              ),
             ],
           ),
         ],
@@ -332,6 +343,38 @@ class RealSettingsScreen extends ConsumerWidget {
               : bytes == null
               ? l.realPhotoRemoved
               : l.realPhotoSaved,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.realDeleteAccount),
+        content: Text(l.realDeleteAccountConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Navigator.pop(d, true),
+            child: Text(l.realDeleteAccountGo),
+          ),
+        ],
+      ),
+    );
+    if (!(ok ?? false) || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final error = await ref.read(realProvider.notifier).deleteAccount();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          error == null ? l.realDeleteAccountDone : realErrorText(l, error),
         ),
       ),
     );

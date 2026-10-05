@@ -31,6 +31,9 @@ class MemoryServer {
   final contactHashes = <String, Set<String>>{};
   final photos = <String, Uint8List>{};
 
+  /// Measurements: (name, ms).
+  final events = <(String, int?)>[];
+
   /// "Not again soon" after a call: "from|to" → until.
   final snoozes = <String, DateTime>{};
 
@@ -911,6 +914,42 @@ class MemoryRealBackend implements RealBackend {
     server.intents.remove('$_uid|$userId');
     server._changed();
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    final me = _uid;
+    if (offline) throw const RealBackendException('offline');
+    server.profiles.remove(me);
+    server.phones.remove(me);
+    server.photos.remove(me);
+    server.availability.remove(me);
+    server.contactHashes.remove(me);
+    server.deviceTokens.removeWhere((_, u) => u == me);
+    server.connections.removeWhere((c) => c.split('|').contains(me));
+    server.offers.removeWhere((_, o) => o.a == me || o.b == me);
+    server.circles.removeWhere((_, c) => c.$1 == me);
+    for (final e in server.circles.entries.toList()) {
+      if (e.value.$2.memberIds.contains(me)) {
+        final c = e.value.$2;
+        server.circles[e.key] = (
+          e.value.$1,
+          RealCircle(
+            id: c.id,
+            name: c.name,
+            quick: c.quick,
+            memberIds: {...c.memberIds}..remove(me),
+          ),
+        );
+      }
+    }
+    server.intents.removeWhere((k, _) => k.split('|').contains(me));
+    server._changed();
+    _me = null;
+  }
+
+  @override
+  Future<void> logEvent(String name, {int? ms}) async =>
+      server.events.add((name, ms));
 
   @override
   Future<void> block(String userId) async {

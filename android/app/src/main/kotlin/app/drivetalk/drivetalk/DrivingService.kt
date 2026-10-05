@@ -17,6 +17,7 @@ import java.util.concurrent.Executors
  * marks me available on the server, checks every 10 seconds whether a friend
  * is free too, and shows (and reads aloud) "X is free now. Talk?".
  * Stops when the trip ends, when "Stop" is tapped, or after 3 hours.
+ * Trip availability is a 15-minute lease renewed every 4 minutes.
  */
 class DrivingService : Service() {
     companion object {
@@ -26,6 +27,8 @@ class DrivingService : Service() {
         const val ACTION_QUIET_END = "app.drivetalk.driving.QUIET_END"
         const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
         private const val POLL_MS = 10_000L
+        /** Renew the trip lease well before it runs out. */
+        private const val RENEW_MS = 4 * 60 * 1000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
 
         fun start(context: Context) = send(context, ACTION_START)
@@ -69,6 +72,7 @@ class DrivingService : Service() {
     /** Quick connects on screen now (to remove them if cancelled). */
     private val quickShown = mutableSetOf<String>()
     private var startedAt = 0L
+    private var renewedAt = 0L
     private var running = false
     private var manual = false
     private var tts: TextToSpeech? = null
@@ -120,6 +124,7 @@ class DrivingService : Service() {
             }
         }
         val store = DrivingStore(this)
+        renewedAt = System.currentTimeMillis()
         if (callStart) {
             io.execute {
                 val r = DrivingApi(store).start()
@@ -140,6 +145,10 @@ class DrivingService : Service() {
                 return
             }
             val ctx = this@DrivingService
+            if (!manual && now - renewedAt > RENEW_MS) {
+                renewedAt = now
+                io.execute { DrivingApi(DrivingStore(ctx)).start() }
+            }
             io.execute {
                 val offers = DrivingApi(DrivingStore(ctx)).offers() ?: emptyList()
                 main.post {
@@ -186,6 +195,15 @@ class DrivingService : Service() {
             stopForeground(true)
         }
         stopSelf()
+    }
+
+    /**
+     * Android 15+: a dataSync service gets a few hours a day. When time is
+     * up, stop cleanly and tell the server (no "free" left behind).
+     */
+    override fun onTimeout(startId: Int, fgsType: Int) {
+        if (manual) io.execute { DrivingApi(DrivingStore(this)).stopAll() }
+        finish(callServer = !manual)
     }
 
     override fun onDestroy() {

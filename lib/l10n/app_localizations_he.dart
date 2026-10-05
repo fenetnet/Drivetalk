@@ -1620,6 +1620,22 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickCancelled => 'החיבור בוטל';
 
   @override
+  String get realDeleteAccount => 'מחק את החשבון והמידע שלי';
+
+  @override
+  String get realDeleteAccountConfirm =>
+      'נמחקים מהשרת: השם, המספר, החברים, המעגלים, התמונה וכל ההצעות. אי אפשר לבטל את זה.';
+
+  @override
+  String get realDeleteAccountGo => 'למחוק';
+
+  @override
+  String get realDeleteAccountDone => 'החשבון והמידע נמחקו';
+
+  @override
+  String get realNotifPublic => 'יש הצעה חדשה ב-DriveTalk';
+
+  @override
   String get firstRunContactsTitle => 'בוא נראה מי מהאנשים שלך כבר כאן';
 
   @override
