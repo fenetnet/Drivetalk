@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme.dart';
+import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
@@ -184,15 +185,44 @@ class RealPeopleScreen extends ConsumerWidget {
                     f.name,
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
-                  subtitle: switch (snap.availability[f.id]) {
-                    final a? when a.isActiveAt(now) => Text(
-                      '${modeLabel(l, a.mode)} · '
-                      '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
-                      style: const TextStyle(color: AppColors.sageDark),
-                    ),
-                    _ => Text(l.realNotFree),
-                  },
-                  trailing: const Icon(Icons.more_vert_rounded),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      switch (snap.availability[f.id]) {
+                        final a? when a.isActiveAt(now) => Text(
+                          '${modeLabel(l, a.mode)} · '
+                          '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
+                          style: const TextStyle(color: AppColors.sageDark),
+                        ),
+                        _ => Text(l.realNotFree),
+                      },
+                      if (snap.intents[f.id] case final i?
+                          when i.isActiveAt(now))
+                        Text(
+                          intentBadge(l, i, now),
+                          style: const TextStyle(
+                            color: AppColors.coralDeep,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: l.intentTitle,
+                        icon: Icon(
+                          snap.intents[f.id]?.isActiveAt(now) ?? false
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: AppColors.coralDeep,
+                        ),
+                        onPressed: () => openTalkIntentSheet(context, ref, f),
+                      ),
+                      const Icon(Icons.more_vert_rounded),
+                    ],
+                  ),
                   onTap: () => _friendActions(context, ref, f),
                 ),
               ),
@@ -327,5 +357,83 @@ class _ContactsCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// "אשמח לדבר · היום" — only for the owner's own eyes.
+String intentBadge(AppLocalizations l, TalkIntent i, DateTime now) {
+  final until = i.until;
+  if (until == null) return l.intentBadgeAlways;
+  return until.difference(now) <= const Duration(days: 1)
+      ? l.intentBadgeToday
+      : l.intentBadgeWeek;
+}
+
+/// Today / this week / until I remove it — the friend is never told.
+Future<void> openTalkIntentSheet(
+  BuildContext context,
+  WidgetRef ref,
+  RealProfile f,
+) async {
+  final l = context.l10n;
+  final now = ref.read(realNowProvider);
+  final has =
+      ref.read(realProvider).snapshot?.intents[f.id]?.isActiveAt(now) ?? false;
+  final choice = await showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheet) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '${l.intentTitle} — ${f.name}',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              l.intentExplain(f.name, genderKey(f.gender)),
+              style: const TextStyle(color: AppColors.inkSoft),
+            ),
+            const SizedBox(height: 16),
+            for (final (key, label) in [
+              ('today', l.intentToday),
+              ('week', l.intentWeek),
+              ('always', l.intentAlways),
+            ])
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: FilledButton.tonal(
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size.fromHeight(52),
+                  ),
+                  onPressed: () => Navigator.pop(sheet, key),
+                  child: Text(label, style: const TextStyle(fontSize: 17)),
+                ),
+              ),
+            if (has)
+              TextButton(
+                onPressed: () => Navigator.pop(sheet, 'remove'),
+                child: Text(l.intentRemove),
+              ),
+          ],
+        ),
+      ),
+    ),
+  );
+  if (choice == null) return;
+  final c = ref.read(realProvider.notifier);
+  switch (choice) {
+    case 'today':
+      await c.setTalkIntent(f, TalkIntentSpan.today);
+    case 'week':
+      await c.setTalkIntent(f, TalkIntentSpan.week);
+    case 'always':
+      await c.setTalkIntent(f, TalkIntentSpan.always);
+    case 'remove':
+      await c.clearTalkIntent(f);
   }
 }

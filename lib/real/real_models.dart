@@ -161,7 +161,12 @@ class RealSnapshot {
     this.circles = const [],
     this.lastTalk = const {},
     this.talks = const [],
+    this.intents = const {},
   });
+
+  /// "I'd like to talk" (mine only): friend id → until when (null = until
+  /// I remove it). Only active ones.
+  final Map<String, TalkIntent> intents;
 
   /// Every talk (both said yes): friend id and when — newest first.
   final List<(String, DateTime)> talks;
@@ -207,6 +212,7 @@ class RealSnapshot {
       circles: circles,
       lastTalk: lastTalk,
       talks: talks,
+      intents: intents,
     );
   }
 
@@ -255,6 +261,19 @@ class CreatedInvitation {
 
 /// Connection to the realtime channel, for the test screen.
 enum LiveStatus { disconnected, connecting, connected, error }
+
+/// "I'd like to talk with this friend" — a quiet wish, never sent to them.
+class TalkIntent {
+  const TalkIntent({required this.friendId, this.until});
+  final String friendId;
+
+  /// null = until I remove it.
+  final DateTime? until;
+
+  bool isActiveAt(DateTime now) => until == null || now.isBefore(until!);
+}
+
+enum TalkIntentSpan { today, week, always }
 
 /// The server's reply to "talk?" (yes/no).
 class OfferAnswer {

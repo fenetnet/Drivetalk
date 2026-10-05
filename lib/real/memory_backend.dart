@@ -30,6 +30,22 @@ class MemoryServer {
   final wasConnected = <String>{}; // "blocker|blocked"
   final contactHashes = <String, Set<String>>{};
   final photos = <String, Uint8List>{};
+
+  /// "from|to" → (created, until or null).
+  final intents = <String, (DateTime, DateTime?)>{};
+
+  bool _wantsToTalk(String x, String y) {
+    bool one(String from, String to) {
+      final i = intents['$from|$to'];
+      if (i == null) return false;
+      if (i.$2 != null && !now().isBefore(i.$2!)) return false;
+      final last = _lastTalk(x, y);
+      return last == null || !last.isAfter(i.$1);
+    }
+
+    return one(x, y) || one(y, x);
+  }
+
   final feedback = <Map<String, Object?>>[];
   final reports = <Map<String, Object?>>[];
 
@@ -109,6 +125,9 @@ class MemoryServer {
     candidates.sort((x, y) {
       final q = (mutualQuick(y) ? 1 : 0) - (mutualQuick(x) ? 1 : 0);
       if (q != 0) return q;
+      final w =
+          (_wantsToTalk(user, y) ? 1 : 0) - (_wantsToTalk(user, x) ? 1 : 0);
+      if (w != 0) return w;
       final tx = _lastTalk(user, x);
       final ty = _lastTalk(user, y);
       if (tx == null && ty != null) return -1;
@@ -418,6 +437,15 @@ class MemoryRealBackend implements RealBackend {
               ..sort((a, b) => a.updatedAt.compareTo(b.updatedAt)))
           if (o.status == OfferStatus.accepted && (o.a == me || o.b == me))
             o.a == me ? o.b : o.a: o.updatedAt,
+      },
+      intents: {
+        for (final e in server.intents.entries)
+          if (e.key.startsWith('$me|') &&
+              (e.value.$2 == null || now.isBefore(e.value.$2!)))
+            e.key.split('|')[1]: TalkIntent(
+              friendId: e.key.split('|')[1],
+              until: e.value.$2,
+            ),
       },
       fetchedAt: now,
     );
@@ -835,6 +863,22 @@ class MemoryRealBackend implements RealBackend {
         userId == me ||
         (server.connected(me, userId) && !server.blockedBetween(me, userId));
     return allowed ? server.photos[userId] : null;
+  }
+
+  @override
+  Future<void> setTalkIntent(String userId, DateTime? until) async {
+    final me = _uid;
+    if (!server.connected(me, userId)) {
+      throw const RealBackendException('not_connected');
+    }
+    server.intents['$me|$userId'] = (server.now(), until);
+    server._changed();
+  }
+
+  @override
+  Future<void> clearTalkIntent(String userId) async {
+    server.intents.remove('$_uid|$userId');
+    server._changed();
   }
 
   @override

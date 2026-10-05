@@ -768,6 +768,35 @@ void main() {
     });
   });
 
+  test('"I\'d like to talk" → that friend is offered first, quietly', () async {
+    await connect();
+    final dad = Phone(server, clock);
+    await dad.boot();
+    await dad.c.signIn('אבא', Gender.male, phone: '0549999999');
+    final msg = await me.c.createInviteMessage();
+    dad.c.openInviteText(msg!);
+    await pump();
+    await dad.c.acceptInvite();
+    await me.c.refresh();
+    final dadProfile = me.s.snapshot!.friends.firstWhere(
+      (f) => f.name == 'אבא',
+    );
+    // Yoni sorts first by id; the wish must win over that.
+    await me.c.setTalkIntent(dadProfile, TalkIntentSpan.today);
+    expect(me.s.snapshot!.intents[dadProfile.id]?.until, DateTime(2026, 10, 3));
+    await dad.c.refresh();
+    expect(dad.s.snapshot!.intents, isEmpty, reason: 'never told');
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await dad.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    expect(currentOffer(me.s, now)!.otherId(me.backend.userId!), dadProfile.id);
+    // After midnight the wish is gone by itself.
+    now = DateTime(2026, 10, 3, 9);
+    await me.c.refresh();
+    expect(me.s.snapshot!.intents, isEmpty);
+    dad.dispose();
+  });
+
   group('profile photos', () {
     final jpeg = Uint8List.fromList(List.generate(64, (i) => i));
     final jpeg2 = Uint8List.fromList(List.generate(64, (i) => 200 - i));

@@ -513,6 +513,26 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ auto driving
 
+  // ------------------------------------------------------------ talk intent
+
+  /// "I'd like to talk with them" — quietly; they are never told. When both
+  /// are free later, they are offered first.
+  Future<void> setTalkIntent(RealProfile friend, TalkIntentSpan span) async {
+    final now = _now();
+    final until = switch (span) {
+      TalkIntentSpan.today => DateTime(now.year, now.month, now.day + 1),
+      TalkIntentSpan.week => now.add(const Duration(days: 7)),
+      TalkIntentSpan.always => null,
+    };
+    await _run(() => _backend.setTalkIntent(friend.id, until));
+    await refresh();
+  }
+
+  Future<void> clearTalkIntent(RealProfile friend) async {
+    await _run(() => _backend.clearTalkIntent(friend.id));
+    await refresh();
+  }
+
   // ------------------------------------------------------------ direct call
 
   static const _directTipKey = 'real.directCallTip.v1';

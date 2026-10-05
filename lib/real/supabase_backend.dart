@@ -124,6 +124,14 @@ class SupabaseRealBackend implements RealBackend {
           .eq('status', 'accepted')
           .order('updated_at', ascending: false)
           .limit(300),
+      // "I'd like to talk" (mine only); optional on an older server.
+      _c
+          .from('talk_intents')
+          .select('to_user, expires_at')
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
       // Circles are optional: an older server without them still works.
       _c
           .from('circles')
@@ -164,8 +172,17 @@ class SupabaseRealBackend implements RealBackend {
             _time(r['updated_at']),
           ),
       ],
-      circles: [
+      intents: {
         for (final r in results[4])
+          if (r['expires_at'] == null ||
+              _time(r['expires_at']).isAfter(DateTime.now()))
+            r['to_user'] as String: TalkIntent(
+              friendId: r['to_user'] as String,
+              until: r['expires_at'] == null ? null : _time(r['expires_at']),
+            ),
+      },
+      circles: [
+        for (final r in results[5])
           RealCircle(
             id: r['id'] as String,
             name: r['name'] as String,
@@ -467,6 +484,18 @@ class SupabaseRealBackend implements RealBackend {
       return null; // No photo, not allowed, or offline — show the letter.
     }
   }
+
+  @override
+  Future<void> setTalkIntent(String userId, DateTime? until) => _guard(
+    () => _c.rpc(
+      'set_talk_intent',
+      params: {'p_user': userId, 'p_until': until?.toUtc().toIso8601String()},
+    ),
+  );
+
+  @override
+  Future<void> clearTalkIntent(String userId) =>
+      _guard(() => _c.rpc('clear_talk_intent', params: {'p_user': userId}));
 
   @override
   Future<void> block(String userId) =>

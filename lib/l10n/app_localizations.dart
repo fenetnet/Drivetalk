@@ -2626,6 +2626,60 @@ abstract class AppLocalizations {
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
 
+  /// No description provided for @intentTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אשמח לדבר'**
+  String get intentTitle;
+
+  /// No description provided for @intentExplain.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} לא {gender, select, female{תקבל} male{יקבל} other{יקבל/תקבל}} שום הודעה. כששניכם תהיו פנויים — {gender, select, female{היא} male{הוא} other{הוא/היא}} יוצע לך קודם.'**
+  String intentExplain(String name, String gender);
+
+  /// No description provided for @intentToday.
+  ///
+  /// In he, this message translates to:
+  /// **'היום'**
+  String get intentToday;
+
+  /// No description provided for @intentWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע'**
+  String get intentWeek;
+
+  /// No description provided for @intentAlways.
+  ///
+  /// In he, this message translates to:
+  /// **'עד שאבטל'**
+  String get intentAlways;
+
+  /// No description provided for @intentRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'להסיר'**
+  String get intentRemove;
+
+  /// No description provided for @intentBadgeToday.
+  ///
+  /// In he, this message translates to:
+  /// **'אשמח לדבר · היום'**
+  String get intentBadgeToday;
+
+  /// No description provided for @intentBadgeWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'אשמח לדבר · השבוע'**
+  String get intentBadgeWeek;
+
+  /// No description provided for @intentBadgeAlways.
+  ///
+  /// In he, this message translates to:
+  /// **'אשמח לדבר'**
+  String get intentBadgeAlways;
+
   /// No description provided for @realDirectCallTitle.
   ///
   /// In he, this message translates to:

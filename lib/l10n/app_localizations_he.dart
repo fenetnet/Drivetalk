@@ -1610,6 +1610,45 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickCancelled => 'החיבור בוטל';
 
   @override
+  String get intentTitle => 'אשמח לדבר';
+
+  @override
+  String intentExplain(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'תקבל',
+      'male': 'יקבל',
+      'other': 'יקבל/תקבל',
+    });
+    String _temp1 = intl.Intl.selectLogic(gender, {
+      'female': 'היא',
+      'male': 'הוא',
+      'other': 'הוא/היא',
+    });
+    return '$name לא $_temp0 שום הודעה. כששניכם תהיו פנויים — $_temp1 יוצע לך קודם.';
+  }
+
+  @override
+  String get intentToday => 'היום';
+
+  @override
+  String get intentWeek => 'השבוע';
+
+  @override
+  String get intentAlways => 'עד שאבטל';
+
+  @override
+  String get intentRemove => 'להסיר';
+
+  @override
+  String get intentBadgeToday => 'אשמח לדבר · היום';
+
+  @override
+  String get intentBadgeWeek => 'אשמח לדבר · השבוע';
+
+  @override
+  String get intentBadgeAlways => 'אשמח לדבר';
+
+  @override
   String get realDirectCallTitle => 'שהשיחה תתחיל מיד';
 
   @override

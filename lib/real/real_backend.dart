@@ -81,6 +81,10 @@ abstract class RealBackend {
   /// A friend's (or my) photo; null if there is none or I may not see it.
   Future<Uint8List?> downloadPhoto(String userId);
 
+  /// "I'd like to talk" with a friend (never told to them). null = always.
+  Future<void> setTalkIntent(String userId, DateTime? until);
+  Future<void> clearTalkIntent(String userId);
+
   Future<void> block(String userId);
 
   /// People I blocked (to unblock them).

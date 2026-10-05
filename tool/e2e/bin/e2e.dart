@@ -445,6 +445,38 @@ Future<void> main() async {
       'after unblocking Yoni sees me again');
   check(List.from(await yoni.rpc('my_blocks')).isEmpty, "Yoni can't see my block list");
 
+  // --- "I'd like to talk" (D-061): quiet, friend-only priority
+  await me.rpc('clear_availability');
+  final p1 = await newUser('עומר', 'male');
+  final p2 = await newUser('אבא', 'male');
+  for (final x in [p1, p2]) {
+    final inv = List<Map<String, dynamic>>.from(await me.rpc('create_invitation')).single;
+    await x.rpc('accept_invitation', params: {'p_token': inv['token']});
+  }
+  await me.rpc('set_talk_intent', params: {'p_user': uid(p2), 'p_until': null});
+  check((await rows(me, 'talk_intents')).single['to_user'] == uid(p2), 'I see my own intent');
+  check((await rows(p2, 'talk_intents')).isEmpty, 'the friend is never told');
+  try {
+    await me.rpc('set_talk_intent', params: {'p_user': uid(eve), 'p_until': null});
+    check(false, 'only for my connections');
+  } on PostgrestException {
+    check(true, 'only for my connections');
+  }
+  await p1.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  await p2.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
+  final withIntent = (await rows(me, 'match_offers')).where((o) => o['status'] == 'pending').toList();
+  check(withIntent.length == 1 && {withIntent.single['user_a'], withIntent.single['user_b']}.contains(uid(p2)),
+      '"I\'d like to talk with Dad" → Dad is offered first');
+  await me.rpc('clear_talk_intent', params: {'p_user': uid(p2)});
+  check((await rows(me, 'talk_intents')).isEmpty, 'I can remove it');
+  await me.rpc('answer_offer', params: {'p_offer': withIntent.single['id'], 'p_accept': false});
+  for (final x in [p1, p2]) {
+    await x.rpc('clear_availability');
+    await x.dispose();
+  }
+  await me.rpc('clear_availability');
+
   // --- friends from phone contacts (each must have the other's number)
   String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
   // Fresh numbers each run (earlier runs left users in the local database).
