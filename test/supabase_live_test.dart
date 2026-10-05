@@ -26,7 +26,7 @@ final key = Platform.environment['SUPABASE_LIVE_KEY'];
 class _Dialer extends PhoneDialer {
   final dialed = <String>[];
   @override
-  Future<DialResult> call(String number) async {
+  Future<DialResult> call(String number, {bool direct = true}) async {
     dialed.add(number);
     return DialResult.calling;
   }

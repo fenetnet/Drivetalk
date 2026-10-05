@@ -7,7 +7,8 @@ enum DialResult { calling, openedDialer, unsupported, failed }
 abstract class PhoneDialer {
   /// Starts at once: a direct call when allowed, otherwise the dialer with
   /// the number ready. Never asks for a permission at that moment.
-  Future<DialResult> call(String number);
+  /// [direct] false: always the dialer (the user turned instant calls off).
+  Future<DialResult> call(String number, {bool direct = true});
 
   /// May the call start without an extra tap?
   Future<bool> canCallDirectly() async => false;
@@ -23,12 +24,15 @@ class PlatformPhoneDialer implements PhoneDialer {
   static const _channel = MethodChannel('app.drivetalk/phone');
 
   @override
-  Future<DialResult> call(String number) async {
+  Future<DialResult> call(String number, {bool direct = true}) async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return DialResult.unsupported;
     }
     try {
-      final r = await _channel.invokeMethod<String>('call', {'number': number});
+      final r = await _channel.invokeMethod<String>('call', {
+        'number': number,
+        'direct': direct,
+      });
       return switch (r) {
         'calling' => DialResult.calling,
         'dialer' => DialResult.openedDialer,

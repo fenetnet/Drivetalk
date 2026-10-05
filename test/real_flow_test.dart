@@ -21,10 +21,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 class RecordingDialer extends PhoneDialer {
   final dialed = <String>[];
+  final directs = <bool>[];
   DialResult result = DialResult.calling;
   @override
-  Future<DialResult> call(String number) async {
+  Future<DialResult> call(String number, {bool direct = true}) async {
     dialed.add(number);
+    directs.add(direct);
     return result;
   }
 }
@@ -122,6 +124,50 @@ void main() {
     expect(me.s.phase, RealPhase.ready);
     expect(me.s.snapshot?.me.name, 'נתנאל');
     expect(me.s.snapshot?.friends, isEmpty);
+  });
+
+  test('joining without a phone number works', () async {
+    await me.c.signIn('נתנאל', Gender.male, phone: '');
+    expect(me.s.phase, RealPhase.ready);
+    expect(me.s.myPhone, isNull);
+  });
+
+  test('no answer within 25 seconds → stop waiting, gently', () async {
+    await connect(yoniPhone: '050-123-4567');
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await refreshBoth();
+    final offer = currentOffer(me.s, now)!;
+    await me.c.respond(offer, accept: true);
+    expect(waitingOffer(me.s, now)?.id, offer.id);
+
+    now = now.add(const Duration(seconds: 10));
+    me.c.checkWaiting();
+    await pump();
+    expect(waitingOffer(me.s, now)?.id, offer.id, reason: 'still waiting');
+
+    now = now.add(const Duration(seconds: 16));
+    me.c.checkWaiting();
+    await pump(20);
+    expect(waitingOffer(me.s, now), isNull);
+    expect(me.s.notice?.kind, RealNoticeKind.noAnswer);
+    await yoni.c.refresh();
+    expect(currentOffer(yoni.s, now), isNull, reason: 'his question is gone');
+    expect(me.dialer.dialed, isEmpty);
+  });
+
+  test('instant call off → the dialer opens instead', () async {
+    await connect(yoniPhone: '050-123-4567');
+    me.c.setPrefs(me.s.prefs.copyWith(directDial: false));
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await refreshBoth();
+    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+    await me.c.refresh();
+    await me.c.respond(currentOffer(me.s, now)!, accept: true);
+    await pump(20);
+    expect(me.dialer.dialed, ['0501234567']);
+    expect(me.dialer.directs, [false]);
   });
 
   test('invitation link → both become friends', () async {

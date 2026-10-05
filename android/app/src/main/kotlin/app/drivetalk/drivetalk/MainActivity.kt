@@ -71,7 +71,9 @@ class MainActivity : FlutterActivity() {
                         if (number.isNullOrBlank()) {
                             result.success("failed")
                         } else {
-                            result.success(place(number, direct = hasCallPermission()))
+                            // "direct" false: the user turned instant calls off.
+                            val allow = call.argument<Boolean>("direct") ?: true
+                            result.success(place(number, direct = allow && hasCallPermission()))
                         }
                     }
                     "canCallDirectly" -> result.success(hasCallPermission())

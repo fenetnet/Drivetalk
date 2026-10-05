@@ -1915,7 +1915,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsVoiceReadoutBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מקריא מי פנוי ושואל אם לדבר'**
+  /// **'בנסיעה, הטלפון אומר בקול מי פנוי, ואפשר לענות \"כן\" או \"לא\" בלי לגעת במסך.'**
   String get settingsVoiceReadoutBody;
 
   /// No description provided for @settingsVoiceCommands.
@@ -2419,7 +2419,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneHelp.
   ///
   /// In he, this message translates to:
-  /// **'החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
+  /// **'חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
   String get realPhoneHelp;
 
   /// No description provided for @realJoin.
@@ -2601,6 +2601,36 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא הסתדר הפעם. נחפש הזדמנות אחרת.'**
   String get realDidNotWorkOut;
+
+  /// No description provided for @routinesExplain.
+  ///
+  /// In he, this message translates to:
+  /// **'זמנים קבועים שבהם הזמינות נדלקת לבד, למשל הנסיעה לעבודה.'**
+  String get routinesExplain;
+
+  /// No description provided for @realBlockedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.'**
+  String get realBlockedBody;
+
+  /// No description provided for @settingsPrivacyBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.'**
+  String get settingsPrivacyBody;
+
+  /// No description provided for @realDirectCallNeedsOk.
+  ///
+  /// In he, this message translates to:
+  /// **'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.'**
+  String get realDirectCallNeedsOk;
+
+  /// No description provided for @realNoAnswer.
+  ///
+  /// In he, this message translates to:
+  /// **'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.'**
+  String get realNoAnswer;
 
   /// No description provided for @realVoiceDidNotWorkOut.
   ///
@@ -2821,7 +2851,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsSpeakNamesBody.
   ///
   /// In he, this message translates to:
-  /// **'כשכבוי — בלי שמות'**
+  /// **'הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).'**
   String get settingsSpeakNamesBody;
 
   /// No description provided for @realDeleteAccount.
@@ -3025,13 +3055,13 @@ abstract class AppLocalizations {
   /// No description provided for @realDirectCallTitle.
   ///
   /// In he, this message translates to:
-  /// **'שהשיחה תתחיל מיד'**
+  /// **'חיוג מיידי'**
   String get realDirectCallTitle;
 
   /// No description provided for @realDirectCallBody.
   ///
   /// In he, this message translates to:
-  /// **'כששניכם אומרים כן — הטלפון מחייג לבד, בלי עוד לחיצה.'**
+  /// **'כששניכם אומרים \"כן\", הטלפון מחייג לבד. כבוי: נפתח החייגן עם המספר, ולוחצים לחייג.'**
   String get realDirectCallBody;
 
   /// No description provided for @realDirectCallAllow.
@@ -3577,7 +3607,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingBody.
   ///
   /// In he, this message translates to:
-  /// **'בנסיעה הזמינות נדלקת לבד. בלי GPS.'**
+  /// **'כשהטלפון מזהה שהוא ברכב, החברים יכולים לקבל הצעה לדבר איתך. נכבה לבד בסוף הנסיעה. בלי GPS ובלי מיקום.'**
   String get realAutoDrivingBody;
 
   /// No description provided for @realAutoDrivingUnsupported.
@@ -3781,13 +3811,13 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneRequired.
   ///
   /// In he, this message translates to:
-  /// **'מספר טלפון'**
+  /// **'מספר טלפון (לא חובה)'**
   String get realPhoneRequired;
 
   /// No description provided for @realPhoneRequiredHelp.
   ///
   /// In he, this message translates to:
-  /// **'החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
+  /// **'למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.'**
   String get realPhoneRequiredHelp;
 
   /// No description provided for @realQuickNotif.
@@ -3961,7 +3991,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCarBody.
   ///
   /// In he, this message translates to:
-  /// **'חיבור לבלוטות׳ של הרכב = נסיעה התחילה.'**
+  /// **'כשהטלפון מתחבר לבלוטות׳ של הרכב, זה סימן שהנסיעה התחילה. עוזר לזהות נסיעה מהר יותר.'**
   String get realCarBody;
 
   /// No description provided for @realCarNone.

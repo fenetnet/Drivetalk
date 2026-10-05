@@ -195,7 +195,7 @@ class RealHomeScreen extends ConsumerWidget {
 }
 
 /// The one card under "Now": update > routine now > routine idea >
-/// direct calls > the home-screen button tip.
+/// the home-screen button tip.
 Widget? _tipCard(
   RealState s,
   RealController c,
@@ -207,7 +207,6 @@ Widget? _tipCard(
   if (c.routineSuggestion(now) case final hint?) {
     return _RoutineHintCard(hint: hint);
   }
-  if (c.showDirectCallTip) return const _DirectCallCard();
   if (c.showWidgetTip && (snap?.friends.isNotEmpty ?? false)) {
     return const _WidgetTipCard();
   }
@@ -694,60 +693,6 @@ class _UpdateCard extends StatelessWidget {
             style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
             onPressed: openAppUpdate,
             child: Text(l.updateNow),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Asked once, on a calm screen: allow calls to start without an extra tap.
-class _DirectCallCard extends ConsumerWidget {
-  const _DirectCallCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final c = ref.read(realProvider.notifier);
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-      decoration: BoxDecoration(
-        color: AppColors.mint,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.bolt_rounded, color: AppColors.sageDark),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  l.realDirectCallTitle,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(l.realDirectCallBody, style: const TextStyle(fontSize: 14)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: c.dismissDirectCallTip,
-                child: Text(l.realNotNow),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(64, 44)),
-                onPressed: c.askDirectCall,
-                child: Text(l.realDirectCallAllow),
-              ),
-            ],
           ),
         ],
       ),

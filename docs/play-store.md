@@ -38,7 +38,7 @@
 - **לפני ההגשה:** להוסיף כתובת מייל ליצירת קשר במקום הסוגריים.
 
 ## גישה לאפליקציה (App access)
-"All functionality is available without special access". נרשמים עם שם ומספר טלפון, בלי סיסמה.
+"All functionality is available without special access". נרשמים עם שם בלבד (מספר טלפון רשות), בלי סיסמה.
 
 ## פרסומות (Ads)
 אין פרסומות (No).
@@ -62,7 +62,7 @@
 | סוג מידע (בטופס) | נאסף | רשות או חובה | למה |
 | --- | --- | --- | --- |
 | Personal info → Name | כן | חובה | App functionality, Account management |
-| Personal info → Phone number | כן | חובה | App functionality |
+| Personal info → Phone number | כן | רשות | App functionality (חברים מוצאים זה את זה, שיחה רגילה) |
 | Photos and videos → Photos | כן | רשות | App functionality (תמונת פרופיל) |
 | Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, למציאת חברים) |
 | App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד) |

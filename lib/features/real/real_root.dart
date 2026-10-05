@@ -98,6 +98,7 @@ class RealRoot extends ConsumerWidget {
     final g = genderKey(n.gender ?? Gender.unspecified);
     return switch (n.kind) {
       RealNoticeKind.didNotWorkOut => l.realDidNotWorkOut,
+      RealNoticeKind.noAnswer => l.realNoAnswer,
       RealNoticeKind.quickCancelled => l.realQuickCancelled,
       RealNoticeKind.connected => l.realConnected(n.name ?? ''),
       RealNoticeKind.inviteProblem => inviteProblemText(l, n.code),
@@ -273,7 +274,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     final c = ref.read(realProvider.notifier);
     final canGo =
         _name.text.trim().isNotEmpty &&
-        normalizePhone(_phone.text) != null &&
+        (_phone.text.trim().isEmpty || normalizePhone(_phone.text) != null) &&
         !s.busy;
     return Scaffold(
       body: Stack(
@@ -378,7 +379,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         decoration: InputDecoration(
                           labelText: l.realPhoneRequired,
                           helperText: l.realPhoneRequiredHelp,
-                          helperMaxLines: 3,
+                          helperMaxLines: 4,
                           prefixIcon: const Icon(Icons.phone_rounded),
                         ),
                       ),

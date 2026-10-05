@@ -144,6 +144,7 @@ class RealCall {
 
 enum RealNoticeKind {
   didNotWorkOut,
+  noAnswer,
   quickCancelled,
   connected,
   inviteProblem,
@@ -182,6 +183,7 @@ class RealPrefs {
     this.voice = true,
     this.testTab = true,
     this.speakNames = true,
+    this.directDial = true,
   });
   final bool voice;
   final bool testTab;
@@ -189,22 +191,33 @@ class RealPrefs {
   /// Read friends' names aloud (off: "a friend is free — talk?").
   final bool speakNames;
 
-  RealPrefs copyWith({bool? voice, bool? testTab, bool? speakNames}) =>
-      RealPrefs(
-        voice: voice ?? this.voice,
-        testTab: testTab ?? this.testTab,
-        speakNames: speakNames ?? this.speakNames,
-      );
+  /// Both said yes → the phone dials by itself (off: the dialer opens with
+  /// the number ready, one more tap).
+  final bool directDial;
+
+  RealPrefs copyWith({
+    bool? voice,
+    bool? testTab,
+    bool? speakNames,
+    bool? directDial,
+  }) => RealPrefs(
+    voice: voice ?? this.voice,
+    testTab: testTab ?? this.testTab,
+    speakNames: speakNames ?? this.speakNames,
+    directDial: directDial ?? this.directDial,
+  );
 
   Map<String, Object?> toJson() => {
     'voice': voice,
     'testTab': testTab,
     'speakNames': speakNames,
+    'directDial': directDial,
   };
   static RealPrefs fromJson(Map<String, Object?> j) => RealPrefs(
     voice: j['voice'] as bool? ?? true,
     testTab: j['testTab'] as bool? ?? true,
     speakNames: j['speakNames'] as bool? ?? true,
+    directDial: j['directDial'] as bool? ?? true,
   );
 }
 
@@ -448,6 +461,10 @@ class RealController extends Notifier<RealState> {
   String? _shownOfferId;
   DateTime? _lastNudge;
 
+  /// When I started waiting for the other side's answer (per offer).
+  final _waitingSince = <String, DateTime>{};
+  final _givingUp = <String>{};
+
   /// When "both said yes" reached this phone (to measure the time to dial).
   DateTime? _bothYesAt;
   var _hadFriends = true;
@@ -595,6 +612,42 @@ class RealController extends Notifier<RealState> {
         waitingOffer(state, now) != null;
     final every = busy || state.live != LiveStatus.connected ? 2 : 6;
     if (myExpired || _tick % every == 0) refresh();
+    checkWaiting();
+  }
+
+  /// How long I wait for the other side after my "yes" before giving up.
+  static const waitLimit = Duration(seconds: 25);
+
+  /// Runs every 5 seconds (public for tests).
+  @visibleForTesting
+  void checkWaiting() {
+    final now = _now();
+    final w = waitingOffer(state, now);
+    if (w == null) return;
+    final since = _waitingSince.putIfAbsent(w.id, () => now);
+    if (now.difference(since) >= waitLimit) unawaited(_giveUpWaiting(w));
+  }
+
+  /// No answer in time: withdraw my "yes" (the other side's question
+  /// disappears too) and say so gently.
+  Future<void> _giveUpWaiting(RealOffer offer) async {
+    if (!_givingUp.add(offer.id)) return;
+    try {
+      final answer = await _backend.answerOffer(offer.id, accept: false);
+      if (!ref.mounted) return;
+      // They said yes at the same moment: the call goes on as usual.
+      if (answer.status != OfferStatus.accepted) {
+        _markHandled(offer.id);
+        _event('wait_timeout');
+        _notify(RealNoticeKind.noAnswer);
+        if (_driving(_now())) _speak(_l.realNoAnswer);
+      }
+    } on RealBackendException catch (e) {
+      _setError(e.code);
+    } finally {
+      _givingUp.remove(offer.id);
+    }
+    await refresh();
   }
 
   void _onResume() {
@@ -785,11 +838,7 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ direct call
 
-  static const _directTipKey = 'real.directCallTip.v1';
-
-  /// Show the "calls start at once" card? (Not while an offer is open.)
-  bool get showDirectCallTip =>
-      state.directCall == false && _store.getString(_directTipKey) == null;
+  static const _directAskedKey = 'real.directCallAsked.v1';
 
   Future<void> _loadDirectCall() async {
     final ok = await ref.read(phoneDialerProvider).canCallDirectly();
@@ -801,8 +850,22 @@ class RealController extends Notifier<RealState> {
     final ok = await ref.read(phoneDialerProvider).requestDirectCall();
     if (!ref.mounted) return ok;
     state = state.copyWith(directCall: ok);
-    if (ok) await _store.setString(_directTipKey, 'done');
     return ok;
+  }
+
+  /// Instant calls are on by default: the first "I'm free" asks Android
+  /// once for the "phone calls" permission (before any offer shows up).
+  Future<void> _maybeAskDirectCall() async {
+    if (!state.prefs.directDial || state.directCall != false) return;
+    if (_store.getString(_directAskedKey) != null) return;
+    await _store.setString(_directAskedKey, 'asked');
+    await askDirectCall();
+  }
+
+  /// Settings switch "instant call". On: asks for the permission if needed.
+  Future<void> setDirectDial(bool on) async {
+    setPrefs(state.prefs.copyWith(directDial: on));
+    if (on && state.directCall == false) await askDirectCall();
   }
 
   static const _widgetTipKey = 'real.widgetTip.v1';
@@ -818,11 +881,6 @@ class RealController extends Notifier<RealState> {
 
   /// Contacts were searched before (then "My people" shows a small button).
   bool get contactsSynced => _store.getString(_contactsSyncKey) != null;
-
-  void dismissDirectCallTip() {
-    _store.setString(_directTipKey, 'dismissed');
-    state = state.copyWith();
-  }
 
   Future<void> _loadDriving() async {
     unawaited(_loadDirectCall());
@@ -1069,7 +1127,7 @@ class RealController extends Notifier<RealState> {
     for (final k in [
       _firstRunKey,
       _handledKey,
-      _directTipKey,
+      _directAskedKey,
       _routinesKey,
       _contactsSyncKey,
     ]) {
@@ -1264,6 +1322,9 @@ class RealController extends Notifier<RealState> {
         _endQuick(cancelledByOther: true);
       }
       if (_handled.contains(o.id)) continue;
+      if (_givingUp.contains(o.id) && o.status != OfferStatus.accepted) {
+        continue;
+      }
       final mine = state.localAnswers[o.id] ?? o.myAnswer(me);
       final other = snap.friend(o.otherId(me));
       final fresh =
@@ -1319,6 +1380,7 @@ class RealController extends Notifier<RealState> {
     int minutes, {
     String? circleId,
   }) async {
+    await _maybeAskDirectCall();
     final ok = await _run(
       () => _backend.setAvailability(
         mode,
@@ -1364,7 +1426,10 @@ class RealController extends Notifier<RealState> {
       _markHandled(offer.id);
     }
     try {
-      if (accept) _event('offer_accepted_local');
+      if (accept) {
+        _event('offer_accepted_local');
+        _waitingSince[offer.id] = _now();
+      }
       final answer = await _backend.answerOffer(offer.id, accept: accept);
       final status = answer.status;
       if (!ref.mounted) return;
@@ -1601,7 +1666,9 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(callStage: CallStage.dialed);
     final since = _bothYesAt;
     _bothYesAt = null;
-    final r = await ref.read(phoneDialerProvider).call(call.phone!);
+    final r = await ref
+        .read(phoneDialerProvider)
+        .call(call.phone!, direct: state.prefs.directDial);
     // The key number: from "both said yes" to the phone dialing.
     _event(
       'dial_started',

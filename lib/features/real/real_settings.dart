@@ -58,15 +58,17 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : () => _editProfile(context, ref, me.photo != null),
               ),
-              if (s.directCall == false)
-                ListTile(
-                  leading: const Icon(Icons.bolt_rounded),
+              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
+                SwitchListTile(
+                  secondary: const Icon(Icons.bolt_rounded),
                   title: Text(l.realDirectCallTitle),
-                  trailing: TextButton(
-                    onPressed: () =>
-                        ref.read(realProvider.notifier).askDirectCall(),
-                    child: Text(l.realDirectCallAllow),
+                  subtitle: Text(
+                    s.prefs.directDial && s.directCall == false
+                        ? '${l.realDirectCallBody}\n${l.realDirectCallNeedsOk}'
+                        : l.realDirectCallBody,
                   ),
+                  value: s.prefs.directDial && s.directCall == true,
+                  onChanged: c.setDirectDial,
                 ),
             ],
           ),
@@ -89,7 +91,9 @@ class RealSettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.schedule_rounded),
                 title: Text(l.routinesTitle),
-                subtitle: Text(l.routinesCount(s.routines.length)),
+                subtitle: Text(
+                  '${l.routinesExplain}\n${l.routinesCount(s.routines.length)}',
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -152,6 +156,7 @@ class RealSettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.block_rounded),
                 title: Text(l.realBlockedTitle),
+                subtitle: Text(l.realBlockedBody),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => showModalBottomSheet<void>(
                   context: context,
@@ -165,6 +170,7 @@ class RealSettingsScreen extends ConsumerWidget {
                   color: AppColors.sageDark,
                 ),
                 title: Text(l.settingsPrivacy),
+                subtitle: Text(l.settingsPrivacyBody),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _privacySheet(context, ref),
               ),

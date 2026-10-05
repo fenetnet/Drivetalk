@@ -76,7 +76,7 @@ class DrivingService : Service() {
 
     private val io = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
-    /** Quick connects on screen now (to remove them if cancelled). */
+    /** Offers on screen now (to remove them once gone: cancelled, answered, timed out). */
     private val quickShown = mutableSetOf<String>()
     private var startedAt = 0L
     private var renewedAt = 0L
@@ -168,8 +168,8 @@ class DrivingService : Service() {
                             speak(store.text(key, "{name}").replace("{name}", o.name))
                         }
                     }
-                    // A quick connect that's gone (cancelled / answered): remove it.
-                    val now = offers.filter { it.kind == "quick" }.map { it.id }.toSet()
+                    // An offer that's gone (cancelled / answered / timed out): remove it.
+                    val now = offers.map { it.id }.toSet()
                     for (id in quickShown - now) DrivingNotifications.cancelOffer(ctx, id)
                     quickShown.clear()
                     quickShown.addAll(now)

@@ -1163,7 +1163,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsVoiceReadout => 'הקראה בקול בנסיעה';
 
   @override
-  String get settingsVoiceReadoutBody => 'הטלפון מקריא מי פנוי ושואל אם לדבר';
+  String get settingsVoiceReadoutBody =>
+      'בנסיעה, הטלפון אומר בקול מי פנוי, ואפשר לענות \"כן\" או \"לא\" בלי לגעת במסך.';
 
   @override
   String get settingsVoiceCommands => 'לענות \"כן\" / \"לא\" בקול';
@@ -1467,7 +1468,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realPhoneLabel => 'מספר טלפון (לא חובה)';
 
   @override
-  String get realPhoneHelp => 'החבר מקבל אותו רק כששניכם אמרתם \"כן\".';
+  String get realPhoneHelp =>
+      'חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\".';
 
   @override
   String get realJoin => 'יאללה';
@@ -1587,6 +1589,25 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realDidNotWorkOut => 'לא הסתדר הפעם. נחפש הזדמנות אחרת.';
+
+  @override
+  String get routinesExplain =>
+      'זמנים קבועים שבהם הזמינות נדלקת לבד, למשל הנסיעה לעבודה.';
+
+  @override
+  String get realBlockedBody =>
+      'אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.';
+
+  @override
+  String get settingsPrivacyBody =>
+      'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.';
+
+  @override
+  String get realDirectCallNeedsOk =>
+      'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.';
+
+  @override
+  String get realNoAnswer => 'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.';
 
   @override
   String get realVoiceDidNotWorkOut => 'לא הסתדר הפעם.';
@@ -1713,7 +1734,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsSpeakNames => 'להקריא שמות';
 
   @override
-  String get settingsSpeakNamesBody => 'כשכבוי — בלי שמות';
+  String get settingsSpeakNamesBody =>
+      'הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).';
 
   @override
   String get realDeleteAccount => 'מחק את החשבון והמידע שלי';
@@ -1837,11 +1859,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get intentBadgeAlways => 'אשמח לדבר';
 
   @override
-  String get realDirectCallTitle => 'שהשיחה תתחיל מיד';
+  String get realDirectCallTitle => 'חיוג מיידי';
 
   @override
   String get realDirectCallBody =>
-      'כששניכם אומרים כן — הטלפון מחייג לבד, בלי עוד לחיצה.';
+      'כששניכם אומרים \"כן\", הטלפון מחייג לבד. כבוי: נפתח החייגן עם המספר, ולוחצים לחייג.';
 
   @override
   String get realDirectCallAllow => 'לאשר';
@@ -2162,7 +2184,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realAutoDriving => 'זמין אוטומטית בנסיעה';
 
   @override
-  String get realAutoDrivingBody => 'בנסיעה הזמינות נדלקת לבד. בלי GPS.';
+  String get realAutoDrivingBody =>
+      'כשהטלפון מזהה שהוא ברכב, החברים יכולים לקבל הצעה לדבר איתך. נכבה לבד בסוף הנסיעה. בלי GPS ובלי מיקום.';
 
   @override
   String get realAutoDrivingUnsupported => 'לא זמין במכשיר הזה';
@@ -2277,10 +2300,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realAvailableToAll => 'כל החברים';
 
   @override
-  String get realPhoneRequired => 'מספר טלפון';
+  String get realPhoneRequired => 'מספר טלפון (לא חובה)';
 
   @override
-  String get realPhoneRequiredHelp => 'החבר מקבל אותו רק כששניכם אמרתם \"כן\".';
+  String get realPhoneRequiredHelp =>
+      'למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.';
 
   @override
   String realQuickNotif(String name) {
@@ -2395,7 +2419,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realCarTitle => 'הרכב שלי (בלוטות׳)';
 
   @override
-  String get realCarBody => 'חיבור לבלוטות׳ של הרכב = נסיעה התחילה.';
+  String get realCarBody =>
+      'כשהטלפון מתחבר לבלוטות׳ של הרכב, זה סימן שהנסיעה התחילה. עוזר לזהות נסיעה מהר יותר.';
 
   @override
   String get realCarNone => 'לא נבחר';
