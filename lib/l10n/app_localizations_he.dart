@@ -24,8 +24,8 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String homeImFreeNow(String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'אני פנויה עכשיו',
-      'male': 'אני פנוי עכשיו',
+      'female': 'יש לי זמן עכשיו',
+      'male': 'יש לי זמן עכשיו',
       'other': 'יש לי זמן עכשיו',
     });
     return '$_temp0';
@@ -37,7 +37,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get stopAvailability => 'עצור זמינות';
+  String get stopAvailability => 'לעצור זמינות';
 
   @override
   String get pickModeTitle => 'מה המצב?';
@@ -52,7 +52,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get modeBreak => 'הפסקה';
 
   @override
-  String get modeFree => 'סתם פנוי';
+  String get modeFree => 'סתם זמן פנוי';
 
   @override
   String get pickDurationTitle => 'לכמה זמן?';
@@ -185,11 +185,11 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String noticeBlocked(String name, String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'נחסמה',
-      'male': 'נחסם',
-      'other': 'נחסם/ה',
+      'female': '$name ברשימת החסומים',
+      'male': '$name ברשימת החסומים',
+      'other': '$name ברשימת החסומים',
     });
-    return '$name $_temp0';
+    return '$_temp0';
   }
 
   @override
@@ -211,7 +211,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get driverSearching => 'מחפשים...';
 
   @override
-  String get driverStop => 'עצור';
+  String get driverStop => 'לעצור';
 
   @override
   String get driverSafety => 'בנהיגה: רק דיבורית ומתקן לרכב';
@@ -259,13 +259,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsDriving => 'נסיעה';
 
   @override
-  String get enable => 'הפעל';
+  String get enable => 'להפעיל';
 
   @override
   String get settingsPrivacy => 'פרטיות';
 
   @override
-  String get unblock => 'בטל חסימה';
+  String get unblock => 'לבטל חסימה';
 
   @override
   String get featCloseness => 'קרבה';
@@ -274,7 +274,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get featDormancy => 'זמן מאז שיחה';
 
   @override
-  String get featAvailableNow => 'זמין עכשיו';
+  String get featAvailableNow => 'יש זמן עכשיו';
 
   @override
   String get featOverlap => 'חפיפת זמן';
@@ -296,7 +296,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String routineDue(String mode, int minutes) {
-    return 'זה הזמן הרגיל שלך ל$mode. להיות זמין ל-$minutes דק׳?';
+    return 'זה הזמן הרגיל שלך ל$mode. לסמן זמן פנוי ל-$minutes דק׳?';
   }
 
   @override
@@ -430,7 +430,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNobodyFree =>
-      'יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.';
+      'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.';
 
   @override
   String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
@@ -449,7 +449,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.';
 
   @override
-  String get realInviteFriend => 'הזמן חבר';
+  String get realInviteFriend => 'להזמין חבר';
 
   @override
   String get realHaveCode => 'יש לי קוד הזמנה';
@@ -489,7 +489,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realTalkNow => 'דבר עכשיו';
+  String get realTalkNow => 'לדבר עכשיו';
 
   @override
   String get realNotNow => 'לא עכשיו';
@@ -638,7 +638,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get updateHow => 'מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.';
 
   @override
-  String get realBgFailedTitle => 'לא הצלחנו לסמן אותך כפנוי ברקע';
+  String get realBgFailedTitle => 'לא הצלחנו להדליק זמינות ברקע';
 
   @override
   String get realBgFailedBody =>
@@ -664,7 +664,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realClearContacts => 'מחק מידע שסונכרן מאנשי הקשר';
+  String get realClearContacts => 'למחוק מידע שסונכרן מאנשי הקשר';
 
   @override
   String get realVoiceOfferAnon => 'חבר פנוי עכשיו. לדבר?';
@@ -686,7 +686,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).';
 
   @override
-  String get realDeleteAccount => 'מחק את החשבון והמידע שלי';
+  String get realDeleteAccount => 'למחוק את החשבון והמידע שלי';
 
   @override
   String get realDeleteAccountConfirm =>
@@ -702,7 +702,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realNotifPublic => 'יש הצעה חדשה ב-DriveTalk';
 
   @override
-  String get firstRunContactsTitle => 'בוא נראה מי מהאנשים שלך כבר כאן';
+  String get firstRunContactsTitle => 'נראה מי מהאנשים שלך כבר כאן';
 
   @override
   String get firstRunContactsBody =>
@@ -716,8 +716,8 @@ class AppLocalizationsHe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'מצאנו $count אנשים שאתה מכיר',
-      one: 'מצאנו אדם אחד שאתה מכיר',
+      other: 'מצאנו $count אנשים מאנשי הקשר',
+      one: 'מצאנו אדם אחד מאנשי הקשר',
     );
     return '$_temp0';
   }
@@ -727,7 +727,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunNoneBody =>
-      'שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.';
+      'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.';
 
   @override
   String get firstRunLater => 'אחר כך';
@@ -936,11 +936,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realTestIntro =>
-      'כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.';
+      'כאן רואים שהכל עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.';
 
   @override
   String get realTestSteps =>
-      '1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"';
+      '1. להזמין חבר\n2. שניכם: \"יש לי זמן\"\n3. שניכם: \"לדבר עכשיו\"';
 
   @override
   String get realStatusServer => 'שרת';
@@ -991,7 +991,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realNotShared => 'לא משותף';
 
   @override
-  String get realMeNotAvailable => 'לא פנוי';
+  String get realMeNotAvailable => 'אין זמינות';
 
   @override
   String get realOfferPending => 'מחכה לתשובה';
@@ -1009,7 +1009,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realOfferCancelled => 'בוטל';
 
   @override
-  String get realCopyDiagnostics => 'העתק מידע לבדיקה';
+  String get realCopyDiagnostics => 'להעתיק מידע לבדיקה';
 
   @override
   String get realCopied => 'הועתק. אפשר להדביק ולשלוח';
@@ -1077,13 +1077,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realNotifChannelOffers => 'חבר פנוי לשיחה';
 
   @override
-  String get realNotifStatusTitle => 'DriveTalk · זמין לשיחה בנסיעה';
+  String get realNotifStatusTitle => 'DriveTalk · זמינות לשיחה בנסיעה';
 
   @override
   String get realNotifStatusBody => 'נסיעה טובה! נודיע כשחבר פנוי.';
 
   @override
-  String get realAutoDriving => 'זמין אוטומטית בנסיעה';
+  String get realAutoDriving => 'זמינות אוטומטית בנסיעה';
 
   @override
   String get realAutoDrivingBody =>
@@ -1100,7 +1100,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
 
   @override
-  String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה תהיה זמין לבד.';
+  String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה הזמינות תידלק לבד.';
 
   @override
   String get realAutoDrivingOff => 'זמינות אוטומטית בנסיעה כובתה';
@@ -1218,7 +1218,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.';
 
   @override
-  String get realNotifManualTitle => 'DriveTalk · זמין לשיחה';
+  String get realNotifManualTitle => 'DriveTalk · זמינות לשיחה';
 
   @override
   String get realNotifManualBody => 'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.';
@@ -1283,10 +1283,10 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realQuickOff => 'אני פנוי';
+  String get realQuickOff => 'יש לי זמן';
 
   @override
-  String get realQuickOn => 'פנוי · לעצירה';
+  String get realQuickOn => 'יש לי זמן · לעצירה';
 
   @override
   String get realCarTitle => 'הרכב שלי (בלוטות׳)';
@@ -1340,5 +1340,5 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realRoutineNotifBody =>
-      'סימנו אותך כזמין לשיחה. \"עצור\" בהתראה כדי לבטל.';
+      'הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.';
 }

@@ -393,7 +393,7 @@ void main() {
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
     await me.c.refresh();
     await pump(50);
-    expect(me.voice.spoken, contains('יוני פנוי. לדבר?'));
+    expect(me.voice.spoken, contains('ליוני יש זמן. לדבר?'));
     expect(waitingOffer(me.s, now), isNotNull);
   });
 

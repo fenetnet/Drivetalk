@@ -10,11 +10,9 @@ extension L10nX on BuildContext {
   AppLocalizations get l10n => AppLocalizations.of(this);
 }
 
-String genderKey(Gender g) => switch (g) {
-  Gender.female => 'female',
-  Gender.male => 'male',
-  Gender.unspecified => 'other',
-};
+/// Texts are gender-neutral for everyone (owner decision D-073): the
+/// "other" wording is always used, whatever an old profile says.
+String genderKey(Gender g) => 'other';
 
 String relationshipLabel(AppLocalizations l, RelationshipType? t) =>
     switch (t) {

@@ -902,12 +902,12 @@ class RealController extends Notifier<RealState> {
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
-    'offerTitle': _l.realOfferTitle('{name}', 'male'),
+    'offerTitle': _l.realOfferTitle('{name}', 'other'),
     'offerBody': _l.realOfferNote,
     'talk': _l.realTalkNow,
     'notNow': _l.realNotNow,
     'voiceOffer': state.prefs.speakNames
-        ? _l.realVoiceOffer('{name}', 'male')
+        ? _l.realVoiceOffer('{name}', 'other')
         : _l.realVoiceOfferAnon,
     'quickTitle': _l.realQuickConnecting('{name}'),
     'quickBody': _l.realQuickConnectingBody,
@@ -2052,11 +2052,8 @@ class RealController extends Notifier<RealState> {
   }
 }
 
-String _genderKey(Gender g) => switch (g) {
-  Gender.female => 'female',
-  Gender.male => 'male',
-  Gender.unspecified => 'other',
-};
+/// Gender-neutral texts for everyone (D-073).
+String _genderKey(Gender g) => 'other';
 
 /// The share text. With an invite site: message + link. Without: message +
 /// download link + code to type in the app.

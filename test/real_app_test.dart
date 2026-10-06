@@ -62,7 +62,7 @@ void main() {
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 500);
       // First steps: look for my people → nobody yet → how it works.
-      expect(find.text('בוא נראה מי מהאנשים שלך כבר כאן'), findsOneWidget);
+      expect(find.text('נראה מי מהאנשים שלך כבר כאן'), findsOneWidget);
       await t.tap(find.text('לחפש באנשי הקשר'));
       await pumpFor(t, 500);
       expect(
@@ -104,7 +104,7 @@ void main() {
       await pumpFor(t, 600);
       // No code, no invitation: we're connected.
       expect(
-        find.text('יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.'),
+        find.text('יש לך 20 דקות? לוחצים "יש לי זמן" ונחפש עם מי לדבר.'),
         findsOneWidget,
       );
 
@@ -116,14 +116,14 @@ void main() {
       // I become free → both are asked.
       await t.tap(find.text('יש לי זמן עכשיו'));
       await pumpFor(t, 500);
-      await t.tap(find.text('סתם פנוי'));
+      await t.tap(find.text('סתם זמן פנוי'));
       await pumpFor(t, 500);
       await t.tap(find.text('30 דק׳'));
       await pumpFor(t, 800);
-      expect(find.text('יוני פנוי עכשיו'), findsOneWidget);
+      expect(find.text('ליוני יש זמן עכשיו'), findsOneWidget);
       expect(find.text('לא עכשיו'), findsOneWidget);
 
-      await t.tap(find.text('דבר עכשיו'));
+      await t.tap(find.text('לדבר עכשיו'));
       await pumpFor(t, 500);
       expect(find.text('מחכים ליוני…'), findsOneWidget);
 
@@ -170,11 +170,11 @@ void main() {
       await pumpFor(t, 400);
       expect(find.text('בדיקה עם חבר'), findsOneWidget);
       await t.scrollUntilVisible(
-        find.text('העתק מידע לבדיקה'),
+        find.text('להעתיק מידע לבדיקה'),
         300,
         scrollable: find.byType(Scrollable).last,
       );
-      expect(find.text('העתק מידע לבדיקה'), findsOneWidget);
+      expect(find.text('להעתיק מידע לבדיקה'), findsOneWidget);
 
       yoni.dispose();
       await t.pumpWidget(const SizedBox());

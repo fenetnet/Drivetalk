@@ -121,7 +121,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeImFreeNow.
   ///
   /// In he, this message translates to:
-  /// **'{gender, select, female{אני פנויה עכשיו} male{אני פנוי עכשיו} other{יש לי זמן עכשיו}}'**
+  /// **'{gender, select, female{יש לי זמן עכשיו} male{יש לי זמן עכשיו} other{יש לי זמן עכשיו}}'**
   String homeImFreeNow(String gender);
 
   /// No description provided for @timeLeftMinutes.
@@ -133,7 +133,7 @@ abstract class AppLocalizations {
   /// No description provided for @stopAvailability.
   ///
   /// In he, this message translates to:
-  /// **'עצור זמינות'**
+  /// **'לעצור זמינות'**
   String get stopAvailability;
 
   /// No description provided for @pickModeTitle.
@@ -163,7 +163,7 @@ abstract class AppLocalizations {
   /// No description provided for @modeFree.
   ///
   /// In he, this message translates to:
-  /// **'סתם פנוי'**
+  /// **'סתם זמן פנוי'**
   String get modeFree;
 
   /// No description provided for @pickDurationTitle.
@@ -379,7 +379,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeBlocked.
   ///
   /// In he, this message translates to:
-  /// **'{name} {gender, select, female{נחסמה} male{נחסם} other{נחסם/ה}}'**
+  /// **'{gender, select, female{{name} ברשימת החסומים} male{{name} ברשימת החסומים} other{{name} ברשימת החסומים}}'**
   String noticeBlocked(String name, String gender);
 
   /// No description provided for @noticeReported.
@@ -421,7 +421,7 @@ abstract class AppLocalizations {
   /// No description provided for @driverStop.
   ///
   /// In he, this message translates to:
-  /// **'עצור'**
+  /// **'לעצור'**
   String get driverStop;
 
   /// No description provided for @driverSafety.
@@ -505,7 +505,7 @@ abstract class AppLocalizations {
   /// No description provided for @enable.
   ///
   /// In he, this message translates to:
-  /// **'הפעל'**
+  /// **'להפעיל'**
   String get enable;
 
   /// No description provided for @settingsPrivacy.
@@ -517,7 +517,7 @@ abstract class AppLocalizations {
   /// No description provided for @unblock.
   ///
   /// In he, this message translates to:
-  /// **'בטל חסימה'**
+  /// **'לבטל חסימה'**
   String get unblock;
 
   /// No description provided for @featCloseness.
@@ -535,7 +535,7 @@ abstract class AppLocalizations {
   /// No description provided for @featAvailableNow.
   ///
   /// In he, this message translates to:
-  /// **'זמין עכשיו'**
+  /// **'יש זמן עכשיו'**
   String get featAvailableNow;
 
   /// No description provided for @featOverlap.
@@ -577,7 +577,7 @@ abstract class AppLocalizations {
   /// No description provided for @routineDue.
   ///
   /// In he, this message translates to:
-  /// **'זה הזמן הרגיל שלך ל{mode}. להיות זמין ל-{minutes} דק׳?'**
+  /// **'זה הזמן הרגיל שלך ל{mode}. לסמן זמן פנוי ל-{minutes} דק׳?'**
   String routineDue(String mode, int minutes);
 
   /// No description provided for @routineStart.
@@ -799,7 +799,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNobodyFree.
   ///
   /// In he, this message translates to:
-  /// **'יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.'**
+  /// **'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.'**
   String get realNobodyFree;
 
   /// No description provided for @realNobodyFreeYet.
@@ -835,7 +835,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteFriend.
   ///
   /// In he, this message translates to:
-  /// **'הזמן חבר'**
+  /// **'להזמין חבר'**
   String get realInviteFriend;
 
   /// No description provided for @realHaveCode.
@@ -895,7 +895,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTalkNow.
   ///
   /// In he, this message translates to:
-  /// **'דבר עכשיו'**
+  /// **'לדבר עכשיו'**
   String get realTalkNow;
 
   /// No description provided for @realNotNow.
@@ -1129,7 +1129,7 @@ abstract class AppLocalizations {
   /// No description provided for @realBgFailedTitle.
   ///
   /// In he, this message translates to:
-  /// **'לא הצלחנו לסמן אותך כפנוי ברקע'**
+  /// **'לא הצלחנו להדליק זמינות ברקע'**
   String get realBgFailedTitle;
 
   /// No description provided for @realBgFailedBody.
@@ -1171,7 +1171,7 @@ abstract class AppLocalizations {
   /// No description provided for @realClearContacts.
   ///
   /// In he, this message translates to:
-  /// **'מחק מידע שסונכרן מאנשי הקשר'**
+  /// **'למחוק מידע שסונכרן מאנשי הקשר'**
   String get realClearContacts;
 
   /// No description provided for @realVoiceOfferAnon.
@@ -1213,7 +1213,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDeleteAccount.
   ///
   /// In he, this message translates to:
-  /// **'מחק את החשבון והמידע שלי'**
+  /// **'למחוק את החשבון והמידע שלי'**
   String get realDeleteAccount;
 
   /// No description provided for @realDeleteAccountConfirm.
@@ -1243,7 +1243,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunContactsTitle.
   ///
   /// In he, this message translates to:
-  /// **'בוא נראה מי מהאנשים שלך כבר כאן'**
+  /// **'נראה מי מהאנשים שלך כבר כאן'**
   String get firstRunContactsTitle;
 
   /// No description provided for @firstRunContactsBody.
@@ -1261,7 +1261,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunFound.
   ///
   /// In he, this message translates to:
-  /// **'{count, plural, =1{מצאנו אדם אחד שאתה מכיר} other{מצאנו {count} אנשים שאתה מכיר}}'**
+  /// **'{count, plural, =1{מצאנו אדם אחד מאנשי הקשר} other{מצאנו {count} אנשים מאנשי הקשר}}'**
   String firstRunFound(int count);
 
   /// No description provided for @firstRunNoneTitle.
@@ -1273,7 +1273,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunNoneBody.
   ///
   /// In he, this message translates to:
-  /// **'שלחו קישור למישהו שאוהבים לדבר איתו. כשהוא יתקין — תתחברו לבד.'**
+  /// **'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.'**
   String get firstRunNoneBody;
 
   /// No description provided for @firstRunLater.
@@ -1603,13 +1603,13 @@ abstract class AppLocalizations {
   /// No description provided for @realTestIntro.
   ///
   /// In he, this message translates to:
-  /// **'כאן רואים שהכל עובד. אם משהו לא עובד — \"העתק מידע לבדיקה\" ושלחו לי.'**
+  /// **'כאן רואים שהכל עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.'**
   String get realTestIntro;
 
   /// No description provided for @realTestSteps.
   ///
   /// In he, this message translates to:
-  /// **'1. הזמינו חבר\n2. שניכם: \"אני פנוי עכשיו\"\n3. שניכם: \"דבר עכשיו\"'**
+  /// **'1. להזמין חבר\n2. שניכם: \"יש לי זמן\"\n3. שניכם: \"לדבר עכשיו\"'**
   String get realTestSteps;
 
   /// No description provided for @realStatusServer.
@@ -1711,7 +1711,7 @@ abstract class AppLocalizations {
   /// No description provided for @realMeNotAvailable.
   ///
   /// In he, this message translates to:
-  /// **'לא פנוי'**
+  /// **'אין זמינות'**
   String get realMeNotAvailable;
 
   /// No description provided for @realOfferPending.
@@ -1747,7 +1747,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCopyDiagnostics.
   ///
   /// In he, this message translates to:
-  /// **'העתק מידע לבדיקה'**
+  /// **'להעתיק מידע לבדיקה'**
   String get realCopyDiagnostics;
 
   /// No description provided for @realCopied.
@@ -1861,7 +1861,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotifStatusTitle.
   ///
   /// In he, this message translates to:
-  /// **'DriveTalk · זמין לשיחה בנסיעה'**
+  /// **'DriveTalk · זמינות לשיחה בנסיעה'**
   String get realNotifStatusTitle;
 
   /// No description provided for @realNotifStatusBody.
@@ -1873,7 +1873,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDriving.
   ///
   /// In he, this message translates to:
-  /// **'זמין אוטומטית בנסיעה'**
+  /// **'זמינות אוטומטית בנסיעה'**
   String get realAutoDriving;
 
   /// No description provided for @realAutoDrivingBody.
@@ -1903,7 +1903,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingOn.
   ///
   /// In he, this message translates to:
-  /// **'מעולה. בנסיעה הבאה תהיה זמין לבד.'**
+  /// **'מעולה. בנסיעה הבאה הזמינות תידלק לבד.'**
   String get realAutoDrivingOn;
 
   /// No description provided for @realAutoDrivingOff.
@@ -2107,7 +2107,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotifManualTitle.
   ///
   /// In he, this message translates to:
-  /// **'DriveTalk · זמין לשיחה'**
+  /// **'DriveTalk · זמינות לשיחה'**
   String get realNotifManualTitle;
 
   /// No description provided for @realNotifManualBody.
@@ -2197,13 +2197,13 @@ abstract class AppLocalizations {
   /// No description provided for @realQuickOff.
   ///
   /// In he, this message translates to:
-  /// **'אני פנוי'**
+  /// **'יש לי זמן'**
   String get realQuickOff;
 
   /// No description provided for @realQuickOn.
   ///
   /// In he, this message translates to:
-  /// **'פנוי · לעצירה'**
+  /// **'יש לי זמן · לעצירה'**
   String get realQuickOn;
 
   /// No description provided for @realCarTitle.
@@ -2269,7 +2269,7 @@ abstract class AppLocalizations {
   /// No description provided for @realRoutineNotifBody.
   ///
   /// In he, this message translates to:
-  /// **'סימנו אותך כזמין לשיחה. \"עצור\" בהתראה כדי לבטל.'**
+  /// **'הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.'**
   String get realRoutineNotifBody;
 }
 
