@@ -35,7 +35,7 @@
 
 ## מדיניות פרטיות (Privacy policy)
 - **הקישור:** https://github.com/fenetnet/Drivetalk/blob/claude/social-voice-app-mnrxc1/docs/privacy.md
-- **לפני ההגשה:** להוסיף כתובת מייל ליצירת קשר במקום הסוגריים.
+- **מייל ליצירת קשר:** fenet.net@gmail.com (כבר בפנים). את אותו מייל שמים ב-Play Console בשדה "Contact details" ← Email.
 
 ## גישה לאפליקציה (App access)
 "All functionality is available without special access". נרשמים עם שם בלבד (מספר טלפון רשות), בלי סיסמה.

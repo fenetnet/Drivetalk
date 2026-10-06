@@ -46,7 +46,7 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 ## מחיקה
 - בהגדרות: **"מחק את החשבון והמידע שלי"**. נמחקים מהשרת: השם, המספר, החברים, המעגלים, ההצעות, "אשמח לדבר", המדידות, התמונה ומזהי המכשיר. גם המידע השמור בטלפון נמחק.
 - "להתחיל מחדש" רק מנתק את החשבון מהטלפון.
-- אפשר לבקש מחיקה גם במייל: [כתובת אימייל ליצירת קשר — למלא לפני פרסום בחנות]
+- אפשר לבקש מחיקה גם במייל: fenet.net@gmail.com
 
 ---
 
@@ -57,4 +57,4 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 - **Sharing:** data is not sold or shared. It is hosted on Supabase (EU).
 - **Voice:** on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.
 - **Usage measurements:** event names and durations only (no content, numbers or names).
-- **Deletion:** in the app, Settings → "Delete my account and my information" removes everything from the server and the phone; or contact [contact email — to fill in before store release].
+- **Deletion:** in the app, Settings → "Delete my account and my information" removes everything from the server and the phone; or contact fenet.net@gmail.com.
