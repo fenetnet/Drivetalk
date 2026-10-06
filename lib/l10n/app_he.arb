@@ -278,41 +278,6 @@
   "realBlockedBody": "אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.",
   "settingsPrivacyBody": "מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.",
   "realDirectCallNeedsOk": "צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.",
-  "realContactsRequested": "שלחנו בקשת חיבור ל: {names}. כשיאשרו, הם יופיעו כאן.",
-  "@realContactsRequested": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "realRequestTitle": "{name} רוצה להתחבר",
-  "@realRequestTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "realRequestBody": "המספר שלך שמור אצל {name}. אחרי אישור תקבלו הצעות לדבר כששניכם פנויים.",
-  "@realRequestBody": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "realRequestYes": "לאשר",
-  "realRequestNo": "לא",
-  "firstRunRequestedTitle": "שלחנו בקשה ל: {names}",
-  "@firstRunRequestedTitle": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "firstRunRequestedBody": "כשיאשרו, תתחברו. בינתיים אפשר להזמין עוד מישהו.",
   "realNoAnswer": "אין תשובה כרגע. נציע שוב בהזדמנות אחרת.",
   "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
   "realVoiceTheyCall": "{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}",
@@ -653,9 +618,9 @@
   "realPhoneRequired": "מספר טלפון (לא חובה)",
   "realPhoneRequiredHelp": "למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.",
   "realContactsTitle": "חברים מאנשי הקשר",
-  "realContactsBody": "אנשי קשר שיש להם DriveTalk: מי ששמר גם אותך מתחבר מיד, והשאר מקבלים בקשה לאשר. לא צריך את המספר שלך.",
+  "realContactsBody": "מוצאים מי מאנשי הקשר כבר כאן, ובוחרים את מי להוסיף. לא צריך את המספר שלך.",
   "realContactsButton": "חיפוש באנשי הקשר",
-  "realContactsFound": "מצאנו: {names} — כבר ברשימה שלך",
+  "realContactsFound": "{names} — עכשיו ברשימה שלך",
   "@realContactsFound": {
     "placeholders": {
       "names": {
@@ -747,5 +712,25 @@
   },
   "realRoutinesIntro": "בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.",
   "realRoutineNotifTitle": "DriveTalk · השגרה שלך",
-  "realRoutineNotifBody": "הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל."
+  "realRoutineNotifBody": "הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.",
+  "done": "סיום",
+  "ratingNever": "לא להציע",
+  "ratingTitle": "כמה בא לי לדבר?",
+  "ratingHelp": "0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.",
+  "contactsPickTitle": "מאנשי הקשר שלך כבר כאן",
+  "contactsPickBody": "בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.",
+  "contactsAdd": "להוסיף",
+  "contactsNo": "לא",
+  "newContactTitle": "{name} מאנשי הקשר שלך כבר כאן",
+  "@newContactTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newContactBody": "להוסיף לאנשים שלי?",
+  "hideStatusTitle": "להסתיר מתי יש לי זמן",
+  "hideStatusBody": "החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.",
+  "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות."
 }

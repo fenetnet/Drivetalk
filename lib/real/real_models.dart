@@ -150,20 +150,11 @@ class RealOffer {
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
 }
 
-/// Someone who saved my number asks to connect (I decide).
-class ConnectRequest {
-  const ConnectRequest(this.fromId, this.name, this.createdAt);
-  final String fromId;
+/// A contact who uses DriveTalk and isn't my friend yet (I may add them).
+class ContactMatch {
+  const ContactMatch(this.id, this.name);
+  final String id;
   final String name;
-  final DateTime createdAt;
-}
-
-/// The result of a contacts search: new friends now, and people who were
-/// asked (they decide).
-class FoundFriends {
-  const FoundFriends({this.connected = const [], this.requested = const []});
-  final List<String> connected;
-  final List<String> requested;
 }
 
 /// What I can see right now.
@@ -178,11 +169,18 @@ class RealSnapshot {
     this.lastTalk = const {},
     this.talks = const [],
     this.intents = const {},
-    this.requests = const [],
+    this.ratings = const {},
+    this.hidden = false,
   });
 
-  /// "X wants to connect" — waiting for my answer (oldest first).
-  final List<ConnectRequest> requests;
+  /// How much I want to talk with each friend, 0–5 (only I see it).
+  /// Not set = 3.
+  final Map<String, int> ratings;
+  int ratingOf(String friendId) => ratings[friendId] ?? 3;
+
+  /// I hide my status: friends don't see when I'm free, and I don't see
+  /// theirs (offers still happen).
+  final bool hidden;
 
   /// "I'd like to talk" (mine only): friend id → until when (null = until
   /// I remove it). Only active ones.
@@ -233,7 +231,8 @@ class RealSnapshot {
       lastTalk: lastTalk,
       talks: talks,
       intents: intents,
-      requests: requests,
+      ratings: ratings,
+      hidden: hidden,
     );
   }
 

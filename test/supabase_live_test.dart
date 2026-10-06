@@ -163,6 +163,14 @@ void main() {
     );
     expect(await m.setPhoto(null), isNull);
 
+    // Rating and "hide my status" are read back from the real server.
+    await m.setRating(yoniP, 5);
+    await m.setHideStatus(true);
+    await m.refresh();
+    expect(me.read(realProvider).snapshot!.ratingOf(yoniP.id), 5);
+    expect(me.read(realProvider).snapshot!.hidden, isTrue);
+    await m.setHideStatus(false);
+
     // Delete my account through the real server.
     expect(await m.deleteAccount(), isNull);
     expect(me.read(realProvider).phase, RealPhase.signedOut);

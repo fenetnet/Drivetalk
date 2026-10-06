@@ -94,14 +94,11 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         await y.signIn('יוני', Gender.male, phone: '0532222222');
         await y.firstRunFindPeople();
+        // Yoni picks me from his contacts → connected at once.
+        await y.addContacts(y.contactMatches);
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await pumpFor(t, 800);
-      // My contacts were searched before Yoni joined, and the server keeps
-      // no numbers of non-users → Yoni's search asks me; one tap.
-      expect(find.text('יוני רוצה להתחבר'), findsOneWidget);
-      await t.tap(find.text('לאשר'));
-      await pumpFor(t, 600);
       // No code, no invitation: we're connected.
       expect(
         find.text('יש לך 20 דקות? לוחצים "יש לי זמן" ונחפש עם מי לדבר.'),
@@ -150,11 +147,9 @@ void main() {
       await pumpFor(t, 4500); // the "thanks" message goes away
       await t.tap(find.text('הגדרות'));
       await pumpFor(t, 400);
-      await t.scrollUntilVisible(
-        find.text('ניהול'),
-        300,
-        scrollable: find.byType(Scrollable).last,
-      );
+      // "Admin" is at the very bottom.
+      await t.drag(find.byType(Scrollable).last, const Offset(0, -3000));
+      await pumpFor(t, 400);
       await t.tap(find.text('ניהול'));
       await pumpFor(t, 300);
       await t.enterText(find.byType(TextField).last, '1234');

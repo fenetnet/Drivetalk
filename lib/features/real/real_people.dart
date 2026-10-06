@@ -158,10 +158,6 @@ class RealPeopleScreen extends ConsumerWidget {
               style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
-            for (final r in snap?.requests ?? const <ConnectRequest>[]) ...[
-              RequestCard(request: r),
-              const SizedBox(height: 12),
-            ],
             FilledButton.icon(
               onPressed: () => shareInvite(context, ref),
               icon: const Icon(Icons.share_rounded),
@@ -204,6 +200,7 @@ class RealPeopleScreen extends ConsumerWidget {
                         ),
                         _ => Text(l.realNotFree),
                       },
+                      RatingStars(rating: snap.ratingOf(f.id)),
                       if (snap.intents[f.id] case final i?
                           when i.isActiveAt(now))
                         Text(
@@ -260,6 +257,8 @@ class RealPeopleScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(f.name, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
+            RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
+            const Divider(),
             ListTile(
               leading: const Icon(Icons.person_remove_rounded),
               title: Text(l.unmatch),
@@ -329,7 +328,7 @@ class _ContactsCard extends ConsumerWidget {
       return Align(
         alignment: AlignmentDirectional.centerStart,
         child: TextButton.icon(
-          onPressed: busy ? null : c.syncContacts,
+          onPressed: busy ? null : () => openContactPicker(context, ref),
           icon: const Icon(Icons.refresh_rounded, color: AppColors.sageDark),
           label: Text(
             l.realContactsAgain,
@@ -370,9 +369,7 @@ class _ContactsCard extends ConsumerWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.sageDark,
               ),
-              onPressed: busy
-                  ? null
-                  : () => ref.read(realProvider.notifier).syncContacts(),
+              onPressed: busy ? null : () => openContactPicker(context, ref),
               icon: const Icon(Icons.search_rounded),
               label: Text(l.realContactsButton),
             ),
@@ -461,69 +458,163 @@ Future<void> openTalkIntentSheet(
   }
 }
 
-/// "X wants to connect" — someone who saved my number. Yes / No.
-class RequestCard extends ConsumerWidget {
-  const RequestCard({super.key, required this.request});
-  final ConnectRequest request;
+/// 0–5 as small stars (0 = "not offered").
+class RatingStars extends StatelessWidget {
+  const RatingStars({super.key, required this.rating});
+  final int rating;
+
+  @override
+  Widget build(BuildContext context) {
+    if (rating == 0) {
+      return Text(
+        context.l10n.ratingNever,
+        style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 1; i <= 5; i++)
+          Icon(
+            i <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
+            size: 16,
+            color: i <= rating ? AppColors.terracotta : AppColors.inkSoft,
+          ),
+      ],
+    );
+  }
+}
+
+/// "How much do I want to talk with them?" 0 (never offer) – 5 (first).
+/// Only I see it.
+class RatingPicker extends ConsumerWidget {
+  const RatingPicker({super.key, required this.friend, this.onDone});
+  final RealProfile friend;
+  final VoidCallback? onDone;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final current = ref.watch(realProvider).snapshot?.ratingOf(friend.id) ?? 3;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.ratingTitle,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: [
+              for (var r = 0; r <= 5; r++)
+                ChoiceChip(
+                  label: Text('$r'),
+                  selected: r == current,
+                  onSelected: (_) async {
+                    await ref.read(realProvider.notifier).setRating(friend, r);
+                    onDone?.call();
+                  },
+                ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l.ratingHelp,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Search my contacts, then pick who to add. Nobody is added otherwise,
+/// and nobody is told who wasn't picked.
+Future<void> openContactPicker(BuildContext context, WidgetRef ref) async {
+  final c = ref.read(realProvider.notifier);
+  await c.syncContacts();
+  if (!context.mounted || c.contactMatches.isEmpty) return;
+  c.markMatchesSeen();
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => const _ContactPickerSheet(),
+  );
+}
+
+class _ContactPickerSheet extends ConsumerWidget {
+  const _ContactPickerSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    ref.watch(realProvider);
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l.contactsPickTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                l.contactsPickBody,
+                style: const TextStyle(color: AppColors.inkSoft),
+              ),
+              const SizedBox(height: 12),
+              const Flexible(child: ContactPickList()),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l.done),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// My contacts who use DriveTalk, each with "Add".
+class ContactPickList extends ConsumerWidget {
+  const ContactPickList({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final busy = ref.watch(realProvider.select((s) => s.busy));
     final c = ref.read(realProvider.notifier);
-    return Card(
-      color: AppColors.blush,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.person_add_alt_1_rounded,
-                  color: AppColors.terracotta,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    l.realRequestTitle(request.name),
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+    final matches = c.contactMatches;
+    return ListView(
+      shrinkWrap: true,
+      children: [
+        for (final m in matches)
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.person_rounded),
+            title: Text(m.name),
+            trailing: FilledButton.tonal(
+              onPressed: busy ? null : () => c.addContacts([m]),
+              child: Text(l.contactsAdd),
             ),
-            const SizedBox(height: 6),
-            Text(
-              l.realRequestBody(request.name),
-              style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton(
-                    onPressed: busy
-                        ? null
-                        : () => c.answerRequest(request, accept: true),
-                    child: Text(l.realRequestYes),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                TextButton(
-                  onPressed: busy
-                      ? null
-                      : () => c.answerRequest(request, accept: false),
-                  child: Text(l.realRequestNo),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 }

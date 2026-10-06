@@ -56,6 +56,23 @@ class RealFirstRunScreen extends ConsumerWidget {
           SecondaryPill(label: l.skip, onTap: c.firstRunNext),
         ],
       ),
+      FirstRunStep.result when c.contactMatches.isNotEmpty => MomentLayout(
+        top: Column(
+          children: [
+            MomentText(l.contactsPickTitle, size: 28),
+            const SizedBox(height: 8),
+            MomentText(l.contactsPickBody, size: 16, soft: true),
+            const SizedBox(height: 16),
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: ContactPickList(),
+              ),
+            ),
+          ],
+        ),
+        actions: [PrimaryPill(label: l.next, onTap: c.firstRunNext)],
+      ),
       FirstRunStep.result when friends.isNotEmpty => MomentLayout(
         top: Column(
           children: [
@@ -86,13 +103,7 @@ class RealFirstRunScreen extends ConsumerWidget {
           children: [
             icon(Icons.person_add_alt_1_rounded),
             const SizedBox(height: 32),
-            if (c.lastRequested.isNotEmpty)
-              texts(
-                l.firstRunRequestedTitle(c.lastRequested.take(3).join(', ')),
-                l.firstRunRequestedBody,
-              )
-            else
-              texts(l.firstRunNoneTitle, l.firstRunNoneBody),
+            texts(l.firstRunNoneTitle, l.firstRunNoneBody),
           ],
         ),
         actions: [

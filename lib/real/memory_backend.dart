@@ -30,9 +30,27 @@ class MemoryServer {
   final wasConnected = <String>{}; // "blocker|blocked"
   final contactHashes = <String, Set<String>>{};
 
-  /// "from>to" → pending / accepted / declined.
-  final requests = <String, String>{};
-  final requestTimes = <String, DateTime>{};
+  /// Pairs one side removed: never suggested/added again from contacts.
+  final removed = <String>{};
+
+  /// "owner|friend" → 0–5 (not set = 3).
+  final ratings = <String, int>{};
+  int ratingOf(String x, String y) => ratings['$x|$y'] ?? 3;
+
+  /// Users who hide their status.
+  final hidden = <String>{};
+
+  /// Connect a pair (any way) — clears a past removal.
+  void connect(String x, String y) {
+    connections.add(_pair(x, y));
+    removed.remove(_pair(x, y));
+  }
+
+  /// Disconnect a pair (remove, block) — remembered.
+  void disconnect(String x, String y) {
+    if (connections.remove(_pair(x, y))) removed.add(_pair(x, y));
+  }
+
   final photos = <String, Uint8List>{};
 
   /// Measurements: (name, ms).
@@ -146,7 +164,9 @@ class MemoryServer {
             _activeAvail(other) &&
             connected(user, other) &&
             !blockedBetween(user, other) &&
-            !_snoozed(user, other))
+            !_snoozed(user, other) &&
+            ratingOf(user, other) > 0 &&
+            ratingOf(other, user) > 0)
           other,
     ];
     // Quietly: quick-connect friends first, then least recently talked.
@@ -156,6 +176,11 @@ class MemoryServer {
       final w =
           (_wantsToTalk(user, y) ? 1 : 0) - (_wantsToTalk(user, x) ? 1 : 0);
       if (w != 0) return w;
+      // How much both want to talk (0–5 each, 3 when not set).
+      final r =
+          (ratingOf(user, y) + ratingOf(y, user)) -
+          (ratingOf(user, x) + ratingOf(x, user));
+      if (r != 0) return r;
       final tx = _lastTalk(user, x);
       final ty = _lastTalk(user, y);
       if (tx == null && ty != null) return -1;
@@ -487,7 +512,9 @@ class MemoryRealBackend implements RealBackend {
           if (visible.contains(e.key) &&
               (e.key == me ||
                   (now.isBefore(e.value.expiresAt) &&
-                      server.inAudience(e.value.circleId, me))))
+                      server.inAudience(e.value.circleId, me) &&
+                      !server.hidden.contains(e.key) &&
+                      !server.hidden.contains(me))))
             e.key: e.value,
       },
       offers: [
@@ -525,19 +552,12 @@ class MemoryRealBackend implements RealBackend {
               until: e.value.$2,
             ),
       },
-      requests: [
-        for (final e in server.requests.entries)
-          if (e.value == 'pending' && e.key.endsWith('>$me'))
-            if (e.key.split('>')[0] case final from
-                when !server.blockedBetween(me, from) &&
-                    !server.connected(me, from) &&
-                    server.profiles.containsKey(from))
-              ConnectRequest(
-                from,
-                server.profiles[from]!.name,
-                server.requestTimes[e.key]!,
-              ),
-      ]..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
+      ratings: {
+        for (final f in friends)
+          if (server.ratings.containsKey('$me|${f.id}'))
+            f.id: server.ratingOf(me, f.id),
+      },
+      hidden: server.hidden.contains(me),
       fetchedAt: now,
     );
   }
@@ -603,7 +623,7 @@ class MemoryRealBackend implements RealBackend {
     if (inv.acceptedBy != null) return AcceptResult.used;
     if (!server.now().isBefore(inv.expiresAt)) return AcceptResult.expired;
     if (server.blockedBetween(me, inv.inviter)) return AcceptResult.notFound;
-    server.connections.add(MemoryServer._pair(me, inv.inviter));
+    server.connect(me, inv.inviter);
     inv.acceptedBy = me;
     server._createOffersFor(me);
     server._changed();
@@ -830,7 +850,7 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<FoundFriends> syncContacts(List<String> hashes) async {
+  Future<List<ContactMatch>> syncContacts(List<String> hashes) async {
     final me = _uid;
     // Only numbers of DriveTalk users are kept; the rest is dropped.
     final users = {
@@ -841,50 +861,53 @@ class MemoryRealBackend implements RealBackend {
       for (final h in hashes)
         if (users.contains(h)) h,
     };
-    final myPhone = server.phones[me];
-    final myHash = myPhone == null ? null : hashPhone(myPhone);
-    final connected = <String>[];
-    final requested = <String>[];
-    for (final e in server.phones.entries) {
-      final other = e.key;
-      if (other == me) continue;
-      if (!hashes.contains(hashPhone(e.value))) continue;
-      if (server.blockedBetween(me, other) || server.connected(me, other)) {
-        continue;
-      }
-      final hasMe =
-          myHash != null &&
-          (server.contactHashes[other]?.contains(myHash) ?? false);
-      final askedMe = server.requests['$other>$me'] == 'pending';
-      final name = server.profiles[other]!.name;
-      if (hasMe || askedMe) {
-        server.connections.add(MemoryServer._pair(me, other));
-        for (final k in ['$me>$other', '$other>$me']) {
-          if (server.requests[k] == 'pending') server.requests[k] = 'accepted';
-        }
-        connected.add(name);
-      } else if (!server.requests.containsKey('$me>$other')) {
-        // Asked once per pair (a "no" is never asked again).
-        server.requests['$me>$other'] = 'pending';
-        server.requestTimes['$me>$other'] = server.now();
-        requested.add(name);
-      }
-    }
-    server._createOffersFor(me);
-    server._changed();
-    return FoundFriends(connected: connected, requested: requested);
+    return _matches(me);
+  }
+
+  /// My contacts who use DriveTalk and can be added (connects nobody).
+  List<ContactMatch> _matches(String me) {
+    final mine = server.contactHashes[me] ?? const <String>{};
+    return [
+      for (final e in server.phones.entries)
+        if (e.key != me &&
+            mine.contains(hashPhone(e.value)) &&
+            !server.blockedBetween(me, e.key) &&
+            !server.connected(me, e.key) &&
+            !server.removed.contains(MemoryServer._pair(me, e.key)))
+          ContactMatch(e.key, server.profiles[e.key]!.name),
+    ]..sort((a, b) => a.name.compareTo(b.name));
   }
 
   @override
-  Future<void> answerRequest(String fromId, {required bool accept}) async {
+  Future<List<String>> addContacts(List<String> userIds) async {
     final me = _uid;
-    final k = '$fromId>$me';
-    if (server.requests[k] != 'pending') return;
-    server.requests[k] = accept ? 'accepted' : 'declined';
-    if (accept && !server.blockedBetween(me, fromId)) {
-      server.connections.add(MemoryServer._pair(me, fromId));
-      server._createOffersFor(me);
+    final names = <String>[];
+    for (final m in _matches(me)) {
+      if (!userIds.contains(m.id)) continue;
+      server.connect(me, m.id);
+      names.add(m.name);
     }
+    server._createOffersFor(me);
+    server._changed();
+    return names;
+  }
+
+  @override
+  Future<void> setRating(String friendId, int rating) async {
+    final me = _uid;
+    if (rating < 0 || rating > 5) throw const RealBackendException('unknown');
+    if (!server.connected(me, friendId)) {
+      throw const RealBackendException('not_connected');
+    }
+    server.ratings['$me|$friendId'] = rating;
+    server._createOffersFor(me);
+    server._changed();
+  }
+
+  @override
+  Future<void> setHideStatus(bool hide) async {
+    final me = _uid;
+    hide ? server.hidden.add(me) : server.hidden.remove(me);
     server._changed();
   }
 
@@ -924,7 +947,7 @@ class MemoryRealBackend implements RealBackend {
     if (!server.blocks.remove('$me|$userId')) return false;
     final was = server.wasConnected.remove('$me|$userId');
     if (was && !server.blockedBetween(me, userId)) {
-      server.connections.add(MemoryServer._pair(me, userId));
+      server.connect(me, userId);
       server._changed();
       return true;
     }
@@ -1027,7 +1050,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 16;
+  int schema = 17;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -1046,7 +1069,9 @@ class MemoryRealBackend implements RealBackend {
     server.photos.remove(me);
     server.availability.remove(me);
     server.contactHashes.remove(me);
-    server.requests.removeWhere((k, _) => k.split('>').contains(me));
+    server.removed.removeWhere((k) => k.split('|').contains(me));
+    server.ratings.removeWhere((k, _) => k.split('|').contains(me));
+    server.hidden.remove(me);
     server.deviceTokens.removeWhere((_, u) => u == me);
     server.connections.removeWhere((c) => c.split('|').contains(me));
     server.offers.removeWhere((_, o) => o.a == me || o.b == me);
@@ -1083,7 +1108,7 @@ class MemoryRealBackend implements RealBackend {
       if (c.$1 == me) c.$2.memberIds.remove(userId);
     }
     server.blocks.add('$me|$userId');
-    server.connections.remove(MemoryServer._pair(me, userId));
+    server.disconnect(me, userId);
     for (final o in server.offers.values) {
       if (o.status == OfferStatus.pending &&
           {o.a, o.b}.containsAll([me, userId])) {
@@ -1098,7 +1123,7 @@ class MemoryRealBackend implements RealBackend {
   @override
   Future<void> unmatch(String userId) async {
     final me = _uid;
-    server.connections.remove(MemoryServer._pair(me, userId));
+    server.disconnect(me, userId);
     server._changed();
   }
 

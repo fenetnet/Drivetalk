@@ -156,11 +156,21 @@ class SupabaseRealBackend implements RealBackend {
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
-      // "X wants to connect" (optional on an older server).
+      // My ratings (optional on an older server).
       _c
-          .rpc('incoming_requests')
+          .from('friend_ratings')
+          .select('friend, rating')
           .then<List<Map<String, dynamic>>>(
-            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            (r) => r,
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
+      // Do I hide my status? (optional on an older server)
+      _c
+          .from('profiles')
+          .select('hide_status')
+          .eq('id', me)
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
     ]);
@@ -216,14 +226,11 @@ class SupabaseRealBackend implements RealBackend {
             },
           ),
       ]..sort((a, b) => a.name.compareTo(b.name)),
-      requests: [
+      ratings: {
         for (final r in results[6])
-          ConnectRequest(
-            r['from_user'] as String,
-            r['display_name'] as String,
-            _time(r['created_at']),
-          ),
-      ],
+          r['friend'] as String: (r['rating'] as num).toInt(),
+      },
+      hidden: results[7].firstOrNull?['hide_status'] == true,
       fetchedAt: DateTime.now(),
     );
   });
@@ -494,39 +501,35 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
-  Future<FoundFriends> syncContacts(List<String> hashes) => _guard(() async {
-    try {
-      final rows =
-          await _c.rpc('find_friends', params: {'p_hashes': hashes}) as List;
-      String name(Object? r) => (r as Map)['display_name'] as String;
-      return FoundFriends(
-        connected: [
+  Future<List<ContactMatch>> syncContacts(List<String> hashes) =>
+      _guard(() async {
+        final rows =
+            await _c.rpc('find_friends', params: {'p_hashes': hashes}) as List;
+        return [
           for (final r in rows)
-            if ((r as Map)['kind'] == 'connected') name(r),
-        ],
-        requested: [
-          for (final r in rows)
-            if ((r as Map)['kind'] == 'requested') name(r),
-        ],
-      );
-    } on PostgrestException catch (e) {
-      if (!_missingFunction(e)) rethrow;
-      // Older server: only "both saved each other".
-      final rows =
-          await _c.rpc('sync_contacts', params: {'p_hashes': hashes}) as List;
-      return FoundFriends(
-        connected: [for (final r in rows) (r as Map)['display_name'] as String],
-      );
-    }
+            if ((r as Map)['user_id'] != null)
+              ContactMatch(r['user_id'] as String, r['display_name'] as String),
+        ];
+      });
+
+  @override
+  Future<List<String>> addContacts(List<String> userIds) => _guard(() async {
+    final rows =
+        await _c.rpc('add_contacts', params: {'p_users': userIds}) as List;
+    return [for (final r in rows) (r as Map)['display_name'] as String];
   });
 
   @override
-  Future<void> answerRequest(String fromId, {required bool accept}) => _guard(
+  Future<void> setRating(String friendId, int rating) => _guard(
     () => _c.rpc(
-      'answer_request',
-      params: {'p_from': fromId, 'p_accept': accept},
+      'set_rating',
+      params: {'p_friend': friendId, 'p_rating': rating},
     ),
   );
+
+  @override
+  Future<void> setHideStatus(bool hide) =>
+      _guard(() => _c.rpc('set_hide_status', params: {'p_hide': hide}));
 
   @override
   Future<String> createDeviceToken() =>
@@ -659,7 +662,7 @@ class SupabaseRealBackend implements RealBackend {
       'profiles',
       'circles',
       'circle_members',
-      'connect_requests',
+      'friend_ratings',
     ]) {
       // One channel per table: if one table can't be watched (e.g. not
       // enabled for Realtime on the server), the others still work.

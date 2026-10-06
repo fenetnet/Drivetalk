@@ -958,48 +958,6 @@ abstract class AppLocalizations {
   /// **'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.'**
   String get realDirectCallNeedsOk;
 
-  /// No description provided for @realContactsRequested.
-  ///
-  /// In he, this message translates to:
-  /// **'שלחנו בקשת חיבור ל: {names}. כשיאשרו, הם יופיעו כאן.'**
-  String realContactsRequested(String names);
-
-  /// No description provided for @realRequestTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'{name} רוצה להתחבר'**
-  String realRequestTitle(String name);
-
-  /// No description provided for @realRequestBody.
-  ///
-  /// In he, this message translates to:
-  /// **'המספר שלך שמור אצל {name}. אחרי אישור תקבלו הצעות לדבר כששניכם פנויים.'**
-  String realRequestBody(String name);
-
-  /// No description provided for @realRequestYes.
-  ///
-  /// In he, this message translates to:
-  /// **'לאשר'**
-  String get realRequestYes;
-
-  /// No description provided for @realRequestNo.
-  ///
-  /// In he, this message translates to:
-  /// **'לא'**
-  String get realRequestNo;
-
-  /// No description provided for @firstRunRequestedTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'שלחנו בקשה ל: {names}'**
-  String firstRunRequestedTitle(String names);
-
-  /// No description provided for @firstRunRequestedBody.
-  ///
-  /// In he, this message translates to:
-  /// **'כשיאשרו, תתחברו. בינתיים אפשר להזמין עוד מישהו.'**
-  String get firstRunRequestedBody;
-
   /// No description provided for @realNoAnswer.
   ///
   /// In he, this message translates to:
@@ -2077,7 +2035,7 @@ abstract class AppLocalizations {
   /// No description provided for @realContactsBody.
   ///
   /// In he, this message translates to:
-  /// **'אנשי קשר שיש להם DriveTalk: מי ששמר גם אותך מתחבר מיד, והשאר מקבלים בקשה לאשר. לא צריך את המספר שלך.'**
+  /// **'מוצאים מי מאנשי הקשר כבר כאן, ובוחרים את מי להוסיף. לא צריך את המספר שלך.'**
   String get realContactsBody;
 
   /// No description provided for @realContactsButton.
@@ -2089,7 +2047,7 @@ abstract class AppLocalizations {
   /// No description provided for @realContactsFound.
   ///
   /// In he, this message translates to:
-  /// **'מצאנו: {names} — כבר ברשימה שלך'**
+  /// **'{names} — עכשיו ברשימה שלך'**
   String realContactsFound(String names);
 
   /// No description provided for @realContactsNone.
@@ -2271,6 +2229,84 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.'**
   String get realRoutineNotifBody;
+
+  /// No description provided for @done.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום'**
+  String get done;
+
+  /// No description provided for @ratingNever.
+  ///
+  /// In he, this message translates to:
+  /// **'לא להציע'**
+  String get ratingNever;
+
+  /// No description provided for @ratingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה בא לי לדבר?'**
+  String get ratingTitle;
+
+  /// No description provided for @ratingHelp.
+  ///
+  /// In he, this message translates to:
+  /// **'0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.'**
+  String get ratingHelp;
+
+  /// No description provided for @contactsPickTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מאנשי הקשר שלך כבר כאן'**
+  String get contactsPickTitle;
+
+  /// No description provided for @contactsPickBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.'**
+  String get contactsPickBody;
+
+  /// No description provided for @contactsAdd.
+  ///
+  /// In he, this message translates to:
+  /// **'להוסיף'**
+  String get contactsAdd;
+
+  /// No description provided for @contactsNo.
+  ///
+  /// In he, this message translates to:
+  /// **'לא'**
+  String get contactsNo;
+
+  /// No description provided for @newContactTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} מאנשי הקשר שלך כבר כאן'**
+  String newContactTitle(String name);
+
+  /// No description provided for @newContactBody.
+  ///
+  /// In he, this message translates to:
+  /// **'להוסיף לאנשים שלי?'**
+  String get newContactBody;
+
+  /// No description provided for @hideStatusTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'להסתיר מתי יש לי זמן'**
+  String get hideStatusTitle;
+
+  /// No description provided for @hideStatusBody.
+  ///
+  /// In he, this message translates to:
+  /// **'החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.'**
+  String get hideStatusBody;
+
+  /// No description provided for @hiddenNote.
+  ///
+  /// In he, this message translates to:
+  /// **'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.'**
+  String get hiddenNote;
 }
 
 class _AppLocalizationsDelegate

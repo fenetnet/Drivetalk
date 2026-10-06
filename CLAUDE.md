@@ -52,8 +52,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Do not read the phone Call Log. Contacts (owner decision D-047): only
   phone NUMBERS are read, hashed (SHA-256 of +972… form) on the phone; names
   never leave it. The server keeps only hashes of numbers that belong to
-  DriveTalk users (D-072). People who have EACH OTHER's number connect
-  automatically; one-sided → a request the other side approves (D-070).
+  DriveTalk users (D-072). Nobody connects automatically: a search lists
+  contacts who use DriveTalk and the user picks who to add (connected at
+  once; anyone can remove; removed pairs never come back from contacts) (D-074).
 - No infinite-scroll feed. No anonymous random chat as a core feature.
 - Driver mode: huge buttons, minimal text, no typing, no scrolling lists,
   one person at a time (normal mode shows up to 3 options).

@@ -535,36 +535,6 @@ class AppLocalizationsHe extends AppLocalizations {
       'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.';
 
   @override
-  String realContactsRequested(String names) {
-    return 'שלחנו בקשת חיבור ל: $names. כשיאשרו, הם יופיעו כאן.';
-  }
-
-  @override
-  String realRequestTitle(String name) {
-    return '$name רוצה להתחבר';
-  }
-
-  @override
-  String realRequestBody(String name) {
-    return 'המספר שלך שמור אצל $name. אחרי אישור תקבלו הצעות לדבר כששניכם פנויים.';
-  }
-
-  @override
-  String get realRequestYes => 'לאשר';
-
-  @override
-  String get realRequestNo => 'לא';
-
-  @override
-  String firstRunRequestedTitle(String names) {
-    return 'שלחנו בקשה ל: $names';
-  }
-
-  @override
-  String get firstRunRequestedBody =>
-      'כשיאשרו, תתחברו. בינתיים אפשר להזמין עוד מישהו.';
-
-  @override
   String get realNoAnswer => 'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.';
 
   @override
@@ -1199,14 +1169,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realContactsBody =>
-      'אנשי קשר שיש להם DriveTalk: מי ששמר גם אותך מתחבר מיד, והשאר מקבלים בקשה לאשר. לא צריך את המספר שלך.';
+      'מוצאים מי מאנשי הקשר כבר כאן, ובוחרים את מי להוסיף. לא צריך את המספר שלך.';
 
   @override
   String get realContactsButton => 'חיפוש באנשי הקשר';
 
   @override
   String realContactsFound(String names) {
-    return 'מצאנו: $names — כבר ברשימה שלך';
+    return '$names — עכשיו ברשימה שלך';
   }
 
   @override
@@ -1341,4 +1311,48 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get realRoutineNotifBody =>
       'הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.';
+
+  @override
+  String get done => 'סיום';
+
+  @override
+  String get ratingNever => 'לא להציע';
+
+  @override
+  String get ratingTitle => 'כמה בא לי לדבר?';
+
+  @override
+  String get ratingHelp => '0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.';
+
+  @override
+  String get contactsPickTitle => 'מאנשי הקשר שלך כבר כאן';
+
+  @override
+  String get contactsPickBody =>
+      'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.';
+
+  @override
+  String get contactsAdd => 'להוסיף';
+
+  @override
+  String get contactsNo => 'לא';
+
+  @override
+  String newContactTitle(String name) {
+    return '$name מאנשי הקשר שלך כבר כאן';
+  }
+
+  @override
+  String get newContactBody => 'להוסיף לאנשים שלי?';
+
+  @override
+  String get hideStatusTitle => 'להסתיר מתי יש לי זמן';
+
+  @override
+  String get hideStatusBody =>
+      'החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.';
+
+  @override
+  String get hiddenNote =>
+      'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.';
 }

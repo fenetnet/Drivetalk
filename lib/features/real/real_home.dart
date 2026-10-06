@@ -156,6 +156,8 @@ class RealHomeScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
+                else if (snap != null && snap.hidden)
+                  const _HiddenCard()
                 else
                   _FreeNowCard(free: free, now: now, meFree: mine != null),
                 if (snap != null && snap.intents.isNotEmpty) ...[
@@ -194,8 +196,8 @@ class RealHomeScreen extends ConsumerWidget {
   }
 }
 
-/// The one card under "Now": update > "X wants to connect" > routine now > routine idea >
-/// the home-screen button tip.
+/// The one card under "Now": update > someone from my contacts joined >
+/// routine now > routine idea > the home-screen button tip.
 Widget? _tipCard(
   RealState s,
   RealController c,
@@ -203,7 +205,7 @@ Widget? _tipCard(
   RealSnapshot? snap,
 ) {
   if (s.newBuild != null) return const _UpdateCard();
-  if (snap?.requests.firstOrNull case final r?) return RequestCard(request: r);
+  if (c.newContactMatch case final m?) return _NewContactCard(match: m);
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
     return _RoutineHintCard(hint: hint);
@@ -949,6 +951,73 @@ class RealDriverHome extends ConsumerWidget {
           onTap: c.stopAvailability,
         ),
       ],
+    );
+  }
+}
+
+/// My status is hidden: so I don't see who's free either.
+class _HiddenCard extends StatelessWidget {
+  const _HiddenCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.visibility_off_rounded, color: AppColors.inkSoft),
+            const SizedBox(width: 12),
+            Expanded(child: Text(context.l10n.hiddenNote)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Someone from my contacts joined: add them? (Nothing happens otherwise.)
+class _NewContactCard extends ConsumerWidget {
+  const _NewContactCard({required this.match});
+  final ContactMatch match;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.newContactTitle(match.name),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(l.newContactBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy ? null : () => c.addContacts([match]),
+                    child: Text(l.contactsAdd),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: () => c.dismissMatch(match),
+                  child: Text(l.contactsNo),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

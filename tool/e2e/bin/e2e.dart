@@ -1018,7 +1018,7 @@ Future<void> main() async {
   await me.from('circles').delete().eq('id', cid);
   await temp.dispose();
 
-  // --- friends from phone contacts (each must have the other's number)
+  // --- friends from phone contacts: I pick who (D-074)
   String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
   // Fresh numbers each run (earlier runs left users in the local database).
   final n = (DateTime.now().millisecondsSinceEpoch % 9000000) + 1000000;
@@ -1034,56 +1034,14 @@ Future<void> main() async {
     'user_id': uid(noa),
     'phone': noaPhone,
   });
-  final first = List.from(
+  await noa.rpc(
+    'find_friends',
+    params: {
+      'p_hashes': [h(aviPhone)],
+    },
+  );
+  final listed = List<Map<String, dynamic>>.from(
     await avi.rpc(
-      'sync_contacts',
-      params: {
-        'p_hashes': [h(noaPhone)],
-      },
-    ),
-  );
-  check(first.isEmpty, 'only one side has the number → not connected yet');
-  final matched = List<Map<String, dynamic>>.from(
-    await noa.rpc(
-      'sync_contacts',
-      params: {
-        'p_hashes': [h(aviPhone), h('+972599999999')],
-      },
-    ),
-  );
-  check(
-    matched.length == 1 && matched.single['display_name'] == 'אבי',
-    'both have each other → connected automatically',
-  );
-  check(
-    (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
-    'Avi now sees Noa in his people',
-  );
-  check((await rows(eve, 'profiles')).length == 1, 'nobody else was connected');
-  try {
-    final leaked = await noa.from('contact_hashes').select();
-    check(leaked.isEmpty, 'contact hashes are not readable (even my own)');
-  } on PostgrestException {
-    check(true, 'contact hashes are not readable (even my own)');
-  }
-  final again = List.from(
-    await noa.rpc(
-      'sync_contacts',
-      params: {
-        'p_hashes': [h(aviPhone)],
-      },
-    ),
-  );
-  check(again.isEmpty, 'syncing again creates nothing new');
-  await noa.rpc('clear_contact_hashes');
-  check(
-    (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
-    'deleting synced contacts keeps the friends',
-  );
-  // Without my number: the friend gets a request and decides (D-070).
-  final gil = await newUser('גיל', 'male'); // no number
-  final found = List<Map<String, dynamic>>.from(
-    await gil.rpc(
       'find_friends',
       params: {
         'p_hashes': [h(noaPhone), h('+972599999998'), h('+972599999997')],
@@ -1091,83 +1049,153 @@ Future<void> main() async {
     ),
   );
   check(
+    listed.length == 1 && listed.single['display_name'] == 'נועה',
+    'a search lists my contacts who use DriveTalk',
+  );
+  check(
+    (await rows(avi, 'profiles')).length == 1,
+    'nobody is connected automatically (even when both saved each other)',
+  );
+  check(
     await dbCount(
-          "select count(*) from contact_hashes where owner = '${uid(gil)}'",
+          "select count(*) from contact_hashes where owner = '${uid(avi)}'",
         ) ==
         1,
     'the server keeps only numbers of DriveTalk users (not the phone book)',
   );
-  check(
-    found.length == 1 &&
-        found.single['kind'] == 'requested' &&
-        found.single['display_name'] == 'נועה',
-    'without my number: a saved contact gets a request',
+  try {
+    final leaked = await noa.from('contact_hashes').select();
+    check(leaked.isEmpty, 'contact hashes are not readable (even my own)');
+  } on PostgrestException {
+    check(true, 'contact hashes are not readable (even my own)');
+  }
+  final gil = await newUser('גיל', 'male');
+  final notMine = List.from(
+    await avi.rpc(
+      'add_contacts',
+      params: {
+        'p_users': [uid(gil)],
+      },
+    ),
+  );
+  check(notMine.isEmpty, "can't add someone who isn't in my contacts");
+  final added = List<Map<String, dynamic>>.from(
+    await avi.rpc(
+      'add_contacts',
+      params: {
+        'p_users': [uid(noa)],
+      },
+    ),
   );
   check(
-    (await rows(gil, 'profiles')).length == 1,
-    'a request alone connects nobody',
+    added.length == 1 &&
+        (await rows(noa, 'profiles')).any((p) => p['display_name'] == 'אבי'),
+    'I pick Noa → connected at once (no approval)',
   );
-  final inbox = List<Map<String, dynamic>>.from(
-    await noa.rpc('incoming_requests'),
-  );
-  check(
-    inbox.length == 1 && inbox.single['display_name'] == 'גיל',
-    'Noa sees "Gil wants to connect"',
-  );
-  check(
-    List.from(await eve.rpc('incoming_requests')).isEmpty,
-    'nobody else sees the request',
-  );
-  check(
-    await eve.rpc(
-          'answer_request',
-          params: {'p_from': uid(gil), 'p_accept': true},
-        ) ==
-        false,
-    "a stranger can't answer someone else's request",
-  );
-  check(
-    (await rows(eve, 'connect_requests')).isEmpty,
-    "a stranger can't read requests",
-  );
-  check(
-    await noa.rpc(
-          'answer_request',
-          params: {'p_from': uid(gil), 'p_accept': true},
-        ) ==
-        true,
-    'Noa says yes',
-  );
-  check(
-    (await rows(gil, 'profiles')).any((p) => p['display_name'] == 'נועה'),
-    '"yes" → Gil and Noa are friends',
-  );
-  final dor = await newUser('דור', 'male');
-  await dor.rpc(
-    'find_friends',
-    params: {
-      'p_hashes': [h(noaPhone)],
-    },
-  );
-  await noa.rpc(
-    'answer_request',
-    params: {'p_from': uid(dor), 'p_accept': false},
-  );
-  final askedAgain = List.from(
-    await dor.rpc(
+  // Noa removes Avi → neither side can add the other from contacts again.
+  await noa
+      .from('connections')
+      .delete()
+      .eq(
+        'user_a',
+        [uid(avi), uid(noa)].reduce((a, b) => a.compareTo(b) < 0 ? a : b),
+      )
+      .eq(
+        'user_b',
+        [uid(avi), uid(noa)].reduce((a, b) => a.compareTo(b) > 0 ? a : b),
+      );
+  final again = List.from(
+    await avi.rpc(
       'find_friends',
       params: {
         'p_hashes': [h(noaPhone)],
       },
     ),
   );
-  check(
-    askedAgain.isEmpty && List.from(await noa.rpc('incoming_requests')).isEmpty,
-    '"no" is never asked again',
+  final readd = List.from(
+    await avi.rpc(
+      'add_contacts',
+      params: {
+        'p_users': [uid(noa)],
+      },
+    ),
   );
   check(
-    await eve.rpc('schema_version') == 16,
-    'the server says its version (16)',
+    again.isEmpty && readd.isEmpty,
+    'removed → not suggested or added again from contacts',
+  );
+  // An invitation link still works (explicit), and clears the removal.
+  final invBack = List<Map<String, dynamic>>.from(
+    await avi.rpc('create_invitation'),
+  ).single;
+  await noa.rpc('accept_invitation', params: {'p_token': invBack['token']});
+  check(
+    (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+    'an invitation connects them again',
+  );
+  await noa.rpc('clear_contact_hashes');
+  check(
+    (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+    'deleting synced contacts keeps the friends',
+  );
+
+  // Ratings (only mine visible) and "hide my status".
+  await avi.rpc('set_rating', params: {'p_friend': uid(noa), 'p_rating': 5});
+  final myRatings = await rows(avi, 'friend_ratings');
+  check(
+    myRatings.length == 1 && myRatings.single['rating'] == 5,
+    'I can set and read my rating',
+  );
+  check(
+    (await rows(noa, 'friend_ratings')).isEmpty,
+    "nobody sees someone else's rating",
+  );
+  try {
+    await avi.rpc('set_rating', params: {'p_friend': uid(gil), 'p_rating': 4});
+    check(false, 'rating only for my friends');
+  } on PostgrestException {
+    check(true, 'rating only for my friends');
+  }
+  await avi.rpc('set_rating', params: {'p_friend': uid(noa), 'p_rating': 0});
+  await noa.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 15},
+  );
+  await avi.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 15},
+  );
+  check(
+    (await rows(
+      avi,
+      'match_offers',
+    )).where((o) => o['status'] == 'pending').isEmpty,
+    'rating 0 → never offered',
+  );
+  await avi.rpc('set_rating', params: {'p_friend': uid(noa), 'p_rating': 4});
+  await avi.rpc('set_hide_status', params: {'p_hide': true});
+  check(
+    (await rows(noa, 'availability')).every((a) => a['user_id'] != uid(avi)),
+    'hidden → friends do not see that I am free',
+  );
+  check(
+    (await rows(avi, 'availability')).every((a) => a['user_id'] == uid(avi)),
+    'hidden → I do not see who is free either',
+  );
+  check(
+    (await rows(
+          avi,
+          'match_offers',
+        )).where((o) => o['status'] == 'pending').length ==
+        1,
+    'hidden → offers still happen',
+  );
+  await avi.rpc('set_hide_status', params: {'p_hide': false});
+  await avi.rpc('clear_availability');
+  await noa.rpc('clear_availability');
+  check(
+    await eve.rpc('schema_version') == 17,
+    'the server says its version (17)',
   );
 
   // --- profile photos: private, friends only

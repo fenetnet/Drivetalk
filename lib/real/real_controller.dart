@@ -133,7 +133,6 @@ enum RealNoticeKind {
   unblocked,
   contactsFound,
   contactsNone,
-  contactsRequested,
   contactsNoPermission,
   unblockedReconnected,
 }
@@ -404,7 +403,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 16;
+const kRequiredSchema = 17;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -428,7 +427,10 @@ class RealController extends Notifier<RealState> {
   var _tick = 0;
   var _refreshing = false;
   DateTime? _refreshStarted;
-  var _refreshAgain = false;
+
+  /// A refresh asked for while one runs: done when the NEXT one finishes
+  /// (so "save, then refresh" always shows the saved data).
+  Completer<void>? _refreshAgain;
   String? _spokenOfferId;
   String? _shownOfferId;
   DateTime? _lastNudge;
@@ -772,6 +774,7 @@ class RealController extends Notifier<RealState> {
   /// "Let's see who of your people is already here" → contacts.
   Future<void> firstRunFindPeople() async {
     await syncContacts(quiet: true);
+    markMatchesSeen();
     _setFirstRun(FirstRunStep.result);
   }
 
@@ -1135,8 +1138,7 @@ class RealController extends Notifier<RealState> {
       return;
     }
     if (_refreshing) {
-      _refreshAgain = true;
-      return;
+      return (_refreshAgain ??= Completer<void>()).future;
     }
     _refreshing = true;
     _refreshStarted = _now();
@@ -1177,9 +1179,14 @@ class RealController extends Notifier<RealState> {
       if (ref.mounted) _setError(e.code);
     } finally {
       _refreshing = false;
-      if (_refreshAgain && ref.mounted) {
-        _refreshAgain = false;
-        unawaited(refresh());
+      final again = _refreshAgain;
+      _refreshAgain = null;
+      if (again != null) {
+        if (ref.mounted) {
+          unawaited(refresh().whenComplete(again.complete));
+        } else {
+          again.complete();
+        }
       }
     }
   }
@@ -1863,35 +1870,79 @@ class RealController extends Notifier<RealState> {
       final found = await _backend.syncContacts(hashes);
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
-      if (found.requested.isNotEmpty) lastRequested = found.requested;
-      if (quiet) return;
-      if (found.connected.isNotEmpty) {
-        _notify(RealNoticeKind.contactsFound, name: found.connected.join(', '));
-      } else if (found.requested.isNotEmpty) {
-        _notify(
-          RealNoticeKind.contactsRequested,
-          name: found.requested.join(', '),
-        );
-      } else if (ask) {
-        _notify(RealNoticeKind.contactsNone);
-      }
+      contactMatches = found;
+      if (!quiet && ask && found.isEmpty) _notify(RealNoticeKind.contactsNone);
     });
     if (ref.mounted) await refresh();
   }
 
-  /// Quietly again every 12 hours (only if permission was given before).
-  /// Who the last contacts search asked to connect (they decide).
-  List<String> lastRequested = const [];
+  static const _seenMatchesKey = 'real.contactsSeen.v1';
 
-  /// "X wants to connect": yes → friends; no → closed quietly.
-  Future<void> answerRequest(ConnectRequest r, {required bool accept}) async {
-    final ok = await _run(
-      () => _backend.answerRequest(r.fromId, accept: accept),
-    );
-    if (ok && accept) {
-      _event('request_accepted');
-      _notify(RealNoticeKind.connected, name: r.name);
+  /// Contacts who use DriveTalk and aren't my friends yet (from the last
+  /// search). Nobody is added unless I pick them.
+  List<ContactMatch> contactMatches = const [];
+
+  Set<String> get _seenMatches {
+    try {
+      return {
+        ...(jsonDecode(_store.getString(_seenMatchesKey) ?? '[]') as List)
+            .cast<String>(),
+      };
+    } catch (_) {
+      return {};
     }
+  }
+
+  void _markSeen(Iterable<String> ids) {
+    final all = {..._seenMatches, ...ids}.toList();
+    final keep = all.length > 500 ? all.sublist(all.length - 500) : all;
+    _store.setString(_seenMatchesKey, jsonEncode(keep));
+  }
+
+  /// Someone from my contacts joined since I last looked → one quiet card.
+  ContactMatch? get newContactMatch {
+    final seen = _seenMatches;
+    return contactMatches.where((m) => !seen.contains(m.id)).firstOrNull;
+  }
+
+  /// The list was shown: what's in it isn't "new" any more.
+  void markMatchesSeen() => _markSeen(contactMatches.map((m) => m.id));
+
+  /// Add the people I picked — connected at once.
+  Future<void> addContacts(List<ContactMatch> picked) async {
+    if (picked.isEmpty) return;
+    _markSeen(picked.map((m) => m.id));
+    final ids = {for (final m in picked) m.id};
+    final ok = await _run(() async {
+      final names = await _backend.addContacts(ids.toList());
+      if (!ref.mounted) return;
+      contactMatches = [
+        for (final m in contactMatches)
+          if (!ids.contains(m.id)) m,
+      ];
+      if (names.isNotEmpty) {
+        _notify(RealNoticeKind.contactsFound, name: names.join(', '));
+      }
+    });
+    if (ok) _event('contacts_added');
+    await refresh();
+  }
+
+  /// "Not this one" on the new-contact card.
+  void dismissMatch(ContactMatch m) {
+    _markSeen([m.id]);
+    state = state.copyWith();
+  }
+
+  /// How much I want to talk with this friend: 0 (never offer) – 5 (first).
+  Future<void> setRating(RealProfile friend, int rating) async {
+    await _run(() => _backend.setRating(friend.id, rating.clamp(0, 5)));
+    await refresh();
+  }
+
+  /// Hide my status from friends (and theirs from me). Offers go on.
+  Future<void> setHideStatus(bool hide) async {
+    await _run(() => _backend.setHideStatus(hide));
     await refresh();
   }
 

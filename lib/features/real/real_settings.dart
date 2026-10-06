@@ -133,6 +133,15 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsGeneral,
             children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.visibility_off_rounded),
+                title: Text(l.hideStatusTitle),
+                subtitle: Text(l.hideStatusBody),
+                value: s.snapshot?.hidden ?? false,
+                onChanged: s.busy || s.snapshot == null
+                    ? null
+                    : c.setHideStatus,
+              ),
               ListTile(
                 leading: const Icon(Icons.system_update_rounded),
                 title: Text(l.updateCheck),
