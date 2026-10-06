@@ -180,6 +180,8 @@ class DrivingService : Service() {
     }
 
     private fun speak(text: String) {
+        // On screen, the app asks by voice itself — never twice.
+        if (MainActivity.onScreen) return
         if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "offer")
     }
 

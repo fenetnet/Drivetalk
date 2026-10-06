@@ -610,6 +610,44 @@ void main() {
       dana.dispose();
     });
 
+    test('a question waits 2 minutes; after 3 unanswered, quiet', () async {
+      await connect();
+      final others = <Phone>[yoni];
+      for (final name in ['דנה', 'אמא', 'אבי']) {
+        final p = Phone(server, clock);
+        await p.boot();
+        await p.c.signIn(name, Gender.female);
+        final msg = await me.c.createInviteMessage();
+        p.c.openInviteText(msg!);
+        await pump();
+        await p.c.acceptInvite();
+        others.add(p);
+      }
+      for (final p in others) {
+        await p.c.startAvailability(AvailabilityMode.free, 120);
+      }
+      await me.c.startAvailability(AvailabilityMode.driving, 120);
+      final asked = <String>{};
+      for (var i = 0; i < 3; i++) {
+        await me.c.refresh();
+        final o = currentOffer(me.s, now);
+        expect(o, isNotNull, reason: 'question ${i + 1}');
+        asked.add(o!.otherId(me.backend.userId!));
+        now = now.add(const Duration(minutes: 2, seconds: 1));
+        await me.c.refresh();
+        expect(currentOffer(me.s, now), isNull, reason: 'over after 2 min');
+        now = now.add(const Duration(minutes: 5, seconds: 1));
+      }
+      expect(asked, hasLength(3), reason: 'each friend once');
+      await me.c.refresh();
+      now = now.add(const Duration(minutes: 10));
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNull, reason: '3 unanswered → quiet');
+      for (final p in others.skip(1)) {
+        p.dispose();
+      }
+    });
+
     test(
       'quick-connect circles on both sides → connected without asking',
       () async {
@@ -750,14 +788,24 @@ void main() {
       await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
       await yoni.c.firstRunFindPeople();
       await pump(10);
-      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
-      expect(
-        yoni.s.firstRun,
-        FirstRunStep.result,
-        reason: 'the screen says it',
-      );
-      await me.c.refresh();
+      // My first search kept nothing (Yoni wasn't a user yet), so Yoni's
+      // search asks me; my next search (automatic, every 12h) connects.
+      expect(yoni.c.lastRequested, ['נתנאל']);
+      await me.c.syncContacts();
       expect(me.s.snapshot!.friends.single.name, 'יוני');
+      expect(server.contactHashes[me.backend.userId], hasLength(1));
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+      // Now both are users: a new pair that saved each other connects at once.
+      final dana = Phone(server, clock);
+      await dana.boot();
+      dana.contacts.numbers = ['0521111111'];
+      await dana.c.signIn('דנה', Gender.female, phone: '0543333333');
+      me.contacts.numbers = [...me.contacts.numbers, '0543333333'];
+      await me.c.syncContacts(); // Dana is a user now → kept
+      await dana.c.syncContacts();
+      expect(dana.s.snapshot!.friends.single.name, 'נתנאל');
+      dana.dispose();
     });
 
     test('only one side has the number → not connected', () async {
@@ -828,8 +876,9 @@ void main() {
       expect(me.s.notice?.kind, RealNoticeKind.contactsNoPermission);
     });
 
-    test('only hashes leave the phone', () async {
-      me.contacts.numbers = ['0532222222'];
+    test('only hashes leave the phone; non-users are not kept', () async {
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      me.contacts.numbers = ['0532222222', '0549999999'];
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
       await me.c.firstRunFindPeople();
       await pump(10);
@@ -1019,12 +1068,13 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 15)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 16)'));
     });
 
     test(
       'delete what was synced from contacts; again if permission gone',
       () async {
+        await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
         me.contacts.numbers = ['0532222222'];
         await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
         await me.c.firstRunFindPeople();

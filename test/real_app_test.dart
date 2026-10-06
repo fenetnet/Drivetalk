@@ -97,6 +97,11 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await pumpFor(t, 800);
+      // My contacts were searched before Yoni joined, and the server keeps
+      // no numbers of non-users → Yoni's search asks me; one tap.
+      expect(find.text('יוני רוצה להתחבר'), findsOneWidget);
+      await t.tap(find.text('לאשר'));
+      await pumpFor(t, 600);
       // No code, no invitation: we're connected.
       expect(
         find.text('יש לך 20 דקות? סמן שאתה פנוי ונחפש מישהו מתאים.'),

@@ -125,11 +125,20 @@ class MemoryServer {
 
   /// ONE offer for this user (the best friend for now), like the server.
   void _createOffersFor(String user) {
+    // A question nobody answered in time is over.
+    for (final o in offers.values) {
+      if (o.status == OfferStatus.pending && !now().isBefore(o.expiresAt)) {
+        o
+          ..status = OfferStatus.expired
+          ..updatedAt = o.expiresAt;
+      }
+    }
     if (!_activeAvail(user)) return;
     if (_hasOpenOffer(user) || _inCall(user)) return;
-    // 5 quiet minutes after a question that didn't become a call.
-    if (_quietGap(user)) return;
     final mine = availability[user]!;
+    // 5 quiet minutes after a question that didn't become a call; after 3
+    // such questions in this window, no more.
+    if (_quietGap(user) || _askedEnough(user, mine.startedAt)) return;
     bool mutualQuick(String o) => _isQuick(user, o) && _isQuick(o, user);
     final candidates = [
       for (final other in availability.keys)
@@ -160,7 +169,8 @@ class MemoryServer {
           !inAudience(theirs.circleId, user) ||
           _hasOpenOffer(other) ||
           _inCall(other) ||
-          _quietGap(other)) {
+          _quietGap(other) ||
+          _askedEnough(other, theirs.startedAt)) {
         continue;
       }
       final pair = _pair(user, other).split('|');
@@ -197,15 +207,19 @@ class MemoryServer {
           !quickInWindow(user, mine.startedAt) &&
           !quickInWindow(other, theirs.startedAt);
       final id = _newId('offer');
+      var until = mine.expiresAt.isBefore(theirs.expiresAt)
+          ? mine.expiresAt
+          : theirs.expiresAt;
+      // A question waits 2 minutes for answers, then it's over.
+      final answerBy = since.add(const Duration(minutes: 2));
+      if (!quick && answerBy.isBefore(until)) until = answerBy;
       offers[id] = _Offer(
         id: id,
         a: pair[0],
         b: pair[1],
         createdAt: since,
         updatedAt: since,
-        expiresAt: mine.expiresAt.isBefore(theirs.expiresAt)
-            ? mine.expiresAt
-            : theirs.expiresAt,
+        expiresAt: until,
         quick: quick,
       );
       if (quick) {
@@ -223,6 +237,18 @@ class MemoryServer {
       o.status == OfferStatus.declined ||
       o.status == OfferStatus.expired ||
       o.status == OfferStatus.cancelled;
+
+  bool _askedEnough(String user, DateTime since) =>
+      offers.values
+          .where(
+            (o) =>
+                (o.a == user || o.b == user) &&
+                !o.quick &&
+                !o.createdAt.isBefore(since) &&
+                _endedWithoutCall(o),
+          )
+          .length >=
+      3;
 
   bool _quietGap(String user) => offers.values.any(
     (o) =>
@@ -806,7 +832,15 @@ class MemoryRealBackend implements RealBackend {
   @override
   Future<FoundFriends> syncContacts(List<String> hashes) async {
     final me = _uid;
-    server.contactHashes[me] = {...hashes};
+    // Only numbers of DriveTalk users are kept; the rest is dropped.
+    final users = {
+      for (final e in server.phones.entries)
+        if (e.key != me) hashPhone(e.value),
+    };
+    server.contactHashes[me] = {
+      for (final h in hashes)
+        if (users.contains(h)) h,
+    };
     final myPhone = server.phones[me];
     final myHash = myPhone == null ? null : hashPhone(myPhone);
     final connected = <String>[];
@@ -993,7 +1027,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 15;
+  int schema = 16;
 
   @override
   Future<int> schemaVersion() async => schema;

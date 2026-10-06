@@ -19,6 +19,13 @@ final dbUrl =
     Platform.environment['SUPABASE_DB_URL'] ??
     'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 
+/// A number from the local test database (checks what the server keeps).
+Future<int> dbCount(String sql) async {
+  final r = await Process.run('psql', [dbUrl, '-tAc', sql]);
+  if (r.exitCode != 0) throw StateError('psql: ${r.stderr}');
+  return int.parse((r.stdout as String).trim());
+}
+
 /// The 5 quiet minutes after a question that didn't become a call (D-069):
 /// make finished questions look 6 minutes old (local test database only).
 Future<void> skipQuietGap() async {
@@ -1079,9 +1086,16 @@ Future<void> main() async {
     await gil.rpc(
       'find_friends',
       params: {
-        'p_hashes': [h(noaPhone)],
+        'p_hashes': [h(noaPhone), h('+972599999998'), h('+972599999997')],
       },
     ),
+  );
+  check(
+    await dbCount(
+          "select count(*) from contact_hashes where owner = '${uid(gil)}'",
+        ) ==
+        1,
+    'the server keeps only numbers of DriveTalk users (not the phone book)',
   );
   check(
     found.length == 1 &&
@@ -1152,8 +1166,8 @@ Future<void> main() async {
     '"no" is never asked again',
   );
   check(
-    await eve.rpc('schema_version') == 15,
-    'the server says its version (15)',
+    await eve.rpc('schema_version') == 16,
+    'the server says its version (16)',
   );
 
   // --- profile photos: private, friends only

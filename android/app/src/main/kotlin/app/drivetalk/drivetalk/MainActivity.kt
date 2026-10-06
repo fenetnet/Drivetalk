@@ -15,6 +15,20 @@ class MainActivity : FlutterActivity() {
     companion object {
         const val EXTRA_OFFER = "drivetalk_offer"
         const val EXTRA_ACCEPT = "drivetalk_accept"
+
+        /** The app is on screen: it reads questions aloud itself (and
+         *  listens for yes/no), so the background service stays quiet. */
+        @Volatile var onScreen = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        onScreen = true
+    }
+
+    override fun onPause() {
+        onScreen = false
+        super.onPause()
     }
 
     private val callPermissionRequest = 4711

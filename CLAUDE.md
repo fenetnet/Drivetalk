@@ -51,7 +51,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Availability always has an automatic expiry.
 - Do not read the phone Call Log. Contacts (owner decision D-047): only
   phone NUMBERS are read, hashed (SHA-256 of +972… form) on the phone; names
-  never leave it. People who have EACH OTHER's number connect automatically.
+  never leave it. The server keeps only hashes of numbers that belong to
+  DriveTalk users (D-072). People who have EACH OTHER's number connect
+  automatically; one-sided → a request the other side approves (D-070).
 - No infinite-scroll feed. No anonymous random chat as a core feature.
 - Driver mode: huge buttons, minimal text, no typing, no scrolling lists,
   one person at a time (normal mode shows up to 3 options).
