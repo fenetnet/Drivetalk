@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +13,11 @@ class DrivingStatus {
     this.configured = false,
     this.carName = '',
     this.background = true,
+    this.notifications = true,
   });
+
+  /// Notifications are allowed for DriveTalk (Android).
+  final bool notifications;
 
   /// Battery saving won't stop the background service (Android).
   final bool background;
@@ -68,12 +73,19 @@ abstract class DrivingDetector {
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
+  /// The phone's notification settings for DriveTalk (to turn them on/off).
+  Future<void> openNotificationSettings();
+
   /// One tap "allow running in the background" (battery saving off for
   /// DriveTalk), so trips and "a friend is free" keep working.
   Future<bool> allowBackground();
 
   /// Routines for the phone's alarm (JSON from RealController).
   Future<void> setRoutines(String json);
+
+  /// Friend id → the name saved in my contacts, for the background
+  /// notifications (stays on the phone).
+  Future<void> setNames(Map<String, String> names);
 
   /// Paired Bluetooth devices (name, address) — to pick the car.
   Future<List<(String, String)>> bondedDevices();
@@ -110,6 +122,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         configured: m?['configured'] == true,
         carName: '${m?['carName'] ?? ''}',
         background: m?['background'] != false,
+        notifications: m?['notifications'] != false,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -208,6 +221,13 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
 
   @override
+  Future<void> setNames(Map<String, String> names) =>
+      _call('setNames', {'json': jsonEncode(names)});
+
+  @override
+  Future<void> openNotificationSettings() => _call('openNotificationSettings');
+
+  @override
   Future<bool> allowBackground() async {
     if (!_android) return true;
     try {
@@ -298,6 +318,10 @@ class FakeDrivingDetector implements DrivingDetector {
   );
 
   var background = true;
+  var notificationsOpened = 0;
+
+  @override
+  Future<void> openNotificationSettings() async => notificationsOpened++;
 
   @override
   Future<bool> allowBackground() async => background = true;
@@ -369,6 +393,11 @@ class FakeDrivingDetector implements DrivingDetector {
   String routinesJson = '[]';
   @override
   Future<void> setRoutines(String json) async => routinesJson = json;
+
+  Map<String, String> names = {};
+
+  @override
+  Future<void> setNames(Map<String, String> names) async => this.names = names;
 
   @override
   Future<void> simulate({required bool enter}) async {

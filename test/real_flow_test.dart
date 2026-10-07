@@ -929,6 +929,44 @@ void main() {
       },
     );
 
+    test('shown by the name saved in MY phone; names never leave it', () async {
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      me.contacts.numbers = ['0532222222'];
+      me.contacts.names = {'0532222222': 'אחי הגדול'};
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.syncContacts();
+      expect(me.c.contactMatches.single.name, 'אחי הגדול');
+      await me.c.addContacts(me.c.contactMatches);
+      expect(me.s.snapshot!.friends.single.name, 'אחי הגדול');
+      expect(me.driving.names.values, contains('אחי הגדול'));
+      // The server only ever saw a hash.
+      final sent = server.contactHashes[me.backend.userId]!;
+      expect(sent.single, hasLength(64));
+      expect(server.profiles[yoni.backend.userId]!.name, 'יוני');
+    });
+
+    test('reinstalled (two accounts, one number) → listed once', () async {
+      final old = Phone(server, clock);
+      await old.boot();
+      await old.c.signIn('מעיין', Gender.female, phone: '0547777777');
+      final again = Phone(server, clock);
+      await again.boot();
+      await again.c.signIn('מעיין', Gender.female, phone: '0547777777');
+      me.contacts.numbers = ['0547777777'];
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.syncContacts();
+      expect(me.c.contactMatches, hasLength(1));
+      expect(me.c.contactMatches.single.id, again.backend.userId);
+      old.dispose();
+      again.dispose();
+    });
+
+    test('notifications can be changed later (phone settings)', () async {
+      await me.c.signIn('נתנאל', Gender.male);
+      await me.c.openNotificationSettings();
+      expect(me.driving.notificationsOpened, 1);
+    });
+
     test('no permission → explained, nothing sent', () async {
       me.contacts.granted = false;
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
@@ -1133,7 +1171,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 18)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 19)'));
     });
 
     test(

@@ -72,7 +72,8 @@ class DrivingApi(private val store: DrivingStore) {
                 val o = arr.getJSONObject(it)
                 Offer(
                     o.getString("offer_id"),
-                    o.optString("other_name", ""),
+                    // The name saved in my contacts, if I have one.
+                    store.nameFor(o.optString("other_id", ""), o.optString("other_name", "")),
                     o.optString("kind", "ask"),
                 )
             }

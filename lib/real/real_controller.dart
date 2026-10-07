@@ -392,7 +392,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 18;
+const kRequiredSchema = 19;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -642,6 +642,7 @@ class RealController extends Notifier<RealState> {
     await _run(() async {
       await _backend.clearContactHashes();
       await _store.setString(_contactsSyncKey, null);
+      await _store.setString(_localNamesKey, null);
       _notify(RealNoticeKind.saved);
     });
   }
@@ -887,6 +888,10 @@ class RealController extends Notifier<RealState> {
           state.routines.isNotEmpty ||
           _store.getString(_usedFreeKey) != null);
 
+  /// Settings → "Notifications": the phone's own switch (re-read on return).
+  Future<void> openNotificationSettings() =>
+      ref.read(drivingDetectorProvider).openNotificationSettings();
+
   Future<void> allowBackground() async {
     await ref.read(drivingDetectorProvider).allowBackground();
     // The answer is read again when the app comes back (on resume).
@@ -986,6 +991,7 @@ class RealController extends Notifier<RealState> {
         token: token,
         texts: _nativeTexts(),
       );
+      await detector.setNames(_localNames);
     } on RealBackendException {
       // Try again next start.
     }
@@ -1147,6 +1153,7 @@ class RealController extends Notifier<RealState> {
       _handledKey,
       _routinesKey,
       _contactsSyncKey,
+      _localNamesKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -1197,7 +1204,8 @@ class RealController extends Notifier<RealState> {
           // The fetch below reports connection problems.
         }
       }
-      final snap = _withPhotos(await _backend.fetchSnapshot());
+      final snap = _withPhotos(await _backend.fetchSnapshot())
+          .withLocalNames(_localNames);
       if (!ref.mounted) return;
       final prev = state;
       // Drop local answers the server now knows about.
@@ -1921,20 +1929,54 @@ class RealController extends Notifier<RealState> {
       if (ask && !quiet) _notify(RealNoticeKind.contactsNoPermission);
       return;
     }
-    final numbers = await reader.phoneNumbers();
+    final contacts = await reader.contacts();
     if (!ref.mounted) return;
-    final hashes = {for (final n in numbers) ?hashPhone(n)}.toList();
+    // Hash → the name saved on THIS phone (never sent anywhere).
+    final saved = <String, String>{};
+    for (final c in contacts) {
+      final h = hashPhone(c.number);
+      if (h == null || (saved[h]?.isNotEmpty ?? false)) continue;
+      saved[h] = c.name.trim();
+    }
     await _run(() async {
-      final found = await _backend.syncContacts(hashes);
+      final found = await _backend.syncContacts(saved.keys.toList());
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
-      contactMatches = found;
-      if (!quiet && ask && found.isEmpty) _notify(RealNoticeKind.contactsNone);
+      final names = {..._localNames};
+      for (final m in found) {
+        final local = saved[m.hash] ?? '';
+        if (local.trim().isNotEmpty) names[m.id] = local.trim();
+      }
+      _saveLocalNames(names);
+      contactMatches = [
+        for (final m in found)
+          if (!m.isFriend) names[m.id] == null ? m : m.named(names[m.id]!),
+      ];
+      if (!quiet && ask && contactMatches.isEmpty) {
+        _notify(RealNoticeKind.contactsNone);
+      }
     });
     if (ref.mounted) await refresh();
   }
 
   static const _seenMatchesKey = 'real.contactsSeen.v1';
+  static const _localNamesKey = 'real.localNames.v1';
+
+  /// Friend id → the name saved in MY contacts. Only on this phone.
+  Map<String, String> get _localNames {
+    try {
+      return (jsonDecode(_store.getString(_localNamesKey) ?? '{}') as Map)
+          .cast<String, String>();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  void _saveLocalNames(Map<String, String> names) {
+    _store.setString(_localNamesKey, jsonEncode(names));
+    // The background notifications use the same names.
+    unawaited(ref.read(drivingDetectorProvider).setNames(names));
+  }
 
   /// Contacts who use DriveTalk and aren't my friends yet (from the last
   /// search). Nobody is added unless I pick them.
@@ -2022,6 +2064,7 @@ class RealController extends Notifier<RealState> {
       try {
         await _backend.clearContactHashes();
         await _store.setString(_contactsSyncKey, null);
+        await _store.setString(_localNamesKey, null);
       } on RealBackendException {
         // Next time.
       }

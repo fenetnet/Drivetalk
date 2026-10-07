@@ -1069,6 +1069,25 @@ Future<void> main() async {
   } on PostgrestException {
     check(true, 'contact hashes are not readable (even my own)');
   }
+  // Reinstalled: a second account with Noa's number → listed once (D-077).
+  final noa2 = await newUser('נועה', 'female');
+  await noa2.from('phone_numbers').upsert({
+    'user_id': uid(noa2),
+    'phone': noaPhone,
+  });
+  final once = List<Map<String, dynamic>>.from(
+    await avi.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h(noaPhone)],
+      },
+    ),
+  );
+  check(
+    once.length == 1 && once.single['hash'] == h(noaPhone),
+    'two accounts with one number → listed once (with the hash I sent)',
+  );
+  await noa2.rpc('delete_my_account');
   final gil = await newUser('גיל', 'male');
   final notMine = List.from(
     await avi.rpc(
@@ -1221,8 +1240,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 18,
-    'the server says its version (18)',
+    await eve.rpc('schema_version') == 19,
+    'the server says its version (19)',
   );
 
   // --- profile photos: private, friends only

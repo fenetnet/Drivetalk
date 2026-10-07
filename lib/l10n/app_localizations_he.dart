@@ -1439,4 +1439,18 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get statsNote =>
       'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.';
+
+  @override
+  String get notificationsTitle => 'התראות';
+
+  @override
+  String get notificationsOnBody =>
+      'דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.';
+
+  @override
+  String get notificationsOffBody =>
+      'כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.';
+
+  @override
+  String get statsReports => 'דיווחים (פרטים ב-Supabase ← reports)';
 }

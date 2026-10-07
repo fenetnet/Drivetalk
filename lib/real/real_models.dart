@@ -22,6 +22,15 @@ class RealProfile {
   /// The downloaded photo (small JPEG), once we have it.
   final Uint8List? photo;
 
+  /// Shown by the name saved in MY contacts ("Mom"); stays on the phone.
+  RealProfile withName(String local) => RealProfile(
+    id: id,
+    name: local,
+    gender: gender,
+    photoVersion: photoVersion,
+    photo: photo,
+  );
+
   RealProfile withPhoto(Uint8List? bytes) => RealProfile(
     id: id,
     name: name,
@@ -156,9 +165,18 @@ class RealOffer {
 
 /// A contact who uses DriveTalk and isn't my friend yet (I may add them).
 class ContactMatch {
-  const ContactMatch(this.id, this.name);
+  const ContactMatch(this.id, this.name, {this.hash, this.isFriend = false});
   final String id;
   final String name;
+
+  /// The hash of the number that matched (one I sent).
+  final String? hash;
+
+  /// Already my friend (listed only for the names saved on my phone).
+  final bool isFriend;
+
+  ContactMatch named(String local) =>
+      ContactMatch(id, local, hash: hash, isFriend: isFriend);
 }
 
 /// What I can see right now.
@@ -228,6 +246,30 @@ class RealSnapshot {
     return RealSnapshot(
       me: fill(me),
       friends: [for (final f in friends) fill(f)],
+      availability: availability,
+      offers: offers,
+      fetchedAt: fetchedAt,
+      circles: circles,
+      lastTalk: lastTalk,
+      talks: talks,
+      intents: intents,
+      ratings: ratings,
+      hidden: hidden,
+    );
+  }
+
+  /// Friends shown by the names saved in MY contacts (id → name).
+  RealSnapshot withLocalNames(Map<String, String> names) {
+    if (names.isEmpty) return this;
+    return RealSnapshot(
+      me: me,
+      friends: [
+        for (final f in friends)
+          if (names[f.id] case final n? when n.trim().isNotEmpty)
+            f.withName(n.trim())
+          else
+            f,
+      ]..sort((a, b) => a.name.compareTo(b.name)),
       availability: availability,
       offers: offers,
       fetchedAt: fetchedAt,

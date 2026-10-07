@@ -2469,6 +2469,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.'**
   String get statsNote;
+
+  /// No description provided for @notificationsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'התראות'**
+  String get notificationsTitle;
+
+  /// No description provided for @notificationsOnBody.
+  ///
+  /// In he, this message translates to:
+  /// **'דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.'**
+  String get notificationsOnBody;
+
+  /// No description provided for @notificationsOffBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.'**
+  String get notificationsOffBody;
+
+  /// No description provided for @statsReports.
+  ///
+  /// In he, this message translates to:
+  /// **'דיווחים (פרטים ב-Supabase ← reports)'**
+  String get statsReports;
 }
 
 class _AppLocalizationsDelegate

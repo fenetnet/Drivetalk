@@ -35,6 +35,18 @@ class DrivingStore(context: Context) {
         get() = prefs.getString("routines", "[]") ?: "[]"
         set(v) = prefs.edit().putString("routines", v).apply()
 
+    /** Friend id → the name saved in my contacts (stays on this phone). */
+    var names: String
+        get() = prefs.getString("names", "{}") ?: "{}"
+        set(v) = prefs.edit().putString("names", v).apply()
+
+    /** The name to show/say: mine for them if I saved one, else theirs. */
+    fun nameFor(otherId: String, fallback: String): String = try {
+        org.json.JSONObject(names).optString(otherId, "").ifBlank { fallback }
+    } catch (e: Exception) {
+        fallback
+    }
+
     /** The car's Bluetooth (optional, extra trip signal). */
     var carAddress: String
         get() = prefs.getString("carAddress", "") ?: ""

@@ -79,6 +79,7 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
               row(l.statsDeclined, 'declined', pct(m['declined'], offers)),
               row(l.statsLater, 'later'),
               row(l.statsNoAnswer, 'no_answer', pct(m['no_answer'], offers)),
+              row(l.statsReports, 'reports'),
               const Divider(),
               ListTile(
                 title: Text(l.statsDialMs),

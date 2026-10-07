@@ -530,7 +530,12 @@ class SupabaseRealBackend implements RealBackend {
         return [
           for (final r in rows)
             if ((r as Map)['user_id'] != null)
-              ContactMatch(r['user_id'] as String, r['display_name'] as String),
+              ContactMatch(
+                r['user_id'] as String,
+                r['display_name'] as String,
+                hash: r['hash'] as String?,
+                isFriend: r['is_friend'] == true,
+              ),
         ];
       });
 

@@ -896,22 +896,40 @@ class MemoryRealBackend implements RealBackend {
       for (final h in hashes)
         if (users.contains(h)) h,
     };
-    return _matches(me);
+    return _rows(me);
   }
 
-  /// My contacts who use DriveTalk and can be added (connects nobody).
-  List<ContactMatch> _matches(String me) {
+  /// My contacts who use DriveTalk: one account per number (a friend
+  /// first, else the most recently joined). Connects nobody.
+  List<ContactMatch> _rows(String me) {
     final mine = server.contactHashes[me] ?? const <String>{};
+    final byHash = <String, ContactMatch>{};
+    for (final e in server.phones.entries) {
+      final h = hashPhone(e.value);
+      if (e.key == me || h == null || !mine.contains(h)) continue;
+      if (server.blockedBetween(me, e.key)) continue;
+      final friend = server.connected(me, e.key);
+      final row = ContactMatch(
+        e.key,
+        server.profiles[e.key]!.name,
+        hash: h,
+        isFriend: friend,
+      );
+      // A friend wins; otherwise the newer account (later in the map).
+      if (byHash[h]?.isFriend != true) byHash[h] = row;
+    }
     return [
-      for (final e in server.phones.entries)
-        if (e.key != me &&
-            mine.contains(hashPhone(e.value)) &&
-            !server.blockedBetween(me, e.key) &&
-            !server.connected(me, e.key) &&
-            !server.removed.contains(MemoryServer._pair(me, e.key)))
-          ContactMatch(e.key, server.profiles[e.key]!.name),
+      for (final r in byHash.values)
+        if (r.isFriend ||
+            !server.removed.contains(MemoryServer._pair(me, r.id)))
+          r,
     ]..sort((a, b) => a.name.compareTo(b.name));
   }
+
+  List<ContactMatch> _matches(String me) => [
+    for (final r in _rows(me))
+      if (!r.isFriend) r,
+  ];
 
   @override
   Future<List<String>> addContacts(List<String> userIds) async {
@@ -1085,7 +1103,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 18;
+  int schema = 19;
 
   @override
   Future<int> schemaVersion() async => schema;

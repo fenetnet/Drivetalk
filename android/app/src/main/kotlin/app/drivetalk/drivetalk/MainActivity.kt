@@ -109,6 +109,28 @@ class MainActivity : FlutterActivity() {
     }
 
     // Automatic driving availability (opt-in). See DrivingDetection.kt.
+    private fun notificationsAllowed(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return true
+        val nm = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        return nm.areNotificationsEnabled()
+    }
+
+    /** The phone's notification settings for this app (turn on / off). */
+    private fun openNotificationSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+        } else {
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:$packageName"))
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Nothing to open on this phone.
+        }
+    }
+
     /** Not stopped by battery saving (true on Android before 6). */
     private fun backgroundAllowed(): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
@@ -151,10 +173,15 @@ class MainActivity : FlutterActivity() {
                         "configured" to store.configured,
                         "carName" to store.carName,
                         "background" to backgroundAllowed(),
+                        "notifications" to notificationsAllowed(),
                     ),
                 )
                 // Battery saving must not stop the background service.
                 "allowBackground" -> result.success(askAllowBackground())
+                "openNotificationSettings" -> {
+                    openNotificationSettings()
+                    result.success(true)
+                }
                 "requestPermission" -> requestDrivingPermissions(result)
                 "enable" -> {
                     @Suppress("UNCHECKED_CAST")
@@ -226,6 +253,10 @@ class MainActivity : FlutterActivity() {
                     }
                     result.success(list)
                 }
+                "setNames" -> {
+                    store.names = call.argument<String>("json") ?: "{}"
+                    result.success(true)
+                }
                 "setRoutines" -> {
                     store.routines = call.argument<String>("json") ?: "[]"
                     Routines.schedule(this)
@@ -271,6 +302,16 @@ class MainActivity : FlutterActivity() {
                                 arrayOf(Manifest.permission.READ_CONTACTS),
                                 contactsPermissionRequest,
                             )
+                        }
+                    }
+                    "contacts" -> {
+                        if (!hasContactsPermission()) {
+                            result.success(emptyList<Map<String, String>>())
+                        } else {
+                            Thread {
+                                val list = ContactsReader.contacts(this)
+                                runOnUiThread { result.success(list) }
+                            }.start()
                         }
                     }
                     "phoneNumbers" -> {

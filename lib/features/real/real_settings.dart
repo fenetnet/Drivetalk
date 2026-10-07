@@ -122,6 +122,18 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsGeneral,
             children: [
+              if (s.driving.supported)
+                ListTile(
+                  leading: const Icon(Icons.notifications_rounded),
+                  title: Text(l.notificationsTitle),
+                  subtitle: Text(
+                    s.driving.notifications
+                        ? l.notificationsOnBody
+                        : l.notificationsOffBody,
+                  ),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: c.openNotificationSettings,
+                ),
               SwitchListTile(
                 secondary: const Icon(Icons.visibility_off_rounded),
                 title: Text(l.hideStatusTitle),
