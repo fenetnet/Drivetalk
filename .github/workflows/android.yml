@@ -105,6 +105,7 @@ jobs:
         run: >
           flutter build appbundle --release
           --build-number=${{ github.run_number }}
+          --dart-define=STORE=true
           --dart-define="SUPABASE_URL=$SUPABASE_URL"
           --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
           --dart-define="INVITE_BASE_URL=$INVITE_BASE_URL"

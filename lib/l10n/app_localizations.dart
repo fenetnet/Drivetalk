@@ -2493,6 +2493,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'דיווחים (פרטים ב-Supabase ← reports)'**
   String get statsReports;
+
+  /// No description provided for @realInviteStore.
+  ///
+  /// In he, this message translates to:
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}'**
+  String realInviteStore(String url);
 }
 
 class _AppLocalizationsDelegate

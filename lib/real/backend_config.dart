@@ -27,21 +27,33 @@ class BackendConfig {
   /// (empty → the share message falls back to "download + code").
   static const inviteBaseUrl = String.fromEnvironment('INVITE_BASE_URL');
 
-  /// Where testers download the Android app.
-  static const apkUrl = String.fromEnvironment(
+  /// The Google Play build (`--dart-define=STORE=true`): Google Play
+  /// updates the app, and invitations point to the store page.
+  static const store = bool.fromEnvironment('STORE');
+
+  static const playUrl =
+      'https://play.google.com/store/apps/details?id=app.drivetalk.drivetalk';
+
+  static const _apkUrl = String.fromEnvironment(
     'APK_URL',
     defaultValue: 'https://github.com/fenetnet/Drivetalk/releases/download/prototype/drivetalk-prototype.apk',
   );
 
+  /// Where people get the app: the APK for testers, the store page in the
+  /// Google Play build.
+  static String get apkUrl => store ? playUrl : _apkUrl;
+
   /// The download page (with the install steps), next to the APK.
-  static String get downloadPageUrl => apkUrl.contains('/releases/download/')
-      ? '${apkUrl.substring(0, apkUrl.indexOf('/releases/download/'))}'
+  static String get downloadPageUrl => store
+      ? playUrl
+      : _apkUrl.contains('/releases/download/')
+      ? '${_apkUrl.substring(0, _apkUrl.indexOf('/releases/download/'))}'
             '/releases/tag/prototype'
-      : apkUrl;
+      : _apkUrl;
 
   /// {"build": N} of the newest published version (written by CI).
   static String get latestVersionUrl =>
-      '${apkUrl.substring(0, apkUrl.lastIndexOf('/'))}/version.json';
+      '${_apkUrl.substring(0, _apkUrl.lastIndexOf('/'))}/version.json';
 
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;

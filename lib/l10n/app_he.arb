@@ -770,5 +770,13 @@
   "notificationsTitle": "התראות",
   "notificationsOnBody": "דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.",
   "notificationsOffBody": "כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.",
-  "statsReports": "דיווחים (פרטים ב-Supabase ← reports)"
+  "statsReports": "דיווחים (פרטים ב-Supabase ← reports)",
+  "realInviteStore": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}",
+  "@realInviteStore": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  }
 }

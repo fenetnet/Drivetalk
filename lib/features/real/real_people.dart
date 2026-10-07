@@ -29,6 +29,8 @@ Future<void> shareInvite(
   final l = context.l10n;
   final text = withCode
       ? await ref.read(realProvider.notifier).createInviteMessage()
+      : BackendConfig.store
+      ? l.realInviteStore(BackendConfig.playUrl)
       : l.realInviteSimple(
           ref.read(apkUrlProvider),
           BackendConfig.downloadPageUrl,

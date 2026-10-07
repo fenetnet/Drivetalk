@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme.dart';
+import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
@@ -152,6 +153,8 @@ class RealSettingsScreen extends ConsumerWidget {
                       : '${l.updateCurrent} ${ref.watch(appVersionProvider)}',
                 ),
                 onTap: () async {
+                  // Google Play build: the store page has the update.
+                  if (BackendConfig.store) return openAppUpdate();
                   final c = ref.read(realProvider.notifier);
                   await c.checkForUpdate(force: true);
                   if (ref.read(realProvider).newBuild != null) {

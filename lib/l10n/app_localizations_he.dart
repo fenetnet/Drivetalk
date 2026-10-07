@@ -1453,4 +1453,9 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get statsReports => 'דיווחים (פרטים ב-Supabase ← reports)';
+
+  @override
+  String realInviteStore(String url) {
+    return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: $url';
+  }
 }

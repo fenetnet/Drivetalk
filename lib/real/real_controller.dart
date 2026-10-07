@@ -58,7 +58,8 @@ final appBuildProvider = Provider<int?>((ref) => null);
 
 /// "Is there a newer version?" (version.json next to the APK).
 final updateCheckerProvider = Provider<UpdateChecker>(
-  (ref) => HttpUpdateChecker(),
+  // Google Play updates the store build by itself.
+  (ref) => BackendConfig.store ? FakeUpdateChecker() : HttpUpdateChecker(),
 );
 
 // ---------------------------------------------------------------------------
