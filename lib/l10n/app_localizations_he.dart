@@ -1344,4 +1344,99 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get hiddenNote =>
       'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.';
+
+  @override
+  String get realLaterButton => 'לא עכשיו — אחזור אליך';
+
+  @override
+  String realLaterNote(String name) {
+    return 'מ$name: עכשיו לא מתאים, אחזור אליך.';
+  }
+
+  @override
+  String get backgroundTitle => 'שההצעות יגיעו גם כשהאפליקציה סגורה';
+
+  @override
+  String get backgroundBody =>
+      'חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.';
+
+  @override
+  String get backgroundAllow => 'לאפשר פעולה ברקע';
+
+  @override
+  String get notNowShort => 'לא עכשיו';
+
+  @override
+  String get firstRunRoutineTitle => 'מתי בדרך כלל יש לך זמן בדרך?';
+
+  @override
+  String get firstRunRoutineBody =>
+      'בימים א׳–ה׳ בזמנים האלה הזמינות תידלק לבד לחצי שעה. אפשר לשנות בכל רגע: הגדרות ← השגרה שלי.';
+
+  @override
+  String get firstRunRoutineMorning => 'בוקר · 7:30 · בדרך לעבודה';
+
+  @override
+  String get firstRunRoutineEvening => 'ערב · 17:00 · בדרך הביתה';
+
+  @override
+  String get firstRunRoutineNone => 'לא קבוע';
+
+  @override
+  String get statsTitle => 'מספרים';
+
+  @override
+  String get statsFailed => 'לא הצלחנו לטעון. אולי השרת צריך עדכון.';
+
+  @override
+  String get statsWeek => '7 ימים';
+
+  @override
+  String get statsMonth => '30 ימים';
+
+  @override
+  String get statsUsers => 'משתמשים (סה״כ)';
+
+  @override
+  String get statsNewUsers => 'הצטרפו בתקופה';
+
+  @override
+  String get statsActiveUsers => 'פתחו את האפליקציה בתקופה';
+
+  @override
+  String get statsFriendships => 'חיבורים בין אנשים (סה״כ)';
+
+  @override
+  String get statsFreeTimes => 'פעמים שסימנו \"יש לי זמן\"';
+
+  @override
+  String get statsOffers => 'הצעות לדבר';
+
+  @override
+  String get statsQuick => 'חיבורים מהירים';
+
+  @override
+  String get statsBothYes => 'שניהם אמרו כן';
+
+  @override
+  String get statsTalked => 'דיברו בפועל (לפי המשוב)';
+
+  @override
+  String get statsDeclined => '\"לא עכשיו\"';
+
+  @override
+  String get statsLater => 'מתוכם \"אחזור אליך\"';
+
+  @override
+  String get statsNoAnswer => 'בלי תשובה';
+
+  @override
+  String get statsDialMs => 'זמן מ\"כן\" שני עד חיוג (חציון)';
+
+  @override
+  String get statsSeconds => 'שנ׳';
+
+  @override
+  String get statsNote =>
+      'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.';
 }

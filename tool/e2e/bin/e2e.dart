@@ -1190,12 +1190,39 @@ Future<void> main() async {
         1,
     'hidden → offers still happen',
   );
+  // "Not now — I'll get back to you" (D-076).
+  final laterOffer = (await rows(
+    noa,
+    'match_offers',
+  )).firstWhere((o) => o['status'] == 'pending');
+  final laterAnswer = Map<String, dynamic>.from(
+    await noa.rpc('decline_later', params: {'p_offer': laterOffer['id']}),
+  );
+  final seenLater = (await rows(
+    avi,
+    'match_offers',
+  )).firstWhere((o) => o['id'] == laterOffer['id']);
+  check(
+    laterAnswer['status'] == 'declined' && seenLater['later_from'] == uid(noa),
+    '"I\'ll get back to you" reaches the other side',
+  );
+  final stats = Map<String, dynamic>.from(
+    await avi.rpc('app_stats', params: {'p_days': 7}),
+  );
+  check(
+    (stats['later'] as num) >= 1 && (stats['users'] as num) >= 2,
+    'owner numbers: totals only',
+  );
+  check(
+    !stats.keys.any((k) => k.contains('name') || k.contains('phone')),
+    'owner numbers have no names or phone numbers',
+  );
   await avi.rpc('set_hide_status', params: {'p_hide': false});
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 17,
-    'the server says its version (17)',
+    await eve.rpc('schema_version') == 18,
+    'the server says its version (18)',
   );
 
   // --- profile photos: private, friends only

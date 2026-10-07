@@ -11,7 +11,11 @@ class DrivingStatus {
     this.inVehicle = false,
     this.configured = false,
     this.carName = '',
+    this.background = true,
   });
+
+  /// Battery saving won't stop the background service (Android).
+  final bool background;
 
   /// The car's Bluetooth the user picked ('' = none).
   final String carName;
@@ -64,6 +68,10 @@ abstract class DrivingDetector {
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
+  /// One tap "allow running in the background" (battery saving off for
+  /// DriveTalk), so trips and "a friend is free" keep working.
+  Future<bool> allowBackground();
+
   /// Routines for the phone's alarm (JSON from RealController).
   Future<void> setRoutines(String json);
 
@@ -101,6 +109,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         inVehicle: m?['inVehicle'] == true,
         configured: m?['configured'] == true,
         carName: '${m?['carName'] ?? ''}',
+        background: m?['background'] != false,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -199,6 +208,16 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
 
   @override
+  Future<bool> allowBackground() async {
+    if (!_android) return true;
+    try {
+      return await _channel.invokeMethod<bool>('allowBackground') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   Future<bool> requestNotificationPermission() async {
     if (!_android) return false;
     try {
@@ -275,7 +294,13 @@ class FakeDrivingDetector implements DrivingDetector {
     inVehicle: inVehicle,
     configured: token != null,
     carName: carName,
+    background: background,
   );
+
+  var background = true;
+
+  @override
+  Future<bool> allowBackground() async => background = true;
 
   @override
   Future<bool> requestPermission() async => grantPermission;

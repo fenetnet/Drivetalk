@@ -115,6 +115,7 @@ class RealFirstRunScreen extends ConsumerWidget {
           SecondaryPill(label: l.firstRunLater, onTap: c.firstRunNext),
         ],
       ),
+      FirstRunStep.routine => const _RoutineStep(),
       _ => MomentLayout(
         style: MomentStyle.green,
         top: Column(
@@ -133,5 +134,80 @@ class RealFirstRunScreen extends ConsumerWidget {
         ],
       ),
     };
+  }
+}
+
+/// "When are you usually on the road?" — morning / evening / not fixed.
+class _RoutineStep extends ConsumerStatefulWidget {
+  const _RoutineStep();
+
+  @override
+  ConsumerState<_RoutineStep> createState() => _RoutineStepState();
+}
+
+class _RoutineStepState extends ConsumerState<_RoutineStep> {
+  var _morning = false;
+  var _evening = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    Widget option(String label, bool on, VoidCallback tap) => Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: FilterChip(
+        label: SizedBox(
+          width: double.infinity,
+          child: Text(label, style: const TextStyle(fontSize: 17)),
+        ),
+        selected: on,
+        onSelected: (_) => tap(),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      ),
+    );
+    return MomentLayout(
+      top: Column(
+        children: [
+          Container(
+            width: 120,
+            height: 120,
+            decoration: const BoxDecoration(
+              color: AppColors.terracotta,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.schedule_rounded,
+              color: Colors.white,
+              size: 60,
+            ),
+          ),
+          const SizedBox(height: 28),
+          MomentText(l.firstRunRoutineTitle, size: 28),
+          const SizedBox(height: 10),
+          MomentText(l.firstRunRoutineBody, size: 16, soft: true),
+          const SizedBox(height: 20),
+          option(
+            l.firstRunRoutineMorning,
+            _morning,
+            () => setState(() => _morning = !_morning),
+          ),
+          option(
+            l.firstRunRoutineEvening,
+            _evening,
+            () => setState(() => _evening = !_evening),
+          ),
+        ],
+      ),
+      actions: [
+        PrimaryPill(
+          label: l.next,
+          onTap: busy || (!_morning && !_evening)
+              ? null
+              : () => c.firstRunRoutines(morning: _morning, evening: _evening),
+        ),
+        SecondaryPill(label: l.firstRunRoutineNone, onTap: c.firstRunNext),
+      ],
+    );
   }
 }

@@ -76,6 +76,9 @@
 
 **Activity recognition:** זיהוי נסיעה (רשות, כבוי כברירת מחדל). בלי מיקום.
 
+**Ignore battery optimizations (REQUEST_IGNORE_BATTERY_OPTIMIZATIONS), אם שואלים:**
+> DriveTalk's core function is telling the user, while driving with the app closed, that a friend is free to talk — via a short foreground service during an availability window the user started (or opt-in driving detection). Aggressive battery optimization on many devices stops this service mid-trip, so the user is asked once, with an explanation, to exempt the app. It is only asked from users who use background availability.
+
 **Contacts:** מוצג מסך הסבר לפני הבקשה. נקראים רק מספרים, והם מוצפנים בטלפון.
 
 ## חשוב לדעת

@@ -42,6 +42,12 @@ abstract class RealBackend {
 
   /// Returns the offer's new status.
   /// Yes / not now. The second "yes" gets the number back at once.
+  /// "Not now — I'll get back to you": a no, and the other side is told so.
+  Future<OfferAnswer> declineLater(String offerId);
+
+  /// Totals for the owner (no names, nothing about one person).
+  Future<Map<String, num?>> appStats(int days);
+
   Future<OfferAnswer> answerOffer(String offerId, {required bool accept});
 
   /// Quick connect: my phone shows it (the 5 seconds start once both saw it).

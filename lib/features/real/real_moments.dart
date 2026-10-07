@@ -77,6 +77,20 @@ class RealOfferScreen extends ConsumerWidget {
           height: dark ? 88 : 60,
           onTap: () => c.respond(offer, accept: false),
         ),
+        // Not while driving: two big buttons only.
+        if (!dark)
+          TextButton(
+            onPressed: s.busy ? null : () => c.respondLater(offer),
+            child: Text(
+              l.realLaterButton,
+              style: TextStyle(
+                color: style == MomentStyle.coral ? Colors.white : null,
+                fontSize: 16,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.white,
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -729,5 +729,42 @@
   "newContactBody": "להוסיף לאנשים שלי?",
   "hideStatusTitle": "להסתיר מתי יש לי זמן",
   "hideStatusBody": "החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.",
-  "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות."
+  "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.",
+  "realLaterButton": "לא עכשיו — אחזור אליך",
+  "realLaterNote": "מ{name}: עכשיו לא מתאים, אחזור אליך.",
+  "@realLaterNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "backgroundTitle": "שההצעות יגיעו גם כשהאפליקציה סגורה",
+  "backgroundBody": "חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.",
+  "backgroundAllow": "לאפשר פעולה ברקע",
+  "notNowShort": "לא עכשיו",
+  "firstRunRoutineTitle": "מתי בדרך כלל יש לך זמן בדרך?",
+  "firstRunRoutineBody": "בימים א׳–ה׳ בזמנים האלה הזמינות תידלק לבד לחצי שעה. אפשר לשנות בכל רגע: הגדרות ← השגרה שלי.",
+  "firstRunRoutineMorning": "בוקר · 7:30 · בדרך לעבודה",
+  "firstRunRoutineEvening": "ערב · 17:00 · בדרך הביתה",
+  "firstRunRoutineNone": "לא קבוע",
+  "statsTitle": "מספרים",
+  "statsFailed": "לא הצלחנו לטעון. אולי השרת צריך עדכון.",
+  "statsWeek": "7 ימים",
+  "statsMonth": "30 ימים",
+  "statsUsers": "משתמשים (סה״כ)",
+  "statsNewUsers": "הצטרפו בתקופה",
+  "statsActiveUsers": "פתחו את האפליקציה בתקופה",
+  "statsFriendships": "חיבורים בין אנשים (סה״כ)",
+  "statsFreeTimes": "פעמים שסימנו \"יש לי זמן\"",
+  "statsOffers": "הצעות לדבר",
+  "statsQuick": "חיבורים מהירים",
+  "statsBothYes": "שניהם אמרו כן",
+  "statsTalked": "דיברו בפועל (לפי המשוב)",
+  "statsDeclined": "\"לא עכשיו\"",
+  "statsLater": "מתוכם \"אחזור אליך\"",
+  "statsNoAnswer": "בלי תשובה",
+  "statsDialMs": "זמן מ\"כן\" שני עד חיוג (חציון)",
+  "statsSeconds": "שנ׳",
+  "statsNote": "רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים."
 }

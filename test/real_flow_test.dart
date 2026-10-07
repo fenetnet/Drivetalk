@@ -181,6 +181,46 @@ void main() {
     },
   );
 
+  test('"I\'ll get back to you" → the other side is told, gently', () async {
+    await connect();
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await refreshBoth();
+    await yoni.c.respondLater(currentOffer(yoni.s, now)!);
+    await me.c.refresh();
+    expect(me.s.notice?.kind, RealNoticeKind.later);
+    expect(me.s.notice?.name, 'יוני');
+    expect(currentOffer(me.s, now), isNull);
+    final stats = await me.c.appStats(7);
+    expect(stats!['later'], 1);
+    expect(stats['declined'], 1);
+  });
+
+  test('first steps: "mornings" → a Sun–Thu routine at 7:30', () async {
+    await me.c.signIn('נתנאל', Gender.male);
+    me.c.firstRunNext(); // contacts → result
+    me.c.firstRunNext(); // result → routine
+    expect(me.s.firstRun, FirstRunStep.routine);
+    await me.c.firstRunRoutines(morning: true, evening: false);
+    expect(me.s.firstRun, FirstRunStep.magic);
+    final r = me.s.routines.single;
+    expect(r.minuteOfDay, 7 * 60 + 30);
+    expect(r.weekdays, {7, 1, 2, 3, 4});
+    expect(me.driving.routinesJson, contains('"hour":7,"minute":30'));
+  });
+
+  test('battery saving: asked once, only after using "I\'m free"', () async {
+    await connect();
+    me.driving.background = false;
+    await me.c.refresh();
+    expect(me.c.showBackgroundTip, isFalse, reason: 'never used it');
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.disableAutoDriving(); // reloads the phone status
+    expect(me.c.showBackgroundTip, isTrue);
+    me.c.dismissBackgroundTip();
+    expect(me.c.showBackgroundTip, isFalse);
+  });
+
   test('invitation link → both become friends', () async {
     await connect();
     expect(me.s.snapshot!.friends.single.name, 'יוני');
@@ -1093,7 +1133,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 17)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 18)'));
     });
 
     test(

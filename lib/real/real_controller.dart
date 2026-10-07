@@ -80,7 +80,7 @@ enum CallRole {
 }
 
 /// After joining: find people from contacts → result → how it works.
-enum FirstRunStep { contacts, result, magic }
+enum FirstRunStep { contacts, result, routine, magic }
 
 enum CallStage {
   none,
@@ -115,6 +115,7 @@ class RealCall {
 enum RealNoticeKind {
   didNotWorkOut,
   noAnswer,
+  later,
   quickCancelled,
   connected,
   inviteProblem,
@@ -391,7 +392,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 17;
+const kRequiredSchema = 18;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -768,9 +769,45 @@ class RealController extends Notifier<RealState> {
 
   void firstRunNext() => _setFirstRun(switch (state.firstRun) {
     FirstRunStep.contacts => FirstRunStep.result,
-    FirstRunStep.result => FirstRunStep.magic,
+    FirstRunStep.result => FirstRunStep.routine,
+    FirstRunStep.routine => FirstRunStep.magic,
     _ => null,
   });
+
+  /// First steps: "when are you usually on the road?" → routines Sun–Thu
+  /// (availability turns on by itself then; editable in settings).
+  Future<void> firstRunRoutines({
+    required bool morning,
+    required bool evening,
+  }) async {
+    final workdays = {7, 1, 2, 3, 4}; // Sun–Thu
+    final now = _now().microsecondsSinceEpoch;
+    final picked = [
+      if (morning)
+        Routine(
+          id: 'r$now-m',
+          name: _l.routineNameToWork,
+          weekdays: workdays,
+          minuteOfDay: 7 * 60 + 30,
+          durationMinutes: 30,
+          mode: AvailabilityMode.driving,
+        ),
+      if (evening)
+        Routine(
+          id: 'r$now-e',
+          name: _l.routineNameHome,
+          weekdays: workdays,
+          minuteOfDay: 17 * 60,
+          durationMinutes: 30,
+          mode: AvailabilityMode.driving,
+        ),
+    ];
+    if (picked.isNotEmpty) {
+      await saveRoutines([...state.routines, ...picked]);
+      _event('onboarding_routine');
+    }
+    firstRunNext();
+  }
 
   void _setFirstRun(FirstRunStep? step) {
     if (!ref.mounted) return;
@@ -834,6 +871,29 @@ class RealController extends Notifier<RealState> {
 
   void dismissWidgetTip() {
     _store.setString(_widgetTipKey, 'seen');
+    state = state.copyWith();
+  }
+
+  static const _bgTipKey = 'real.backgroundTip.v1';
+  static const _usedFreeKey = 'real.usedFree.v1';
+
+  /// Battery saving may stop the background service: ask once, but only
+  /// people who use it (auto driving, routines, or "I'm free" before).
+  bool get showBackgroundTip =>
+      state.driving.supported &&
+      !state.driving.background &&
+      _store.getString(_bgTipKey) == null &&
+      (state.driving.enabled ||
+          state.routines.isNotEmpty ||
+          _store.getString(_usedFreeKey) != null);
+
+  Future<void> allowBackground() async {
+    await ref.read(drivingDetectorProvider).allowBackground();
+    // The answer is read again when the app comes back (on resume).
+  }
+
+  void dismissBackgroundTip() {
+    _store.setString(_bgTipKey, 'dismissed');
     state = state.copyWith();
   }
 
@@ -1297,6 +1357,13 @@ class RealController extends Notifier<RealState> {
           if (fresh && other != null && _callIdle(state)) {
             unawaited(_beginCall(o, other));
           }
+        case OfferStatus.declined when o.laterFrom != null && o.laterFrom != me:
+          _markHandled(o.id);
+          // "Not now — I'll get back to you": told even if I hadn't answered.
+          if (fresh && other != null) {
+            _notify(RealNoticeKind.later, name: other.name);
+            if (_driving(now)) _speak(_l.realLaterNote(other.name));
+          }
         case OfferStatus.declined:
         case OfferStatus.expired:
         case OfferStatus.cancelled:
@@ -1352,6 +1419,7 @@ class RealController extends Notifier<RealState> {
     );
     _lastNudge = null;
     if (ok) {
+      _store.setString(_usedFreeKey, 'yes');
       _event('availability_started');
       _logFree(mode);
     }
@@ -1417,6 +1485,17 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(localAnswers: answers);
       _setError(e.code, show: true);
     }
+    await refresh();
+  }
+
+  /// "Not now — I'll get back to you": a no, and they are told so.
+  Future<void> respondLater(RealOffer offer) async {
+    _stopVoice();
+    state = state.copyWith(
+      dismissedOffers: {...state.dismissedOffers, offer.id},
+    );
+    _markHandled(offer.id);
+    await _run(() => _backend.declineLater(offer.id));
     await refresh();
   }
 
@@ -1917,6 +1996,16 @@ class RealController extends Notifier<RealState> {
   Future<void> setRating(RealProfile friend, int rating) async {
     await _run(() => _backend.setRating(friend.id, rating.clamp(0, 5)));
     await refresh();
+  }
+
+  /// Owner numbers (totals only). null = couldn't load.
+  Future<Map<String, num?>?> appStats(int days) async {
+    try {
+      return await _backend.appStats(days);
+    } on RealBackendException catch (e) {
+      _setError(e.code);
+      return null;
+    }
   }
 
   /// Hide my status from friends (and theirs from me). Offers go on.

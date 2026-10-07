@@ -109,6 +109,33 @@ class MainActivity : FlutterActivity() {
     }
 
     // Automatic driving availability (opt-in). See DrivingDetection.kt.
+    /** Not stopped by battery saving (true on Android before 6). */
+    private fun backgroundAllowed(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        val pm = getSystemService(POWER_SERVICE) as android.os.PowerManager
+        return pm.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    /** The system "allow running in background?" question (one tap);
+     *  if a phone doesn't offer it, its battery settings list. */
+    private fun askAllowBackground(): Boolean {
+        if (backgroundAllowed()) return true
+        return try {
+            startActivity(
+                Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:$packageName")),
+            )
+            true
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
+
     private fun configureDriving(flutterEngine: FlutterEngine) {
         val messenger = flutterEngine.dartExecutor.binaryMessenger
         EventChannel(messenger, "app.drivetalk/driving/events").setStreamHandler(DrivingEvents)
@@ -123,8 +150,11 @@ class MainActivity : FlutterActivity() {
                         "inVehicle" to store.inVehicle,
                         "configured" to store.configured,
                         "carName" to store.carName,
+                        "background" to backgroundAllowed(),
                     ),
                 )
+                // Battery saving must not stop the background service.
+                "allowBackground" -> result.success(askAllowBackground())
                 "requestPermission" -> requestDrivingPermissions(result)
                 "enable" -> {
                     @Suppress("UNCHECKED_CAST")

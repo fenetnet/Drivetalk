@@ -99,6 +99,7 @@ class RealRoot extends ConsumerWidget {
     return switch (n.kind) {
       RealNoticeKind.didNotWorkOut => l.realDidNotWorkOut,
       RealNoticeKind.noAnswer => l.realNoAnswer,
+      RealNoticeKind.later => l.realLaterNote(n.name ?? ''),
       RealNoticeKind.quickCancelled => l.realQuickCancelled,
       RealNoticeKind.connected => l.realConnected(n.name ?? ''),
       RealNoticeKind.inviteProblem => inviteProblemText(l, n.code),

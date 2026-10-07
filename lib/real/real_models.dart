@@ -122,6 +122,7 @@ class RealOffer {
     this.quick = false,
     this.caller,
     this.notBefore,
+    this.laterFrom,
   });
   final String id;
   final String userA;
@@ -145,6 +146,9 @@ class RealOffer {
   /// Quick connect: nobody dials before this (null = not both phones saw
   /// it yet).
   final DateTime? notBefore;
+
+  /// Who said "not now — I'll get back to you" (null = nobody).
+  final String? laterFrom;
 
   String otherId(String me) => me == userA ? userB : userA;
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;

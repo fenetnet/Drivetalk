@@ -2289,6 +2289,186 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.'**
   String get hiddenNote;
+
+  /// No description provided for @realLaterButton.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עכשיו — אחזור אליך'**
+  String get realLaterButton;
+
+  /// No description provided for @realLaterNote.
+  ///
+  /// In he, this message translates to:
+  /// **'מ{name}: עכשיו לא מתאים, אחזור אליך.'**
+  String realLaterNote(String name);
+
+  /// No description provided for @backgroundTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שההצעות יגיעו גם כשהאפליקציה סגורה'**
+  String get backgroundTitle;
+
+  /// No description provided for @backgroundBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.'**
+  String get backgroundBody;
+
+  /// No description provided for @backgroundAllow.
+  ///
+  /// In he, this message translates to:
+  /// **'לאפשר פעולה ברקע'**
+  String get backgroundAllow;
+
+  /// No description provided for @notNowShort.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עכשיו'**
+  String get notNowShort;
+
+  /// No description provided for @firstRunRoutineTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי בדרך כלל יש לך זמן בדרך?'**
+  String get firstRunRoutineTitle;
+
+  /// No description provided for @firstRunRoutineBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בימים א׳–ה׳ בזמנים האלה הזמינות תידלק לבד לחצי שעה. אפשר לשנות בכל רגע: הגדרות ← השגרה שלי.'**
+  String get firstRunRoutineBody;
+
+  /// No description provided for @firstRunRoutineMorning.
+  ///
+  /// In he, this message translates to:
+  /// **'בוקר · 7:30 · בדרך לעבודה'**
+  String get firstRunRoutineMorning;
+
+  /// No description provided for @firstRunRoutineEvening.
+  ///
+  /// In he, this message translates to:
+  /// **'ערב · 17:00 · בדרך הביתה'**
+  String get firstRunRoutineEvening;
+
+  /// No description provided for @firstRunRoutineNone.
+  ///
+  /// In he, this message translates to:
+  /// **'לא קבוע'**
+  String get firstRunRoutineNone;
+
+  /// No description provided for @statsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מספרים'**
+  String get statsTitle;
+
+  /// No description provided for @statsFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לטעון. אולי השרת צריך עדכון.'**
+  String get statsFailed;
+
+  /// No description provided for @statsWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'7 ימים'**
+  String get statsWeek;
+
+  /// No description provided for @statsMonth.
+  ///
+  /// In he, this message translates to:
+  /// **'30 ימים'**
+  String get statsMonth;
+
+  /// No description provided for @statsUsers.
+  ///
+  /// In he, this message translates to:
+  /// **'משתמשים (סה״כ)'**
+  String get statsUsers;
+
+  /// No description provided for @statsNewUsers.
+  ///
+  /// In he, this message translates to:
+  /// **'הצטרפו בתקופה'**
+  String get statsNewUsers;
+
+  /// No description provided for @statsActiveUsers.
+  ///
+  /// In he, this message translates to:
+  /// **'פתחו את האפליקציה בתקופה'**
+  String get statsActiveUsers;
+
+  /// No description provided for @statsFriendships.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבורים בין אנשים (סה״כ)'**
+  String get statsFriendships;
+
+  /// No description provided for @statsFreeTimes.
+  ///
+  /// In he, this message translates to:
+  /// **'פעמים שסימנו \"יש לי זמן\"'**
+  String get statsFreeTimes;
+
+  /// No description provided for @statsOffers.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעות לדבר'**
+  String get statsOffers;
+
+  /// No description provided for @statsQuick.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבורים מהירים'**
+  String get statsQuick;
+
+  /// No description provided for @statsBothYes.
+  ///
+  /// In he, this message translates to:
+  /// **'שניהם אמרו כן'**
+  String get statsBothYes;
+
+  /// No description provided for @statsTalked.
+  ///
+  /// In he, this message translates to:
+  /// **'דיברו בפועל (לפי המשוב)'**
+  String get statsTalked;
+
+  /// No description provided for @statsDeclined.
+  ///
+  /// In he, this message translates to:
+  /// **'\"לא עכשיו\"'**
+  String get statsDeclined;
+
+  /// No description provided for @statsLater.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוכם \"אחזור אליך\"'**
+  String get statsLater;
+
+  /// No description provided for @statsNoAnswer.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי תשובה'**
+  String get statsNoAnswer;
+
+  /// No description provided for @statsDialMs.
+  ///
+  /// In he, this message translates to:
+  /// **'זמן מ\"כן\" שני עד חיוג (חציון)'**
+  String get statsDialMs;
+
+  /// No description provided for @statsSeconds.
+  ///
+  /// In he, this message translates to:
+  /// **'שנ׳'**
+  String get statsSeconds;
+
+  /// No description provided for @statsNote.
+  ///
+  /// In he, this message translates to:
+  /// **'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.'**
+  String get statsNote;
 }
 
 class _AppLocalizationsDelegate

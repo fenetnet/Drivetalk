@@ -409,6 +409,7 @@ class _Offer {
   String? caller;
   DateTime? acceptedAt;
   DateTime? notBefore;
+  String? laterFrom;
   DateTime? seenA;
   DateTime? seenB;
   bool endedA = false;
@@ -427,6 +428,7 @@ class _Offer {
     bAccepted: bAccepted,
     caller: caller,
     notBefore: notBefore,
+    laterFrom: laterFrom,
     quick: quick,
   );
 }
@@ -668,6 +670,39 @@ class MemoryRealBackend implements RealBackend {
       }
     }
     server._changed();
+  }
+
+  @override
+  Future<OfferAnswer> declineLater(String offerId) async {
+    final r = await answerOffer(offerId, accept: false);
+    if (r.status == OfferStatus.declined) {
+      server.offers[offerId]!
+        ..laterFrom = _uid
+        ..updatedAt = server.now();
+      server._changed();
+    }
+    return r;
+  }
+
+  @override
+  Future<Map<String, num?>> appStats(int days) async {
+    final since = server.now().subtract(Duration(days: days));
+    final recent = [
+      for (final o in server.offers.values)
+        if (!o.createdAt.isBefore(since)) o,
+    ];
+    int count(bool Function(_Offer) f) => recent.where(f).length;
+    return {
+      'users': server.profiles.length,
+      'friendships': server.connections.length,
+      'offers': count((o) => !o.quick),
+      'quick': count((o) => o.quick),
+      'both_yes': count((o) => o.status == OfferStatus.accepted),
+      'talked': count((o) => o.talked == true),
+      'declined': count((o) => o.status == OfferStatus.declined),
+      'later': count((o) => o.laterFrom != null),
+      'no_answer': count((o) => o.status == OfferStatus.expired),
+    };
   }
 
   @override
@@ -1050,7 +1085,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 17;
+  int schema = 18;
 
   @override
   Future<int> schemaVersion() async => schema;

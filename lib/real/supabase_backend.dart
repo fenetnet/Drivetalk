@@ -357,6 +357,28 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() async => _c.rpc('clear_availability'));
 
   @override
+  Future<OfferAnswer> declineLater(String offerId) => _guard(() async {
+    try {
+      final r = Map<String, dynamic>.from(
+        await _c.rpc('decline_later', params: {'p_offer': offerId}) as Map,
+      );
+      return OfferAnswer(_status(r['status'] as String?));
+    } on PostgrestException catch (e) {
+      // Older server: a plain "not now".
+      if (!_missingFunction(e)) rethrow;
+      return answerOffer(offerId, accept: false);
+    }
+  });
+
+  @override
+  Future<Map<String, num?>> appStats(int days) => _guard(() async {
+    final r = Map<String, dynamic>.from(
+      await _c.rpc('app_stats', params: {'p_days': days}) as Map,
+    );
+    return {for (final e in r.entries) e.key: e.value as num?};
+  });
+
+  @override
   Future<OfferAnswer> answerOffer(String offerId, {required bool accept}) =>
       _guard(() async {
         final params = {'p_offer': offerId, 'p_accept': accept};
@@ -818,6 +840,7 @@ class SupabaseRealBackend implements RealBackend {
     quick: r['quick'] == true,
     caller: r['caller'] as String?,
     notBefore: r['not_before'] == null ? null : _time(r['not_before']),
+    laterFrom: r['later_from'] as String?,
   );
 
   static bool? _answer(Object? v) => switch (v) {

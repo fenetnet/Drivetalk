@@ -13,6 +13,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- One tap "allow running in the background": battery saving would
+         otherwise stop driving detection and the "a friend is free" notices. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <!-- Friends from contacts (owner decision D-047): numbers only, hashed
          in the app; names never leave the phone. -->
     <uses-permission android:name="android.permission.READ_CONTACTS"/>

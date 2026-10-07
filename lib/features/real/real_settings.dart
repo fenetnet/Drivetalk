@@ -14,6 +14,7 @@ import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
 import 'real_common.dart';
 import 'real_home.dart';
+import 'real_stats.dart';
 
 class RealSettingsScreen extends ConsumerWidget {
   const RealSettingsScreen({super.key});
@@ -177,6 +178,16 @@ class RealSettingsScreen extends ConsumerWidget {
             SettingsGroup(
               title: l.adminTitle,
               children: [
+                ListTile(
+                  leading: const Icon(Icons.bar_chart_rounded),
+                  title: Text(l.statsTitle),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const RealStatsScreen(),
+                    ),
+                  ),
+                ),
                 SwitchListTile(
                   secondary: const Icon(Icons.fact_check_rounded),
                   title: Text(l.realTestModeToggle),

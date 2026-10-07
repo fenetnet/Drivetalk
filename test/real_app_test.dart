@@ -80,6 +80,12 @@ void main() {
       );
       await t.tap(find.text('אחר כך'));
       await pumpFor(t, 300);
+      // When am I usually on the road? Morning → a routine Sun–Thu.
+      expect(find.text('מתי בדרך כלל יש לך זמן בדרך?'), findsOneWidget);
+      await t.tap(find.text('בוקר · 7:30 · בדרך לעבודה'));
+      await pumpFor(t, 100);
+      await t.tap(find.text('הבא'));
+      await pumpFor(t, 300);
       expect(find.text('ככה זה עובד'), findsOneWidget);
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 300);

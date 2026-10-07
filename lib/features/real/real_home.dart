@@ -206,6 +206,7 @@ Widget? _tipCard(
 ) {
   if (s.newBuild != null) return const _UpdateCard();
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
     return _RoutineHintCard(hint: hint);
@@ -1012,6 +1013,63 @@ class _NewContactCard extends ConsumerWidget {
                 TextButton(
                   onPressed: () => c.dismissMatch(match),
                   child: Text(l.contactsNo),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Battery saving would stop trips and "a friend is free": allow it once.
+class _BackgroundCard extends ConsumerWidget {
+  const _BackgroundCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.battery_alert_rounded,
+                  color: AppColors.terracotta,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.backgroundTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(l.backgroundBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: c.allowBackground,
+                    child: Text(l.backgroundAllow),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: c.dismissBackgroundTip,
+                  child: Text(l.notNowShort),
                 ),
               ],
             ),
