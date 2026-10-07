@@ -34,7 +34,7 @@ class BackendConfig {
   /// The package name registered in Google Play Console.
   static const playId = String.fromEnvironment(
     'PLAY_ID',
-    defaultValue: 'drivetalk.drivetalk.app',
+    defaultValue: 'app.drivetalk.drivetalk',
   );
 
   static const playUrl =

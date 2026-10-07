@@ -99,7 +99,7 @@ jobs:
       - name: Build App Bundle (Google Play)
         env:
           # The package name registered in Google Play Console (permanent).
-          DT_APP_ID: drivetalk.drivetalk.app
+          DT_APP_ID: app.drivetalk.drivetalk
           DT_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_TEST_KEYSTORE_PASSWORD }}
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
