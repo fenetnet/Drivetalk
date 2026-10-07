@@ -130,3 +130,12 @@ jobs:
             --target "${{ github.sha }}" \
             --title "DriveTalk — גרסת ניסיון" \
             --notes-file docs/install-guide-release.md
+          # Sometimes GitHub leaves it as an unpublished draft (then the link
+          # and "new version" check are 404). Publish explicitly and verify.
+          for i in 1 2 3; do
+            gh release edit prototype --draft=false --prerelease && break
+            sleep 5
+          done
+          sleep 3
+          curl -sfL "https://github.com/${{ github.repository }}/releases/download/prototype/version.json" \
+            || { echo "::error::The download link is not public"; exit 1; }
