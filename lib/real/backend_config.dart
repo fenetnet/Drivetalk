@@ -31,8 +31,14 @@ class BackendConfig {
   /// updates the app, and invitations point to the store page.
   static const store = bool.fromEnvironment('STORE');
 
+  /// The package name registered in Google Play Console.
+  static const playId = String.fromEnvironment(
+    'PLAY_ID',
+    defaultValue: 'drivetalk.drivetalk.app',
+  );
+
   static const playUrl =
-      'https://play.google.com/store/apps/details?id=app.drivetalk.drivetalk';
+      'https://play.google.com/store/apps/details?id=$playId';
 
   static const _apkUrl = String.fromEnvironment(
     'APK_URL',

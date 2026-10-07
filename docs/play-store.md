@@ -7,7 +7,8 @@
 - **שפת ברירת מחדל:** עברית (he-IL)
 - **אפליקציה או משחק:** אפליקציה
 - **חינם או בתשלום:** חינם
-- **שם החבילה (נקבע לתמיד בהעלאה הראשונה):** `app.drivetalk.drivetalk`
+- **שם החבילה ב-Google Play (נרשם ב-Play Console, לתמיד):** `drivetalk.drivetalk.app`. רק קובץ ה-AAB נבנה כך. ה-APK לבודקים נשאר `app.drivetalk.drivetalk`.
+- **קישורי הזמנה שנפתחים ישר באפליקציה:** כדי שיעבדו גם בגרסת החנות, צריך להוסיף ל-`invite_site/.well-known/assetlinks.json` את `drivetalk.drivetalk.app` עם טביעת האצבע SHA-256 של מפתח החתימה של Google (Play Console ← Test and release ← App integrity). עד אז הקישור נפתח בדפדפן, ומשם "פתיחה באפליקציה" או קוד.
 - **הקובץ להעלאה:** `drivetalk.aab` מדף ההורדה. הוא נבנה לבד עם כל גרסה, ומספר הגרסה עולה לבד.
 - **חתימה:** "Play App Signing". Google מנהלת את מפתח החתימה, והמפתח שלנו משמש רק להעלאה.
 

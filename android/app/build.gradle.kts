@@ -15,8 +15,11 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "app.drivetalk.drivetalk"
+        // The testers' APK keeps app.drivetalk.drivetalk; the Google Play
+        // build uses the package name registered in Play Console (CI sets
+        // DT_APP_ID for the App Bundle only).
+        applicationId = System.getenv("DT_APP_ID")?.takeIf { it.isNotBlank() }
+            ?: "app.drivetalk.drivetalk"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
