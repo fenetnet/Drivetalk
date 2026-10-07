@@ -43,6 +43,7 @@ class MemoryServer {
   /// When each user last opened the app; feedback notes to the owner.
   final lastSeen = <String, DateTime>{};
   final feedbackNotes = <String>[];
+  final owners = <String>{};
 
   /// Connect a pair (any way) — clears a past removal.
   void connect(String x, String y) {
@@ -1112,7 +1113,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 20;
+  int schema = 21;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -1155,6 +1156,40 @@ class MemoryRealBackend implements RealBackend {
     server.intents.removeWhere((k, _) => k.split('|').contains(me));
     server._changed();
     _me = null;
+  }
+
+  @override
+  Future<bool> claimOwner(String code) async {
+    final ok = code.trim() == '97869786';
+    if (ok) server.owners.add(_uid);
+    return ok;
+  }
+
+  @override
+  Future<List<OwnerNote>> ownerFeedback() async {
+    if (!server.owners.contains(_uid)) {
+      throw const RealBackendException('not_owner');
+    }
+    return [
+      for (final n in server.feedbackNotes.reversed)
+        OwnerNote(server.now(), '—', n),
+    ];
+  }
+
+  @override
+  Future<List<OwnerNote>> ownerReports() async {
+    if (!server.owners.contains(_uid)) {
+      throw const RealBackendException('not_owner');
+    }
+    String name(Object? id) => server.profiles[id]?.name ?? '—';
+    return [
+      for (final r in server.reports.reversed)
+        OwnerNote(
+          server.now(),
+          '${name(r['reporter'])} → ${name(r['reported'])}',
+          '${r['reason']}',
+        ),
+    ];
   }
 
   @override

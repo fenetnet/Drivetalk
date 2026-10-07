@@ -2335,20 +2335,20 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunRoutineBody.
   ///
   /// In he, this message translates to:
-  /// **'בימים א׳–ה׳ בזמנים האלה הזמינות תידלק לבד לחצי שעה. אפשר לשנות בכל רגע: הגדרות ← השגרה שלי.'**
+  /// **'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. השעה ניתנת לשינוי בעיפרון. אפשר לשנות בכל רגע גם בהגדרות ← השגרה שלי.'**
   String get firstRunRoutineBody;
 
   /// No description provided for @firstRunRoutineMorning.
   ///
   /// In he, this message translates to:
-  /// **'בוקר · 7:30 · בדרך לעבודה'**
-  String get firstRunRoutineMorning;
+  /// **'בוקר · {time} · בדרך לעבודה'**
+  String firstRunRoutineMorning(String time);
 
   /// No description provided for @firstRunRoutineEvening.
   ///
   /// In he, this message translates to:
-  /// **'ערב · 17:00 · בדרך הביתה'**
-  String get firstRunRoutineEvening;
+  /// **'ערב · {time} · בדרך הביתה'**
+  String firstRunRoutineEvening(String time);
 
   /// No description provided for @firstRunRoutineNone.
   ///
@@ -2491,7 +2491,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsReports.
   ///
   /// In he, this message translates to:
-  /// **'דיווחים (פרטים ב-Supabase ← reports)'**
+  /// **'דיווחים'**
   String get statsReports;
 
   /// No description provided for @realInviteStore.
@@ -2563,8 +2563,38 @@ abstract class AppLocalizations {
   /// No description provided for @statsFeedback.
   ///
   /// In he, this message translates to:
-  /// **'משובים (פרטים ב-Supabase ← feedback_notes)'**
+  /// **'משובים'**
   String get statsFeedback;
+
+  /// No description provided for @statsReportsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'דיווחים אחרונים'**
+  String get statsReportsTitle;
+
+  /// No description provided for @statsFeedbackTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'משובים אחרונים'**
+  String get statsFeedbackTitle;
+
+  /// No description provided for @statsNotesEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין כאן כלום'**
+  String get statsNotesEmpty;
+
+  /// No description provided for @statsNotesFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'אין גישה. צריך שהשרת יתעדכן, ולהכניס שוב את קוד הניהול (הגדרות ← ניהול).'**
+  String get statsNotesFailed;
+
+  /// No description provided for @firstRunRoutineChangeTime.
+  ///
+  /// In he, this message translates to:
+  /// **'לשנות שעה'**
+  String get firstRunRoutineChangeTime;
 }
 
 class _AppLocalizationsDelegate

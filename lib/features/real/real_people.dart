@@ -255,33 +255,41 @@ class RealPeopleScreen extends ConsumerWidget {
     final action = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
+      // Tall enough for everything; scrolls on small screens so "report"
+      // at the bottom is always reachable.
+      isScrollControlled: true,
       builder: (sheet) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            PersonAvatar(person: person, size: 64),
-            const SizedBox(height: 8),
-            Text(f.name, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.person_remove_rounded),
-              title: Text(l.unmatch),
-              onTap: () => Navigator.pop(sheet, 'unmatch'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.block_rounded, color: AppColors.danger),
-              title: Text(l.block),
-              onTap: () => Navigator.pop(sheet, 'block'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.flag_rounded),
-              title: Text(l.report),
-              onTap: () => Navigator.pop(sheet, 'report'),
-            ),
-            const SizedBox(height: 8),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PersonAvatar(person: person, size: 64),
+              const SizedBox(height: 8),
+              Text(f.name, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.person_remove_rounded),
+                title: Text(l.unmatch),
+                onTap: () => Navigator.pop(sheet, 'unmatch'),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.block_rounded,
+                  color: AppColors.danger,
+                ),
+                title: Text(l.block),
+                onTap: () => Navigator.pop(sheet, 'block'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.flag_rounded),
+                title: Text(l.report),
+                onTap: () => Navigator.pop(sheet, 'report'),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );

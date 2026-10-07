@@ -453,3 +453,13 @@ class RealCircle {
         memberIds: memberIds ?? this.memberIds,
       );
 }
+
+/// A note for the owner: feedback or a report.
+class OwnerNote {
+  const OwnerNote(this.at, this.title, this.body);
+  final DateTime at;
+
+  /// Who sent it (feedback) / "reporter → reported" (report).
+  final String title;
+  final String body;
+}

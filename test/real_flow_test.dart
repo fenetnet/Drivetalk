@@ -201,7 +201,7 @@ void main() {
     me.c.firstRunNext(); // contacts → result
     me.c.firstRunNext(); // result → routine
     expect(me.s.firstRun, FirstRunStep.routine);
-    await me.c.firstRunRoutines(morning: true, evening: false);
+    await me.c.firstRunRoutines(morning: 7 * 60 + 30);
     expect(me.s.firstRun, FirstRunStep.magic);
     final r = me.s.routines.single;
     expect(r.minuteOfDay, 7 * 60 + 30);
@@ -241,6 +241,27 @@ void main() {
     expect(server.feedbackNotes, ['הכפתור קטן מדי']);
     expect(me.s.notice?.kind, RealNoticeKind.feedbackThanks);
     expect(await me.c.sendFeedback('   '), isFalse);
+  });
+
+  test(
+    'the owner reads feedback and reports in the app; others cannot',
+    () async {
+      await connect();
+      await yoni.c.sendFeedback('אהבתי');
+      await yoni.c.report(yoni.s.snapshot!.friends.single, ReportReason.spam);
+      expect(await yoni.c.ownerNotes(reports: false), isNull, reason: 'no');
+      expect(me.c.unlockAdmin('97869786'), isTrue);
+      await pump(10);
+      expect((await me.c.ownerNotes(reports: false))!.single.body, 'אהבתי');
+      final r = (await me.c.ownerNotes(reports: true))!.single;
+      expect(r.title, 'יוני → נתנאל');
+    },
+  );
+
+  test('first steps: any hour for the routine', () async {
+    await me.c.signIn('נתנאל', Gender.male);
+    await me.c.firstRunRoutines(evening: 18 * 60 + 15);
+    expect(me.s.routines.single.minuteOfDay, 18 * 60 + 15);
   });
 
   test('invitation link → both become friends', () async {
@@ -1193,7 +1214,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 20)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 21)'));
     });
 
     test(

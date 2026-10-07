@@ -656,6 +656,41 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<bool> claimOwner(String code) async {
+    try {
+      return await _c.rpc('claim_owner', params: {'p_code': code}) == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<List<OwnerNote>> ownerFeedback() => _guard(() async {
+    final rows = await _c.rpc('owner_feedback') as List;
+    return [
+      for (final r in rows.cast<Map>())
+        OwnerNote(
+          _time(r['created_at']),
+          '${r['display_name']}${r['app_build'] == null ? '' : ' · ${r['app_build']}'}',
+          r['body'] as String,
+        ),
+    ];
+  });
+
+  @override
+  Future<List<OwnerNote>> ownerReports() => _guard(() async {
+    final rows = await _c.rpc('owner_reports') as List;
+    return [
+      for (final r in rows.cast<Map>())
+        OwnerNote(
+          _time(r['created_at']),
+          '${r['reporter']} → ${r['reported']}',
+          r['reason'] as String,
+        ),
+    ];
+  });
+
+  @override
   Future<void> touchSeen() async {
     try {
       await _c.rpc('touch_seen');

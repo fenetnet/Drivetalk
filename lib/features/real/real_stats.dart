@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
 import '../../real/real_controller.dart';
+import '../../real/real_models.dart';
 import '../common/labels.dart';
 
 /// Owner only (behind the admin code): totals — no names, nothing about
@@ -79,8 +80,40 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
               row(l.statsDeclined, 'declined', pct(m['declined'], offers)),
               row(l.statsLater, 'later'),
               row(l.statsNoAnswer, 'no_answer', pct(m['no_answer'], offers)),
-              row(l.statsReports, 'reports'),
-              row(l.statsFeedback, 'feedback'),
+              ListTile(
+                title: Text(l.statsReports),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${m['reports']?.round() ?? '—'}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_left_rounded),
+                  ],
+                ),
+                onTap: () => _openNotes(context, reports: true),
+              ),
+              ListTile(
+                title: Text(l.statsFeedback),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${m['feedback']?.round() ?? '—'}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Icon(Icons.chevron_left_rounded),
+                  ],
+                ),
+                onTap: () => _openNotes(context, reports: false),
+              ),
               const Divider(),
               ListTile(
                 title: Text(l.statsDialMs),
@@ -100,6 +133,57 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                 style: const TextStyle(color: AppColors.inkSoft),
               ),
             ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+void _openNotes(BuildContext context, {required bool reports}) => Navigator.of(
+  context,
+).push(MaterialPageRoute<void>(builder: (_) => _NotesScreen(reports: reports)));
+
+/// Owner only: the latest feedback or reports, newest first.
+class _NotesScreen extends ConsumerWidget {
+  const _NotesScreen({required this.reports});
+  final bool reports;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(reports ? l.statsReportsTitle : l.statsFeedbackTitle),
+      ),
+      body: FutureBuilder<List<OwnerNote>?>(
+        future: ref.read(realProvider.notifier).ownerNotes(reports: reports),
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final notes = snap.data;
+          if (notes == null) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(child: Text(l.statsNotesFailed)),
+            );
+          }
+          if (notes.isEmpty) return Center(child: Text(l.statsNotesEmpty));
+          String when(DateTime t) {
+            final d = t.toLocal();
+            String two(int n) => n.toString().padLeft(2, '0');
+            return '${d.day}/${d.month} ${two(d.hour)}:${two(d.minute)}';
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: notes.length,
+            separatorBuilder: (_, _) => const Divider(),
+            itemBuilder: (_, i) => ListTile(
+              title: Text(notes[i].body),
+              subtitle: Text('${notes[i].title} · ${when(notes[i].at)}'),
+            ),
           );
         },
       ),

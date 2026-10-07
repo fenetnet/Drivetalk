@@ -115,6 +115,13 @@ abstract class RealBackend {
   /// "I opened the app" (for friends' "last active", whole days only).
   Future<void> touchSeen();
 
+  /// The owner's code also registers this account as owner on the server.
+  Future<bool> claimOwner(String code);
+
+  /// Owner only: latest feedback and reports.
+  Future<List<OwnerNote>> ownerFeedback();
+  Future<List<OwnerNote>> ownerReports();
+
   /// A short note to the owner ("Send feedback").
   Future<void> sendFeedback(String text, {int? build});
 

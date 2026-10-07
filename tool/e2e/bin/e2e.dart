@@ -1257,6 +1257,29 @@ Future<void> main() async {
     "strangers don't see it",
   );
   await avi.rpc('send_feedback', params: {'p_body': 'נראה טוב', 'p_build': 61});
+  // The owner reads it in the app (D-080).
+  try {
+    await avi.rpc('owner_feedback');
+    check(false, 'only the owner reads feedback');
+  } on PostgrestException {
+    check(true, 'only the owner reads feedback');
+  }
+  check(
+    await avi.rpc('claim_owner', params: {'p_code': '1234'}) == false,
+    'a wrong owner code is refused',
+  );
+  check(
+    await avi.rpc('claim_owner', params: {'p_code': '97869786'}) == true,
+    'the owner code registers the owner',
+  );
+  final notes = List<Map<String, dynamic>>.from(
+    await avi.rpc('owner_feedback'),
+  );
+  check(
+    notes.any((n) => n['body'] == 'נראה טוב' && n['display_name'] == 'אבי'),
+    'the owner sees the feedback and who sent it',
+  );
+
   try {
     final leakedNotes = await eve.from('feedback_notes').select();
     check(leakedNotes.isEmpty, 'feedback is readable only by the owner');
@@ -1267,8 +1290,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 20,
-    'the server says its version (20)',
+    await eve.rpc('schema_version') == 21,
+    'the server says its version (21)',
   );
 
   // --- profile photos: private, friends only

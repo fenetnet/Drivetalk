@@ -393,7 +393,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 20;
+const kRequiredSchema = 21;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -754,6 +754,8 @@ class RealController extends Notifier<RealState> {
     if (hash != _adminCodeHash) return false;
     _store.setString(_adminKey, 'on');
     state = state.copyWith(admin: true);
+    // Also on the server: only then can this account read feedback/reports.
+    unawaited(_backend.claimOwner(code.trim()));
     return true;
   }
 
@@ -780,28 +782,26 @@ class RealController extends Notifier<RealState> {
 
   /// First steps: "when are you usually on the road?" → routines Sun–Thu
   /// (availability turns on by itself then; editable in settings).
-  Future<void> firstRunRoutines({
-    required bool morning,
-    required bool evening,
-  }) async {
+  /// [morning] / [evening]: minute of the day, or null = not picked.
+  Future<void> firstRunRoutines({int? morning, int? evening}) async {
     final workdays = {7, 1, 2, 3, 4}; // Sun–Thu
     final now = _now().microsecondsSinceEpoch;
     final picked = [
-      if (morning)
+      if (morning != null)
         Routine(
           id: 'r$now-m',
           name: _l.routineNameToWork,
           weekdays: workdays,
-          minuteOfDay: 7 * 60 + 30,
+          minuteOfDay: morning,
           durationMinutes: 30,
           mode: AvailabilityMode.driving,
         ),
-      if (evening)
+      if (evening != null)
         Routine(
           id: 'r$now-e',
           name: _l.routineNameHome,
           weekdays: workdays,
-          minuteOfDay: 17 * 60,
+          minuteOfDay: evening,
           durationMinutes: 30,
           mode: AvailabilityMode.driving,
         ),
@@ -2085,6 +2085,18 @@ class RealController extends Notifier<RealState> {
     );
     if (ok) _notify(RealNoticeKind.feedbackThanks);
     return ok;
+  }
+
+  /// Owner only: feedback and reports (null = couldn't load / not owner).
+  Future<List<OwnerNote>?> ownerNotes({required bool reports}) async {
+    try {
+      return reports
+          ? await _backend.ownerReports()
+          : await _backend.ownerFeedback();
+    } on RealBackendException catch (e) {
+      _setError(e.code);
+      return null;
+    }
   }
 
   /// Owner numbers (totals only). null = couldn't load.

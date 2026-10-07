@@ -1371,13 +1371,17 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunRoutineBody =>
-      'בימים א׳–ה׳ בזמנים האלה הזמינות תידלק לבד לחצי שעה. אפשר לשנות בכל רגע: הגדרות ← השגרה שלי.';
+      'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. השעה ניתנת לשינוי בעיפרון. אפשר לשנות בכל רגע גם בהגדרות ← השגרה שלי.';
 
   @override
-  String get firstRunRoutineMorning => 'בוקר · 7:30 · בדרך לעבודה';
+  String firstRunRoutineMorning(String time) {
+    return 'בוקר · $time · בדרך לעבודה';
+  }
 
   @override
-  String get firstRunRoutineEvening => 'ערב · 17:00 · בדרך הביתה';
+  String firstRunRoutineEvening(String time) {
+    return 'ערב · $time · בדרך הביתה';
+  }
 
   @override
   String get firstRunRoutineNone => 'לא קבוע';
@@ -1452,7 +1456,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.';
 
   @override
-  String get statsReports => 'דיווחים (פרטים ב-Supabase ← reports)';
+  String get statsReports => 'דיווחים';
 
   @override
   String realInviteStore(String url) {
@@ -1494,5 +1498,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String get feedbackSend => 'לשלוח';
 
   @override
-  String get statsFeedback => 'משובים (פרטים ב-Supabase ← feedback_notes)';
+  String get statsFeedback => 'משובים';
+
+  @override
+  String get statsReportsTitle => 'דיווחים אחרונים';
+
+  @override
+  String get statsFeedbackTitle => 'משובים אחרונים';
+
+  @override
+  String get statsNotesEmpty => 'עוד אין כאן כלום';
+
+  @override
+  String get statsNotesFailed =>
+      'אין גישה. צריך שהשרת יתעדכן, ולהכניס שוב את קוד הניהול (הגדרות ← ניהול).';
+
+  @override
+  String get firstRunRoutineChangeTime => 'לשנות שעה';
 }

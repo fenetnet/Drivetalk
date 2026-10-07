@@ -148,22 +148,52 @@ class _RoutineStep extends ConsumerStatefulWidget {
 class _RoutineStepState extends ConsumerState<_RoutineStep> {
   var _morning = false;
   var _evening = false;
+  var _morningAt = const TimeOfDay(hour: 7, minute: 30);
+  var _eveningAt = const TimeOfDay(hour: 17, minute: 0);
+
+  String _hhmm(TimeOfDay t) =>
+      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+
+  Future<TimeOfDay?> _pick(TimeOfDay initial) => showTimePicker(
+    context: context,
+    initialTime: initial,
+    builder: (context, child) => MediaQuery(
+      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+      child: child!,
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
     final c = ref.read(realProvider.notifier);
     final busy = ref.watch(realProvider.select((s) => s.busy));
-    Widget option(String label, bool on, VoidCallback tap) => Padding(
+    Widget option({
+      required String label,
+      required bool on,
+      required VoidCallback toggle,
+      required VoidCallback changeTime,
+    }) => Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: FilterChip(
-        label: SizedBox(
-          width: double.infinity,
-          child: Text(label, style: const TextStyle(fontSize: 17)),
-        ),
-        selected: on,
-        onSelected: (_) => tap(),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: FilterChip(
+              label: SizedBox(
+                width: double.infinity,
+                child: Text(label, style: const TextStyle(fontSize: 17)),
+              ),
+              selected: on,
+              onSelected: (_) => toggle(),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            ),
+          ),
+          IconButton(
+            tooltip: l.firstRunRoutineChangeTime,
+            icon: const Icon(Icons.edit_calendar_rounded),
+            onPressed: changeTime,
+          ),
+        ],
       ),
     );
     return MomentLayout(
@@ -188,14 +218,32 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
           MomentText(l.firstRunRoutineBody, size: 16, soft: true),
           const SizedBox(height: 20),
           option(
-            l.firstRunRoutineMorning,
-            _morning,
-            () => setState(() => _morning = !_morning),
+            label: l.firstRunRoutineMorning(_hhmm(_morningAt)),
+            on: _morning,
+            toggle: () => setState(() => _morning = !_morning),
+            changeTime: () async {
+              final t = await _pick(_morningAt);
+              if (t != null) {
+                setState(() {
+                  _morningAt = t;
+                  _morning = true;
+                });
+              }
+            },
           ),
           option(
-            l.firstRunRoutineEvening,
-            _evening,
-            () => setState(() => _evening = !_evening),
+            label: l.firstRunRoutineEvening(_hhmm(_eveningAt)),
+            on: _evening,
+            toggle: () => setState(() => _evening = !_evening),
+            changeTime: () async {
+              final t = await _pick(_eveningAt);
+              if (t != null) {
+                setState(() {
+                  _eveningAt = t;
+                  _evening = true;
+                });
+              }
+            },
           ),
         ],
       ),
@@ -204,7 +252,14 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
           label: l.next,
           onTap: busy || (!_morning && !_evening)
               ? null
-              : () => c.firstRunRoutines(morning: _morning, evening: _evening),
+              : () => c.firstRunRoutines(
+                  morning: _morning
+                      ? _morningAt.hour * 60 + _morningAt.minute
+                      : null,
+                  evening: _evening
+                      ? _eveningAt.hour * 60 + _eveningAt.minute
+                      : null,
+                ),
         ),
         SecondaryPill(label: l.firstRunRoutineNone, onTap: c.firstRunNext),
       ],
