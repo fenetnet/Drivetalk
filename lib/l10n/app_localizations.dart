@@ -952,12 +952,6 @@ abstract class AppLocalizations {
   /// **'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.'**
   String get settingsPrivacyBody;
 
-  /// No description provided for @realDirectCallNeedsOk.
-  ///
-  /// In he, this message translates to:
-  /// **'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.'**
-  String get realDirectCallNeedsOk;
-
   /// No description provided for @realNoAnswer.
   ///
   /// In he, this message translates to:
@@ -1365,18 +1359,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'אשמח לדבר'**
   String get intentBadgeAlways;
-
-  /// No description provided for @realDirectCallTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'חיוג מיידי'**
-  String get realDirectCallTitle;
-
-  /// No description provided for @realDirectCallBody.
-  ///
-  /// In he, this message translates to:
-  /// **'כששניכם אומרים \"כן\", הטלפון מחייג לבד. כבוי: נפתח החייגן עם המספר, ולוחצים לחייג.'**
-  String get realDirectCallBody;
 
   /// No description provided for @realCallingNow.
   ///

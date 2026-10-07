@@ -153,7 +153,6 @@ class RealPrefs {
     this.voice = true,
     this.testTab = true,
     this.speakNames = true,
-    this.directDial = true,
   });
   final bool voice;
   final bool testTab;
@@ -161,33 +160,22 @@ class RealPrefs {
   /// Read friends' names aloud (off: "a friend is free — talk?").
   final bool speakNames;
 
-  /// Both said yes → the phone dials by itself (off: the dialer opens with
-  /// the number ready, one more tap).
-  final bool directDial;
-
-  RealPrefs copyWith({
-    bool? voice,
-    bool? testTab,
-    bool? speakNames,
-    bool? directDial,
-  }) => RealPrefs(
-    voice: voice ?? this.voice,
-    testTab: testTab ?? this.testTab,
-    speakNames: speakNames ?? this.speakNames,
-    directDial: directDial ?? this.directDial,
-  );
+  RealPrefs copyWith({bool? voice, bool? testTab, bool? speakNames}) =>
+      RealPrefs(
+        voice: voice ?? this.voice,
+        testTab: testTab ?? this.testTab,
+        speakNames: speakNames ?? this.speakNames,
+      );
 
   Map<String, Object?> toJson() => {
     'voice': voice,
     'testTab': testTab,
     'speakNames': speakNames,
-    'directDial': directDial,
   };
   static RealPrefs fromJson(Map<String, Object?> j) => RealPrefs(
     voice: j['voice'] as bool? ?? true,
     testTab: j['testTab'] as bool? ?? true,
     speakNames: j['speakNames'] as bool? ?? true,
-    directDial: j['directDial'] as bool? ?? true,
   );
 }
 
@@ -814,8 +802,6 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ direct call
 
-  static const _directAskedKey = 'real.directCallAsked.v1';
-
   Future<void> _loadDirectCall() async {
     final ok = await ref.read(phoneDialerProvider).canCallDirectly();
     if (ref.mounted) state = state.copyWith(directCall: ok);
@@ -829,19 +815,15 @@ class RealController extends Notifier<RealState> {
     return ok;
   }
 
-  /// Instant calls are on by default: the first "I'm free" asks Android
-  /// once for the "phone calls" permission (before any offer shows up).
+  /// Calls always start at once when both said yes (owner decision D-075).
+  /// Until Android's "phone calls" permission is given, "I'm free" asks
+  /// for it (before any offer shows up); Android itself stops asking after
+  /// the user declined twice — then the dialer opens with the number.
   Future<void> _maybeAskDirectCall() async {
-    if (!state.prefs.directDial || state.directCall != false) return;
-    if (_store.getString(_directAskedKey) != null) return;
-    await _store.setString(_directAskedKey, 'asked');
+    // Right after joining it isn't known yet.
+    if (state.directCall == null) await _loadDirectCall();
+    if (!ref.mounted || state.directCall != false) return;
     await askDirectCall();
-  }
-
-  /// Settings switch "instant call". On: asks for the permission if needed.
-  Future<void> setDirectDial(bool on) async {
-    setPrefs(state.prefs.copyWith(directDial: on));
-    if (on && state.directCall == false) await askDirectCall();
   }
 
   static const _widgetTipKey = 'real.widgetTip.v1';
@@ -1103,7 +1085,6 @@ class RealController extends Notifier<RealState> {
     for (final k in [
       _firstRunKey,
       _handledKey,
-      _directAskedKey,
       _routinesKey,
       _contactsSyncKey,
     ]) {
@@ -1647,9 +1628,7 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(callStage: CallStage.dialed);
     final since = _bothYesAt;
     _bothYesAt = null;
-    final r = await ref
-        .read(phoneDialerProvider)
-        .call(call.phone!, direct: state.prefs.directDial);
+    final r = await ref.read(phoneDialerProvider).call(call.phone!);
     // The key number: from "both said yes" to the phone dialing.
     _event(
       'dial_started',

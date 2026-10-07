@@ -22,7 +22,14 @@ import 'package:flutter_test/flutter_test.dart';
 class RecordingDialer extends PhoneDialer {
   final dialed = <String>[];
   final directs = <bool>[];
+  var asked = 0;
   DialResult result = DialResult.calling;
+  @override
+  Future<bool> requestDirectCall() async {
+    asked++;
+    return false;
+  }
+
   @override
   Future<DialResult> call(String number, {bool direct = true}) async {
     dialed.add(number);
@@ -156,19 +163,23 @@ void main() {
     expect(me.dialer.dialed, isEmpty);
   });
 
-  test('instant call off → the dialer opens instead', () async {
-    await connect(yoniPhone: '050-123-4567');
-    me.c.setPrefs(me.s.prefs.copyWith(directDial: false));
-    await me.c.startAvailability(AvailabilityMode.free, 30);
-    await yoni.c.startAvailability(AvailabilityMode.free, 30);
-    await refreshBoth();
-    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
-    await me.c.refresh();
-    await me.c.respond(currentOffer(me.s, now)!, accept: true);
-    await pump(20);
-    expect(me.dialer.dialed, ['0501234567']);
-    expect(me.dialer.directs, [false]);
-  });
+  test(
+    'calls always start at once; "I\'m free" asks for the permission',
+    () async {
+      await connect(yoniPhone: '050-123-4567');
+      await pump(10);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      expect(me.dialer.asked, 1, reason: 'not given yet → asked');
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await refreshBoth();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await pump(20);
+      expect(me.dialer.dialed, ['0501234567']);
+      expect(me.dialer.directs, [true], reason: 'no setting to turn it off');
+    },
+  );
 
   test('invitation link → both become friends', () async {
     await connect();

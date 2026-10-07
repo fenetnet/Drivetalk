@@ -5,6 +5,7 @@ import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
+import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/deep_links.dart';
 import 'package:drivetalk/real/local_store.dart';
@@ -15,6 +16,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'no_server.dart';
+
+/// No phone here: calls become the in-app call; permission never given.
+class _NoPhone extends PhoneDialer {
+  @override
+  Future<DialResult> call(String number, {bool direct = true}) async =>
+      DialResult.unsupported;
+}
 
 Future<void> pumpFor(WidgetTester t, int ms) async {
   for (var i = 0; i < ms ~/ 100; i++) {
@@ -35,6 +43,7 @@ void main() {
       await t.pumpWidget(
         ProviderScope(
           overrides: [
+            phoneDialerProvider.overrideWithValue(_NoPhone()),
             voiceServiceProvider.overrideWithValue(SilentVoiceService()),
             realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
             localStoreProvider.overrideWithValue(store),

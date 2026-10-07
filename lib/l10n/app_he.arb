@@ -277,7 +277,6 @@
   "routinesExplain": "זמנים קבועים שבהם הזמינות נדלקת לבד, למשל הנסיעה לעבודה.",
   "realBlockedBody": "אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.",
   "settingsPrivacyBody": "מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.",
-  "realDirectCallNeedsOk": "צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.",
   "realNoAnswer": "אין תשובה כרגע. נציע שוב בהזדמנות אחרת.",
   "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
   "realVoiceTheyCall": "{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}",
@@ -400,8 +399,6 @@
   "intentBadgeToday": "אשמח לדבר · היום",
   "intentBadgeWeek": "אשמח לדבר · השבוע",
   "intentBadgeAlways": "אשמח לדבר",
-  "realDirectCallTitle": "חיוג מיידי",
-  "realDirectCallBody": "כששניכם אומרים \"כן\", הטלפון מחייג לבד. כבוי: נפתח החייגן עם המספר, ולוחצים לחייג.",
   "realCallingNow": "מתקשרים ל{name}…",
   "@realCallingNow": {
     "placeholders": {

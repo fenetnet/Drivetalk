@@ -58,18 +58,6 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : () => _editProfile(context, ref, me.photo != null),
               ),
-              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android)
-                SwitchListTile(
-                  secondary: const Icon(Icons.bolt_rounded),
-                  title: Text(l.realDirectCallTitle),
-                  subtitle: Text(
-                    s.prefs.directDial && s.directCall == false
-                        ? '${l.realDirectCallBody}\n${l.realDirectCallNeedsOk}'
-                        : l.realDirectCallBody,
-                  ),
-                  value: s.prefs.directDial && s.directCall == true,
-                  onChanged: c.setDirectDial,
-                ),
             ],
           ),
           SettingsGroup(

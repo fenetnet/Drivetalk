@@ -531,10 +531,6 @@ class AppLocalizationsHe extends AppLocalizations {
       'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.';
 
   @override
-  String get realDirectCallNeedsOk =>
-      'צריך לאשר \"שיחות טלפון\" בהגדרות הטלפון.';
-
-  @override
   String get realNoAnswer => 'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.';
 
   @override
@@ -775,13 +771,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get intentBadgeAlways => 'אשמח לדבר';
-
-  @override
-  String get realDirectCallTitle => 'חיוג מיידי';
-
-  @override
-  String get realDirectCallBody =>
-      'כששניכם אומרים \"כן\", הטלפון מחייג לבד. כבוי: נפתח החייגן עם המספר, ולוחצים לחייג.';
 
   @override
   String realCallingNow(String name) {
