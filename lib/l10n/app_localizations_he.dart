@@ -1458,4 +1458,41 @@ class AppLocalizationsHe extends AppLocalizations {
   String realInviteStore(String url) {
     return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: $url';
   }
+
+  @override
+  String inactiveTitle(String name) {
+    return '$name: בלי כניסה ל-DriveTalk כבר שבוע';
+  }
+
+  @override
+  String get inactiveBody => 'אולי האפליקציה הוסרה. להסיר מהרשימה שלך?';
+
+  @override
+  String get inactiveRemove => 'להסיר מהרשימה';
+
+  @override
+  String get inactiveKeep => 'להשאיר';
+
+  @override
+  String inactiveDays(int days) {
+    return 'בלי כניסה כבר $days ימים';
+  }
+
+  @override
+  String get inactiveMonth => 'בלי כניסה יותר מחודש';
+
+  @override
+  String get feedbackTitle => 'שליחת משוב';
+
+  @override
+  String get feedbackBody => 'משהו לא עובד? רעיון? זה מגיע ישר אלינו.';
+
+  @override
+  String get feedbackHint => 'מה כדאי לשפר?';
+
+  @override
+  String get feedbackSend => 'לשלוח';
+
+  @override
+  String get statsFeedback => 'משובים (פרטים ב-Supabase ← feedback_notes)';
 }

@@ -193,7 +193,11 @@ class RealSnapshot {
     this.intents = const {},
     this.ratings = const {},
     this.hidden = false,
+    this.inactiveDays = const {},
   });
+
+  /// Friend id → whole days since they last opened the app (0 = today).
+  final Map<String, int> inactiveDays;
 
   /// How much I want to talk with each friend, 0–5 (only I see it).
   /// Not set = 3.
@@ -255,6 +259,7 @@ class RealSnapshot {
       intents: intents,
       ratings: ratings,
       hidden: hidden,
+      inactiveDays: inactiveDays,
     );
   }
 
@@ -279,6 +284,7 @@ class RealSnapshot {
       intents: intents,
       ratings: ratings,
       hidden: hidden,
+      inactiveDays: inactiveDays,
     );
   }
 

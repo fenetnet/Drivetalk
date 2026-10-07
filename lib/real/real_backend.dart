@@ -112,6 +112,12 @@ abstract class RealBackend {
   /// A measurement: an event name and maybe a duration. Never content.
   Future<void> logEvent(String name, {int? ms});
 
+  /// "I opened the app" (for friends' "last active", whole days only).
+  Future<void> touchSeen();
+
+  /// A short note to the owner ("Send feedback").
+  Future<void> sendFeedback(String text, {int? build});
+
   Future<void> block(String userId);
 
   /// People I blocked (to unblock them).

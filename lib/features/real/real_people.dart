@@ -200,7 +200,11 @@ class RealPeopleScreen extends ConsumerWidget {
                           '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
                           style: const TextStyle(color: AppColors.sageDark),
                         ),
-                        _ => Text(l.realNotFree),
+                        _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {
+                          >= 30 => l.inactiveMonth,
+                          final d when d >= 7 => l.inactiveDays(d),
+                          _ => l.realNotFree,
+                        }),
                       },
                       RatingStars(rating: snap.ratingOf(f.id)),
                       if (snap.intents[f.id] case final i?

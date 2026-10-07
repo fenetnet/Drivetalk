@@ -40,6 +40,10 @@ class MemoryServer {
   /// Users who hide their status.
   final hidden = <String>{};
 
+  /// When each user last opened the app; feedback notes to the owner.
+  final lastSeen = <String, DateTime>{};
+  final feedbackNotes = <String>[];
+
   /// Connect a pair (any way) — clears a past removal.
   void connect(String x, String y) {
     connections.add(_pair(x, y));
@@ -560,6 +564,11 @@ class MemoryRealBackend implements RealBackend {
             f.id: server.ratingOf(me, f.id),
       },
       hidden: server.hidden.contains(me),
+      inactiveDays: {
+        for (final f in friends)
+          if (server.lastSeen[f.id] case final t?)
+            f.id: now.difference(t).inDays,
+      },
       fetchedAt: now,
     );
   }
@@ -1103,7 +1112,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 19;
+  int schema = 20;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -1147,6 +1156,13 @@ class MemoryRealBackend implements RealBackend {
     server._changed();
     _me = null;
   }
+
+  @override
+  Future<void> touchSeen() async => server.lastSeen[_uid] = server.now();
+
+  @override
+  Future<void> sendFeedback(String text, {int? build}) async =>
+      server.feedbackNotes.add(text);
 
   @override
   Future<void> logEvent(String name, {int? ms}) async =>

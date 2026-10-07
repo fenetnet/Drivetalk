@@ -1237,11 +1237,38 @@ Future<void> main() async {
     'owner numbers have no names or phone numbers',
   );
   await avi.rpc('set_hide_status', params: {'p_hide': false});
+  // Last active: whole days only; feedback to the owner (D-079).
+  await noa.rpc('touch_seen');
+  final activity = List<Map<String, dynamic>>.from(
+    await avi.rpc('friends_activity'),
+  );
+  check(
+    activity.any((a) => a['user_id'] == uid(noa) && a['days'] == 0) &&
+        activity.every(
+          (a) =>
+              a.keys.toSet().containsAll({'user_id', 'days'}) && a.length == 2,
+        ),
+    'friends see only whole days since last seen',
+  );
+  check(
+    List.from(
+      await eve.rpc('friends_activity'),
+    ).every((a) => (a as Map)['user_id'] != uid(noa)),
+    "strangers don't see it",
+  );
+  await avi.rpc('send_feedback', params: {'p_body': 'נראה טוב', 'p_build': 61});
+  try {
+    final leakedNotes = await eve.from('feedback_notes').select();
+    check(leakedNotes.isEmpty, 'feedback is readable only by the owner');
+  } on PostgrestException {
+    check(true, 'feedback is readable only by the owner');
+  }
+
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 19,
-    'the server says its version (19)',
+    await eve.rpc('schema_version') == 20,
+    'the server says its version (20)',
   );
 
   // --- profile photos: private, friends only

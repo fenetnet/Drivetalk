@@ -778,5 +778,30 @@
         "type": "String"
       }
     }
-  }
+  },
+  "inactiveTitle": "{name}: בלי כניסה ל-DriveTalk כבר שבוע",
+  "@inactiveTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "inactiveBody": "אולי האפליקציה הוסרה. להסיר מהרשימה שלך?",
+  "inactiveRemove": "להסיר מהרשימה",
+  "inactiveKeep": "להשאיר",
+  "inactiveDays": "בלי כניסה כבר {days} ימים",
+  "@inactiveDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "inactiveMonth": "בלי כניסה יותר מחודש",
+  "feedbackTitle": "שליחת משוב",
+  "feedbackBody": "משהו לא עובד? רעיון? זה מגיע ישר אלינו.",
+  "feedbackHint": "מה כדאי לשפר?",
+  "feedbackSend": "לשלוח",
+  "statsFeedback": "משובים (פרטים ב-Supabase ← feedback_notes)"
 }

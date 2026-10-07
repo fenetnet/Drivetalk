@@ -206,6 +206,7 @@ Widget? _tipCard(
 ) {
   if (s.newBuild != null) return const _UpdateCard();
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  if (c.inactiveFriend case final f?) return _InactiveCard(friend: f);
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
@@ -1070,6 +1071,51 @@ class _BackgroundCard extends ConsumerWidget {
                 TextButton(
                   onPressed: c.dismissBackgroundTip,
                   child: Text(l.notNowShort),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A friend hasn't opened DriveTalk for a week: remove them? (Once.)
+class _InactiveCard extends ConsumerWidget {
+  const _InactiveCard({required this.friend});
+  final RealProfile friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.inactiveTitle(friend.name),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(l.inactiveBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: busy ? null : () => c.unmatch(friend),
+                    child: Text(l.inactiveRemove),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: () => c.keepInactive(friend),
+                  child: Text(l.inactiveKeep),
                 ),
               ],
             ),

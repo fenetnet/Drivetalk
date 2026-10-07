@@ -167,6 +167,12 @@ class RealSettingsScreen extends ConsumerWidget {
                 },
               ),
               ListTile(
+                leading: const Icon(Icons.rate_review_rounded),
+                title: Text(l.feedbackTitle),
+                subtitle: Text(l.feedbackBody),
+                onTap: () => _sendFeedback(context, ref),
+              ),
+              ListTile(
                 leading: const Icon(Icons.block_rounded),
                 title: Text(l.realBlockedTitle),
                 subtitle: Text(l.realBlockedBody),
@@ -693,4 +699,38 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
       ),
     );
   }
+}
+
+/// "Send feedback": a short note to the owner (no names or numbers added).
+Future<void> _sendFeedback(BuildContext context, WidgetRef ref) async {
+  final l = context.l10n;
+  final text = TextEditingController();
+  final send = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.feedbackTitle),
+      content: TextField(
+        controller: text,
+        autofocus: true,
+        maxLength: 1000,
+        minLines: 3,
+        maxLines: 6,
+        decoration: InputDecoration(hintText: l.feedbackHint),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.feedbackSend),
+        ),
+      ],
+    ),
+  );
+  if (send ?? false) {
+    await ref.read(realProvider.notifier).sendFeedback(text.text);
+  }
+  text.dispose();
 }

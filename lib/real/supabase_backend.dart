@@ -164,6 +164,13 @@ class SupabaseRealBackend implements RealBackend {
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // Friends' days since last seen (optional on an older server).
+      _c
+          .rpc('friends_activity')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
       // Do I hide my status? (optional on an older server)
       _c
           .from('profiles')
@@ -230,7 +237,11 @@ class SupabaseRealBackend implements RealBackend {
         for (final r in results[6])
           r['friend'] as String: (r['rating'] as num).toInt(),
       },
-      hidden: results[7].firstOrNull?['hide_status'] == true,
+      inactiveDays: {
+        for (final r in results[7])
+          r['user_id'] as String: (r['days'] as num).toInt(),
+      },
+      hidden: results[8].firstOrNull?['hide_status'] == true,
       fetchedAt: DateTime.now(),
     );
   });
@@ -643,6 +654,20 @@ class SupabaseRealBackend implements RealBackend {
     await _c.rpc('delete_my_account');
     await signOut();
   });
+
+  @override
+  Future<void> touchSeen() async {
+    try {
+      await _c.rpc('touch_seen');
+    } catch (_) {
+      // Older server / offline: not important.
+    }
+  }
+
+  @override
+  Future<void> sendFeedback(String text, {int? build}) => _guard(
+    () => _c.rpc('send_feedback', params: {'p_body': text, 'p_build': build}),
+  );
 
   @override
   Future<void> logEvent(String name, {int? ms}) async {

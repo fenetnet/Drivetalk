@@ -393,7 +393,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 19;
+const kRequiredSchema = 20;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -557,6 +557,7 @@ class RealController extends Notifier<RealState> {
     }
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
+    unawaited(_backend.touchSeen());
     if (state.serverSchema == null) unawaited(_checkSchema());
     unawaited(_loadPhone());
     unawaited(_loadDriving());
@@ -623,6 +624,7 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(callStage: CallStage.feedback);
     }
     refresh();
+    unawaited(_backend.touchSeen());
     unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
   }
@@ -2039,6 +2041,50 @@ class RealController extends Notifier<RealState> {
   Future<void> setRating(RealProfile friend, int rating) async {
     await _run(() => _backend.setRating(friend.id, rating.clamp(0, 5)));
     await refresh();
+  }
+
+  static const _keepInactiveKey = 'real.keepInactive.v1';
+
+  /// A friend who hasn't opened the app for a week (maybe removed it):
+  /// suggest removing them, once per friend.
+  RealProfile? get inactiveFriend {
+    final snap = state.snapshot;
+    if (snap == null) return null;
+    final kept = _keptInactive;
+    for (final f in snap.friends) {
+      if ((snap.inactiveDays[f.id] ?? 0) >= 7 && !kept.contains(f.id)) {
+        return f;
+      }
+    }
+    return null;
+  }
+
+  Set<String> get _keptInactive {
+    try {
+      return {
+        ...(jsonDecode(_store.getString(_keepInactiveKey) ?? '[]') as List)
+            .cast<String>(),
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  /// "Keep them" on the inactive card.
+  void keepInactive(RealProfile f) {
+    _store.setString(_keepInactiveKey, jsonEncode([..._keptInactive, f.id]));
+    state = state.copyWith();
+  }
+
+  /// "Send feedback" (settings): a short note to the owner.
+  Future<bool> sendFeedback(String text) async {
+    if (text.trim().isEmpty) return false;
+    final ok = await _run(
+      () =>
+          _backend.sendFeedback(text.trim(), build: ref.read(appBuildProvider)),
+    );
+    if (ok) _notify(RealNoticeKind.feedbackThanks);
+    return ok;
   }
 
   /// Owner numbers (totals only). null = couldn't load.

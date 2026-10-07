@@ -221,6 +221,28 @@ void main() {
     expect(me.c.showBackgroundTip, isFalse);
   });
 
+  test('a friend gone for a week → one gentle "remove?" card', () async {
+    await connect();
+    await yoni.backend.touchSeen();
+    await me.c.refresh();
+    expect(me.c.inactiveFriend, isNull, reason: 'seen today');
+    now = now.add(const Duration(days: 8));
+    await me.c.refresh();
+    expect(me.s.snapshot!.inactiveDays.values.single, 8);
+    final f = me.c.inactiveFriend!;
+    expect(f.name, 'יוני');
+    me.c.keepInactive(f);
+    expect(me.c.inactiveFriend, isNull, reason: 'asked once');
+  });
+
+  test('send feedback → reaches the owner; thanks', () async {
+    await me.c.signIn('נתנאל', Gender.male);
+    expect(await me.c.sendFeedback('  הכפתור קטן מדי  '), isTrue);
+    expect(server.feedbackNotes, ['הכפתור קטן מדי']);
+    expect(me.s.notice?.kind, RealNoticeKind.feedbackThanks);
+    expect(await me.c.sendFeedback('   '), isFalse);
+  });
+
   test('invitation link → both become friends', () async {
     await connect();
     expect(me.s.snapshot!.friends.single.name, 'יוני');
@@ -1171,7 +1193,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 19)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 20)'));
     });
 
     test(

@@ -2499,6 +2499,72 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}'**
   String realInviteStore(String url);
+
+  /// No description provided for @inactiveTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}: בלי כניסה ל-DriveTalk כבר שבוע'**
+  String inactiveTitle(String name);
+
+  /// No description provided for @inactiveBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אולי האפליקציה הוסרה. להסיר מהרשימה שלך?'**
+  String get inactiveBody;
+
+  /// No description provided for @inactiveRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'להסיר מהרשימה'**
+  String get inactiveRemove;
+
+  /// No description provided for @inactiveKeep.
+  ///
+  /// In he, this message translates to:
+  /// **'להשאיר'**
+  String get inactiveKeep;
+
+  /// No description provided for @inactiveDays.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי כניסה כבר {days} ימים'**
+  String inactiveDays(int days);
+
+  /// No description provided for @inactiveMonth.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי כניסה יותר מחודש'**
+  String get inactiveMonth;
+
+  /// No description provided for @feedbackTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שליחת משוב'**
+  String get feedbackTitle;
+
+  /// No description provided for @feedbackBody.
+  ///
+  /// In he, this message translates to:
+  /// **'משהו לא עובד? רעיון? זה מגיע ישר אלינו.'**
+  String get feedbackBody;
+
+  /// No description provided for @feedbackHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מה כדאי לשפר?'**
+  String get feedbackHint;
+
+  /// No description provided for @feedbackSend.
+  ///
+  /// In he, this message translates to:
+  /// **'לשלוח'**
+  String get feedbackSend;
+
+  /// No description provided for @statsFeedback.
+  ///
+  /// In he, this message translates to:
+  /// **'משובים (פרטים ב-Supabase ← feedback_notes)'**
+  String get statsFeedback;
 }
 
 class _AppLocalizationsDelegate
