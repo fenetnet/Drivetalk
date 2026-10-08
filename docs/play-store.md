@@ -36,7 +36,7 @@
 **קטגוריה:** תקשורת (Communication).
 
 ## מדיניות פרטיות (Privacy policy)
-- **הקישור:** https://github.com/fenetnet/Drivetalk/blob/claude/social-voice-app-mnrxc1/docs/privacy.md
+- **הקישור:** https://fenetnet.github.io/Drivetalk/privacy.html (נבנה מ-`docs/privacy.md` ע"י `tool/privacy_page.py`).
 - **מייל ליצירת קשר:** fenet.net@gmail.com (כבר בפנים). את אותו מייל שמים ב-Play Console בשדה "Contact details" ← Email.
 
 ## גישה לאפליקציה (App access)
@@ -60,7 +60,7 @@
 - **האם אוספים מידע?** כן.
 - **האם משתפים מידע עם צד שלישי?** לא. מספר הטלפון נמסר לחבר רק כששניהם אישרו שיחה. זו העברה ביוזמת המשתמש, ולא "שיתוף".
 - **מוצפן בהעברה:** כן (HTTPS).
-- **אפשר לבקש מחיקה:** כן. באפליקציה: הגדרות ← "למחוק את החשבון והמידע שלי". הקישור לאינטרנט (Delete account URL): הקישור של מדיניות הפרטיות. יש בו סעיף מחיקה, ומייל לבקשה.
+- **אפשר לבקש מחיקה:** כן. באפליקציה: הגדרות ← "למחוק את החשבון והמידע שלי". הקישור לאינטרנט (Delete account URL): https://fenetnet.github.io/Drivetalk/delete.html
 - **שירות השרת (Supabase):** מעבד את המידע בשבילנו, ולכן לא נחשב "שיתוף עם צד שלישי".
 
 | סוג מידע (בטופס) | נאסף | רשות או חובה | למה |
