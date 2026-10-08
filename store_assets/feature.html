@@ -1,28 +1,31 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8">
+<!doctype html><html><head><meta charset="utf-8">
 <style>
-html,body{margin:0}
-body{width:1024px;height:500px;background:#1E88E5;font-family:sans-serif;color:#fff;overflow:hidden;position:relative}
-.c1{position:absolute;width:560px;height:560px;border-radius:50%;background:#42A5F5;right:-170px;top:-210px}
-.c2{position:absolute;width:320px;height:320px;border-radius:50%;background:#2F6B57;left:420px;bottom:-240px;opacity:.9}
-.txt{position:absolute;left:64px;top:118px}
-h1{font-size:84px;margin:0;font-weight:800;letter-spacing:-1px}
-p{font-size:34px;margin:8px 0 0;font-weight:700}
-.sub{font-size:24px;opacity:.92;font-weight:400;margin-top:16px;max-width:470px;line-height:1.35}
-.card{position:absolute;right:48px;top:80px;width:300px;background:#F7FAFD;border-radius:28px;padding:22px 24px;box-shadow:0 20px 40px rgba(0,0,0,.18);color:#262636}
-.card h3{margin:0 0 12px;font-size:22px}
-.row{display:flex;align-items:center;gap:16px;margin:14px 0}
-.av{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:24px;position:relative;flex:none}
-.on{box-shadow:0 0 0 3px #F7FAFD,0 0 0 6px #3E9E72}
-.on:after{content:'';position:absolute;width:13px;height:13px;border-radius:50%;background:#3E9E72;border:3px solid #F7FAFD;bottom:-3px;left:-3px}
-.nm{font-weight:700;font-size:21px}
-.st{font-size:17px;color:#2F6B57}
-.busy .st{color:#1565C0;font-weight:600}
-</style></head><body><div class="c1"></div><div class="c2"></div>
-<div class="txt"><h1>DriveBond</h1><p>Free at the same time? Talk.</p>
-<div class="sub">See which friends are free right now — a call starts only when you both say yes.</div></div>
-<div class="card"><h3>Right now</h3>
-<div class="row"><div class="av on" style="background:#2A9D8F">M</div><div><div class="nm">Maya</div><div class="st">🚗 Driving · 25 min</div></div></div>
-<div class="row"><div class="av on" style="background:#5A8259">E</div><div><div class="nm">Ethan</div><div class="st">☕ On a break · 15 min</div></div></div>
-<div class="row busy"><div class="av" style="background:#F2A35E">N</div><div><div class="nm">Noa</div><div class="st">📞 In a call</div></div></div>
-</div>
-</body></html>
+html,body{margin:0;width:1024px;height:500px;overflow:hidden}
+body{font-family:"Rubik","Noto Sans Hebrew",sans-serif;color:#fff;position:relative;
+ background:radial-gradient(circle at 25% 110%,#42A5F5 0%,#1E88E5 38%,#0D47A1 100%)}
+.road{position:absolute;left:0;top:0;width:1024px;height:500px;opacity:.10}
+.phone{position:absolute;left:70px;top:70px;width:270px;height:585px;border-radius:40px;background:#0E1B2C;padding:9px;
+ transform:rotate(-8deg);box-shadow:0 30px 60px rgba(0,0,0,.4)}
+.phone img{width:100%;height:100%;border-radius:32px;object-fit:cover;object-position:top}
+.chip{position:absolute;left:300px;top:96px;background:#fff;color:#1F2A3A;border-radius:22px;padding:10px 16px;font-size:20px;font-weight:700;
+ box-shadow:0 10px 24px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;direction:var(--dir)}
+.dot{width:12px;height:12px;border-radius:50%;background:#3FA37A;flex:none}
+.txt{position:absolute;right:64px;top:84px;width:520px;text-align:var(--align);direction:var(--dir)}
+.brand{display:flex;align-items:center;gap:16px;justify-content:flex-start;direction:ltr;margin-bottom:22px}
+.brand img{width:64px;height:64px;border-radius:16px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.brand span{font-size:40px;font-weight:800;letter-spacing:-.5px}
+h1{margin:0;font-size:58px;line-height:1.08;font-weight:800;white-space:pre-line}
+p{margin:18px 0 0;font-size:25px;line-height:1.35;opacity:.92}
+</style></head><body>
+<svg class="road" viewBox="0 0 1024 500"><path d="M-50 520 C 300 300, 600 260, 1100 -40" stroke="#fff" stroke-width="90" fill="none"/>
+<path d="M-50 520 C 300 300, 600 260, 1100 -40" stroke="#0D47A1" stroke-width="8" stroke-dasharray="40 34" fill="none"/></svg>
+<div class="phone"><img src="drivingOffer.png"></div>
+<div class="chip"><span class="dot"></span><span id="chip"></span></div>
+<div class="txt"><div class="brand"><img src="icon.png"><span>DriveBond</span></div>
+<h1 id="t"></h1><p id="s"></p></div>
+<script>
+const q=new URLSearchParams(location.search);
+document.body.style.setProperty('--dir',q.get('dir'));document.body.style.setProperty('--align',q.get('dir')=='rtl'?'right':'left');
+for (const k of ['t','s','chip']) document.getElementById(k).textContent=q.get(k);
+if(q.get('dir')=='rtl') document.querySelector('.brand').style.justifyContent='flex-end'; else document.querySelector('.chip').style.top='400px';
+</script></body></html>
