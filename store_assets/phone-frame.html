@@ -1,0 +1,21 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
+<style>
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+body{width:1080px;height:1920px;overflow:hidden;font-family:"Rubik","Noto Sans Hebrew",sans-serif;
+ background:linear-gradient(165deg,var(--a) 0%,var(--b) 100%);color:#fff;position:relative}
+.blob{position:absolute;border-radius:50%;background:rgba(255,255,255,.08)}
+h1{white-space:pre-line;position:absolute;top:120px;right:80px;left:80px;margin:0;font-size:92px;line-height:1.12;font-weight:800;text-align:center}
+p{position:absolute;top:360px;right:100px;left:100px;margin:0;font-size:44px;line-height:1.3;text-align:center;opacity:.92}
+.phone{position:absolute;left:50%;top:560px;transform:translateX(-50%);width:640px;height:1386px;border-radius:72px;
+ background:#0E1B2C;padding:18px;box-shadow:0 40px 90px rgba(0,0,0,.35)}
+.phone img{width:100%;height:100%;border-radius:56px;object-fit:cover;object-position:top}
+</style></head><body>
+<div class=.blob" style="width:700px;height:700px;left:0;top:-300px;transform:translateX(-40%)"></div>
+<div class="blob" style="width:520px;height:520px;left:780px;top:900px"></div>
+<h1 id="t"></h1><p id="s"></p><div class="phone"><img id="i"></div>
+<script>
+const q=new URLSearchParams(location.search);
+document.body.style.setProperty('--a',q.get('a'));document.body.style.setProperty('--b',q.get('b'));
+document.getElementById('t').textContent=q.get('t');document.getElementById('s').textContent=q.get('s');
+document.getElementById('i').src=q.get('i')+'.png';
+</script></body></html>

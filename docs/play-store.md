@@ -31,7 +31,7 @@
 **תמונות:**
 - **אייקון:** `icon-512.png`
 - **תמונה ראשית:** `feature-1024x500.png`
-- **צילומי טלפון:** `phone-home.png`, `phone-offer.png`, `phone-people.png`, `phone-connected.png`
+- **צילומי טלפון (בסדר הזה):** `phone-1.png` … `phone-5.png`. כל אחד עם כותרת גדולה ומסך בתוך טלפון (תבנית: `store_assets/phone-frame.html`). כולם להורדה ב-https://fenetnet.github.io/Drivetalk/store.html
 
 **קטגוריה:** תקשורת (Communication).
 

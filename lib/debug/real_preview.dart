@@ -42,7 +42,7 @@ Future<void> main() async {
     await me.signIn('נתנאל', Gender.male);
     await me.setMyPhone('0521111111');
     final yoni = await friend('יוני', Gender.male, '0532222222');
-    final mom = await friend('אמא', Gender.female, '0543333333');
+    final mom = await friend('מיכל', Gender.female, '0543333333');
     final dana = await friend('דנה', Gender.female, '0504444444');
     // Friends who aren't free right now (made-up names).
     final omer = await friend('עומר', Gender.male, '0525555555');
