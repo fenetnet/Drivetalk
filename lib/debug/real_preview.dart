@@ -63,8 +63,14 @@ Future<void> main() async {
       RealCircle(id: '', name: 'חברים מהצבא', memberIds: {yoni.userId!}),
     );
     if (screen != 'driving') {
-      await mom.setAvailability(AvailabilityMode.walking, 40);
+      // Home: three faces fit the card (driving, break, in a call).
+      if (screen != 'home') {
+        await mom.setAvailability(AvailabilityMode.walking, 40);
+      }
       await dana.setAvailability(AvailabilityMode.breakTime, 15);
+      // Free, but on the phone right now.
+      await shira.setAvailability(AvailabilityMode.free, 30);
+      server.phoneCall(shira.userId!, true);
     }
     switch (screen) {
       case 'offer' || 'waiting' || 'connected' || 'feedback':
