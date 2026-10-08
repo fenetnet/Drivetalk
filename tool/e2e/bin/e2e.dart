@@ -1278,6 +1278,16 @@ Future<void> main() async {
     laterAnswer['status'] == 'declined' && seenLater['later_from'] == uid(noa),
     '"I\'ll get back to you" reaches the other side',
   );
+  try {
+    await noa.rpc('app_stats', params: {'p_days': 7});
+    check(false, 'the numbers are refused to anyone but the owner');
+  } on PostgrestException catch (e) {
+    check(
+      e.message.contains('not_owner'),
+      'the numbers are refused to anyone but the owner',
+    );
+  }
+  await avi.rpc('claim_owner', params: {'p_code': '97869786'});
   final stats = Map<String, dynamic>.from(
     await avi.rpc('app_stats', params: {'p_days': 7}),
   );
@@ -1312,7 +1322,7 @@ Future<void> main() async {
   await avi.rpc('send_feedback', params: {'p_body': 'נראה טוב', 'p_build': 61});
   // The owner reads it in the app (D-080).
   try {
-    await avi.rpc('owner_feedback');
+    await noa.rpc('owner_feedback');
     check(false, 'only the owner reads feedback');
   } on PostgrestException {
     check(true, 'only the owner reads feedback');
@@ -1343,8 +1353,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 22,
-    'the server says its version (22)',
+    await eve.rpc('schema_version') == 23,
+    'the server says its version (23)',
   );
 
   // --- profile photos: private, friends only

@@ -863,6 +863,7 @@ class SupabaseRealBackend implements RealBackend {
       'no_profile',
       'too_many_open_invitations',
       'invalid_circle',
+      'not_owner',
     ];
     for (final k in known) {
       if (message.contains(k)) return k;

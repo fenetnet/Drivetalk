@@ -728,6 +728,9 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   Future<Map<String, num?>> appStats(int days) async {
+    if (!server.owners.contains(_uid)) {
+      throw const RealBackendException('not_owner');
+    }
     final since = server.now().subtract(Duration(days: days));
     final recent = [
       for (final o in server.offers.values)
@@ -1145,7 +1148,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 22;
+  int schema = 23;
 
   @override
   Future<int> schemaVersion() async => schema;

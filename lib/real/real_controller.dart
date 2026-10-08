@@ -407,7 +407,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 22;
+const kRequiredSchema = 23;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -2108,8 +2108,19 @@ class RealController extends Notifier<RealState> {
           ? await _backend.ownerReports()
           : await _backend.ownerFeedback();
     } on RealBackendException catch (e) {
-      _setError(e.code);
+      _notOwner(e);
       return null;
+    }
+  }
+
+  /// The server doesn't know this account as the owner (e.g. the code was
+  /// entered before the server could check it): lock, so entering the
+  /// code again registers it.
+  void _notOwner(RealBackendException e) {
+    if (e.code == 'not_owner') {
+      lockAdmin();
+    } else {
+      _setError(e.code);
     }
   }
 
@@ -2118,7 +2129,7 @@ class RealController extends Notifier<RealState> {
     try {
       return await _backend.appStats(days);
     } on RealBackendException catch (e) {
-      _setError(e.code);
+      _notOwner(e);
       return null;
     }
   }

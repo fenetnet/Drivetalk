@@ -1387,7 +1387,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get statsTitle => 'מספרים';
 
   @override
-  String get statsFailed => 'לא הצלחנו לטעון. אולי השרת צריך עדכון.';
+  String get statsFailed =>
+      'לא הצלחנו לטעון. אם זה חוזר, צריך להכניס שוב את קוד הניהול (לחיצה ארוכה על \"בדיקת עדכון\").';
 
   @override
   String get statsWeek => '7 ימים';
@@ -1508,11 +1509,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get statsNotesFailed =>
-      'אין גישה. צריך שהשרת יתעדכן, ולהכניס שוב את קוד הניהול (הגדרות ← ניהול).';
+      'אין גישה. צריך להכניס שוב את קוד הניהול: הגדרות ← לחיצה ארוכה על \"בדיקת עדכון\".';
 
   @override
   String get firstRunRoutineChangeTime => 'לשנות שעה';
 
   @override
   String get inCall => 'בשיחה';
+
+  @override
+  String get close => 'סגירה';
 }

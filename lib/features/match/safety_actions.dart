@@ -43,6 +43,8 @@ Future<void> showReportSheet(
   final result = await showModalBottomSheet<(ReportReason, bool)>(
     context: context,
     showDragHandle: true,
+    // Full height when needed and scrollable: "send" is always reachable.
+    isScrollControlled: true,
     builder: (c) => _ReportSheet(person: person),
   );
   if (result != null) await onReport(result.$1, result.$2);
@@ -71,7 +73,7 @@ class _ReportSheetState extends State<_ReportSheet> {
       ReportReason.other: l.reportOther,
     };
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,

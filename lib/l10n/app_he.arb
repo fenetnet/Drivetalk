@@ -748,7 +748,7 @@
   "firstRunRoutineEvening": "ערב · {time} · בדרך הביתה",
   "firstRunRoutineNone": "לא קבוע",
   "statsTitle": "מספרים",
-  "statsFailed": "לא הצלחנו לטעון. אולי השרת צריך עדכון.",
+  "statsFailed": "לא הצלחנו לטעון. אם זה חוזר, צריך להכניס שוב את קוד הניהול (לחיצה ארוכה על \"בדיקת עדכון\").",
   "statsWeek": "7 ימים",
   "statsMonth": "30 ימים",
   "statsUsers": "משתמשים (סה״כ)",
@@ -806,7 +806,7 @@
   "statsReportsTitle": "דיווחים אחרונים",
   "statsFeedbackTitle": "משובים אחרונים",
   "statsNotesEmpty": "עוד אין כאן כלום",
-  "statsNotesFailed": "אין גישה. צריך שהשרת יתעדכן, ולהכניס שוב את קוד הניהול (הגדרות ← ניהול).",
+  "statsNotesFailed": "אין גישה. צריך להכניס שוב את קוד הניהול: הגדרות ← לחיצה ארוכה על \"בדיקת עדכון\".",
   "@firstRunRoutineMorning": {
     "placeholders": {
       "time": {
@@ -825,5 +825,6 @@
   "inCall": "בשיחה",
   "@inCall": {
     "description": "A friend who is free but on a call right now"
-  }
+  },
+  "close": "סגירה"
 }

@@ -176,13 +176,61 @@ class _NotesScreen extends ConsumerWidget {
             return '${d.day}/${d.month} ${two(d.hour)}:${two(d.minute)}';
           }
 
+          // A report's reason in words ("harassment" → "הטרדה").
+          String body(OwnerNote n) {
+            if (!reports) return n.body;
+            return switch (n.body) {
+              'inappropriate' => l.reportInappropriate,
+              'harassment' => l.reportHarassment,
+              'spam' => l.reportSpam,
+              'underage' => l.reportUnderage,
+              'other' => l.reportOther,
+              _ => n.body,
+            };
+          }
+
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: notes.length,
             separatorBuilder: (_, _) => const Divider(),
             itemBuilder: (_, i) => ListTile(
-              title: Text(notes[i].body),
+              title: Text(
+                body(notes[i]),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
               subtitle: Text('${notes[i].title} · ${when(notes[i].at)}'),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              // Tap: everything about it.
+              onTap: () => showDialog<void>(
+                context: context,
+                builder: (d) => AlertDialog(
+                  title: Text(notes[i].title),
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          when(notes[i].at),
+                          style: const TextStyle(color: AppColors.inkSoft),
+                        ),
+                        const SizedBox(height: 12),
+                        SelectableText(
+                          body(notes[i]),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(d),
+                      child: Text(l.close),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },

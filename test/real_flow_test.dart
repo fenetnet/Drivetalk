@@ -191,6 +191,10 @@ void main() {
     expect(me.s.notice?.kind, RealNoticeKind.later);
     expect(me.s.notice?.name, 'יוני');
     expect(currentOffer(me.s, now), isNull);
+    // Numbers are for the owner only.
+    expect(await me.c.appStats(7), isNull);
+    expect(me.c.unlockAdmin('97869786'), isTrue);
+    await pump();
     final stats = await me.c.appStats(7);
     expect(stats!['later'], 1);
     expect(stats['declined'], 1);
@@ -1252,7 +1256,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 22)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 23)'));
     });
 
     test(

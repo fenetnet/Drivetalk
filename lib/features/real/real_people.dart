@@ -426,8 +426,9 @@ Future<void> openTalkIntentSheet(
   final choice = await showModalBottomSheet<String>(
     context: context,
     showDragHandle: true,
+    isScrollControlled: true,
     builder: (sheet) => SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,

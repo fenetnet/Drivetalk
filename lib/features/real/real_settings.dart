@@ -432,8 +432,9 @@ class RealSettingsScreen extends ConsumerWidget {
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
       builder: (sheet) => SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,

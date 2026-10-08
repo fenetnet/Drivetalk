@@ -2359,7 +2359,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsFailed.
   ///
   /// In he, this message translates to:
-  /// **'לא הצלחנו לטעון. אולי השרת צריך עדכון.'**
+  /// **'לא הצלחנו לטעון. אם זה חוזר, צריך להכניס שוב את קוד הניהול (לחיצה ארוכה על \"בדיקת עדכון\").'**
   String get statsFailed;
 
   /// No description provided for @statsWeek.
@@ -2581,7 +2581,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsNotesFailed.
   ///
   /// In he, this message translates to:
-  /// **'אין גישה. צריך שהשרת יתעדכן, ולהכניס שוב את קוד הניהול (הגדרות ← ניהול).'**
+  /// **'אין גישה. צריך להכניס שוב את קוד הניהול: הגדרות ← לחיצה ארוכה על \"בדיקת עדכון\".'**
   String get statsNotesFailed;
 
   /// No description provided for @firstRunRoutineChangeTime.
@@ -2595,6 +2595,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בשיחה'**
   String get inCall;
+
+  /// No description provided for @close.
+  ///
+  /// In he, this message translates to:
+  /// **'סגירה'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate
