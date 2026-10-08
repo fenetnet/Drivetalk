@@ -1,8 +1,8 @@
-# DriveTalk — מדיניות פרטיות / Privacy Policy
+# DriveBond — מדיניות פרטיות / Privacy Policy
 
 _עודכן: 5 באוקטובר 2026_
 
-DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כששניהם פנויים. זו גרסת ניסיון.
+DriveBond היא אפליקציה שמחברת בין חברים לשיחה כששניהם פנויים. זו גרסת ניסיון.
 
 ## מה נשמר בשרת
 - **שם** שבחרת.
@@ -23,7 +23,7 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 ## אנשי קשר
 אם אישרת, האפליקציה קוראת **רק את מספרי הטלפון** מאנשי הקשר, בלי שמות.
 - המספרים מוצפנים בטלפון בהצפנה חד-כיוונית (SHA-256), ורק ההצפנה נשלחת.
-- **ספר הטלפונים לא נשמר:** השרת משווה ומוחק מיד את כל מי שלא משתמש ב-DriveTalk. נשמרים רק המספרים (המוצפנים) של אנשי קשר שכבר משתמשים באפליקציה, כדי לדעת מי שמר את מי.
+- **ספר הטלפונים לא נשמר:** השרת משווה ומוחק מיד את כל מי שלא משתמש ב-DriveBond. נשמרים רק המספרים (המוצפנים) של אנשי קשר שכבר משתמשים באפליקציה, כדי לדעת מי שמר את מי.
 - **מי מתחבר:** רק מי ששמור אצלך ושומר גם אותך מתחבר לבד. מי ששמור רק אצלך מקבל בקשה, ומתחבר רק אם אישר. אף אחד שלא בספר הטלפונים לא מחובר אליך מאנשי הקשר (רק דרך קישור הזמנה שאתה שלחת).
 - אפשר למחוק בכל רגע: הגדרות ← פרטיות. אם מבטלים את ההרשאה, האפליקציה מוחקת לבד.
 
@@ -52,9 +52,9 @@ DriveTalk היא אפליקציה שמחברת בין חברים לשיחה כש
 
 ---
 
-**English summary:** DriveTalk stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, an optional profile photo (visible only to your friends), and whether you are currently available (mode and expiry, deleted automatically).
+**English summary:** DriveBond stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, an optional profile photo (visible only to your friends), and whether you are currently available (mode and expiry, deleted automatically).
 - **Not collected:** no location or GPS, no call recording, no call log.
-- **Contacts (optional):** only phone numbers are read, and they are hashed on the device before upload. The server compares them and keeps only hashes that belong to DriveTalk users (to connect people who have each other saved); everything else is discarded immediately. Someone who only appears in my contacts gets a request and connects only if they accept.
+- **Contacts (optional):** only phone numbers are read, and they are hashed on the device before upload. The server compares them and keeps only hashes that belong to DriveBond users (to connect people who have each other saved); everything else is discarded immediately. Someone who only appears in my contacts gets a request and connects only if they accept.
 - **Driving detection (optional, off by default):** uses on-device motion sensors or the car's Bluetooth.
 - **Sharing:** data is not sold or shared. It is hosted on Supabase (EU).
 - **Voice:** on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.

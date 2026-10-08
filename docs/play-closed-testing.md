@@ -27,7 +27,7 @@
 
 ## אחרי 14 יום: השאלון של Google (טיוטות באנגלית)
 **How did you recruit testers?**
-> Friends, family and colleagues who commute or walk daily — the people DriveTalk is for. We recruited them in small groups who already know each other, because the app connects people who are both free at the same time.
+> Friends, family and colleagues who commute or walk daily — the people DriveBond is for. We recruited them in small groups who already know each other, because the app connects people who are both free at the same time.
 
 **How engaged were testers?**
 > Testers opened the app daily, marked themselves available during commutes (manually and through routines), received offers to talk and placed calls. We tracked active users, offers and completed calls (aggregate numbers only) through an in-app stats screen.

@@ -1,11 +1,11 @@
 {
-    "name": "DriveTalk",
-    "short_name": "DriveTalk",
+    "name": "DriveBond",
+    "short_name": "DriveBond",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#E07A5F",
     "theme_color": "#E07A5F",
-    "description": "DriveTalk prototype",
+    "description": "DriveBond prototype",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -131,7 +131,7 @@ class QuickTileService : TileService() {
         val tile = qsTile ?: return
         val store = DrivingStore(this)
         tile.state = if (store.freeNow) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-        tile.label = store.text("tileLabel", "DriveTalk")
+        tile.label = store.text("tileLabel", "DriveBond")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             tile.subtitle = QuickFree.label(this)
         }

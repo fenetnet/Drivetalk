@@ -160,7 +160,7 @@ class RoutineReceiver : BroadcastReceiver() {
             Notification.Builder(context)
         }
         val n = b.setSmallIcon(R.drawable.ic_stat_drivetalk)
-            .setContentTitle(store.text("routineTitle", "DriveTalk"))
+            .setContentTitle(store.text("routineTitle", "DriveBond"))
             .setContentText(store.text("routineBody", ""))
             .setAutoCancel(true)
             .setContentIntent(open)

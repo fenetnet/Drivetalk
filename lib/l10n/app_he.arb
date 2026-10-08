@@ -169,7 +169,7 @@
   "availableToEveryone": "כולם",
   "driverListening": "מקשיב… אפשר לומר \"כן\" או \"לא\"",
   "callWeAreDone": "סיימנו",
-  "noticeMicDenied": "אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.",
+  "noticeMicDenied": "אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.",
   "photoFromGallery": "מהגלריה",
   "photoFromCamera": "צילום",
   "photoRemove": "הסרה",
@@ -225,7 +225,7 @@
   "realCodeHint": "הדביקו כאן את הקישור או הקוד",
   "realCodeInvalid": "לא מצאנו קוד הזמנה בטקסט הזה",
   "realOpen": "פתיחה",
-  "realInviteMessage": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.",
+  "realInviteMessage": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond. כששנינו פנויים היא פשוט מציעה לנו לדבר.",
   "realInviteMessageNoSite": "להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}",
   "@realInviteMessageNoSite": {
     "placeholders": {
@@ -237,7 +237,7 @@
       }
     }
   },
-  "realInviteShareSubject": "הזמנה ל-DriveTalk",
+  "realInviteShareSubject": "הזמנה ל-DriveBond",
   "realInviteCopied": "ההזמנה הועתקה — אפשר להדביק בוואטסאפ",
   "realOfferTitle": "{gender, select, female{{name} פנויה עכשיו. רוצה לדבר?} male{{name} פנוי עכשיו. רוצה לדבר?} other{ל{name} יש זמן עכשיו. רוצה לדבר?}}",
   "@realOfferTitle": {
@@ -300,7 +300,7 @@
   },
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
   "realQuickCancelled": "החיבור בוטל",
-  "widgetTip": "אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג'טים ← DriveTalk.",
+  "widgetTip": "אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג'טים ← DriveBond.",
   "gotIt": "הבנתי",
   "realContactsAgain": "חיפוש שוב באנשי הקשר",
   "settingsGeneral": "כללי",
@@ -309,14 +309,14 @@
   "adminCode": "קוד",
   "adminWrong": "קוד שגוי",
   "adminLock": "לסגור את הניהול",
-  "updateAvailable": "יש גרסה חדשה של DriveTalk",
+  "updateAvailable": "יש גרסה חדשה של DriveBond",
   "updateNow": "לעדכן",
   "updateCheck": "בדיקת עדכון",
   "updateCurrent": "הגרסה שלך:",
   "updateNone": "יש לך את הגרסה האחרונה",
   "updateHow": "מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.",
   "realBgFailedTitle": "לא הצלחנו להדליק זמינות ברקע",
-  "realBgFailedBody": "הטלפון חסם את זה. פותחים את DriveTalk ולוחצים \"יש לי זמן\".",
+  "realBgFailedBody": "הטלפון חסם את זה. פותחים את DriveBond ולוחצים \"יש לי זמן\".",
   "routineHint": "נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?",
   "@routineHint": {
     "placeholders": {
@@ -353,7 +353,7 @@
   "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.",
   "realDeleteAccountGo": "למחוק",
   "realDeleteAccountDone": "החשבון והמידע נמחקו",
-  "realNotifPublic": "יש הצעה חדשה ב-DriveTalk",
+  "realNotifPublic": "יש הצעה חדשה ב-DriveBond",
   "firstRunContactsTitle": "נראה מי מהאנשים שלך כבר כאן",
   "firstRunContactsBody": "רק מספרים, מוצפנים. שמות לא יוצאים מהטלפון.",
   "firstRunContactsGo": "לחפש באנשי הקשר",
@@ -365,11 +365,11 @@
       }
     }
   },
-  "firstRunNoneTitle": "כדי לנסות את DriveTalk צריך לפחות חבר אחד",
+  "firstRunNoneTitle": "כדי לנסות את DriveBond צריך לפחות חבר אחד",
   "firstRunNoneBody": "שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.",
   "firstRunLater": "אחר כך",
   "firstRunMagicTitle": "ככה זה עובד",
-  "firstRunMagicBody": "כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.",
+  "firstRunMagicBody": "כששניכם פנויים, DriveBond מציעה לכם לדבר. לא צריך לתאם מראש.",
   "firstRunMagicGo": "יאללה",
   "routineNameToWork": "בדרך לעבודה",
   "routineNameHome": "בדרך הביתה",
@@ -551,7 +551,7 @@
   },
   "realNotifChannelStatus": "זמינות בנסיעה",
   "realNotifChannelOffers": "חבר פנוי לשיחה",
-  "realNotifStatusTitle": "DriveTalk · זמינות לשיחה בנסיעה",
+  "realNotifStatusTitle": "DriveBond · זמינות לשיחה בנסיעה",
   "realNotifStatusBody": "נסיעה טובה! נודיע כשחבר פנוי.",
   "realAutoDriving": "זמינות אוטומטית בנסיעה",
   "realAutoDrivingBody": "כשהטלפון מזהה שהוא ברכב, החברים יכולים לקבל הצעה לדבר איתך. נכבה לבד בסוף הנסיעה. בלי GPS ובלי מיקום.",
@@ -560,7 +560,7 @@
   "realAutoDrivingDialogBody": "הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
   "realAutoDrivingOn": "מעולה. בנסיעה הבאה הזמינות תידלק לבד.",
   "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
-  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.",
+  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.",
   "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.",
   "realStatusAutoDriving": "זיהוי נסיעה",
   "realAutoOn": "פעיל",
@@ -627,7 +627,7 @@
   },
   "realContactsNone": "עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.",
   "realContactsNoPermission": "בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.",
-  "realNotifManualTitle": "DriveTalk · זמינות לשיחה",
+  "realNotifManualTitle": "DriveBond · זמינות לשיחה",
   "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.",
   "realOfferName": "{gender, select, female{{name} פנויה עכשיו} male{{name} פנוי עכשיו} other{ל{name} יש זמן עכשיו}}",
   "@realOfferName": {
@@ -672,7 +672,7 @@
   "realGroupAccount": "החשבון שלי",
   "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
   "realWelcomeSub": "כששניכם פנויים באותו רגע — נציע לכם לדבר.",
-  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}",
+  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}",
   "@realInviteSimple": {
     "placeholders": {
       "apkUrl": {
@@ -708,7 +708,7 @@
     }
   },
   "realRoutinesIntro": "בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.",
-  "realRoutineNotifTitle": "DriveTalk · השגרה שלך",
+  "realRoutineNotifTitle": "DriveBond · השגרה שלך",
   "realRoutineNotifBody": "הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.",
   "done": "סיום",
   "ratingNever": "לא להציע",
@@ -740,7 +740,7 @@
     }
   },
   "backgroundTitle": "שההצעות יגיעו גם כשהאפליקציה סגורה",
-  "backgroundBody": "חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.",
+  "backgroundBody": "חיסכון הסוללה של הטלפון עלול לעצור את DriveBond ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.",
   "backgroundAllow": "לאפשר פעולה ברקע",
   "notNowShort": "לא עכשיו",
   "firstRunRoutineTitle": "מתי בדרך כלל יש לך זמן בדרך?",
@@ -771,7 +771,7 @@
   "notificationsOnBody": "דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.",
   "notificationsOffBody": "כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.",
   "statsReports": "דיווחים",
-  "realInviteStore": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}",
+  "realInviteStore": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}",
   "@realInviteStore": {
     "placeholders": {
       "url": {
@@ -779,7 +779,7 @@
       }
     }
   },
-  "inactiveTitle": "{name}: בלי כניסה ל-DriveTalk כבר שבוע",
+  "inactiveTitle": "{name}: בלי כניסה ל-DriveBond כבר שבוע",
   "@inactiveTitle": {
     "placeholders": {
       "name": {

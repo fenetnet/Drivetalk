@@ -1,4 +1,4 @@
-## התקנת DriveTalk
+## התקנת DriveBond
 
 1. למטה בדף ← **drivetalk-prototype.apk**
 2. פותחים את הקובץ שירד ← **התקנה**

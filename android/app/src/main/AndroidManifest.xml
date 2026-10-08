@@ -26,7 +26,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
     <application
-        android:label="DriveTalk"
+        android:label="DriveBond"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -99,7 +99,7 @@
             android:name=".QuickTileService"
             android:exported="true"
             android:icon="@drawable/ic_stat_drivetalk"
-            android:label="DriveTalk"
+            android:label="DriveBond"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE"/>

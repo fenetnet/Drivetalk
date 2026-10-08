@@ -613,7 +613,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeMicDenied.
   ///
   /// In he, this message translates to:
-  /// **'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.'**
+  /// **'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.'**
   String get noticeMicDenied;
 
   /// No description provided for @photoFromGallery.
@@ -865,7 +865,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteMessage.
   ///
   /// In he, this message translates to:
-  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond. כששנינו פנויים היא פשוט מציעה לנו לדבר.'**
   String get realInviteMessage;
 
   /// No description provided for @realInviteMessageNoSite.
@@ -877,7 +877,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteShareSubject.
   ///
   /// In he, this message translates to:
-  /// **'הזמנה ל-DriveTalk'**
+  /// **'הזמנה ל-DriveBond'**
   String get realInviteShareSubject;
 
   /// No description provided for @realInviteCopied.
@@ -991,7 +991,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetTip.
   ///
   /// In he, this message translates to:
-  /// **'אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג\'טים ← DriveTalk.'**
+  /// **'אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג\'טים ← DriveBond.'**
   String get widgetTip;
 
   /// No description provided for @gotIt.
@@ -1045,7 +1045,7 @@ abstract class AppLocalizations {
   /// No description provided for @updateAvailable.
   ///
   /// In he, this message translates to:
-  /// **'יש גרסה חדשה של DriveTalk'**
+  /// **'יש גרסה חדשה של DriveBond'**
   String get updateAvailable;
 
   /// No description provided for @updateNow.
@@ -1087,7 +1087,7 @@ abstract class AppLocalizations {
   /// No description provided for @realBgFailedBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון חסם את זה. פותחים את DriveTalk ולוחצים \"יש לי זמן\".'**
+  /// **'הטלפון חסם את זה. פותחים את DriveBond ולוחצים \"יש לי זמן\".'**
   String get realBgFailedBody;
 
   /// No description provided for @routineHint.
@@ -1189,7 +1189,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotifPublic.
   ///
   /// In he, this message translates to:
-  /// **'יש הצעה חדשה ב-DriveTalk'**
+  /// **'יש הצעה חדשה ב-DriveBond'**
   String get realNotifPublic;
 
   /// No description provided for @firstRunContactsTitle.
@@ -1219,7 +1219,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunNoneTitle.
   ///
   /// In he, this message translates to:
-  /// **'כדי לנסות את DriveTalk צריך לפחות חבר אחד'**
+  /// **'כדי לנסות את DriveBond צריך לפחות חבר אחד'**
   String get firstRunNoneTitle;
 
   /// No description provided for @firstRunNoneBody.
@@ -1243,7 +1243,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunMagicBody.
   ///
   /// In he, this message translates to:
-  /// **'כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.'**
+  /// **'כששניכם פנויים, DriveBond מציעה לכם לדבר. לא צריך לתאם מראש.'**
   String get firstRunMagicBody;
 
   /// No description provided for @firstRunMagicGo.
@@ -1801,7 +1801,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotifStatusTitle.
   ///
   /// In he, this message translates to:
-  /// **'DriveTalk · זמינות לשיחה בנסיעה'**
+  /// **'DriveBond · זמינות לשיחה בנסיעה'**
   String get realNotifStatusTitle;
 
   /// No description provided for @realNotifStatusBody.
@@ -1855,7 +1855,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingNoPermission.
   ///
   /// In he, this message translates to:
-  /// **'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.'**
+  /// **'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.'**
   String get realAutoDrivingNoPermission;
 
   /// No description provided for @realAutoDrivingFailed.
@@ -2047,7 +2047,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotifManualTitle.
   ///
   /// In he, this message translates to:
-  /// **'DriveTalk · זמינות לשיחה'**
+  /// **'DriveBond · זמינות לשיחה'**
   String get realNotifManualTitle;
 
   /// No description provided for @realNotifManualBody.
@@ -2131,7 +2131,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteSimple.
   ///
   /// In he, this message translates to:
-  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}'**
   String realInviteSimple(String apkUrl, String guideUrl);
 
   /// No description provided for @realQuickOff.
@@ -2203,7 +2203,7 @@ abstract class AppLocalizations {
   /// No description provided for @realRoutineNotifTitle.
   ///
   /// In he, this message translates to:
-  /// **'DriveTalk · השגרה שלך'**
+  /// **'DriveBond · השגרה שלך'**
   String get realRoutineNotifTitle;
 
   /// No description provided for @realRoutineNotifBody.
@@ -2311,7 +2311,7 @@ abstract class AppLocalizations {
   /// No description provided for @backgroundBody.
   ///
   /// In he, this message translates to:
-  /// **'חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.'**
+  /// **'חיסכון הסוללה של הטלפון עלול לעצור את DriveBond ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.'**
   String get backgroundBody;
 
   /// No description provided for @backgroundAllow.
@@ -2497,13 +2497,13 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteStore.
   ///
   /// In he, this message translates to:
-  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}'**
+  /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}'**
   String realInviteStore(String url);
 
   /// No description provided for @inactiveTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name}: בלי כניסה ל-DriveTalk כבר שבוע'**
+  /// **'{name}: בלי כניסה ל-DriveBond כבר שבוע'**
   String inactiveTitle(String name);
 
   /// No description provided for @inactiveBody.

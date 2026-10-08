@@ -77,7 +77,7 @@ object DrivingNotifications {
         val store = DrivingStore(context)
         return builder(context, CHANNEL_STATUS)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
-            .setContentTitle(store.text(if (manual) "manualTitle" else "statusTitle", "DriveTalk"))
+            .setContentTitle(store.text(if (manual) "manualTitle" else "statusTitle", "DriveBond"))
             .setContentText(store.text(if (manual) "manualBody" else "statusBody", ""))
             .setOngoing(true)
             .setContentIntent(openApp(context, 1))
@@ -138,10 +138,10 @@ object DrivingNotifications {
                 ).build(),
             )
         }
-        // Lock screen: no name, just "a new suggestion in DriveTalk".
+        // Lock screen: no name, just "a new suggestion in DriveBond".
         val public = builder(context, CHANNEL_OFFERS)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
-            .setContentTitle(store.text("publicOffer", "DriveTalk"))
+            .setContentTitle(store.text("publicOffer", "DriveBond"))
             .build()
         b.setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(public)
@@ -157,13 +157,13 @@ object DrivingNotifications {
             .notify(ID_OFFER_BASE + (offer.id.hashCode() and 0xff), n)
     }
 
-    /** "Couldn't turn on availability in the background — open DriveTalk." */
+    /** "Couldn't turn on availability in the background — open DriveBond." */
     fun showProblem(context: Context) {
         ensureChannels(context)
         val store = DrivingStore(context)
         val n = builder(context, CHANNEL_STATUS)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
-            .setContentTitle(store.text("bgFailedTitle", "DriveTalk"))
+            .setContentTitle(store.text("bgFailedTitle", "DriveBond"))
             .setContentText(store.text("bgFailedBody", ""))
             .setAutoCancel(true)
             .setContentIntent(openApp(context, 3))

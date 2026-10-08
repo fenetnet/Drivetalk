@@ -131,7 +131,7 @@ jobs:
           gh release create prototype drivetalk-prototype.apk drivetalk.aab version.json \
             --prerelease \
             --target "${{ github.sha }}" \
-            --title "DriveTalk — גרסת ניסיון" \
+            --title "DriveBond — גרסת ניסיון" \
             --notes-file docs/install-guide-release.md
           # Sometimes GitHub leaves it as an unpublished draft (then the link
           # and "new version" check are 404). Publish explicitly and verify.

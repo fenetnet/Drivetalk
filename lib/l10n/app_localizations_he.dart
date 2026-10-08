@@ -316,7 +316,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get noticeMicDenied =>
-      'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות. הכפתורים תמיד עובדים.';
+      'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.';
 
   @override
   String get photoFromGallery => 'מהגלריה';
@@ -465,7 +465,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realInviteMessage =>
-      'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk. כששנינו פנויים היא פשוט מציעה לנו לדבר.';
+      'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond. כששנינו פנויים היא פשוט מציעה לנו לדבר.';
 
   @override
   String realInviteMessageNoSite(String apkUrl, String code) {
@@ -473,7 +473,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realInviteShareSubject => 'הזמנה ל-DriveTalk';
+  String get realInviteShareSubject => 'הזמנה ל-DriveBond';
 
   @override
   String get realInviteCopied => 'ההזמנה הועתקה — אפשר להדביק בוואטסאפ';
@@ -559,7 +559,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get widgetTip =>
-      'אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג\'טים ← DriveTalk.';
+      'אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג\'טים ← DriveBond.';
 
   @override
   String get gotIt => 'הבנתי';
@@ -586,7 +586,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get adminLock => 'לסגור את הניהול';
 
   @override
-  String get updateAvailable => 'יש גרסה חדשה של DriveTalk';
+  String get updateAvailable => 'יש גרסה חדשה של DriveBond';
 
   @override
   String get updateNow => 'לעדכן';
@@ -608,7 +608,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realBgFailedBody =>
-      'הטלפון חסם את זה. פותחים את DriveTalk ולוחצים \"יש לי זמן\".';
+      'הטלפון חסם את זה. פותחים את DriveBond ולוחצים \"יש לי זמן\".';
 
   @override
   String routineHint(String day, String time) {
@@ -665,7 +665,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realDeleteAccountDone => 'החשבון והמידע נמחקו';
 
   @override
-  String get realNotifPublic => 'יש הצעה חדשה ב-DriveTalk';
+  String get realNotifPublic => 'יש הצעה חדשה ב-DriveBond';
 
   @override
   String get firstRunContactsTitle => 'נראה מי מהאנשים שלך כבר כאן';
@@ -689,7 +689,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get firstRunNoneTitle => 'כדי לנסות את DriveTalk צריך לפחות חבר אחד';
+  String get firstRunNoneTitle => 'כדי לנסות את DriveBond צריך לפחות חבר אחד';
 
   @override
   String get firstRunNoneBody =>
@@ -703,7 +703,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunMagicBody =>
-      'כששניכם פנויים, DriveTalk מציעה לכם לדבר. לא צריך לתאם מראש.';
+      'כששניכם פנויים, DriveBond מציעה לכם לדבר. לא צריך לתאם מראש.';
 
   @override
   String get firstRunMagicGo => 'יאללה';
@@ -1036,7 +1036,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realNotifChannelOffers => 'חבר פנוי לשיחה';
 
   @override
-  String get realNotifStatusTitle => 'DriveTalk · זמינות לשיחה בנסיעה';
+  String get realNotifStatusTitle => 'DriveBond · זמינות לשיחה בנסיעה';
 
   @override
   String get realNotifStatusBody => 'נסיעה טובה! נודיע כשחבר פנוי.';
@@ -1066,7 +1066,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realAutoDrivingNoPermission =>
-      'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveTalk ‹ הרשאות.';
+      'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.';
 
   @override
   String get realAutoDrivingFailed => 'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.';
@@ -1177,7 +1177,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.';
 
   @override
-  String get realNotifManualTitle => 'DriveTalk · זמינות לשיחה';
+  String get realNotifManualTitle => 'DriveBond · זמינות לשיחה';
 
   @override
   String get realNotifManualBody => 'נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.';
@@ -1238,7 +1238,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realInviteSimple(String apkUrl, String guideUrl) {
-    return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: $apkUrl\nעזרה בהתקנה: $guideUrl';
+    return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: $apkUrl\nעזרה בהתקנה: $guideUrl';
   }
 
   @override
@@ -1295,7 +1295,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.';
 
   @override
-  String get realRoutineNotifTitle => 'DriveTalk · השגרה שלך';
+  String get realRoutineNotifTitle => 'DriveBond · השגרה שלך';
 
   @override
   String get realRoutineNotifBody =>
@@ -1358,7 +1358,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get backgroundBody =>
-      'חיסכון הסוללה של הטלפון עלול לעצור את DriveTalk ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.';
+      'חיסכון הסוללה של הטלפון עלול לעצור את DriveBond ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.';
 
   @override
   String get backgroundAllow => 'לאפשר פעולה ברקע';
@@ -1460,12 +1460,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realInviteStore(String url) {
-    return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveTalk — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: $url';
+    return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: $url';
   }
 
   @override
   String inactiveTitle(String name) {
-    return '$name: בלי כניסה ל-DriveTalk כבר שבוע';
+    return '$name: בלי כניסה ל-DriveBond כבר שבוע';
   }
 
   @override

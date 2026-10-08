@@ -3,7 +3,7 @@
 כל מה שצריך להעתיק ל-Play Console. התמונות נמצאות בתיקייה `store_assets/`.
 
 ## פרטי האפליקציה
-- **שם:** DriveTalk
+- **שם:** DriveBond – לדבר עם חברים על הדרך (עד 30 תווים; שם החבילה נשאר app.drivetalk.drivetalk)
 - **שפת ברירת מחדל:** עברית (he-IL)
 - **אפליקציה או משחק:** אפליקציה
 - **חינם או בתשלום:** חינם
@@ -14,12 +14,12 @@
 
 ## דף החנות
 **תיאור קצר (עד 80 תווים):**
-> כששניכם פנויים — DriveTalk מציעה לכם לדבר. בלי לתאם מראש.
+> כששניכם פנויים — DriveBond מציעה לכם לדבר. בלי לתאם מראש.
 
 **תיאור מלא:**
-> DriveTalk הופכת זמן מת — נסיעה, הליכה, הפסקה — לשיחה עם מישהו שאתם כבר מכירים.
+> DriveBond הופכת זמן מת — נסיעה, הליכה, הפסקה — לשיחה עם מישהו שאתם כבר מכירים.
 >
-> • מסמנים "יש לי זמן", ו-DriveTalk מציעה חבר שגם הוא פנוי עכשיו.
+> • מסמנים "יש לי זמן", ו-DriveBond מציעה חבר שגם הוא פנוי עכשיו.
 > • שיחה מתחילה רק אם שניכם אומרים כן — ואז הטלפון מחייג מיד, בשיחה רגילה.
 > • בנסיעה: מסך פשוט עם כפתורים גדולים, והקראה בקול.
 > • "אשמח לדבר" — סימון שקט ליד חבר, שמקדם אותו כשתהיו פנויים.
@@ -67,7 +67,7 @@
 | Personal info → Name | כן | חובה | App functionality, Account management |
 | Personal info → Phone number | כן | רשות | App functionality (חברים מוצאים זה את זה, שיחה רגילה) |
 | Photos and videos → Photos | כן | רשות | App functionality (תמונת פרופיל) |
-| Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, ונשמרים רק של מי שמשתמש ב-DriveTalk; שמות לא יוצאים מהטלפון) |
+| Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, ונשמרים רק של מי שמשתמש ב-DriveBond; שמות לא יוצאים מהטלפון) |
 | App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד; דירוג 0–5 לחברים; "פעיל לאחרונה" בימים) |
 | App activity → Other user-generated content | כן | רשות | App functionality (משוב ודיווח שהמשתמש כותב ושולח) |
 | Device or other IDs | כן | רשות | App functionality (זמינות ברקע) |
@@ -82,7 +82,7 @@
 **Activity recognition:** זיהוי נסיעה (רשות, כבוי כברירת מחדל). בלי מיקום.
 
 **Ignore battery optimizations (REQUEST_IGNORE_BATTERY_OPTIMIZATIONS), אם שואלים:**
-> DriveTalk's core function is telling the user, while driving with the app closed, that a friend is free to talk — via a short foreground service during an availability window the user started (or opt-in driving detection). Aggressive battery optimization on many devices stops this service mid-trip, so the user is asked once, with an explanation, to exempt the app. It is only asked from users who use background availability.
+> DriveBond's core function is telling the user, while driving with the app closed, that a friend is free to talk — via a short foreground service during an availability window the user started (or opt-in driving detection). Aggressive battery optimization on many devices stops this service mid-trip, so the user is asked once, with an explanation, to exempt the app. It is only asked from users who use background availability.
 
 **Contacts:** מוצג מסך הסבר לפני הבקשה. נקראים רק מספרים, והם מוצפנים בטלפון.
 

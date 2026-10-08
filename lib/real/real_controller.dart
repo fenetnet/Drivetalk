@@ -974,7 +974,7 @@ class RealController extends Notifier<RealState> {
     'manualTitle': _l.realNotifManualTitle,
     'quickOff': _l.realQuickOff,
     'quickOn': _l.realQuickOn,
-    'tileLabel': 'DriveTalk',
+    'tileLabel': 'DriveBond',
     'routineTitle': _l.realRoutineNotifTitle,
     'routineBody': _l.realRoutineNotifBody,
     'manualBody': _l.realNotifManualBody,
@@ -2206,7 +2206,7 @@ class RealController extends Notifier<RealState> {
               '${t.minute.toString().padLeft(2, '0')}:'
               '${t.second.toString().padLeft(2, '0')}';
     return [
-      'DriveTalk — test info',
+      'DriveBond — test info',
       'version: ${ref.read(appVersionProvider)}',
       'mode: real',
       'server: ${BackendConfig.backendHost}',

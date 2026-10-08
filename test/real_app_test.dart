@@ -75,7 +75,7 @@ void main() {
       await t.tap(find.text('לחפש באנשי הקשר'));
       await pumpFor(t, 500);
       expect(
-        find.text('כדי לנסות את DriveTalk צריך לפחות חבר אחד'),
+        find.text('כדי לנסות את DriveBond צריך לפחות חבר אחד'),
         findsOneWidget,
       );
       await t.tap(find.text('אחר כך'));

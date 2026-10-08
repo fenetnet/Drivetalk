@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
-<title>הזמנה ל-DriveTalk</title>
+<title>הזמנה ל-DriveBond</title>
 <link rel="stylesheet" href="style.css" id="css">
 <script>
   // Works both at the site root (Cloudflare Pages) and under /<repo>/ (GitHub Pages).
@@ -20,8 +20,8 @@
 <body>
 <main>
   <div class="logo">🚗💬</div>
-  <h1 id="title">קיבלת הזמנה ל-DriveTalk</h1>
-  <p class="lead">כששניכם פנויים, DriveTalk פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
+  <h1 id="title">קיבלת הזמנה ל-DriveBond</h1>
+  <p class="lead">כששניכם פנויים, DriveBond פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
   <p class="small">אחרי ההתקנה: אם אתם שמורים זה אצל זה בטלפון, תתחברו לבד. שיחה מתחילה רק אם שניכם אומרים כן.</p>
 
   <section class="card" id="has-app">
@@ -59,7 +59,7 @@
   // Who invited me (their own first name, put in the link by their app).
   var from = new URLSearchParams(location.search).get('from');
   if (from && from.length <= 40) {
-    document.getElementById('title').textContent = from + ' הזמין/ה אותך ל-DriveTalk';
+    document.getElementById('title').textContent = from + ' הזמין/ה אותך ל-DriveBond';
   }
 
   function start() {
