@@ -26,12 +26,15 @@ Future<void> main() async {
   final server = MemoryServer();
   final me = MemoryRealBackend(server);
   final store = MemoryLocalStore()
-    ..values['real.contactsSyncedAt'] = DateTime.now().toIso8601String();
+    ..values['real.contactsSyncedAt'] = DateTime.now().toIso8601String()
+    ..values['real.widgetTip.v1'] = 'seen';
 
+  final friends = <String, MemoryRealBackend>{};
   Future<MemoryRealBackend> friend(String name, Gender g, String phone) async {
     final b = MemoryRealBackend(server);
     await b.signIn(name, g);
     await b.setMyPhone(phone);
+    friends[b.userId!] = b;
     return b;
   }
 
@@ -41,10 +44,18 @@ Future<void> main() async {
     final yoni = await friend('יוני', Gender.male, '0532222222');
     final mom = await friend('אמא', Gender.female, '0543333333');
     final dana = await friend('דנה', Gender.female, '0504444444');
-    for (final f in [yoni, mom, dana]) {
+    // Friends who aren't free right now (made-up names).
+    final omer = await friend('עומר', Gender.male, '0525555555');
+    final shira = await friend('שירה', Gender.female, '0536666666');
+    for (final f in [yoni, mom, dana, omer, shira]) {
       final inv = await me.createInvitation();
       await f.acceptInvitation(inv.token);
     }
+    await me.setRating(mom.userId!, 5);
+    await me.setRating(yoni.userId!, 4);
+    await me.setRating(dana.userId!, 4);
+    await me.setRating(omer.userId!, 3);
+    await me.setRating(shira.userId!, 2);
     await me.saveCircle(
       RealCircle(id: '', name: 'משפחה', quick: true, memberIds: {mom.userId!}),
     );
@@ -101,12 +112,10 @@ Future<void> main() async {
   }
   if ((screen == 'connected' || screen == 'feedback') && offer != null) {
     await c.respond(offer, accept: true);
-    final other = server.offers.values.first;
-    other
-      ..status = OfferStatus.accepted
-      ..aAccepted = true
-      ..bAccepted = true;
+    final otherId = offer.userA == me.userId ? offer.userB : offer.userA;
+    await friends[otherId]!.answerOffer(offer.id, accept: true);
     await c.refresh();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
     if (screen == 'feedback') c.finishCall();
   }
 
