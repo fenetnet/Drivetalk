@@ -8,7 +8,7 @@
 - **אפליקציה או משחק:** אפליקציה
 - **חינם או בתשלום:** חינם
 - **שם החבילה ב-Google Play (נרשם ב-Play Console, לתמיד):** `app.drivetalk.drivetalk` (כמו ה-APK לבודקים). ברישום הראשון ב-Play Console נרשם בטעות `app.drietalk.drivetalk`, ולכן פותחים אפליקציה חדשה בשם הנכון.
-- **קישורי הזמנה שנפתחים ישר באפליקציה:** כדי שיעבדו גם בגרסת החנות, צריך להוסיף ל-`invite_site/.well-known/assetlinks.json` את טביעת טביעת האצבע SHA-256 של מפתח החתימה של Google (Play Console ← Test and release ← App integrity). עד אז הקישור נפתח בדפדפן, ומשם "פתיחה באפליקציה" או קוד.
+- **קישורי הזמנה שנפתחים ישר באפליקציה:** כדי שיעבדו גם בגרסת החנות, צריך להוסיף ל-`invite_site/.well-known/assetlinks.json` את טביעת האצבע SHA-256 של מפתח החתימה של Google (Play Console ← Test and release ← App integrity). עד אז הקישור נפתח בדפדפן, ומשם "פתיחה באפליקציה" או קוד.
 - **הקובץ להעלאה:** `drivetalk.aab` מדף ההורדה. הוא נבנה לבד עם כל גרסה, ומספר הגרסה עולה לבד.
 - **חתימה:** "Play App Signing". Google מנהלת את מפתח החתימה, והמפתח שלנו משמש רק להעלאה.
 
@@ -59,21 +59,24 @@
 - **האם אוספים מידע?** כן.
 - **האם משתפים מידע עם צד שלישי?** לא. מספר הטלפון נמסר לחבר רק כששניהם אישרו שיחה. זו העברה ביוזמת המשתמש, ולא "שיתוף".
 - **מוצפן בהעברה:** כן (HTTPS).
-- **אפשר לבקש מחיקה:** כן. באפליקציה: הגדרות ← "מחק את החשבון והמידע שלי". הקישור לאינטרנט: מדיניות הפרטיות.
+- **אפשר לבקש מחיקה:** כן. באפליקציה: הגדרות ← "למחוק את החשבון והמידע שלי". הקישור לאינטרנט (Delete account URL): הקישור של מדיניות הפרטיות. יש בו סעיף מחיקה, ומייל לבקשה.
+- **שירות השרת (Supabase):** מעבד את המידע בשבילנו, ולכן לא נחשב "שיתוף עם צד שלישי".
 
 | סוג מידע (בטופס) | נאסף | רשות או חובה | למה |
 | --- | --- | --- | --- |
 | Personal info → Name | כן | חובה | App functionality, Account management |
 | Personal info → Phone number | כן | רשות | App functionality (חברים מוצאים זה את זה, שיחה רגילה) |
 | Photos and videos → Photos | כן | רשות | App functionality (תמונת פרופיל) |
-| Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, למציאת חברים) |
-| App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד) |
+| Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, ונשמרים רק של מי שמשתמש ב-DriveTalk; שמות לא יוצאים מהטלפון) |
+| App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד; דירוג 0–5 לחברים; "פעיל לאחרונה" בימים) |
+| App activity → Other user-generated content | כן | רשות | App functionality (משוב ודיווח שהמשתמש כותב ושולח) |
 | Device or other IDs | כן | רשות | App functionality (זמינות ברקע) |
 | Location | לא | — | — |
 | Audio | לא | — | זיהוי הדיבור נעשה בטלפון או בשירות של הטלפון. שום דבר לא נשמר אצלנו |
 
 ## הרשאות מיוחדות (אם Play Console שואל)
-**Foreground service (dataSync):**
+**Foreground service (dataSync):** Google עשויה לבקש גם סרטון קצר (קישור ל-YouTube, אפשר "לא רשום" / Unlisted). מספיקה הקלטת מסך של 20–30 שניות: לוחצים "יש לי זמן", יוצאים מהאפליקציה, רואים את ההתראה הקבועה, ולוחצים "עצור".
+
 > When the user turns on availability (the "I'm free" button, the home-screen widget, a routine they set, or the opt-in driving detection), a short foreground service checks every 10 seconds whether a friend is also free and shows a notification "X is free — talk?". It stops when the availability ends (it always has an end time) or when the user taps Stop. The notification is visible the whole time.
 
 **Activity recognition:** זיהוי נסיעה (רשות, כבוי כברירת מחדל). בלי מיקום.
@@ -85,4 +88,10 @@
 
 ## חשוב לדעת
 - **חברים שהתקינו מהקישור:** צריך להסיר את הגרסה הזו לפני ההתקנה מהחנות. החתימה של Google שונה, ולכן החנות לא יכולה לעדכן מעליה.
-- **מה קורה אחרי ההסרה:** נוצר משתמש חדש. החברים מאנשי הקשר מתחברים שוב לבד, אבל מעגלים ו"אשמח לדבר" לא נשמרים.
+- **מה קורה אחרי ההסרה:** נוצר משתמש חדש. מוסיפים שוב חברים מאנשי הקשר בכמה לחיצות. דירוגים, מעגלים ו"אשמח לדבר" לא עוברים.
+- **שאר הטפסים:** Government apps, Financial features, Health, News: הכל No.
+
+## עדכונים דרך Google Play
+- **מי שהתקין מהחנות:** מקבל עדכון אוטומטי (כמו כל אפליקציה) **אחרי שמעלים** את קובץ ה-AAB החדש למסלול ב-Play Console. ההעלאה עדיין ידנית: מורידים `drivetalk.aab` מדף ההורדה ← Play Console ← המסלול (פנימי או סגור) ← "יצירת גרסה חדשה" ← העלאה ← שמירה ← פרסום.
+- **בדיקה של Google:** בבדיקה פנימית העדכון זמין תוך דקות עד שעות. בבדיקה סגורה ובהפצה לכולם Google בודקת כל עדכון, מכמה שעות ועד כמה ימים.
+- **אפשר להפוך את ההעלאה לאוטומטית:** צריך "חשבון שירות" של Google Cloud. המפתח שלו נשמר כ-Secret ב-GitHub, לא בקוד. נעשה את זה כשהבעלים ירצה.
