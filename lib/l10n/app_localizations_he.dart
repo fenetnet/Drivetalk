@@ -574,9 +574,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get adminTitle => 'ניהול';
 
   @override
-  String get adminEnter => 'ניהול';
-
-  @override
   String get adminCode => 'קוד';
 
   @override

@@ -152,6 +152,9 @@ class RealSettingsScreen extends ConsumerWidget {
                       ? l.updateAvailable
                       : '${l.updateCurrent} ${ref.watch(appVersionProvider)}',
                 ),
+                // The owner's tools are hidden: a long press here asks for
+                // the owner's code (users and store reviewers never see it).
+                onLongPress: s.admin ? null : () => _askAdminCode(context, ref),
                 onTap: () async {
                   // Google Play build: the store page has the update.
                   if (BackendConfig.store) return openAppUpdate();
@@ -292,16 +295,6 @@ class RealSettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
-          if (!s.admin)
-            Center(
-              child: TextButton(
-                onPressed: () => _askAdminCode(context, ref),
-                child: Text(
-                  l.adminEnter,
-                  style: const TextStyle(color: AppColors.inkSoft),
-                ),
-              ),
-            ),
         ],
       ),
     );

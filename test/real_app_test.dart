@@ -162,10 +162,15 @@ void main() {
       await pumpFor(t, 4500); // the "thanks" message goes away
       await t.tap(find.text('הגדרות'));
       await pumpFor(t, 400);
-      // "Admin" is at the very bottom.
-      await t.drag(find.byType(Scrollable).last, const Offset(0, -3000));
+      // No visible "admin" button: a long press on the update row asks.
+      expect(find.text('ניהול'), findsNothing);
+      await t.scrollUntilVisible(
+        find.text('בדיקת עדכון'),
+        300,
+        scrollable: find.byType(Scrollable).last,
+      );
       await pumpFor(t, 400);
-      await t.tap(find.text('ניהול'));
+      await t.longPress(find.text('בדיקת עדכון'));
       await pumpFor(t, 300);
       await t.enterText(find.byType(TextField).last, '1234');
       await t.tap(find.text('אישור'));

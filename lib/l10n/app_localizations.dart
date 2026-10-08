@@ -1018,12 +1018,6 @@ abstract class AppLocalizations {
   /// **'ניהול'**
   String get adminTitle;
 
-  /// No description provided for @adminEnter.
-  ///
-  /// In he, this message translates to:
-  /// **'ניהול'**
-  String get adminEnter;
-
   /// No description provided for @adminCode.
   ///
   /// In he, this message translates to:
