@@ -301,7 +301,7 @@ class _FreeNowCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x1FB8462C),
+            color: Color(0x1F1565C0),
             blurRadius: 32,
             offset: Offset(0, 12),
           ),
@@ -502,7 +502,7 @@ class _FreeButtonState extends State<_FreeButton>
                 foregroundColor: Colors.white,
                 shape: const CircleBorder(),
                 elevation: 8,
-                shadowColor: const Color(0x66B8462C),
+                shadowColor: const Color(0x661565C0),
                 padding: const EdgeInsets.all(20),
               ),
               onPressed: widget.onTap,
@@ -871,7 +871,7 @@ class _NoFriendsCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x1FB8462C),
+            color: Color(0x1F1565C0),
             blurRadius: 32,
             offset: Offset(0, 12),
           ),

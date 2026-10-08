@@ -38,7 +38,42 @@ class RealFirstRunScreen extends ConsumerWidget {
       ],
     );
 
+    final me = s.snapshot?.me;
     return switch (s.firstRun) {
+      // A picture, so friends recognize me. Optional; one sentence says
+      // where to add it later.
+      FirstRunStep.photo => MomentLayout(
+        top: Column(
+          children: [
+            GestureDetector(
+              onTap: me == null || s.busy
+                  ? null
+                  : () => _pickPhoto(context, ref, me.photoVersion > 0),
+              child: (me?.photoVersion ?? 0) > 0
+                  ? PersonAvatar(person: me!.toPerson(), size: 120)
+                  : icon(Icons.add_a_photo_rounded),
+            ),
+            const SizedBox(height: 32),
+            texts(l.firstRunPhotoTitle, l.firstRunPhotoBody),
+            const SizedBox(height: 16),
+            MomentText(l.firstRunPhotoLater, size: 14, soft: true),
+          ],
+        ),
+        actions: [
+          if ((me?.photoVersion ?? 0) > 0)
+            PrimaryPill(label: l.next, onTap: c.firstRunNext)
+          else
+            PrimaryPill(
+              label: l.firstRunPhotoGo,
+              icon: Icons.photo_camera_rounded,
+              onTap: me == null || s.busy
+                  ? null
+                  : () => _pickPhoto(context, ref, false),
+            ),
+          if (me?.photo == null)
+            SecondaryPill(label: l.firstRunLater, onTap: c.firstRunNext),
+        ],
+      ),
       FirstRunStep.contacts => MomentLayout(
         top: Column(
           children: [
@@ -264,5 +299,16 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
         SecondaryPill(label: l.firstRunRoutineNone, onTap: c.firstRunNext),
       ],
     );
+  }
+}
+
+/// Pick my picture; once saved, go on to the next step.
+Future<void> _pickPhoto(
+  BuildContext context,
+  WidgetRef ref,
+  bool hasPhoto,
+) async {
+  if (await editMyPhoto(context, ref, hasPhoto: hasPhoto)) {
+    ref.read(realProvider.notifier).firstRunNext();
   }
 }

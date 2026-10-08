@@ -336,7 +336,7 @@ class _RatingTile extends StatelessWidget {
       color: Colors.white,
       borderRadius: BorderRadius.circular(24),
       elevation: 2,
-      shadowColor: const Color(0x22B8462C),
+      shadowColor: const Color(0x221565C0),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: onTap,

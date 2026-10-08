@@ -81,7 +81,7 @@ enum CallRole {
 }
 
 /// After joining: find people from contacts → result → how it works.
-enum FirstRunStep { contacts, result, routine, magic }
+enum FirstRunStep { photo, contacts, result, routine, magic }
 
 enum CallStage {
   none,
@@ -788,6 +788,7 @@ class RealController extends Notifier<RealState> {
   }
 
   void firstRunNext() => _setFirstRun(switch (state.firstRun) {
+    FirstRunStep.photo => FirstRunStep.contacts,
     FirstRunStep.contacts => FirstRunStep.result,
     FirstRunStep.result => FirstRunStep.routine,
     FirstRunStep.routine => FirstRunStep.magic,
@@ -1085,12 +1086,13 @@ class RealController extends Notifier<RealState> {
         state = state.copyWith(myPhone: normalizePhone(phone));
       }
       if (!ref.mounted) return;
-      await _store.setString(_firstRunKey, FirstRunStep.contacts.name);
+      // First: a picture (optional), then my people.
+      await _store.setString(_firstRunKey, FirstRunStep.photo.name);
       _event('onboarding_started');
       state = state.copyWith(
         phase: RealPhase.ready,
         busy: false,
-        firstRun: FirstRunStep.contacts,
+        firstRun: FirstRunStep.photo,
       );
       await refresh();
       _openPendingInvite();

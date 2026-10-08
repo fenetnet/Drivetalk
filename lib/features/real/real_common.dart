@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/theme.dart';
@@ -69,7 +71,7 @@ extension MomentColors on MomentStyle {
   /// Two soft rings behind the picture.
   (Color, Color) get rings => switch (this) {
     MomentStyle.light => (AppColors.blush, AppColors.blushDeep),
-    MomentStyle.coral => (const Color(0xFFE06B4F), const Color(0xFFE77F63)),
+    MomentStyle.coral => (const Color(0xFF1E88E5), const Color(0xFF42A5F5)),
     MomentStyle.green => (const Color(0xFF367A63), const Color(0xFF3F8A70)),
     MomentStyle.dark => (const Color(0xFF1B1F2D), const Color(0xFF1F2434)),
   };
@@ -180,7 +182,7 @@ class HeroAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: const [
           BoxShadow(
-            color: Color(0x47501408),
+            color: Color(0x470D2A4A),
             blurRadius: 40,
             offset: Offset(0, 20),
           ),
@@ -240,7 +242,7 @@ class PrimaryPill extends StatelessWidget {
           backgroundColor: bg,
           foregroundColor: fg,
           elevation: style.onColor ? 6 : 2,
-          shadowColor: const Color(0x55501408),
+          shadowColor: const Color(0x550D2A4A),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(height / 2.2),
           ),
@@ -314,7 +316,7 @@ class SecondaryPill extends StatelessWidget {
           side: BorderSide(
             color: style.onColor
                 ? Colors.white.withValues(alpha: 0.7)
-                : const Color(0xFFE6D6CB),
+                : const Color(0xFFD6E4F0),
             width: 2,
           ),
           shape: RoundedRectangleBorder(
@@ -598,7 +600,7 @@ class SettingsGroup extends StatelessWidget {
                       height: 1,
                       indent: 16,
                       endIndent: 16,
-                      color: Color(0xFFF1E6DD),
+                      color: Color(0xFFE1ECF5),
                     ),
                   children[i],
                 ],
@@ -622,4 +624,72 @@ Future<void> openAppUpdate() async {
   } catch (_) {
     // No browser: nothing else to do.
   }
+}
+
+/// My picture: from the gallery or the camera (or remove it). True = saved.
+Future<bool> editMyPhoto(
+  BuildContext context,
+  WidgetRef ref, {
+  required bool hasPhoto,
+}) async {
+  final l = AppLocalizations.of(context);
+  final choice = await showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheet) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_library_rounded),
+            title: Text(l.photoFromGallery),
+            onTap: () => Navigator.pop(sheet, 'gallery'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_camera_rounded),
+            title: Text(l.photoFromCamera),
+            onTap: () => Navigator.pop(sheet, 'camera'),
+          ),
+          if (hasPhoto)
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded),
+              title: Text(l.photoRemove),
+              onTap: () => Navigator.pop(sheet, 'remove'),
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  if (choice == null || !context.mounted) return false; // Dismissed.
+  final messenger = ScaffoldMessenger.of(context);
+  final c = ref.read(realProvider.notifier);
+  Uint8List? bytes;
+  if (choice != 'remove') {
+    try {
+      final file = await ImagePicker().pickImage(
+        source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+      if (file == null) return false;
+      bytes = await file.readAsBytes();
+    } catch (_) {
+      return false; // Camera/gallery unavailable.
+    }
+  }
+  final error = await c.setPhoto(bytes);
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        error != null
+            ? realErrorText(l, error)
+            : bytes == null
+            ? l.realPhotoRemoved
+            : l.realPhotoSaved,
+      ),
+    ),
+  );
+  return error == null && bytes != null;
 }

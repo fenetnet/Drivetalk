@@ -54,7 +54,7 @@ class Pill extends StatelessWidget {
     super.key,
     required this.text,
     this.icon,
-    this.color = const Color(0xFFF8DDD3),
+    this.color = const Color(0xFFDCEBF8),
     this.textColor = AppColors.ink,
   });
   final String text;

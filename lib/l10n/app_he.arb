@@ -826,5 +826,9 @@
   "@inCall": {
     "description": "A friend who is free but on a call right now"
   },
-  "close": "סגירה"
+  "close": "סגירה",
+  "firstRunPhotoTitle": "תמונה, כדי שיזהו אותך",
+  "firstRunPhotoBody": "רשות. רק החברים שלך רואים אותה.",
+  "firstRunPhotoGo": "לבחור תמונה",
+  "firstRunPhotoLater": "אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\"."
 }

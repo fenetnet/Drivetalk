@@ -70,7 +70,12 @@ void main() {
       await t.pump();
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 500);
-      // First steps: look for my people → nobody yet → how it works.
+      // First steps: a picture (optional, says where to add it later) →
+      // look for my people → nobody yet → how it works.
+      expect(find.text('תמונה, כדי שיזהו אותך'), findsOneWidget);
+      expect(find.textContaining('הגדרות ← לחיצה על השם שלך'), findsOneWidget);
+      await t.tap(find.text('אחר כך'));
+      await pumpFor(t, 300);
       expect(find.text('נראה מי מהאנשים שלך כבר כאן'), findsOneWidget);
       await t.tap(find.text('לחפש באנשי הקשר'));
       await pumpFor(t, 500);

@@ -1519,4 +1519,17 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get close => 'סגירה';
+
+  @override
+  String get firstRunPhotoTitle => 'תמונה, כדי שיזהו אותך';
+
+  @override
+  String get firstRunPhotoBody => 'רשות. רק החברים שלך רואים אותה.';
+
+  @override
+  String get firstRunPhotoGo => 'לבחור תמונה';
+
+  @override
+  String get firstRunPhotoLater =>
+      'אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".';
 }

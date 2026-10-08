@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 /// Warm, calm, social. Not LinkedIn, not a dating app, not a feed.
 class AppColors {
-  // Warm coral + deep green on a soft cream ground (owner-approved redesign,
-  // 2026-10-04).
-  static const terracotta = Color(0xFFD9573B); // coral — main action
-  static const coralDeep = Color(0xFFB8462C); // coral text on white
-  static const blush = Color(0xFFFFE2D2);
-  static const blushDeep = Color(0xFFFFCDB5);
+  // Blue and white, green for "free now" (owner decision D-088,
+  // 2026-10-08; the names are from the earlier coral design).
+  static const terracotta = Color(0xFF1E88E5); // blue — main action
+  static const coralDeep = Color(0xFF1565C0); // blue text on white
+  static const blush = Color(0xFFE3F2FD);
+  static const blushDeep = Color(0xFFBBDEFB);
   static const sage = Color(0xFF3FA37A); // "free now" green
   static const sageDark = Color(0xFF2F6B57);
   static const mint = Color(0xFFE3F1EA);
   static const sand = Color(0xFFF2C58F);
-  static const cream = Color(0xFFFFF6EE);
+  static const cream = Color(0xFFF7FAFD);
   static const ink = Color(0xFF2B2A3A);
   static const inkSoft = Color(0xFF6B6878);
   static const card = Colors.white;
@@ -53,7 +53,7 @@ ThemeData buildTheme() {
       color: AppColors.card,
       elevation: 0,
       margin: EdgeInsets.zero,
-      shadowColor: const Color(0x1FB8462C),
+      shadowColor: const Color(0x1F1565C0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -61,11 +61,11 @@ ThemeData buildTheme() {
       fillColor: Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: Color(0xFFF1E6DD)),
+        borderSide: const BorderSide(color: Color(0xFFE1ECF5)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(color: Color(0xFFF1E6DD)),
+        borderSide: const BorderSide(color: Color(0xFFE1ECF5)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),

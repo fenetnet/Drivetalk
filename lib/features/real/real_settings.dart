@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
@@ -420,7 +419,7 @@ class RealSettingsScreen extends ConsumerWidget {
       case 'name':
         await _editName(context, ref);
       case 'photo':
-        await _editPhoto(context, ref, hasPhoto);
+        await editMyPhoto(context, ref, hasPhoto: hasPhoto);
       case 'phone':
         await _editPhone(context, ref);
     }
@@ -452,72 +451,6 @@ class RealSettingsScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _editPhoto(
-    BuildContext context,
-    WidgetRef ref,
-    bool hasPhoto,
-  ) async {
-    final l = context.l10n;
-    final choice = await showModalBottomSheet<String>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheet) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: Text(l.photoFromGallery),
-              onTap: () => Navigator.pop(sheet, 'gallery'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_camera_rounded),
-              title: Text(l.photoFromCamera),
-              onTap: () => Navigator.pop(sheet, 'camera'),
-            ),
-            if (hasPhoto)
-              ListTile(
-                leading: const Icon(Icons.delete_outline_rounded),
-                title: Text(l.photoRemove),
-                onTap: () => Navigator.pop(sheet, 'remove'),
-              ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-    if (choice == null || !context.mounted) return; // Dismissed.
-    final messenger = ScaffoldMessenger.of(context);
-    final c = ref.read(realProvider.notifier);
-    Uint8List? bytes;
-    if (choice != 'remove') {
-      try {
-        final file = await ImagePicker().pickImage(
-          source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
-          maxWidth: 512,
-          maxHeight: 512,
-          imageQuality: 80,
-        );
-        if (file == null) return;
-        bytes = await file.readAsBytes();
-      } catch (_) {
-        return; // Camera/gallery unavailable.
-      }
-    }
-    final error = await c.setPhoto(bytes);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          error != null
-              ? realErrorText(l, error)
-              : bytes == null
-              ? l.realPhotoRemoved
-              : l.realPhotoSaved,
         ),
       ),
     );

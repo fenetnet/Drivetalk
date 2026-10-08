@@ -202,6 +202,8 @@ void main() {
 
   test('first steps: "mornings" → a Sun–Thu routine at 7:30', () async {
     await me.c.signIn('נתנאל', Gender.male);
+    expect(me.s.firstRun, FirstRunStep.photo, reason: 'a picture first');
+    me.c.firstRunNext(); // photo → contacts
     me.c.firstRunNext(); // contacts → result
     me.c.firstRunNext(); // result → routine
     expect(me.s.firstRun, FirstRunStep.routine);

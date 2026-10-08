@@ -298,7 +298,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0x55B8462C),
+                            color: Color(0x551565C0),
                             blurRadius: 20,
                             offset: Offset(0, 8),
                           ),
@@ -345,7 +345,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x1FB8462C),
+                        color: Color(0x1F1565C0),
                         blurRadius: 32,
                         offset: Offset(0, 12),
                       ),

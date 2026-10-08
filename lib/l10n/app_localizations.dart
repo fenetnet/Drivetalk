@@ -2601,6 +2601,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'סגירה'**
   String get close;
+
+  /// No description provided for @firstRunPhotoTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'תמונה, כדי שיזהו אותך'**
+  String get firstRunPhotoTitle;
+
+  /// No description provided for @firstRunPhotoBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רשות. רק החברים שלך רואים אותה.'**
+  String get firstRunPhotoBody;
+
+  /// No description provided for @firstRunPhotoGo.
+  ///
+  /// In he, this message translates to:
+  /// **'לבחור תמונה'**
+  String get firstRunPhotoGo;
+
+  /// No description provided for @firstRunPhotoLater.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".'**
+  String get firstRunPhotoLater;
 }
 
 class _AppLocalizationsDelegate
