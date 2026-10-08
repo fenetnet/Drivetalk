@@ -142,3 +142,38 @@ jobs:
           sleep 3
           curl -sfL "https://github.com/${{ github.repository }}/releases/download/prototype/version.json" \
             || { echo "::error::The download link is not public"; exit 1; }
+
+      # Google Play: upload to internal testing by itself (D-084). Only when
+      # the owner added the service account key as the repository secret
+      # PLAY_SERVICE_ACCOUNT_JSON (never in the code).
+      - name: Check Google Play key
+        id: play
+        env:
+          PLAY_KEY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: echo "ready=$([ -n "$PLAY_KEY" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to Google Play (internal testing)
+        id: play_upload
+        if: steps.play.outputs.ready == 'yes'
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.drivetalk.drivetalk
+          releaseFiles: drivetalk.aab
+          track: internal
+          status: completed
+          releaseName: "${{ github.run_number }}"
+
+      # An app not yet published to everyone may accept only a draft release:
+      # then it waits in Play Console for one "Roll out" click.
+      - name: Upload to Google Play (as a draft)
+        if: steps.play.outputs.ready == 'yes' && steps.play_upload.outcome == 'failure'
+        uses: r0adkll/upload-google-play@v1.1.3
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.drivetalk.drivetalk
+          releaseFiles: drivetalk.aab
+          track: internal
+          status: draft
+          releaseName: "${{ github.run_number }}"
