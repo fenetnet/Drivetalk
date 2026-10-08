@@ -13,7 +13,7 @@ name: Invite site
 on:
   push:
     branches: [main, "claude/**"]
-    paths: ["invite_site/**", ".github/workflows/invite-site.yml"]
+    paths: ["invite_site/**", "store_assets/**", ".github/workflows/invite-site.yml"]
   workflow_dispatch:
 
 permissions:
@@ -34,6 +34,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp -r invite_site "$RUNNER_TEMP/site"
+          # The Play Store images, for store.html (one-click download).
+          mkdir -p "$RUNNER_TEMP/site/store"
+          cp store_assets/*.png "$RUNNER_TEMP/site/store/"
+          (cd "$RUNNER_TEMP/site/store" && zip -q drivebond-store-images.zip *.png)
           cd "$RUNNER_TEMP/site"
           git init -q
           git checkout -q -b gh-pages
