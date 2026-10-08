@@ -1,0 +1,8 @@
+html,body{margin:0;width:1024px;height:500px;overflow:hidden}
+body{font-family:"Rubik","Noto Sans Hebrew",sans-serif;color:#fff;position:relative;direction:rtl}
+.brand{position:absolute;top:28px;right:40px;display:flex;align-items:center;gap:12px;direction:ltr}
+.brand img{width:46px;height:46px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.brand span{font-size:28px;font-weight:800}
+.card{background:#fff;color:#1F2A3A;border-radius:22px;box-shadow:0 18px 40px rgba(0,0,0,.28);display:flex;align-items:center;gap:14px;padding:14px 18px}
+.av{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:28px;flex:none;box-shadow:0 0 0 3px #fff,0 0 0 6px #3FA37A}
+.nm{font-size:24px;font-weight:800}.st{font-size:18px;color:#2F6B57;font-weight:600}
