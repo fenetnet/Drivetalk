@@ -22,7 +22,7 @@
   <div class="logo">🚗💬</div>
   <h1 id="title">קיבלת הזמנה ל-DriveBond</h1>
   <p class="lead">כששניכם פנויים, DriveBond פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
-  <p class="small">אחרי ההתקנה: אם אתם שמורים זה אצל זה בטלפון, תתחברו לבד. שיחה מתחילה רק אם שניכם אומרים כן.</p>
+  <p class="small">אחרי ההתקנה לוחצים "פתיחה באפליקציה" — ואתם מחוברים. שיחה מתחילה רק אם שניכם אומרים כן.</p>
 
   <section class="card" id="has-app">
     <h2>כבר יש לך את האפליקציה?</h2>
@@ -33,7 +33,7 @@
     <h2>אין עדיין?</h2>
     <ol>
       <li><a class="btn" id="download" href="#">הורדת האפליקציה (אנדרואיד)</a></li>
-      <li>פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
+      <li id="install-step">פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
       <li>חוזרים לדף הזה ולוחצים <b>"פתיחה באפליקציה"</b>.</li>
     </ol>
     <p class="small">אייפון: גרסה תגיע בהמשך.</p>
@@ -59,13 +59,20 @@
   // Who invited me (their own first name, put in the link by their app).
   var from = new URLSearchParams(location.search).get('from');
   if (from && from.length <= 40) {
-    document.getElementById('title').textContent = from + ' הזמין/ה אותך ל-DriveBond';
+    document.getElementById('title').textContent = 'קיבלת הזמנה מ־' + from + ' ל-DriveBond';
   }
 
   function start() {
     var cfg = window.DT_CONFIG || {};
-    var apk = cfg.apkUrl;
-    document.getElementById('download').href = apk;
+    // Sent from the Google Play app (?p=1): install from the store too.
+    var play = new URLSearchParams(location.search).get('p') === '1' && cfg.playUrl;
+    var apk = play ? cfg.playUrl : cfg.apkUrl;
+    var dl = document.getElementById('download');
+    dl.href = apk;
+    if (play) {
+      dl.textContent = 'הורדה מ-Google Play';
+      document.getElementById('install-step').textContent = 'מתקינים מהחנות (כמו כל אפליקציה).';
+    }
     var codeEl = document.getElementById('code');
     if (!code) {
       document.getElementById('has-app').style.display = 'none';

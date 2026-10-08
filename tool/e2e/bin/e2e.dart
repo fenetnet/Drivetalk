@@ -1318,7 +1318,14 @@ Future<void> main() async {
       'the numbers are refused to anyone but the owner',
     );
   }
-  await avi.rpc('claim_owner', params: {'p_code': '97869786'});
+  // The owner's code lives only in the database (D-093): set a test one.
+  await dbCount(
+    "with s as (insert into owner_secret (id, code_hash) values (1, "
+    "encode(extensions.digest('drivetalk-admin:test-owner-code', 'sha256'), 'hex')) "
+    "on conflict (id) do update set code_hash = excluded.code_hash returning 1) "
+    "select count(*) from s",
+  );
+  await avi.rpc('claim_owner', params: {'p_code': 'test-owner-code'});
   final stats = Map<String, dynamic>.from(
     await avi.rpc('app_stats', params: {'p_days': 7}),
   );
@@ -1363,7 +1370,7 @@ Future<void> main() async {
     'a wrong owner code is refused',
   );
   check(
-    await avi.rpc('claim_owner', params: {'p_code': '97869786'}) == true,
+    await avi.rpc('claim_owner', params: {'p_code': 'test-owner-code'}) == true,
     'the owner code registers the owner',
   );
   final notes = List<Map<String, dynamic>>.from(
@@ -1384,8 +1391,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 24,
-    'the server says its version (24)',
+    await eve.rpc('schema_version') == 25,
+    'the server says its version (25)',
   );
 
   // --- profile photos: private, friends only

@@ -308,8 +308,12 @@ class RealSettingsScreen extends ConsumerWidget {
       context: context,
       builder: (d) => StatefulBuilder(
         builder: (d, setState) {
-          void submit() {
-            if (ref.read(realProvider.notifier).unlockAdmin(code.text)) {
+          Future<void> submit() async {
+            final ok = await ref
+                .read(realProvider.notifier)
+                .unlockAdmin(code.text);
+            if (!d.mounted) return;
+            if (ok) {
               Navigator.pop(d);
             } else {
               setState(() => wrong = true);

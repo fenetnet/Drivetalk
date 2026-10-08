@@ -48,6 +48,10 @@ class MemoryServer {
   final feedbackNotes = <String>[];
   final owners = <String>{};
 
+  /// The owner's code on this test server (the real one lives only in the
+  /// real server's database).
+  String ownerCode = 'test-owner-code';
+
   /// Connect a pair (any way) — clears a past removal.
   void connect(String x, String y) {
     connections.add(_pair(x, y));
@@ -1181,7 +1185,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 24;
+  int schema = 25;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -1228,7 +1232,7 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   Future<bool> claimOwner(String code) async {
-    final ok = code.trim() == '97869786';
+    final ok = code.trim() == server.ownerCode;
     if (ok) server.owners.add(_uid);
     return ok;
   }

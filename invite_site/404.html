@@ -32,7 +32,7 @@
     <h2>אין עדיין?</h2>
     <ol>
       <li><a class="btn" id="download" href="#">הורדת האפליקציה (אנדרואיד)</a></li>
-      <li>פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
+      <li id="install-step">פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
       <li>חוזרים לדף הזה ולוחצים <b>"פתיחה באפליקציה"</b>.</li>
     </ol>
     <p class="small">אייפון: גרסה תגיע בהמשך.</p>
@@ -57,8 +57,15 @@
 
   function start() {
     var cfg = window.DT_CONFIG || {};
-    var apk = cfg.apkUrl;
-    document.getElementById('download').href = apk;
+    // Sent from the Google Play app (?p=1): install from the store too.
+    var play = new URLSearchParams(location.search).get('p') === '1' && cfg.playUrl;
+    var apk = play ? cfg.playUrl : cfg.apkUrl;
+    var dl = document.getElementById('download');
+    dl.href = apk;
+    if (play) {
+      dl.textContent = 'הורדה מ-Google Play';
+      document.getElementById('install-step').textContent = 'מתקינים מהחנות (כמו כל אפליקציה).';
+    }
     var codeEl = document.getElementById('code');
     if (!code) {
       document.getElementById('has-app').style.display = 'none';

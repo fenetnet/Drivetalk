@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -407,14 +406,12 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 24;
+const kRequiredSchema = 25;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
 /// SHA-256 of "drivetalk-admin:<code>" — the code itself is not in the app.
 /// It only hides the owner's tools from friends; it protects no data.
-const _adminCodeHash =
-    '5b054ffe210bfa737ef580c8bbcce8ffac40785b71306fc8cac11a89cb851d73';
 const _handledKey = 'real.handledOffers.v1';
 
 class RealController extends Notifier<RealState> {
@@ -763,15 +760,21 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ admin
 
   /// The owner's code opens the test tab and the other tools on this phone.
-  bool unlockAdmin(String code) {
-    final hash = sha256
-        .convert(utf8.encode('drivetalk-admin:${code.trim()}'))
-        .toString();
-    if (hash != _adminCodeHash) return false;
+  /// The owner's code — checked only by the server (the app holds no copy
+  /// of it, D-093). True = this account is the owner.
+  Future<bool> unlockAdmin(String code) async {
+    final trimmed = code.trim();
+    if (trimmed.isEmpty) return false;
+    bool ok;
+    try {
+      ok = await _backend.claimOwner(trimmed);
+    } on RealBackendException catch (e) {
+      _setError(e.code, show: true);
+      return false;
+    }
+    if (!ok || !ref.mounted) return false;
     _store.setString(_adminKey, 'on');
     state = state.copyWith(admin: true);
-    // Also on the server: only then can this account read feedback/reports.
-    unawaited(_backend.claimOwner(code.trim()));
     return true;
   }
 
@@ -1803,6 +1806,7 @@ class RealController extends Notifier<RealState> {
         token: inv.token,
         baseUrl: ref.read(inviteBaseUrlProvider),
         apkUrl: ref.read(apkUrlProvider),
+        store: BackendConfig.store,
       );
     });
     return message;
@@ -2330,17 +2334,20 @@ String _genderKey(Gender g) => 'other';
 
 /// The share text. With an invite site: message + link. Without: message +
 /// download link + code to type in the app.
+/// [store]: sent from the Google Play app — the invite page then offers the
+/// store (not the test APK), so the friend installs from Google Play too.
 String inviteMessageFor(
   AppLocalizations l, {
   required String token,
   required String baseUrl,
   required String apkUrl,
+  bool store = false,
 }) {
   final base = baseUrl.endsWith('/')
       ? baseUrl.substring(0, baseUrl.length - 1)
       : baseUrl;
   if (base.isNotEmpty) {
-    return '${l.realInviteMessage}\n$base/i/$token';
+    return '${l.realInviteMessage}\n$base/i/$token${store ? '?p=1' : ''}';
   }
   return '${l.realInviteMessage}\n${l.realInviteMessageNoSite(apkUrl, token)}';
 }

@@ -181,7 +181,7 @@ void main() {
       await t.tap(find.text('אישור'));
       await pumpFor(t, 300);
       expect(find.text('קוד שגוי'), findsOneWidget);
-      await t.enterText(find.byType(TextField).last, '97869786');
+      await t.enterText(find.byType(TextField).last, 'test-owner-code');
       await t.tap(find.text('אישור'));
       await pumpFor(t, 300);
 

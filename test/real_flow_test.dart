@@ -193,7 +193,7 @@ void main() {
     expect(currentOffer(me.s, now), isNull);
     // Numbers are for the owner only.
     expect(await me.c.appStats(7), isNull);
-    expect(me.c.unlockAdmin('97869786'), isTrue);
+    expect(await me.c.unlockAdmin('test-owner-code'), isTrue);
     await pump();
     final stats = await me.c.appStats(7);
     expect(stats!['later'], 1);
@@ -256,7 +256,7 @@ void main() {
       await yoni.c.sendFeedback('אהבתי');
       await yoni.c.report(yoni.s.snapshot!.friends.single, ReportReason.spam);
       expect(await yoni.c.ownerNotes(reports: false), isNull, reason: 'no');
-      expect(me.c.unlockAdmin('97869786'), isTrue);
+      expect(await me.c.unlockAdmin('test-owner-code'), isTrue);
       await pump(10);
       expect((await me.c.ownerNotes(reports: false))!.single.body, 'אהבתי');
       final r = (await me.c.ownerNotes(reports: true))!.single;
@@ -1280,7 +1280,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 24)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 25)'));
     });
 
     test(
@@ -1452,6 +1452,21 @@ void main() {
       expect(parseInviteToken('שלום'), isNull);
       expect(parseInviteToken('https://example.com/'), isNull);
     });
+  });
+
+  test('from the Google Play app the link asks the page for the store', () {
+    final msg = inviteMessageFor(
+      lookupAppLocalizations(const Locale('he')),
+      token: 'AbCdEfGhIjKlMnOpQrStUv',
+      baseUrl: 'https://invite.example/',
+      apkUrl: 'https://example.com/app.apk',
+      store: true,
+    );
+    expect(
+      msg,
+      contains('https://invite.example/i/AbCdEfGhIjKlMnOpQrStUv?p=1'),
+    );
+    expect(parseInviteToken(msg), 'AbCdEfGhIjKlMnOpQrStUv');
   });
 
   test('without an invite site: download link + code', () {
