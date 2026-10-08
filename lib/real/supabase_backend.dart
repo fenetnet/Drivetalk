@@ -108,13 +108,18 @@ class SupabaseRealBackend implements RealBackend {
           ),
       _c
           .from('availability')
-          .select('user_id, mode, started_at, expires_at, circle_id, source')
+          .select(
+            'user_id, mode, started_at, expires_at, circle_id, source, '
+            'call_until, phone_until',
+          )
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            // Older server (before circles): the basic columns only.
+            // Older server (before "in a call").
             onError: (Object _) => _c
                 .from('availability')
-                .select('user_id, mode, started_at, expires_at'),
+                .select(
+                  'user_id, mode, started_at, expires_at, circle_id, source',
+                ),
           ),
       _c
           .from('match_offers')
@@ -201,6 +206,10 @@ class SupabaseRealBackend implements RealBackend {
             expiresAt: _time(r['expires_at']),
             circleId: r['circle_id'] as String?,
             auto: r['source'] == 'auto',
+            busyUntil: _later(
+              _maybeTime(r['call_until']),
+              _maybeTime(r['phone_until']),
+            ),
           ),
       },
       offers: [for (final r in results[2]) _offer(r)],
@@ -923,4 +932,7 @@ class SupabaseRealBackend implements RealBackend {
   };
 
   static DateTime _time(Object? v) => DateTime.parse(v as String).toLocal();
+  static DateTime? _maybeTime(Object? v) => v == null ? null : _time(v);
+  static DateTime? _later(DateTime? a, DateTime? b) =>
+      a == null || (b != null && b.isAfter(a)) ? b : a;
 }

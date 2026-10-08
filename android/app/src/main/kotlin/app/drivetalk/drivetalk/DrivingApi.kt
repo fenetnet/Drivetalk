@@ -61,6 +61,10 @@ class DrivingApi(private val store: DrivingStore) {
     fun cancelCall(offerId: String): Boolean =
         rpc("device_cancel_call", JSONObject().put("p_offer", offerId))?.trim() == "true"
 
+    /** "In a call" (true) / "call ended" (false): friends see "in a call". */
+    fun phoneCall(on: Boolean): String? =
+        rpc("device_phone_call", JSONObject().put("p_on", on))?.trim('"')
+
     fun decline(offerId: String): String? =
         rpc("auto_decline", JSONObject().put("p_offer", offerId))?.trim('"')
 

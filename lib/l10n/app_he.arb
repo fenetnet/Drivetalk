@@ -821,5 +821,9 @@
       }
     }
   },
-  "firstRunRoutineChangeTime": "לשנות שעה"
+  "firstRunRoutineChangeTime": "לשנות שעה",
+  "inCall": "בשיחה",
+  "@inCall": {
+    "description": "A friend who is free but on a call right now"
+  }
 }

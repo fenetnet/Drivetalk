@@ -1512,4 +1512,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunRoutineChangeTime => 'לשנות שעה';
+
+  @override
+  String get inCall => 'בשיחה';
 }

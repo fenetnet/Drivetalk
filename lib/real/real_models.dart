@@ -89,8 +89,12 @@ class RealAvailability {
     required this.expiresAt,
     this.circleId,
     this.auto = false,
+    this.busyUntil,
   });
   final String userId;
+
+  /// In a call (through the app or any other phone call) until then.
+  final DateTime? busyUntil;
 
   /// Free only for this circle of mine (null = all my friends).
   final String? circleId;
@@ -102,6 +106,17 @@ class RealAvailability {
   final DateTime expiresAt;
 
   bool isActiveAt(DateTime now) => now.isBefore(expiresAt);
+  bool inCallAt(DateTime now) => busyUntil != null && now.isBefore(busyUntil!);
+
+  RealAvailability withBusy(DateTime? until) => RealAvailability(
+    userId: userId,
+    mode: mode,
+    startedAt: startedAt,
+    expiresAt: expiresAt,
+    circleId: circleId,
+    auto: auto,
+    busyUntil: until,
+  );
   int minutesLeftAt(DateTime now) {
     final s = expiresAt.difference(now).inSeconds;
     return s <= 0 ? 0 : (s / 60).ceil();

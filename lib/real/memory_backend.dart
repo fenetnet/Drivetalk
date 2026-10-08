@@ -124,6 +124,36 @@ class MemoryServer {
         (o.a == u || o.b == u),
   );
 
+  /// Another phone call (the phone's background service says so).
+  final phoneUntil = <String, DateTime>{};
+  bool _onPhone(String u) => phoneUntil[u]?.isAfter(now()) ?? false;
+
+  /// The phone says "in a call" (true) / "call ended" (false).
+  void phoneCall(String u, bool on) {
+    if (on && availability.containsKey(u)) {
+      phoneUntil[u] = now().add(const Duration(minutes: 3));
+    } else {
+      phoneUntil.remove(u);
+    }
+    _changed();
+  }
+
+  /// What friends see: in a call until then (null = not in a call).
+  DateTime? busyUntil(String u) {
+    DateTime? until = _onPhone(u) ? phoneUntil[u] : null;
+    for (final o in offers.values) {
+      if (o.status == OfferStatus.accepted &&
+          o.acceptedAt != null &&
+          ((o.a == u && !o.endedA) || (o.b == u && !o.endedB))) {
+        final end = o.acceptedAt!.add(const Duration(minutes: 20));
+        if (end.isAfter(now()) && (until == null || end.isAfter(until))) {
+          until = end;
+        }
+      }
+    }
+    return until;
+  }
+
   /// In a call: agreed, not finished, not older than 20 minutes.
   bool _inCall(String u, [String? except]) => offers.values.any(
     (o) =>
@@ -157,7 +187,7 @@ class MemoryServer {
       }
     }
     if (!_activeAvail(user)) return;
-    if (_hasOpenOffer(user) || _inCall(user)) return;
+    if (_hasOpenOffer(user) || _inCall(user) || _onPhone(user)) return;
     final mine = availability[user]!;
     // 5 quiet minutes after a question that didn't become a call; after 3
     // such questions in this window, no more.
@@ -199,6 +229,7 @@ class MemoryServer {
           !inAudience(theirs.circleId, user) ||
           _hasOpenOffer(other) ||
           _inCall(other) ||
+          _onPhone(other) ||
           _quietGap(other) ||
           _askedEnough(other, theirs.startedAt)) {
         continue;
@@ -522,7 +553,7 @@ class MemoryRealBackend implements RealBackend {
                       server.inAudience(e.value.circleId, me) &&
                       !server.hidden.contains(e.key) &&
                       !server.hidden.contains(me))))
-            e.key: e.value,
+            e.key: e.value.withBusy(server.busyUntil(e.key)),
       },
       offers: [
         for (final o in server.offers.values)
@@ -672,6 +703,7 @@ class MemoryRealBackend implements RealBackend {
   Future<void> clearAvailability() async {
     final me = _uid;
     server.availability.remove(me);
+    server.phoneUntil.remove(me);
     for (final o in server.offers.values) {
       if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
         o
@@ -1113,7 +1145,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 21;
+  int schema = 22;
 
   @override
   Future<int> schemaVersion() async => schema;

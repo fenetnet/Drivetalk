@@ -337,8 +337,22 @@ List<(RealProfile, RealAvailability)> freeFriends(RealState s, DateTime now) {
   if (snap == null) return const [];
   return [
     for (final f in snap.friends)
-      if (snap.availability[f.id] case final a? when a.isActiveAt(now)) (f, a),
+      if (snap.availability[f.id] case final a?
+          when a.isActiveAt(now) && !a.inCallAt(now))
+        (f, a),
   ]..sort((x, y) => y.$2.expiresAt.compareTo(x.$2.expiresAt));
+}
+
+/// Friends who marked themselves free but are in a call right now.
+List<(RealProfile, RealAvailability)> busyFriends(RealState s, DateTime now) {
+  final snap = s.snapshot;
+  if (snap == null) return const [];
+  return [
+    for (final f in snap.friends)
+      if (snap.availability[f.id] case final a?
+          when a.isActiveAt(now) && a.inCallAt(now))
+        (f, a),
+  ];
 }
 
 /// No call in progress (a pending feedback question doesn't count).
@@ -393,7 +407,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 21;
+const kRequiredSchema = 22;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 

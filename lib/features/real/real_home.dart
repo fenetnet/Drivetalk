@@ -159,7 +159,12 @@ class RealHomeScreen extends ConsumerWidget {
                 else if (snap != null && snap.hidden)
                   const _HiddenCard()
                 else
-                  _FreeNowCard(free: free, now: now, meFree: mine != null),
+                  _FreeNowCard(
+                    free: free,
+                    busy: busyFriends(s, now),
+                    now: now,
+                    meFree: mine != null,
+                  ),
                 if (snap != null && snap.intents.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _IntentsCard(snap: snap, now: now),
@@ -275,10 +280,14 @@ class _Blob extends StatelessWidget {
 class _FreeNowCard extends StatelessWidget {
   const _FreeNowCard({
     required this.free,
+    required this.busy,
     required this.now,
     required this.meFree,
   });
   final List<(RealProfile, RealAvailability)> free;
+
+  /// Free, but in a call right now: shown after the free ones.
+  final List<(RealProfile, RealAvailability)> busy;
   final DateTime now;
   final bool meFree;
 
@@ -317,7 +326,7 @@ class _FreeNowCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (free.isEmpty)
+          if (free.isEmpty && busy.isEmpty)
             Text(
               meFree ? l.realNobodyFreeYet : l.realNobodyFree,
               style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
@@ -327,15 +336,16 @@ class _FreeNowCard extends StatelessWidget {
               height: 138,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: free.length,
+                itemCount: free.length + busy.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 14),
                 itemBuilder: (_, i) {
-                  final (p, a) = free[i];
+                  final inCall = i >= free.length;
+                  final (p, a) = inCall ? busy[i - free.length] : free[i];
                   return SizedBox(
                     width: 76,
                     child: Column(
                       children: [
-                        RealAvatar(person: p.toPerson(), online: true),
+                        RealAvatar(person: p.toPerson(), online: !inCall),
                         const SizedBox(height: 8),
                         Text(
                           p.name,
@@ -347,13 +357,18 @@ class _FreeNowCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${modeLabel(l, a.mode)} · '
-                          '${a.minutesLeftAt(now)}′',
+                          inCall
+                              ? l.inCall
+                              : '${modeLabel(l, a.mode)} · '
+                                    '${a.minutesLeftAt(now)}′',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.inkSoft,
+                            color: inCall
+                                ? AppColors.coralDeep
+                                : AppColors.inkSoft,
+                            fontWeight: inCall ? FontWeight.w600 : null,
                           ),
                         ),
                       ],

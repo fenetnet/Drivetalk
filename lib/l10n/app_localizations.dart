@@ -2589,6 +2589,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לשנות שעה'**
   String get firstRunRoutineChangeTime;
+
+  /// A friend who is free but on a call right now
+  ///
+  /// In he, this message translates to:
+  /// **'בשיחה'**
+  String get inCall;
 }
 
 class _AppLocalizationsDelegate

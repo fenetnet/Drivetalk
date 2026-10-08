@@ -185,7 +185,9 @@ class RealPeopleScreen extends ConsumerWidget {
                   leading: RealAvatar(
                     person: f.toPerson(),
                     size: 48,
-                    online: snap!.availability[f.id]?.isActiveAt(now) ?? false,
+                    online:
+                        (snap!.availability[f.id]?.isActiveAt(now) ?? false) &&
+                        !(snap.availability[f.id]?.inCallAt(now) ?? false),
                   ),
                   title: Text(
                     f.name,
@@ -195,6 +197,14 @@ class RealPeopleScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       switch (snap.availability[f.id]) {
+                        final a? when a.isActiveAt(now) && a.inCallAt(now) =>
+                          Text(
+                            l.inCall,
+                            style: const TextStyle(
+                              color: AppColors.coralDeep,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         final a? when a.isActiveAt(now) => Text(
                           '${modeLabel(l, a.mode)} · '
                           '${l.timeLeftMinutes(a.minutesLeftAt(now))}',

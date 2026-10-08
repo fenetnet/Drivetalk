@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -30,6 +31,8 @@ class DrivingService : Service() {
         /** Renew the trip lease well before it runs out. */
         private const val RENEW_MS = 4 * 60 * 1000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
+        /** "In a call" lasts 3 minutes on the server: renew every 2. */
+        private const val PHONE_RENEW_MS = 2 * 60 * 1000L
 
         fun start(context: Context) = send(context, ACTION_START)
 
@@ -82,6 +85,9 @@ class DrivingService : Service() {
     private var renewedAt = 0L
     private var running = false
     private var manual = false
+    /** Last "in a call" sent to the server, and when (renewed every 2 minutes). */
+    private var phoneBusy = false
+    private var phoneSentAt = 0L
     private var tts: TextToSpeech? = null
     private var ttsReady = false
 
@@ -156,6 +162,7 @@ class DrivingService : Service() {
                 renewedAt = now
                 io.execute { DrivingApi(DrivingStore(ctx)).start() }
             }
+            checkPhoneCall(now)
             io.execute {
                 val offers = DrivingApi(DrivingStore(ctx)).offers() ?: emptyList()
                 main.post {
@@ -179,6 +186,22 @@ class DrivingService : Service() {
         }
     }
 
+    /**
+     * Is the phone in a call (regular, or e.g. WhatsApp)? Only yes/no, from
+     * the sound system: no permission, no number, no call log. Friends then
+     * see "in a call" and nobody is offered me until it ends.
+     */
+    private fun checkPhoneCall(now: Long) {
+        val audio = getSystemService(AUDIO_SERVICE) as? AudioManager ?: return
+        val busy = audio.mode == AudioManager.MODE_IN_CALL ||
+            audio.mode == AudioManager.MODE_IN_COMMUNICATION
+        if (busy == phoneBusy && !(busy && now - phoneSentAt > PHONE_RENEW_MS)) return
+        phoneBusy = busy
+        phoneSentAt = now
+        val store = DrivingStore(this)
+        io.execute { DrivingApi(store).phoneCall(busy) }
+    }
+
     private fun speak(text: String) {
         // On screen, the app asks by voice itself — never twice.
         if (MainActivity.onScreen) return
@@ -189,6 +212,7 @@ class DrivingService : Service() {
         running = false
         main.removeCallbacks(poll)
         val store = DrivingStore(this)
+        phoneBusy = false
         store.inVehicle = false
         if (callServer) {
             io.execute { DrivingApi(store).stop() }

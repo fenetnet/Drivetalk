@@ -410,6 +410,12 @@ void main() {
       isNull,
       reason: 'I am in a call → nobody else is offered to me',
     );
+    // Friends see "in a call", not "free".
+    expect(busyFriends(third.s, now).map((f) => f.$1.id), [me.backend.userId]);
+    expect(
+      freeFriends(third.s, now).map((f) => f.$1.id),
+      isNot(contains(me.backend.userId)),
+    );
     await me.c.refresh(); // Realtime tells me the call started
     await pump();
     expect(me.s.callStage, CallStage.waitingForTheirCall);
@@ -418,7 +424,39 @@ void main() {
     now = now.add(const Duration(seconds: 16));
     await third.c.refresh();
     expect(currentOffer(third.s, now), isNotNull, reason: 'call over → next');
+    expect(busyFriends(third.s, now), isEmpty);
     dana.dispose();
+  });
+
+  test('another phone call → "in a call", and nobody is offered', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    await yoni.c.startAvailability(AvailabilityMode.driving, 30);
+    // Yoni's phone rings with someone else (the background service sees it).
+    server.phoneCall(yoni.backend.userId!, true);
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    expect(currentOffer(me.s, now), isNull, reason: 'Yoni is on the phone');
+    expect(busyFriends(me.s, now).single.$1.name, 'יוני');
+    expect(freeFriends(me.s, now), isEmpty);
+    // The call ends → Yoni is free again and the question comes.
+    server.phoneCall(yoni.backend.userId!, false);
+    now = now.add(const Duration(seconds: 16));
+    await me.c.refresh();
+    expect(busyFriends(me.s, now), isEmpty);
+    expect(freeFriends(me.s, now).single.$1.name, 'יוני');
+    expect(currentOffer(me.s, now), isNotNull);
+  });
+
+  test('"in a call" ends by itself if the phone stops reporting', () async {
+    await connect();
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    server.phoneCall(yoni.backend.userId!, true);
+    await me.c.refresh();
+    expect(busyFriends(me.s, now), hasLength(1));
+    now = now.add(const Duration(minutes: 4));
+    await me.c.refresh();
+    expect(busyFriends(me.s, now), isEmpty);
+    expect(freeFriends(me.s, now), hasLength(1));
   });
 
   test('no numbers shared → simulated in-app call', () async {
@@ -1214,7 +1252,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 21)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 22)'));
     });
 
     test(

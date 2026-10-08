@@ -290,6 +290,17 @@ Future<void> main() async {
     'match_offers',
   )).firstWhere((o) => o['id'] == offerId);
   check(agreed['caller'] == uid(me), 'the server chose exactly one caller');
+  Future<Map<String, dynamic>?> seenBy(
+    SupabaseClient who,
+    String whose,
+  ) async => (await rows(
+    who,
+    'availability',
+  )).where((a) => a['user_id'] == whose).firstOrNull;
+  check(
+    (await seenBy(me, uid(yoni)))?['call_until'] != null,
+    'both said yes → friends see Yoni "in a call"',
+  );
   final eveDetails = List<Map<String, dynamic>>.from(
     await eve.rpc('call_details', params: {'p_offer': offerId}),
   ).single;
@@ -301,6 +312,10 @@ Future<void> main() async {
   // The call is over for both (after the feedback question).
   await me.rpc('end_call', params: {'p_offer': offerId});
   await yoni.rpc('end_call', params: {'p_offer': offerId});
+  check(
+    (await seenBy(me, uid(yoni)))?['call_until'] == null,
+    'call ended → no longer "in a call"',
+  );
 
   // --- right after a call: not the same pair again (30-minute pause)
   await me.rpc('clear_availability');
@@ -589,6 +604,44 @@ Future<void> main() async {
   check(
     seen.any((a) => a['user_id'] == uid(me) && a['mode'] == 'driving'),
     'Yoni sees me free (driving)',
+  );
+  // Another phone call (the background service notices it): yes/no only.
+  check(
+    await background.rpc(
+          'device_phone_call',
+          params: {'p_token': 'x' * 43, 'p_on': true},
+        ) ==
+        'bad_token',
+    'a wrong device token can\'t say "in a call"',
+  );
+  await background.rpc(
+    'device_phone_call',
+    params: {'p_token': device, 'p_on': true},
+  );
+  check(
+    (await rows(
+      yoni,
+      'availability',
+    )).any((a) => a['user_id'] == uid(me) && a['phone_until'] != null),
+    'on another call → Yoni sees me "in a call"',
+  );
+  check(
+    await dbCount(
+          "select count(*) from availability where phone_until > now() + interval '4 minutes'",
+        ) ==
+        0,
+    '"in a call" ends by itself within 3 minutes',
+  );
+  await background.rpc(
+    'device_phone_call',
+    params: {'p_token': device, 'p_on': false},
+  );
+  check(
+    (await rows(
+      yoni,
+      'availability',
+    )).any((a) => a['user_id'] == uid(me) && a['phone_until'] == null),
+    'call ended → free again',
   );
   final tripStart = seen.firstWhere(
     (a) => a['user_id'] == uid(me),
@@ -1290,8 +1343,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 21,
-    'the server says its version (21)',
+    await eve.rpc('schema_version') == 22,
+    'the server says its version (22)',
   );
 
   // --- profile photos: private, friends only

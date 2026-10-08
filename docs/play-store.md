@@ -70,7 +70,7 @@
 | Personal info → Phone number | כן | רשות | App functionality (חברים מוצאים זה את זה, שיחה רגילה) |
 | Photos and videos → Photos | כן | רשות | App functionality (תמונת פרופיל) |
 | Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, ונשמרים רק של מי שמשתמש ב-DriveBond; שמות לא יוצאים מהטלפון) |
-| App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד; דירוג 0–5 לחברים; "פעיל לאחרונה" בימים) |
+| App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד; דירוג 0–5 לחברים; "פעיל לאחרונה" בימים; "בשיחה" כן/לא בזמן זמינות) |
 | App activity → Other user-generated content | כן | רשות | App functionality (משוב ודיווח שהמשתמש כותב ושולח) |
 | Device or other IDs | כן | רשות | App functionality (זמינות ברקע) |
 | Location | לא | — | — |
