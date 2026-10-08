@@ -830,5 +830,18 @@
   "firstRunPhotoTitle": "תמונה, כדי שיזהו אותך",
   "firstRunPhotoBody": "רשות. רק החברים שלך רואים אותה.",
   "firstRunPhotoGo": "לבחור תמונה",
-  "firstRunPhotoLater": "אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\"."
+  "firstRunPhotoLater": "אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".",
+  "peopleAsleepTitle": "לא פתחו את האפליקציה חודש ({count})",
+  "@peopleAsleepTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "peopleAsleepBody": "חוזרים לרשימה לבד כשהם פותחים שוב.",
+  "removedTitle": "אנשים שהסרתי",
+  "removedBody": "אפשר להחזיר — וחוזרים להיות חברים מיד.",
+  "removedEmpty": "לא הסרת אף אחד.",
+  "removedRestore": "להחזיר"
 }

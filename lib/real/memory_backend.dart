@@ -33,6 +33,9 @@ class MemoryServer {
   /// Pairs one side removed: never suggested/added again from contacts.
   final removed = <String>{};
 
+  /// Who removed each removed pair.
+  final removedBy = <String, String>{};
+
   /// "owner|friend" → 0–5 (not set = 3).
   final ratings = <String, int>{};
   int ratingOf(String x, String y) => ratings['$x|$y'] ?? 3;
@@ -49,11 +52,15 @@ class MemoryServer {
   void connect(String x, String y) {
     connections.add(_pair(x, y));
     removed.remove(_pair(x, y));
+    removedBy.remove(_pair(x, y));
   }
 
-  /// Disconnect a pair (remove, block) — remembered.
+  /// [x] disconnects from [y] (remove, block) — remembered, with who did it.
   void disconnect(String x, String y) {
-    if (connections.remove(_pair(x, y))) removed.add(_pair(x, y));
+    if (connections.remove(_pair(x, y))) {
+      removed.add(_pair(x, y));
+      removedBy[_pair(x, y)] = x;
+    }
   }
 
   final photos = <String, Uint8List>{};
@@ -991,6 +998,32 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
+  Future<List<ContactMatch>> removedFriends() async {
+    final me = _uid;
+    return [
+      for (final pair in server.removed)
+        if (pair.split('|').contains(me) && server.removedBy[pair] == me)
+          if (pair.split('|').firstWhere((u) => u != me) case final other
+              when !server.blockedBetween(me, other) &&
+                  server.profiles.containsKey(other))
+            ContactMatch(other, server.profiles[other]!.name),
+    ];
+  }
+
+  @override
+  Future<bool> restoreFriend(String userId) async {
+    final me = _uid;
+    final pair = MemoryServer._pair(me, userId);
+    if (server.removedBy[pair] != me || server.blockedBetween(me, userId)) {
+      return false;
+    }
+    server.connect(me, userId);
+    server._createOffersFor(me);
+    server._changed();
+    return true;
+  }
+
+  @override
   Future<void> setRating(String friendId, int rating) async {
     final me = _uid;
     if (rating < 0 || rating > 5) throw const RealBackendException('unknown');
@@ -1148,7 +1181,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 23;
+  int schema = 24;
 
   @override
   Future<int> schemaVersion() async => schema;

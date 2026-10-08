@@ -81,6 +81,13 @@ abstract class RealBackend {
   /// Add the contacts I picked — connected at once. Returns their names.
   Future<List<String>> addContacts(List<String> userIds);
 
+  /// People I removed (not people who removed me), newest first.
+  Future<List<ContactMatch>> removedFriends();
+
+  /// Bring back someone I removed: friends again at once. False if not
+  /// allowed (they removed me, or a block).
+  Future<bool> restoreFriend(String userId);
+
   /// How much I want to talk with a friend, 0 (never offer) – 5 (first).
   Future<void> setRating(String friendId, int rating);
 

@@ -264,6 +264,28 @@ void main() {
     },
   );
 
+  test('bring back someone I removed (only I can)', () async {
+    await connect();
+    final yoniProfile = me.s.snapshot!.friends.single;
+    await me.c.unmatch(yoniProfile);
+    await refreshBoth();
+    expect(me.s.snapshot!.friends, isEmpty);
+    // Yoni didn't remove anyone: nothing to bring back on his side.
+    expect(await yoni.c.removedFriends(), isEmpty);
+    expect(
+      await yoni.backend.restoreFriend(me.backend.userId!),
+      isFalse,
+      reason: 'I removed Yoni — he cannot force his way back',
+    );
+    final mine = (await me.c.removedFriends())!;
+    expect(mine.single.name, 'יוני');
+    expect(await me.c.restoreFriend(mine.single), isTrue);
+    await yoni.c.refresh();
+    expect(me.s.snapshot!.friends.single.name, 'יוני');
+    expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+    expect(await me.c.removedFriends(), isEmpty);
+  });
+
   test('first steps: any hour for the routine', () async {
     await me.c.signIn('נתנאל', Gender.male);
     await me.c.firstRunRoutines(evening: 18 * 60 + 15);
@@ -1258,7 +1280,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 23)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 24)'));
     });
 
     test(

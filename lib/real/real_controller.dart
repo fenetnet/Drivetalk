@@ -407,7 +407,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 23;
+const kRequiredSchema = 24;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -641,6 +641,8 @@ class RealController extends Notifier<RealState> {
     unawaited(_backend.touchSeen());
     unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
+    // New people from my contacts (at most twice a day).
+    unawaited(_maybeSyncContacts());
   }
 
   // ------------------------------------------------------------ auto driving
@@ -2045,6 +2047,29 @@ class RealController extends Notifier<RealState> {
     });
     if (ok) _event('contacts_added');
     await refresh();
+  }
+
+  /// People I removed — to bring someone back. null = couldn't load.
+  Future<List<ContactMatch>?> removedFriends() async {
+    try {
+      final names = _localNames;
+      return [
+        for (final m in await _backend.removedFriends())
+          names[m.id] == null ? m : m.named(names[m.id]!),
+      ];
+    } on RealBackendException catch (e) {
+      _setError(e.code);
+      return null;
+    }
+  }
+
+  /// Bring back someone I removed: friends again at once.
+  Future<bool> restoreFriend(ContactMatch m) async {
+    var ok = false;
+    await _run(() async => ok = await _backend.restoreFriend(m.id));
+    if (ok) _notify(RealNoticeKind.contactsFound, name: m.name);
+    await refresh();
+    return ok;
   }
 
   /// "Not this one" on the new-contact card.

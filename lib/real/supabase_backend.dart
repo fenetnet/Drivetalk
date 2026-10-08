@@ -567,6 +567,21 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<List<ContactMatch>> removedFriends() => _guard(() async {
+    final rows = await _c.rpc('my_removed') as List;
+    return [
+      for (final r in rows.cast<Map>())
+        ContactMatch(r['user_id'] as String, r['display_name'] as String),
+    ];
+  });
+
+  @override
+  Future<bool> restoreFriend(String userId) => _guard(
+    () async =>
+        await _c.rpc('restore_friend', params: {'p_user': userId}) == true,
+  );
+
+  @override
   Future<void> setRating(String friendId, int rating) => _guard(
     () => _c.rpc(
       'set_rating',

@@ -693,3 +693,46 @@ Future<bool> editMyPhoto(
   );
   return error == null && bytes != null;
 }
+
+/// A friend's status with a small picture: 🚗 driving, ☕ break, 📞 in a call…
+class StatusLine extends StatelessWidget {
+  const StatusLine({
+    super.key,
+    required this.icon,
+    required this.text,
+    required this.color,
+    this.bold = false,
+    this.size = 14,
+    this.center = false,
+  });
+  final IconData icon;
+  final String text;
+  final Color color;
+  final bool bold;
+  final double size;
+  final bool center;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: center ? MainAxisSize.min : MainAxisSize.max,
+    mainAxisAlignment: center
+        ? MainAxisAlignment.center
+        : MainAxisAlignment.start,
+    children: [
+      Icon(icon, size: size + 3, color: color),
+      const SizedBox(width: 4),
+      Flexible(
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: size,
+            color: color,
+            fontWeight: bold ? FontWeight.w600 : null,
+          ),
+        ),
+      ),
+    ],
+  );
+}

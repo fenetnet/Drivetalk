@@ -2625,6 +2625,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".'**
   String get firstRunPhotoLater;
+
+  /// No description provided for @peopleAsleepTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא פתחו את האפליקציה חודש ({count})'**
+  String peopleAsleepTitle(int count);
+
+  /// No description provided for @peopleAsleepBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חוזרים לרשימה לבד כשהם פותחים שוב.'**
+  String get peopleAsleepBody;
+
+  /// No description provided for @removedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אנשים שהסרתי'**
+  String get removedTitle;
+
+  /// No description provided for @removedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר להחזיר — וחוזרים להיות חברים מיד.'**
+  String get removedBody;
+
+  /// No description provided for @removedEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הסרת אף אחד.'**
+  String get removedEmpty;
+
+  /// No description provided for @removedRestore.
+  ///
+  /// In he, this message translates to:
+  /// **'להחזיר'**
+  String get removedRestore;
 }
 
 class _AppLocalizationsDelegate

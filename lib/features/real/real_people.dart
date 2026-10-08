@@ -148,6 +148,82 @@ class RealPeopleScreen extends ConsumerWidget {
     final now = ref.watch(realNowProvider);
     final snap = s.snapshot;
     final friends = snap?.friends ?? const <RealProfile>[];
+    bool isAsleep(RealProfile f) => (snap?.inactiveDays[f.id] ?? 0) >= 30;
+    final active = [
+      for (final f in friends)
+        if (!isAsleep(f)) f,
+    ];
+    final asleep = [
+      for (final f in friends)
+        if (isAsleep(f)) f,
+    ];
+    Widget friendCard(RealProfile f) => Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: RealAvatar(
+          person: f.toPerson(),
+          size: 48,
+          online:
+              (snap!.availability[f.id]?.isActiveAt(now) ?? false) &&
+              !(snap.availability[f.id]?.inCallAt(now) ?? false),
+        ),
+        title: Text(
+          f.name,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            switch (snap.availability[f.id]) {
+              final a? when a.isActiveAt(now) && a.inCallAt(now) => StatusLine(
+                icon: Icons.call_rounded,
+                text: l.inCall,
+                color: AppColors.coralDeep,
+                bold: true,
+              ),
+              final a? when a.isActiveAt(now) => StatusLine(
+                icon: modeIcon(a.mode),
+                text:
+                    '${modeLabel(l, a.mode)} · '
+                    '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
+                color: AppColors.sageDark,
+              ),
+              _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {
+                >= 30 => l.inactiveMonth,
+                final d when d >= 7 => l.inactiveDays(d),
+                _ => l.realNotFree,
+              }),
+            },
+            RatingStars(rating: snap.ratingOf(f.id)),
+            if (snap.intents[f.id] case final i? when i.isActiveAt(now))
+              Text(
+                intentBadge(l, i, now),
+                style: const TextStyle(
+                  color: AppColors.coralDeep,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              tooltip: l.intentTitle,
+              icon: Icon(
+                snap.intents[f.id]?.isActiveAt(now) ?? false
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: AppColors.coralDeep,
+              ),
+              onPressed: () => openTalkIntentSheet(context, ref, f),
+            ),
+            const Icon(Icons.more_vert_rounded),
+          ],
+        ),
+        onTap: () => _friendActions(context, ref, f),
+      ),
+    );
 
     return SafeArea(
       child: RefreshIndicator(
@@ -178,77 +254,82 @@ class RealPeopleScreen extends ConsumerWidget {
                   style: const TextStyle(color: AppColors.inkSoft),
                 ),
               ),
-            for (final f in friends)
-              Card(
-                margin: const EdgeInsets.only(bottom: 10),
-                child: ListTile(
-                  leading: RealAvatar(
-                    person: f.toPerson(),
-                    size: 48,
-                    online:
-                        (snap!.availability[f.id]?.isActiveAt(now) ?? false) &&
-                        !(snap.availability[f.id]?.inCallAt(now) ?? false),
-                  ),
-                  title: Text(
-                    f.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      switch (snap.availability[f.id]) {
-                        final a? when a.isActiveAt(now) && a.inCallAt(now) =>
-                          Text(
-                            l.inCall,
-                            style: const TextStyle(
-                              color: AppColors.coralDeep,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        final a? when a.isActiveAt(now) => Text(
-                          '${modeLabel(l, a.mode)} · '
-                          '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
-                          style: const TextStyle(color: AppColors.sageDark),
-                        ),
-                        _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {
-                          >= 30 => l.inactiveMonth,
-                          final d when d >= 7 => l.inactiveDays(d),
-                          _ => l.realNotFree,
-                        }),
-                      },
-                      RatingStars(rating: snap.ratingOf(f.id)),
-                      if (snap.intents[f.id] case final i?
-                          when i.isActiveAt(now))
-                        Text(
-                          intentBadge(l, i, now),
-                          style: const TextStyle(
-                            color: AppColors.coralDeep,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        tooltip: l.intentTitle,
-                        icon: Icon(
-                          snap.intents[f.id]?.isActiveAt(now) ?? false
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          color: AppColors.coralDeep,
-                        ),
-                        onPressed: () => openTalkIntentSheet(context, ref, f),
-                      ),
-                      const Icon(Icons.more_vert_rounded),
-                    ],
-                  ),
-                  onTap: () => _friendActions(context, ref, f),
-                ),
+            for (final f in active) friendCard(f),
+            // Haven't opened the app for a month: out of the way, not gone.
+            if (asleep.isNotEmpty)
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: Text(l.peopleAsleepTitle(asleep.length)),
+                subtitle: Text(l.peopleAsleepBody),
+                children: [for (final f in asleep) friendCard(f)],
               ),
             if (friends.isNotEmpty) const RealCirclesSection(),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => _openRemoved(context, ref),
+                icon: const Icon(Icons.restore_rounded),
+                label: Text(l.removedTitle),
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// People I removed, each with "bring back".
+  Future<void> _openRemoved(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheet) => SafeArea(
+        child: FutureBuilder<List<ContactMatch>?>(
+          future: c.removedFriends(),
+          builder: (context, snap) {
+            if (snap.connectionState != ConnectionState.done) {
+              return const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+            final people = snap.data ?? const <ContactMatch>[];
+            return SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l.removedTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    people.isEmpty ? l.removedEmpty : l.removedBody,
+                    style: const TextStyle(color: AppColors.inkSoft),
+                  ),
+                  const SizedBox(height: 8),
+                  for (final m in people)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.person_outline_rounded),
+                      title: Text(m.name),
+                      trailing: FilledButton.tonal(
+                        onPressed: () async {
+                          Navigator.pop(sheet);
+                          await c.restoreFriend(m);
+                        },
+                        child: Text(l.removedRestore),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

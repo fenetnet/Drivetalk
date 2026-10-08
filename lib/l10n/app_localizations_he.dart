@@ -1532,4 +1532,24 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get firstRunPhotoLater =>
       'אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".';
+
+  @override
+  String peopleAsleepTitle(int count) {
+    return 'לא פתחו את האפליקציה חודש ($count)';
+  }
+
+  @override
+  String get peopleAsleepBody => 'חוזרים לרשימה לבד כשהם פותחים שוב.';
+
+  @override
+  String get removedTitle => 'אנשים שהסרתי';
+
+  @override
+  String get removedBody => 'אפשר להחזיר — וחוזרים להיות חברים מיד.';
+
+  @override
+  String get removedEmpty => 'לא הסרת אף אחד.';
+
+  @override
+  String get removedRestore => 'להחזיר';
 }

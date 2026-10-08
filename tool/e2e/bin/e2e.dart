@@ -1196,6 +1196,37 @@ Future<void> main() async {
     again.isEmpty && readd.isEmpty,
     'removed → not suggested or added again from contacts',
   );
+  // Bring back (D-090): only the one who removed can.
+  check(
+    List.from(await avi.rpc('my_removed')).isEmpty &&
+        await avi.rpc('restore_friend', params: {'p_user': uid(noa)}) == false,
+    'the removed side cannot force their way back',
+  );
+  final noaRemoved = List<Map<String, dynamic>>.from(
+    await noa.rpc('my_removed'),
+  );
+  check(
+    noaRemoved.length == 1 && noaRemoved.single['display_name'] == 'אבי',
+    '"people I removed" lists only my own removals',
+  );
+  check(
+    await noa.rpc('restore_friend', params: {'p_user': uid(avi)}) == true &&
+        (await rows(avi, 'profiles')).any((p) => p['display_name'] == 'נועה'),
+    'bring back → friends again at once',
+  );
+  final pairA = [
+    uid(avi),
+    uid(noa),
+  ].reduce((a, b) => a.compareTo(b) < 0 ? a : b);
+  final pairB = [
+    uid(avi),
+    uid(noa),
+  ].reduce((a, b) => a.compareTo(b) > 0 ? a : b);
+  await noa
+      .from('connections')
+      .delete()
+      .eq('user_a', pairA)
+      .eq('user_b', pairB);
   // An invitation link still works (explicit), and clears the removal.
   final invBack = List<Map<String, dynamic>>.from(
     await avi.rpc('create_invitation'),
@@ -1353,8 +1384,8 @@ Future<void> main() async {
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
   check(
-    await eve.rpc('schema_version') == 23,
-    'the server says its version (23)',
+    await eve.rpc('schema_version') == 24,
+    'the server says its version (24)',
   );
 
   // --- profile photos: private, friends only

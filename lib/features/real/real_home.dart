@@ -356,20 +356,19 @@ class _FreeNowCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          inCall
+                        StatusLine(
+                          icon: inCall ? Icons.call_rounded : modeIcon(a.mode),
+                          // The picture says how (car, coffee…); the text
+                          // just how long.
+                          text: inCall
                               ? l.inCall
-                              : '${modeLabel(l, a.mode)} · '
-                                    '${a.minutesLeftAt(now)}′',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: inCall
-                                ? AppColors.coralDeep
-                                : AppColors.inkSoft,
-                            fontWeight: inCall ? FontWeight.w600 : null,
-                          ),
+                              : l.timeLeftMinutes(a.minutesLeftAt(now)),
+                          color: inCall
+                              ? AppColors.coralDeep
+                              : AppColors.inkSoft,
+                          bold: inCall,
+                          size: 12,
+                          center: true,
                         ),
                       ],
                     ),
