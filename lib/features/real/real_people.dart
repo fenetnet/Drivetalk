@@ -577,16 +577,20 @@ class RatingStars extends StatelessWidget {
         style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
       );
     }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 1; i <= 5; i++)
-          Icon(
-            i <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
-            size: 16,
-            color: i <= rating ? AppColors.terracotta : AppColors.inkSoft,
-          ),
-      ],
+    return Semantics(
+      label: context.l10n.ratingLabel(rating),
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 1; i <= 5; i++)
+            Icon(
+              i <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
+              size: 16,
+              color: i <= rating ? AppColors.terracotta : AppColors.inkSoft,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -699,7 +703,10 @@ class _ContactPickerSheet extends ConsumerWidget {
 
 /// My contacts who use DriveTalk, each with "Add".
 class ContactPickList extends ConsumerWidget {
-  const ContactPickList({super.key});
+  const ContactPickList({super.key, this.scrolls = true});
+
+  /// False inside a page that scrolls itself (one scroll, not two).
+  final bool scrolls;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -709,6 +716,7 @@ class ContactPickList extends ConsumerWidget {
     final matches = c.contactMatches;
     return ListView(
       shrinkWrap: true,
+      physics: scrolls ? null : const NeverScrollableScrollPhysics(),
       children: [
         for (final m in matches)
           ListTile(

@@ -15,6 +15,7 @@ import 'real_moments.dart';
 import 'real_people.dart';
 import 'real_settings.dart';
 import 'real_test_screen.dart';
+import '../../domain/hebrew_text.dart';
 
 /// Real (two-user test) mode: what to show right now.
 class RealRoot extends ConsumerWidget {
@@ -40,7 +41,7 @@ class RealRoot extends ConsumerWidget {
           ?..hideCurrentSnackBar()
           ..showSnackBar(
             SnackBar(
-              content: Text(_noticeText(l, n)),
+              content: Text(joinHebrewPrefixes(_noticeText(l, n))),
               behavior: SnackBarBehavior.floating,
               duration: Duration(
                 seconds:
@@ -90,6 +91,8 @@ class RealRoot extends ConsumerWidget {
 
   static bool _takeover(RealState s, DateTime now) =>
       s.invite != null ||
+      // Driver mode: no lists or small buttons left on top of it.
+      isRealDriving(s, now) ||
       (s.callStage != CallStage.none && s.callStage != CallStage.feedback) ||
       currentOffer(s, now) != null ||
       waitingOffer(s, now) != null;
@@ -101,6 +104,7 @@ class RealRoot extends ConsumerWidget {
       RealNoticeKind.noAnswer => l.realNoAnswer,
       RealNoticeKind.later => l.realLaterNote(n.name ?? ''),
       RealNoticeKind.quickCancelled => l.realQuickCancelled,
+      RealNoticeKind.quickTooLate => l.realQuickTooLate,
       RealNoticeKind.connected => l.realConnected(n.name ?? ''),
       RealNoticeKind.inviteProblem => inviteProblemText(l, n.code),
       RealNoticeKind.error => realErrorText(l, n.code ?? 'unknown'),
@@ -374,7 +378,14 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         decoration: InputDecoration(
                           labelText: l.realPhoneRequired,
                           helperText: l.realPhoneRequiredHelp,
-                          helperMaxLines: 4,
+                          helperMaxLines: 6,
+                          // Say why "let's go" is grey (e.g. a typo).
+                          errorText:
+                              _phone.text.trim().isNotEmpty &&
+                                  normalizePhone(_phone.text) == null
+                              ? l.realErrorInvalidPhone
+                              : null,
+                          errorMaxLines: 2,
                           prefixIcon: const Icon(Icons.phone_rounded),
                         ),
                       ),

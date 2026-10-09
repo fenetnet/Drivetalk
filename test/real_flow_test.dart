@@ -879,6 +879,58 @@ void main() {
       expect([...me.dialer.dialed, ...yoni.dialer.dialed], isEmpty);
     });
 
+    test('quick connect: a cancel after the 5 seconds says so', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.saveCircle(
+        RealCircle(
+          id: '',
+          name: 'קרובים',
+          quick: true,
+          memberIds: {yoni.backend.userId!},
+        ),
+      );
+      await yoni.c.saveCircle(
+        RealCircle(
+          id: '',
+          name: 'משפחה',
+          quick: true,
+          memberIds: {me.backend.userId!},
+        ),
+      );
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await yoni.c.refresh();
+      await pump(50);
+      expect(yoni.s.callStage, CallStage.connecting);
+      now = now.add(const Duration(seconds: 6));
+      await yoni.c.cancelCall();
+      // Not pretended: the call goes on, and Yoni is told why.
+      await pump(700);
+      expect(yoni.s.notice?.kind, RealNoticeKind.quickTooLate);
+      expect(yoni.s.callStage, isNot(CallStage.none));
+      expect(me.dialer.dialed.length + yoni.dialer.dialed.length, 1);
+    });
+
+    test('ending a call frees me on the server at once', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await yoni.c.refresh();
+      final offer = currentOffer(me.s, now)!;
+      await me.c.respond(offer, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await pump(50);
+      expect(yoni.s.call, isNotNull);
+      yoni.c.finishCall();
+      await pump(20);
+      expect(yoni.s.callStage, CallStage.feedback);
+      final o = server.offers[offer.id]!;
+      expect(o.a == yoni.backend.userId ? o.endedA : o.endedB, isTrue);
+    });
+
     test('one-sided quick circle is just a normal question', () async {
       await connect();
       await me.c.saveCircle(
@@ -1293,6 +1345,23 @@ void main() {
         expect(server.contactHashes[me.backend.userId], isNotEmpty);
         await me.c.clearContacts();
         expect(server.contactHashes[me.backend.userId], isNull);
+        // Not uploaded again by itself, even after a day.
+        now = now.add(const Duration(hours: 13));
+        final later = ProviderContainer(
+          overrides: [
+            realBackendProvider.overrideWithValue(me.backend),
+            localStoreProvider.overrideWithValue(me.store),
+            realClockProvider.overrideWithValue(clock),
+            voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+            drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+            contactsReaderProvider.overrideWithValue(me.contacts),
+            photoCacheProvider.overrideWithValue(me.photos),
+          ],
+        );
+        later.read(realProvider);
+        await pump(50);
+        expect(server.contactHashes[me.backend.userId], isNull);
+        later.dispose();
         // Synced again, then the permission is taken away → removed quietly.
         await me.c.syncContacts();
         expect(server.contactHashes[me.backend.userId], isNotEmpty);

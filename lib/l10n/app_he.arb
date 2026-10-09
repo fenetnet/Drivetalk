@@ -35,8 +35,8 @@
       }
     }
   },
-  "durationUntilTripEnds": "עד שאסיים את הנסיעה",
-  "durationTripNote": "מסתיים ביציאה מהרכב, ולכל היותר אחרי {hours} שעות.",
+  "durationUntilTripEnds": "לכל הנסיעה",
+  "durationTripNote": "נשאר עד {hours} שעות, או עד שלוחצים \"לעצור\".",
   "@durationTripNote": {
     "placeholders": {
       "hours": {
@@ -58,7 +58,7 @@
   "more": "עוד",
   "block": "חסימה",
   "report": "דיווח",
-  "unmatch": "הסרה מהקשרים",
+  "unmatch": "הסרה מהרשימה",
   "relFamily": "משפחה",
   "relCloseFriend": "חבר/ה קרוב/ה",
   "relFriend": "חבר/ה",
@@ -101,14 +101,13 @@
     }
   },
   "noticeReported": "תודה, הדיווח התקבל",
-  "callAudioOnly": "שיחת קול בלבד · לא מוקלטת",
   "yes": "כן",
   "no": "לא",
-  "skip": "דלג",
+  "skip": "לדלג",
   "driverSearching": "מחפשים...",
   "driverStop": "לעצור",
   "driverSafety": "בנהיגה: רק דיבורית ומתקן לרכב",
-  "personUnmatchConfirm": "להסיר את {name} מהקשרים? אפשר יהיה להתחבר שוב רק בהזמנה חדשה.",
+  "personUnmatchConfirm": "להסיר את {name} מהרשימה? אפשר להחזיר בכל רגע ב\"אנשים שהסרתי\".",
   "@personUnmatchConfirm": {
     "placeholders": {
       "name": {
@@ -166,10 +165,11 @@
   },
   "routineStart": "כן",
   "availableTo": "עם מי מתאים לדבר עכשיו?",
+  "routineAvailableTo": "עם מי מתאים לדבר בזמן הזה?",
   "availableToEveryone": "כולם",
-  "driverListening": "מקשיב… אפשר לומר \"כן\" או \"לא\"",
+  "driverListening": "מקשיבים… אפשר לומר \"כן\" או \"לא\"",
   "callWeAreDone": "סיימנו",
-  "noticeMicDenied": "אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.",
+  "noticeMicDenied": "אין הרשאת מיקרופון — עונים בכפתורים. אפשר לאשר בהגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
   "photoFromGallery": "מהגלריה",
   "photoFromCamera": "צילום",
   "photoRemove": "הסרה",
@@ -186,6 +186,9 @@
   },
   "routinesEmpty": "עוד אין זמנים קבועים",
   "routineAdd": "הוספת זמן קבוע",
+  "routineDelete": "מחיקת השגרה",
+  "routineDeleteConfirm": "למחוק את השגרה הזו?",
+  "routineDeleteGo": "למחוק",
   "save": "שמירה",
   "daySun": "א׳",
   "dayMon": "ב׳",
@@ -195,11 +198,11 @@
   "dayFri": "ו׳",
   "daySat": "ש׳",
   "realNotConfiguredTitle": "הבדיקה עם חבר עוד לא מחוברת",
-  "realNotConfiguredBody": "בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.",
+  "realNotConfiguredBody": "בגרסה הזו השרת עוד לא הוגדר. צריך להתקין גרסה מעודכנת.",
   "realStarting": "מתחברים…",
   "realWelcomeTitle": "בדיקה עם חבר",
   "realPhoneLabel": "מספר טלפון (לא חובה)",
-  "realPhoneHelp": "חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\".",
+  "realPhoneHelp": "חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".",
   "realJoin": "יאללה",
   "realInviteWaitingAfterJoin": "יש לך הזמנה — היא תיפתח מיד אחרי הכניסה",
   "realTabPeople": "האנשים שלי",
@@ -215,6 +218,7 @@
   "realWaitingForFriends": "כשחבר יהיה פנוי — נשאל את שניכם.",
   "realFreeFriendsTitle": "עכשיו",
   "realNobodyFree": "יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.",
+  "realFreeHint": "רוצים לדבר? לוחצים \"יש לי זמן\" ונציע לכם.",
   "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
   "homeIntentsTitle": "אשמח לדבר",
   "homeIntentsBody": "כשתהיו פנויים יחד — נציע אותם קודם.",
@@ -276,7 +280,7 @@
   "realDidNotWorkOut": "לא הסתדר הפעם. נחפש הזדמנות אחרת.",
   "routinesExplain": "זמנים קבועים שבהם הזמינות נדלקת לבד, למשל הנסיעה לעבודה.",
   "realBlockedBody": "אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.",
-  "settingsPrivacyBody": "מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.",
+  "settingsPrivacyBody": "מה נשמר ומה לא. אפשר גם למחוק מהשרת את מה שסונכרן מאנשי הקשר.",
   "realNoAnswer": "אין תשובה כרגע. נציע שוב בהזדמנות אחרת.",
   "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
   "realVoiceTheyCall": "{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}",
@@ -299,7 +303,16 @@
     }
   },
   "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
+  "realQuickSeconds": "{seconds, plural, =1{עוד שנייה — אפשר לבטל} other{עוד {seconds} שניות — אפשר לבטל}}",
+  "@realQuickSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
   "realQuickCancelled": "החיבור בוטל",
+  "realQuickTooLate": "כבר מאוחר לבטל — השיחה מתחילה",
   "widgetTip": "אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג'טים ← DriveBond.",
   "gotIt": "הבנתי",
   "realContactsAgain": "חיפוש שוב באנשי הקשר",
@@ -365,7 +378,7 @@
     }
   },
   "firstRunNoneTitle": "כדי לנסות את DriveBond צריך לפחות חבר אחד",
-  "firstRunNoneBody": "שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.",
+  "firstRunNoneBody": "שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.",
   "firstRunLater": "אחר כך",
   "firstRunMagicTitle": "ככה זה עובד",
   "firstRunMagicBody": "כששניכם פנויים, DriveBond מציעה לכם לדבר. לא צריך לתאם מראש.",
@@ -420,15 +433,17 @@
   },
   "realTheyCallBody": "אם השיחה לא מגיעה תוך דקה — לחצו למטה.",
   "realTheyDidNotCall": "לא הגיעה שיחה",
-  "realInAppTitle": "מדברים עם {name}",
-  "@realInAppTitle": {
+  "realNoNumbersTitle": "אי אפשר להתקשר הפעם",
+  "realNoNumbersBody": "לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".",
+  "realDialFailedTitle": "לא הצלחנו לפתוח את החייגן",
+  "realDialFailedBody": "אפשר להתקשר ל{name} ידנית.",
+  "@realDialFailedBody": {
     "placeholders": {
       "name": {
         "type": "String"
       }
     }
   },
-  "realInAppBody": "לא שותפו מספרים, לכן זו שיחה מדומה.",
   "realFeedbackThanks": "תודה!",
   "realConnected": "מעולה! {name} עכשיו ברשימת האנשים שלך.",
   "@realConnected": {
@@ -480,7 +495,7 @@
   "realErrorRateLimited": "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
   "realErrorTooManyInvites": "יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.",
   "realSaved": "נשמר",
-  "realDialFailed": "לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה",
+  "realDialFailed": "לא הצלחנו לפתוח את החייגן. אפשר להתקשר ידנית.",
   "realUnmatched": "הקשר עם {name} הוסר",
   "@realUnmatched": {
     "placeholders": {
@@ -528,7 +543,7 @@
   "realPhotoTitle": "התמונה שלי",
   "realPhotoSaved": "התמונה נשמרה",
   "realPhotoRemoved": "התמונה הוסרה",
-  "realPrivacyNote": "בלי מיקום ובלי הקלטות. השרת יודע רק את השם שלך, מי החברים שלך, ואם יש לך זמן עכשיו.",
+  "realPrivacyNote": "בלי מיקום ובלי הקלטות. בשרת נשמר רק מה שהאפליקציה צריכה: שם, מספר ותמונה (אם הוספת), החברים שלך ומתי יש לך זמן. הפירוט המלא במדיניות הפרטיות.",
   "realVoiceOffer": "{gender, select, female{{name} פנויה. לדבר?} male{{name} פנוי. לדבר?} other{ל{name} יש זמן. לדבר?}}",
   "@realVoiceOffer": {
     "placeholders": {
@@ -556,10 +571,10 @@
   "realAutoDrivingBody": "כשהטלפון מזהה שהוא ברכב, החברים יכולים לקבל הצעה לדבר איתך. נכבה לבד בסוף הנסיעה. בלי GPS ובלי מיקום.",
   "realAutoDrivingUnsupported": "לא זמין במכשיר הזה",
   "realAutoDrivingDialogTitle": "זמינות אוטומטית בנסיעה",
-  "realAutoDrivingDialogBody": "הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
+  "realAutoDrivingDialogBody": "הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
   "realAutoDrivingOn": "מעולה. בנסיעה הבאה הזמינות תידלק לבד.",
   "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
-  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.",
+  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
   "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.",
   "realStatusAutoDriving": "זיהוי נסיעה",
   "realAutoOn": "פעיל",
@@ -601,7 +616,7 @@
   "realCircleQuick": "חיבור מהיר",
   "realCircleQuickBody": "אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.",
   "realCircleMembers": "מי במעגל",
-  "realCircleCount": "{count} אנשים",
+  "realCircleCount": "{count, plural, =0{עוד אין אנשים} =1{אדם אחד} other{{count} אנשים}}",
   "@realCircleCount": {
     "placeholders": {
       "count": {
@@ -612,7 +627,7 @@
   "realCircleDelete": "מחיקת המעגל",
   "realCircleNoFriends": "קודם צריך להזמין חברים",
   "realPhoneRequired": "מספר טלפון (לא חובה)",
-  "realPhoneRequiredHelp": "למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.",
+  "realPhoneRequiredHelp": "למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.",
   "realContactsTitle": "חברים מאנשי הקשר",
   "realContactsBody": "מוצאים מי מאנשי הקשר כבר כאן, ובוחרים את מי להוסיף. לא צריך את המספר שלך.",
   "realContactsButton": "חיפוש באנשי הקשר",
@@ -660,7 +675,7 @@
       }
     }
   },
-  "realFreeCount": "{count} פנויים",
+  "realFreeCount": "יש זמן: {count}",
   "@realFreeCount": {
     "placeholders": {
       "count": {
@@ -711,6 +726,14 @@
   "realRoutineNotifBody": "הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.",
   "done": "סיום",
   "ratingNever": "לא להציע",
+  "ratingLabel": "דירוג {rating} מתוך 5",
+  "@ratingLabel": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      }
+    }
+  },
   "ratingTitle": "כמה בא לי לדבר?",
   "ratingHelp": "0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.",
   "contactsPickTitle": "מאנשי הקשר שלך כבר כאן",

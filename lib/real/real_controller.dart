@@ -99,7 +99,11 @@ class RealCall {
     required this.startedAt,
     this.phone,
     this.quick = false,
+    this.dialFailed = false,
   });
+
+  /// The phone's dialer couldn't be opened (call them by hand).
+  final bool dialFailed;
 
   /// Quick connect (both pre-approved): no question, 5-second cancel.
   final bool quick;
@@ -117,6 +121,7 @@ enum RealNoticeKind {
   noAnswer,
   later,
   quickCancelled,
+  quickTooLate,
   connected,
   inviteProblem,
   error,
@@ -426,6 +431,7 @@ class RealController extends Notifier<RealState> {
   var _noticeSeq = 0;
   var _voiceSeq = 0;
   var _tick = 0;
+  DateTime? _expiryRefreshed;
   var _refreshing = false;
   DateTime? _refreshStarted;
 
@@ -439,6 +445,18 @@ class RealController extends Notifier<RealState> {
   /// When I started waiting for the other side's answer (per offer).
   final _waitingSince = <String, DateTime>{};
   final _givingUp = <String>{};
+
+  /// Offers whose answer from this phone is on its way: the refresh must not
+  /// act on them too (e.g. start the same call twice).
+  final _answering = <String>{};
+
+  /// A quick-connect cancel on its way (the countdown poll waits for it).
+  String? _cancellingQuick;
+  String? _quickTooLate;
+
+  /// The app is on screen (not just running behind another app, which it
+  /// does while the availability notification is up).
+  var _foreground = true;
 
   /// When "both said yes" reached this phone (to measure the time to dial).
   DateTime? _bothYesAt;
@@ -544,7 +562,11 @@ class RealController extends Notifier<RealState> {
     // going on, every 30s otherwise; also notice my own expiry promptly.
     _ticker = Timer.periodic(const Duration(seconds: 5), (_) => _onTick());
     try {
-      _lifecycle = AppLifecycleListener(onResume: _onResume);
+      _lifecycle = AppLifecycleListener(
+        onResume: _onResume,
+        onStateChange: (s) => _foreground =
+            s == AppLifecycleState.resumed || s == AppLifecycleState.inactive,
+      );
       unawaited(checkForUpdate());
     } catch (_) {
       // No binding (pure unit tests).
@@ -583,7 +605,13 @@ class RealController extends Notifier<RealState> {
     _tick++;
     final now = _now();
     final mine = state.snapshot?.mine;
-    final myExpired = mine != null && !mine.isActiveAt(now);
+    // My time just ran out: refresh once for it (the server removes the
+    // row within a minute; no need to ask every 5 seconds until then).
+    final myExpired =
+        mine != null &&
+        !mine.isActiveAt(now) &&
+        _expiryRefreshed != mine.expiresAt;
+    if (myExpired) _expiryRefreshed = mine.expiresAt;
     final busy =
         myActiveAvailability(state, now) != null ||
         waitingOffer(state, now) != null;
@@ -600,7 +628,9 @@ class RealController extends Notifier<RealState> {
   void checkWaiting() {
     final now = _now();
     final w = waitingOffer(state, now);
-    if (w == null) return;
+    if (w == null || _handled.contains(w.id) || _givingUp.contains(w.id)) {
+      return;
+    }
     final since = _waitingSince.putIfAbsent(w.id, () => now);
     if (now.difference(since) >= waitLimit) unawaited(_giveUpWaiting(w));
   }
@@ -613,27 +643,49 @@ class RealController extends Notifier<RealState> {
       final answer = await _backend.answerOffer(offer.id, accept: false);
       if (!ref.mounted) return;
       // They said yes at the same moment: the call goes on as usual.
-      if (answer.status != OfferStatus.accepted) {
-        _markHandled(offer.id);
-        _event('wait_timeout');
-        _notify(RealNoticeKind.noAnswer);
-        if (_driving(_now())) _speak(_l.realNoAnswer);
+      if (answer.status == OfferStatus.accepted) return;
+      _dropLocalAnswer(offer.id);
+      if (answer.status == OfferStatus.declined) {
+        // Maybe they pressed "I'll get back to you": then that is what I
+        // hear (the refresh after this shows it), not "no answer".
+        await refresh();
+        if (!ref.mounted) return;
+        final o = state.snapshot?.offers
+            .where((x) => x.id == offer.id)
+            .firstOrNull;
+        if (o?.laterFrom != null && o!.laterFrom != state.myId) return;
       }
+      _markHandled(offer.id);
+      _event('wait_timeout');
+      _notify(RealNoticeKind.noAnswer);
+      if (_driving(_now())) _speak(_l.realNoAnswer);
     } on RealBackendException catch (e) {
       _setError(e.code);
     } finally {
-      _givingUp.remove(offer.id);
+      // Kept until here, so the next 5-second check can't give up twice.
+      try {
+        if (ref.mounted) await refresh();
+      } finally {
+        _givingUp.remove(offer.id);
+      }
     }
-    await refresh();
+  }
+
+  void _dropLocalAnswer(String id) {
+    if (!state.localAnswers.containsKey(id)) return;
+    state = state.copyWith(localAnswers: {...state.localAnswers}..remove(id));
   }
 
   void _onResume() {
     unawaited(checkForUpdate());
     if (state.phase != RealPhase.ready) return;
-    // Back from the phone call → ask how it went.
+    // Back from the phone call → ask how it went (and I'm free again).
     if (state.callStage == CallStage.dialed) {
       state = state.copyWith(callStage: CallStage.feedback);
+      final id = state.call?.offerId;
+      if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
     }
+    if (state.myPhone == null) unawaited(_loadPhone());
     refresh();
     unawaited(_backend.touchSeen());
     unawaited(_loadDriving());
@@ -659,6 +711,8 @@ class RealController extends Notifier<RealState> {
       await _backend.clearContactHashes();
       await _store.setString(_contactsSyncKey, null);
       await _store.setString(_localNamesKey, null);
+      // Don't upload them again by itself (a manual search turns it back on).
+      await _store.setString(_contactsOffKey, 'on');
       _notify(RealNoticeKind.saved);
     });
   }
@@ -900,6 +954,7 @@ class RealController extends Notifier<RealState> {
 
   static const _bgTipKey = 'real.backgroundTip.v1';
   static const _usedFreeKey = 'real.usedFree.v1';
+  static const _micTipKey = 'real.micTip.v1';
 
   /// Battery saving may stop the background service: ask once, but only
   /// people who use it (auto driving, routines, or "I'm free" before).
@@ -959,8 +1014,9 @@ class RealController extends Notifier<RealState> {
         minutes: 120,
         texts: _nativeTexts(),
       );
-      if (!ok) await _backend.revokeDeviceTokens();
     });
+    // Voice answers on the road: the microphone question comes now.
+    if (ok && state.prefs.voice) await ref.read(voiceServiceProvider).prepare();
     _notify(
       ok ? RealNoticeKind.autoDrivingOn : RealNoticeKind.autoDrivingFailed,
     );
@@ -1001,7 +1057,11 @@ class RealController extends Notifier<RealState> {
   };
 
   /// Background notifications need this phone's device token. Created once.
-  Future<void> _ensureDevice() async {
+  Future<void> _ensureDevice() => _ensuringDevice ??= _ensureDeviceOnce()
+      .whenComplete(() => _ensuringDevice = null);
+  Future<void>? _ensuringDevice;
+
+  Future<void> _ensureDeviceOnce() async {
     final detector = ref.read(drivingDetectorProvider);
     final st = await detector.status();
     if (!st.supported || st.configured || !ref.mounted) return;
@@ -1163,21 +1223,33 @@ class RealController extends Notifier<RealState> {
   Future<String?> deleteAccount() async {
     state = state.copyWith(busy: true);
     try {
-      await ref.read(drivingDetectorProvider).setRoutines('[]');
-      await ref.read(drivingDetectorProvider).forget();
+      // The server first: if it fails, nothing on this phone is lost.
       await _backend.deleteAccount();
     } on RealBackendException catch (e) {
       if (ref.mounted) state = state.copyWith(busy: false);
       return e.code;
     }
+    final detector = ref.read(drivingDetectorProvider);
+    await detector.setRoutines('[]');
+    await detector.forget();
     _photos.clear();
     await _photoCache.clear();
     for (final k in [
       _firstRunKey,
+      _adminKey,
       _handledKey,
       _routinesKey,
       _contactsSyncKey,
       _localNamesKey,
+      _contactsOffKey,
+      _freeLogKey,
+      _hintNoKey,
+      _seenMatchesKey,
+      _keepInactiveKey,
+      _widgetTipKey,
+      _bgTipKey,
+      _usedFreeKey,
+      _micTipKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -1193,12 +1265,16 @@ class RealController extends Notifier<RealState> {
 
   void setPrefs(RealPrefs prefs) {
     final namesChanged = prefs.speakNames != state.prefs.speakNames;
+    final wasVoice = state.prefs.voice;
     state = state.copyWith(prefs: prefs);
     _store.setString(_prefsKey, jsonEncode(prefs.toJson()));
     if (namesChanged && state.driving.configured) {
       unawaited(ref.read(drivingDetectorProvider).updateTexts(_nativeTexts()));
     }
     if (!prefs.voice) _stopVoice();
+    if (prefs.voice && !wasVoice) {
+      unawaited(ref.read(voiceServiceProvider).prepare());
+    }
   }
 
   // ------------------------------------------------------------ data
@@ -1356,10 +1432,9 @@ class RealController extends Notifier<RealState> {
         onError: (Object _) => null,
       );
       if (!ref.mounted) return null;
-      if (snap != null) {
-        _keepPhoto(me, snap.me.photoVersion, jpeg);
-        state = state.copyWith(snapshot: _withPhotos(snap));
-      }
+      if (snap != null) _keepPhoto(me, snap.me.photoVersion, jpeg);
+      // The normal refresh (with the names saved on this phone).
+      await refresh();
     }
     return null;
   }
@@ -1375,7 +1450,7 @@ class RealController extends Notifier<RealState> {
           state.callStage == CallStage.connecting) {
         _endQuick(cancelledByOther: true);
       }
-      if (_handled.contains(o.id)) continue;
+      if (_handled.contains(o.id) || _answering.contains(o.id)) continue;
       if (_givingUp.contains(o.id) && o.status != OfferStatus.accepted) {
         continue;
       }
@@ -1385,6 +1460,9 @@ class RealController extends Notifier<RealState> {
           now.difference(o.updatedAt).abs() < const Duration(minutes: 5);
       switch (o.status) {
         case OfferStatus.accepted:
+          // Behind another app (the notification is up): the phone can't
+          // dial from the background — handled when the app is opened.
+          if (!_foreground && fresh) break;
           _markHandled(o.id);
           if (fresh && other != null && _callIdle(state)) {
             unawaited(_beginCall(o, other));
@@ -1418,7 +1496,12 @@ class RealController extends Notifier<RealState> {
     final hasFriends = snap.friends.isNotEmpty;
     if (hasFriends && !_hadFriends) _event('first_friend_connected');
     _hadFriends = hasFriends;
-    if (offer != null && offer.id != _spokenOfferId && _driving(now)) {
+    // Read aloud (and listen) only on screen: in the background the
+    // notification already reads it — never twice, never a hidden mic.
+    if (offer != null &&
+        offer.id != _spokenOfferId &&
+        _driving(now) &&
+        _foreground) {
       _spokenOfferId = offer.id;
       final p = snap.friend(offer.otherId(me))!;
       unawaited(_askByVoice(offer, p));
@@ -1442,6 +1525,11 @@ class RealController extends Notifier<RealState> {
     String? circleId,
   }) async {
     await _maybeAskDirectCall();
+    // Answering "yes"/"no" by voice needs the microphone: ask now, while
+    // the person is looking at the screen, never in the middle of a drive.
+    if (mode == AvailabilityMode.driving && state.prefs.voice) {
+      await ref.read(voiceServiceProvider).prepare();
+    }
     final ok = await _run(
       () => _backend.setAvailability(
         mode,
@@ -1462,6 +1550,9 @@ class RealController extends Notifier<RealState> {
 
   Future<void> stopAvailability() async {
     _stopVoice();
+    // I stopped: the question I was waiting on ends without a "sorry".
+    final w = waitingOffer(state, _now());
+    if (w != null) _markHandled(w.id);
     // Also end the trip-bound background service, if one is running.
     if (state.driving.inVehicle) {
       await ref.read(drivingDetectorProvider).simulate(enter: false);
@@ -1487,6 +1578,7 @@ class RealController extends Notifier<RealState> {
       );
       _markHandled(offer.id);
     }
+    _answering.add(offer.id);
     try {
       if (accept) {
         _event('offer_accepted_local');
@@ -1499,7 +1591,7 @@ class RealController extends Notifier<RealState> {
         final other = state.snapshot?.friend(offer.otherId(state.myId!));
         _markHandled(offer.id);
         _event('both_accepted');
-        if (other != null) {
+        if (other != null && _callIdle(state)) {
           // I said the second "yes": I dial — now, not after a countdown.
           _bothYesAt = DateTime.now();
           _startCall(offer, other, iCall: answer.iCall, phone: answer.phone);
@@ -1516,6 +1608,8 @@ class RealController extends Notifier<RealState> {
       final answers = {...state.localAnswers}..remove(offer.id);
       state = state.copyWith(localAnswers: answers);
       _setError(e.code, show: true);
+    } finally {
+      _answering.remove(offer.id);
     }
     await refresh();
   }
@@ -1533,8 +1627,22 @@ class RealController extends Notifier<RealState> {
 
   /// Stop waiting for the other side (counts as "not now" for this offer).
   Future<void> cancelWaiting(RealOffer offer) async {
-    _markHandled(offer.id);
-    await _run(() => _backend.answerOffer(offer.id, accept: false));
+    OfferAnswer? answer;
+    _answering.add(offer.id);
+    try {
+      await _run(
+        () async =>
+            answer = await _backend.answerOffer(offer.id, accept: false),
+      );
+    } finally {
+      _answering.remove(offer.id);
+    }
+    // They said yes at the same moment: the call goes on (the refresh
+    // starts it, so I see who calls whom). Otherwise it's simply over.
+    if (answer?.status != OfferStatus.accepted) {
+      _markHandled(offer.id);
+      _dropLocalAnswer(offer.id);
+    }
     await refresh();
   }
 
@@ -1558,7 +1666,11 @@ class RealController extends Notifier<RealState> {
       case VoiceAnswer.no:
         await respond(offer, accept: false);
       case VoiceAnswer.permissionDenied:
-        _notify(RealNoticeKind.micDenied);
+        // Said once; after that the buttons simply do the job.
+        if (_store.getString(_micTipKey) == null) {
+          _store.setString(_micTipKey, 'shown');
+          _notify(RealNoticeKind.micDenied);
+        }
       case VoiceAnswer.none:
       case VoiceAnswer.unavailable:
         break; // the big buttons are always there
@@ -1624,6 +1736,8 @@ class RealController extends Notifier<RealState> {
       quick: offer.quick,
     );
     state = state.copyWith(call: call, callStage: CallStage.connecting);
+    // Only my own dialing is measured ("both said yes" → dialing).
+    if (role != CallRole.iCall) _bothYesAt = null;
     switch (role) {
       case CallRole.iCall:
         unawaited(_dial());
@@ -1694,8 +1808,17 @@ class RealController extends Notifier<RealState> {
           state.callStage != CallStage.connecting) {
         return;
       }
+      if (_cancellingQuick == offer.id) {
+        // "Cancel" was tapped: wait for the server's answer to it.
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        continue;
+      }
       switch (r.state) {
         case CallStartState.ready:
+          if (_quickTooLate == offer.id) {
+            _quickTooLate = null;
+            _notify(RealNoticeKind.quickTooLate);
+          }
           _startCall(offer, other, iCall: r.iCall, phone: r.phone);
           return;
         case CallStartState.cancelled:
@@ -1708,7 +1831,13 @@ class RealController extends Notifier<RealState> {
       }
     }
     if (ref.mounted && state.call?.offerId == offer.id) {
-      _endQuick(cancelledByOther: false);
+      // Gave up: tell the server too, so the other phone stops waiting.
+      await _quietly(() async {
+        await _backend.cancelCall(offer.id);
+      });
+      if (ref.mounted && state.call?.offerId == offer.id) {
+        _endQuick(cancelledByOther: false);
+      }
     }
   }
 
@@ -1750,8 +1879,17 @@ class RealController extends Notifier<RealState> {
     if (!ref.mounted) return;
     if (r == DialResult.failed || r == DialResult.unsupported) {
       // Couldn't open the phone: fall back to the in-app (simulated) call.
-      _notify(RealNoticeKind.dialFailed);
-      state = state.copyWith(callStage: CallStage.inApp);
+      state = state.copyWith(
+        callStage: CallStage.inApp,
+        call: RealCall(
+          offerId: call.offerId,
+          other: call.other,
+          role: call.role,
+          startedAt: call.startedAt,
+          quick: call.quick,
+          dialFailed: true,
+        ),
+      );
     }
   }
 
@@ -1759,17 +1897,36 @@ class RealController extends Notifier<RealState> {
   Future<void> cancelCall() async {
     final call = state.call;
     if (call == null || state.callStage != CallStage.connecting) return;
+    if (_cancellingQuick == call.offerId) return;
     _stopVoice();
-    state = state.copyWith(callStage: CallStage.none, call: null);
-    await _quietly(() async {
-      await _backend.cancelCall(call.offerId);
-      await _backend.endCall(call.offerId);
-    });
+    _cancellingQuick = call.offerId;
+    var cancelled = true;
+    try {
+      cancelled = await _backend.cancelCall(call.offerId);
+    } on RealBackendException {
+      // Offline: at least stop on this phone.
+    } finally {
+      _cancellingQuick = null;
+    }
+    if (!ref.mounted) return;
+    if (!cancelled) {
+      // Too late (the 5 seconds were over) — or the other side already
+      // cancelled. Keep going; the next check tells which.
+      _quickTooLate = call.offerId;
+      return;
+    }
+    if (state.call?.offerId == call.offerId) {
+      state = state.copyWith(callStage: CallStage.none, call: null);
+    }
+    await _quietly(() => _backend.endCall(call.offerId));
   }
 
   void finishCall() {
     _stopVoice();
+    final id = state.call?.offerId;
     state = state.copyWith(callStage: CallStage.feedback);
+    // Free both of us right away (feedback can wait).
+    if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
   }
 
   /// After the call: it was good / not again soon / we didn't talk.
@@ -1902,6 +2059,10 @@ class RealController extends Notifier<RealState> {
       jsonEncode([for (final r in list) r.toJson()]),
     );
     await _ensureDevice();
+    // A routine is useless if its notifications can't be shown.
+    if (list.isNotEmpty) {
+      await ref.read(drivingDetectorProvider).requestNotificationPermission();
+    }
     await ref
         .read(drivingDetectorProvider)
         .setRoutines(
@@ -1944,7 +2105,12 @@ class RealController extends Notifier<RealState> {
   /// number I have becomes a friend automatically (owner decision D-047).
   /// Only hashes of numbers leave the phone; names never do.
   /// [quiet]: no pop-up about the result (the first-run screen shows it).
-  Future<void> syncContacts({bool ask = true, bool quiet = false}) async {
+  Future<void> syncContacts({
+    bool ask = true,
+    bool quiet = false,
+    bool auto = false,
+  }) async {
+    if (!auto) await _store.setString(_contactsOffKey, null);
     final reader = ref.read(contactsReaderProvider);
     final allowed = ask
         ? await reader.requestPermission()
@@ -1963,8 +2129,9 @@ class RealController extends Notifier<RealState> {
       if (h == null || (saved[h]?.isNotEmpty ?? false)) continue;
       saved[h] = c.name.trim();
     }
-    await _run(() async {
-      final found = await _backend.syncContacts(saved.keys.toList());
+    Future<void> body() async {
+      // The server takes up to 5000 numbers at a time.
+      final found = await _backend.syncContacts(saved.keys.take(5000).toList());
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
       final names = {..._localNames};
@@ -1980,12 +2147,24 @@ class RealController extends Notifier<RealState> {
       if (!quiet && ask && contactMatches.isEmpty) {
         _notify(RealNoticeKind.contactsNone);
       }
-    });
+    }
+
+    if (auto) {
+      // In the background: no spinner, no error message.
+      try {
+        await body();
+      } on RealBackendException {
+        return;
+      }
+    } else {
+      await _run(body);
+    }
     if (ref.mounted) await refresh();
   }
 
   static const _seenMatchesKey = 'real.contactsSeen.v1';
   static const _localNamesKey = 'real.localNames.v1';
+  static const _contactsOffKey = 'real.contactsOff.v1';
 
   /// Friend id → the name saved in MY contacts. Only on this phone.
   Map<String, String> get _localNames {
@@ -2188,7 +2367,8 @@ class RealController extends Notifier<RealState> {
     if (last != null && _now().difference(last) < const Duration(hours: 12)) {
       return;
     }
-    await syncContacts(ask: false);
+    if (_store.getString(_contactsOffKey) != null) return;
+    await syncContacts(ask: false, auto: true);
   }
 
   Future<List<RealProfile>> blockedPeople() async {

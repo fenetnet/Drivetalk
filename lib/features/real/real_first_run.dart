@@ -101,7 +101,7 @@ class RealFirstRunScreen extends ConsumerWidget {
             const Card(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: ContactPickList(),
+                child: ContactPickList(scrolls: false),
               ),
             ),
           ],

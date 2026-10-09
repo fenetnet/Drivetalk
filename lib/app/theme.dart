@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Blue and white, green for "free now" (owner decision D-088,
   // 2026-10-08; the names are from the earlier coral design).
-  static const terracotta = Color(0xFF1E88E5); // blue — main action
-  static const coralDeep = Color(0xFF1565C0); // blue text on white
+  // Deep enough for white text on it (and it on white) to read well.
+  static const terracotta = Color(0xFF1565C0); // blue — main action
+  static const coralDeep = Color(0xFF0D47A1); // blue text on white
   static const blush = Color(0xFFE3F2FD);
   static const blushDeep = Color(0xFFBBDEFB);
   static const sage = Color(0xFF3FA37A); // "free now" green

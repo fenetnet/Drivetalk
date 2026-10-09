@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../domain/hebrew_text.dart';
+
 enum VoiceAnswer { yes, no, none, permissionDenied, unavailable }
 
 /// Driving: read things aloud and understand a simple "yes" / "no".
@@ -14,6 +16,10 @@ abstract class VoiceService {
   Future<VoiceAnswer> listenYesNo({
     Duration timeout = const Duration(seconds: 6),
   });
+
+  /// Asks for the microphone now (a calm moment, before driving) so the
+  /// question never pops up in the middle of a drive. True when allowed.
+  Future<bool> prepare();
 
   /// Debug / tests: answer the current (or next) listen without a microphone.
   void simulateAnswer(VoiceAnswer answer);
@@ -123,7 +129,7 @@ class DeviceVoiceService implements VoiceService {
   Future<void> speak(String text) async {
     try {
       await _configure();
-      await _tts.speak(text);
+      await _tts.speak(joinHebrewPrefixes(text));
     } catch (_) {
       // No TTS engine — the screen still shows everything.
     }
@@ -147,6 +153,36 @@ class DeviceVoiceService implements VoiceService {
     }
   }
 
+  /// Only success is remembered: a refusal can be fixed in settings.
+  Future<void> _init() async {
+    if (_sttReady == true) return;
+    _sttReady = await _stt.initialize(
+      onError: (e) {
+        // No offline Hebrew model: next time use the phone's recognizer.
+        final m = e.errorMsg.toLowerCase();
+        if (!_heardSomething &&
+            (m.contains('language') ||
+                m.contains('server') ||
+                m.contains('network') ||
+                m.contains('not_supported'))) {
+          _onDeviceFailed = true;
+        }
+        final p = _pending;
+        if (p != null && !p.isCompleted) p.complete(VoiceAnswer.none);
+      },
+    );
+  }
+
+  @override
+  Future<bool> prepare() async {
+    try {
+      await _init();
+      return _sttReady == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Future<VoiceAnswer> listenYesNo({
     Duration timeout = const Duration(seconds: 6),
@@ -159,21 +195,11 @@ class DeviceVoiceService implements VoiceService {
     final completer = _pending = Completer<VoiceAnswer>();
     try {
       _heardSomething = false;
-      _sttReady ??= await _stt.initialize(
-        onError: (e) {
-          // No offline Hebrew model: next time use the phone's recognizer.
-          final m = e.errorMsg.toLowerCase();
-          if (!_heardSomething &&
-              (m.contains('language') ||
-                  m.contains('server') ||
-                  m.contains('network') ||
-                  m.contains('not_supported'))) {
-            _onDeviceFailed = true;
-          }
-          final p = _pending;
-          if (p != null && !p.isCompleted) p.complete(VoiceAnswer.none);
-        },
-      );
+      // Never ask for the microphone here (mid-drive): only [prepare] does.
+      if (_sttReady != true) {
+        if (!await _stt.hasPermission) return VoiceAnswer.permissionDenied;
+        await _init();
+      }
       if (_sttReady != true) {
         final denied = !(await _stt.hasPermission);
         return denied ? VoiceAnswer.permissionDenied : VoiceAnswer.unavailable;
@@ -219,6 +245,14 @@ class SilentVoiceService implements VoiceService {
   Future<void> speak(String text) async => spoken.add(text);
   @override
   Future<void> stop() async {}
+
+  /// Tests: was the microphone asked for?
+  var prepared = 0;
+  @override
+  Future<bool> prepare() async {
+    prepared++;
+    return true;
+  }
 
   @override
   void simulateAnswer(VoiceAnswer answer) {

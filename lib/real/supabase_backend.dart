@@ -879,16 +879,19 @@ class SupabaseRealBackend implements RealBackend {
       'too_many_open_invitations',
       'invalid_circle',
       'not_owner',
+      'rate_limited',
+      'too_many_contacts',
     ];
     for (final k in known) {
       if (message.contains(k)) return k;
     }
-    if (message.contains('display_name')) return 'invalid_name';
-    if (message.contains('phone')) return 'invalid_phone';
     if (message.contains('permission denied') ||
         message.contains('row-level security')) {
       return 'not_allowed';
     }
+    if (message.contains('display_name')) return 'invalid_name';
+    // Only the "is this a phone number" rule of the phone_numbers table.
+    if (message.contains('phone_numbers_phone_check')) return 'invalid_phone';
     if (message.contains('does not exist') ||
         message.contains('Could not find')) {
       return 'schema_missing';

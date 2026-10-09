@@ -181,13 +181,13 @@ abstract class AppLocalizations {
   /// No description provided for @durationUntilTripEnds.
   ///
   /// In he, this message translates to:
-  /// **'עד שאסיים את הנסיעה'**
+  /// **'לכל הנסיעה'**
   String get durationUntilTripEnds;
 
   /// No description provided for @durationTripNote.
   ///
   /// In he, this message translates to:
-  /// **'מסתיים ביציאה מהרכב, ולכל היותר אחרי {hours} שעות.'**
+  /// **'נשאר עד {hours} שעות, או עד שלוחצים \"לעצור\".'**
   String durationTripNote(int hours);
 
   /// No description provided for @tierFamiliar.
@@ -277,7 +277,7 @@ abstract class AppLocalizations {
   /// No description provided for @unmatch.
   ///
   /// In he, this message translates to:
-  /// **'הסרה מהקשרים'**
+  /// **'הסרה מהרשימה'**
   String get unmatch;
 
   /// No description provided for @relFamily.
@@ -388,12 +388,6 @@ abstract class AppLocalizations {
   /// **'תודה, הדיווח התקבל'**
   String get noticeReported;
 
-  /// No description provided for @callAudioOnly.
-  ///
-  /// In he, this message translates to:
-  /// **'שיחת קול בלבד · לא מוקלטת'**
-  String get callAudioOnly;
-
   /// No description provided for @yes.
   ///
   /// In he, this message translates to:
@@ -409,7 +403,7 @@ abstract class AppLocalizations {
   /// No description provided for @skip.
   ///
   /// In he, this message translates to:
-  /// **'דלג'**
+  /// **'לדלג'**
   String get skip;
 
   /// No description provided for @driverSearching.
@@ -433,7 +427,7 @@ abstract class AppLocalizations {
   /// No description provided for @personUnmatchConfirm.
   ///
   /// In he, this message translates to:
-  /// **'להסיר את {name} מהקשרים? אפשר יהיה להתחבר שוב רק בהזמנה חדשה.'**
+  /// **'להסיר את {name} מהרשימה? אפשר להחזיר בכל רגע ב\"אנשים שהסרתי\".'**
   String personUnmatchConfirm(String name);
 
   /// No description provided for @personBlockConfirm.
@@ -592,6 +586,12 @@ abstract class AppLocalizations {
   /// **'עם מי מתאים לדבר עכשיו?'**
   String get availableTo;
 
+  /// No description provided for @routineAvailableTo.
+  ///
+  /// In he, this message translates to:
+  /// **'עם מי מתאים לדבר בזמן הזה?'**
+  String get routineAvailableTo;
+
   /// No description provided for @availableToEveryone.
   ///
   /// In he, this message translates to:
@@ -601,7 +601,7 @@ abstract class AppLocalizations {
   /// No description provided for @driverListening.
   ///
   /// In he, this message translates to:
-  /// **'מקשיב… אפשר לומר \"כן\" או \"לא\"'**
+  /// **'מקשיבים… אפשר לומר \"כן\" או \"לא\"'**
   String get driverListening;
 
   /// No description provided for @callWeAreDone.
@@ -613,7 +613,7 @@ abstract class AppLocalizations {
   /// No description provided for @noticeMicDenied.
   ///
   /// In he, this message translates to:
-  /// **'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.'**
+  /// **'אין הרשאת מיקרופון — עונים בכפתורים. אפשר לאשר בהגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.'**
   String get noticeMicDenied;
 
   /// No description provided for @photoFromGallery.
@@ -669,6 +669,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הוספת זמן קבוע'**
   String get routineAdd;
+
+  /// No description provided for @routineDelete.
+  ///
+  /// In he, this message translates to:
+  /// **'מחיקת השגרה'**
+  String get routineDelete;
+
+  /// No description provided for @routineDeleteConfirm.
+  ///
+  /// In he, this message translates to:
+  /// **'למחוק את השגרה הזו?'**
+  String get routineDeleteConfirm;
+
+  /// No description provided for @routineDeleteGo.
+  ///
+  /// In he, this message translates to:
+  /// **'למחוק'**
+  String get routineDeleteGo;
 
   /// No description provided for @save.
   ///
@@ -727,7 +745,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotConfiguredBody.
   ///
   /// In he, this message translates to:
-  /// **'בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.'**
+  /// **'בגרסה הזו השרת עוד לא הוגדר. צריך להתקין גרסה מעודכנת.'**
   String get realNotConfiguredBody;
 
   /// No description provided for @realStarting.
@@ -751,7 +769,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneHelp.
   ///
   /// In he, this message translates to:
-  /// **'חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\".'**
+  /// **'חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".'**
   String get realPhoneHelp;
 
   /// No description provided for @realJoin.
@@ -801,6 +819,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.'**
   String get realNobodyFree;
+
+  /// No description provided for @realFreeHint.
+  ///
+  /// In he, this message translates to:
+  /// **'רוצים לדבר? לוחצים \"יש לי זמן\" ונציע לכם.'**
+  String get realFreeHint;
 
   /// No description provided for @realNobodyFreeYet.
   ///
@@ -949,7 +973,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPrivacyBody.
   ///
   /// In he, this message translates to:
-  /// **'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.'**
+  /// **'מה נשמר ומה לא. אפשר גם למחוק מהשרת את מה שסונכרן מאנשי הקשר.'**
   String get settingsPrivacyBody;
 
   /// No description provided for @realNoAnswer.
@@ -982,11 +1006,23 @@ abstract class AppLocalizations {
   /// **'חיבור מהיר — אפשר לבטל'**
   String get realQuickConnectingBody;
 
+  /// No description provided for @realQuickSeconds.
+  ///
+  /// In he, this message translates to:
+  /// **'{seconds, plural, =1{עוד שנייה — אפשר לבטל} other{עוד {seconds} שניות — אפשר לבטל}}'**
+  String realQuickSeconds(int seconds);
+
   /// No description provided for @realQuickCancelled.
   ///
   /// In he, this message translates to:
   /// **'החיבור בוטל'**
   String get realQuickCancelled;
+
+  /// No description provided for @realQuickTooLate.
+  ///
+  /// In he, this message translates to:
+  /// **'כבר מאוחר לבטל — השיחה מתחילה'**
+  String get realQuickTooLate;
 
   /// No description provided for @widgetTip.
   ///
@@ -1219,7 +1255,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunNoneBody.
   ///
   /// In he, this message translates to:
-  /// **'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.'**
+  /// **'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.'**
   String get firstRunNoneBody;
 
   /// No description provided for @firstRunLater.
@@ -1384,17 +1420,29 @@ abstract class AppLocalizations {
   /// **'לא הגיעה שיחה'**
   String get realTheyDidNotCall;
 
-  /// No description provided for @realInAppTitle.
+  /// No description provided for @realNoNumbersTitle.
   ///
   /// In he, this message translates to:
-  /// **'מדברים עם {name}'**
-  String realInAppTitle(String name);
+  /// **'אי אפשר להתקשר הפעם'**
+  String get realNoNumbersTitle;
 
-  /// No description provided for @realInAppBody.
+  /// No description provided for @realNoNumbersBody.
   ///
   /// In he, this message translates to:
-  /// **'לא שותפו מספרים, לכן זו שיחה מדומה.'**
-  String get realInAppBody;
+  /// **'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".'**
+  String get realNoNumbersBody;
+
+  /// No description provided for @realDialFailedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לפתוח את החייגן'**
+  String get realDialFailedTitle;
+
+  /// No description provided for @realDialFailedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר להתקשר ל{name} ידנית.'**
+  String realDialFailedBody(String name);
 
   /// No description provided for @realFeedbackThanks.
   ///
@@ -1519,7 +1567,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDialFailed.
   ///
   /// In he, this message translates to:
-  /// **'לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה'**
+  /// **'לא הצלחנו לפתוח את החייגן. אפשר להתקשר ידנית.'**
   String get realDialFailed;
 
   /// No description provided for @realUnmatched.
@@ -1765,7 +1813,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPrivacyNote.
   ///
   /// In he, this message translates to:
-  /// **'בלי מיקום ובלי הקלטות. השרת יודע רק את השם שלך, מי החברים שלך, ואם יש לך זמן עכשיו.'**
+  /// **'בלי מיקום ובלי הקלטות. בשרת נשמר רק מה שהאפליקציה צריכה: שם, מספר ותמונה (אם הוספת), החברים שלך ומתי יש לך זמן. הפירוט המלא במדיניות הפרטיות.'**
   String get realPrivacyNote;
 
   /// No description provided for @realVoiceOffer.
@@ -1831,7 +1879,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingDialogBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
+  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
   String get realAutoDrivingDialogBody;
 
   /// No description provided for @realAutoDrivingOn.
@@ -1849,7 +1897,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingNoPermission.
   ///
   /// In he, this message translates to:
-  /// **'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.'**
+  /// **'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.'**
   String get realAutoDrivingNoPermission;
 
   /// No description provided for @realAutoDrivingFailed.
@@ -1975,7 +2023,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCircleCount.
   ///
   /// In he, this message translates to:
-  /// **'{count} אנשים'**
+  /// **'{count, plural, =0{עוד אין אנשים} =1{אדם אחד} other{{count} אנשים}}'**
   String realCircleCount(int count);
 
   /// No description provided for @realCircleDelete.
@@ -1999,7 +2047,7 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneRequiredHelp.
   ///
   /// In he, this message translates to:
-  /// **'למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.'**
+  /// **'למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.'**
   String get realPhoneRequiredHelp;
 
   /// No description provided for @realContactsTitle.
@@ -2101,7 +2149,7 @@ abstract class AppLocalizations {
   /// No description provided for @realFreeCount.
   ///
   /// In he, this message translates to:
-  /// **'{count} פנויים'**
+  /// **'יש זמן: {count}'**
   String realFreeCount(int count);
 
   /// No description provided for @realGroupAccount.
@@ -2217,6 +2265,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא להציע'**
   String get ratingNever;
+
+  /// No description provided for @ratingLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'דירוג {rating} מתוך 5'**
+  String ratingLabel(int rating);
 
   /// No description provided for @ratingTitle.
   ///

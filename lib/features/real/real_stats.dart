@@ -92,7 +92,7 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const Icon(Icons.chevron_left_rounded),
+                    const Icon(Icons.chevron_right_rounded),
                   ],
                 ),
                 onTap: () => _openNotes(context, reports: true),
@@ -109,7 +109,7 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    const Icon(Icons.chevron_left_rounded),
+                    const Icon(Icons.chevron_right_rounded),
                   ],
                 ),
                 onTap: () => _openNotes(context, reports: false),
@@ -200,7 +200,7 @@ class _NotesScreen extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text('${notes[i].title} · ${when(notes[i].at)}'),
-              trailing: const Icon(Icons.chevron_left_rounded),
+              trailing: const Icon(Icons.chevron_right_rounded),
               // Tap: everything about it.
               onTap: () => showDialog<void>(
                 context: context,

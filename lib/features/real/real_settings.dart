@@ -181,6 +181,7 @@ class RealSettingsScreen extends ConsumerWidget {
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => showModalBottomSheet<void>(
                   context: context,
+                  isScrollControlled: true,
                   showDragHandle: true,
                   builder: (_) => const _BlockedSheet(),
                 ),
@@ -546,7 +547,7 @@ class RealSettingsScreen extends ConsumerWidget {
           decoration: InputDecoration(
             labelText: l.realPhoneLabel,
             helperText: l.realPhoneHelp,
-            helperMaxLines: 2,
+            helperMaxLines: 5,
           ),
         ),
         actions: [
@@ -593,7 +594,7 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
     final l = context.l10n;
     final people = _people;
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,

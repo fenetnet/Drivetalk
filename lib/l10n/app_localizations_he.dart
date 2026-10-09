@@ -63,11 +63,11 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get durationUntilTripEnds => 'עד שאסיים את הנסיעה';
+  String get durationUntilTripEnds => 'לכל הנסיעה';
 
   @override
   String durationTripNote(int hours) {
-    return 'מסתיים ביציאה מהרכב, ולכל היותר אחרי $hours שעות.';
+    return 'נשאר עד $hours שעות, או עד שלוחצים \"לעצור\".';
   }
 
   @override
@@ -114,7 +114,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get report => 'דיווח';
 
   @override
-  String get unmatch => 'הסרה מהקשרים';
+  String get unmatch => 'הסרה מהרשימה';
 
   @override
   String get relFamily => 'משפחה';
@@ -196,16 +196,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get noticeReported => 'תודה, הדיווח התקבל';
 
   @override
-  String get callAudioOnly => 'שיחת קול בלבד · לא מוקלטת';
-
-  @override
   String get yes => 'כן';
 
   @override
   String get no => 'לא';
 
   @override
-  String get skip => 'דלג';
+  String get skip => 'לדלג';
 
   @override
   String get driverSearching => 'מחפשים...';
@@ -218,7 +215,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String personUnmatchConfirm(String name) {
-    return 'להסיר את $name מהקשרים? אפשר יהיה להתחבר שוב רק בהזמנה חדשה.';
+    return 'להסיר את $name מהרשימה? אפשר להחזיר בכל רגע ב\"אנשים שהסרתי\".';
   }
 
   @override
@@ -306,17 +303,20 @@ class AppLocalizationsHe extends AppLocalizations {
   String get availableTo => 'עם מי מתאים לדבר עכשיו?';
 
   @override
+  String get routineAvailableTo => 'עם מי מתאים לדבר בזמן הזה?';
+
+  @override
   String get availableToEveryone => 'כולם';
 
   @override
-  String get driverListening => 'מקשיב… אפשר לומר \"כן\" או \"לא\"';
+  String get driverListening => 'מקשיבים… אפשר לומר \"כן\" או \"לא\"';
 
   @override
   String get callWeAreDone => 'סיימנו';
 
   @override
   String get noticeMicDenied =>
-      'אין הרשאת מיקרופון, אז אי אפשר לענות בקול. אפשר לאשר בהגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות. הכפתורים תמיד עובדים.';
+      'אין הרשאת מיקרופון — עונים בכפתורים. אפשר לאשר בהגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.';
 
   @override
   String get photoFromGallery => 'מהגלריה';
@@ -356,6 +356,15 @@ class AppLocalizationsHe extends AppLocalizations {
   String get routineAdd => 'הוספת זמן קבוע';
 
   @override
+  String get routineDelete => 'מחיקת השגרה';
+
+  @override
+  String get routineDeleteConfirm => 'למחוק את השגרה הזו?';
+
+  @override
+  String get routineDeleteGo => 'למחוק';
+
+  @override
   String get save => 'שמירה';
 
   @override
@@ -384,7 +393,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNotConfiguredBody =>
-      'בגרסה הזו השרת עוד לא הוגדר. בינתיים אפשר להמשיך בהדגמה.';
+      'בגרסה הזו השרת עוד לא הוגדר. צריך להתקין גרסה מעודכנת.';
 
   @override
   String get realStarting => 'מתחברים…';
@@ -397,7 +406,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realPhoneHelp =>
-      'חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\".';
+      'חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".';
 
   @override
   String get realJoin => 'יאללה';
@@ -431,6 +440,9 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get realNobodyFree =>
       'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.';
+
+  @override
+  String get realFreeHint => 'רוצים לדבר? לוחצים \"יש לי זמן\" ונציע לכם.';
 
   @override
   String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
@@ -528,7 +540,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get settingsPrivacyBody =>
-      'מה נשמר ומה לא. אפשר גם למחוק את אנשי הקשר.';
+      'מה נשמר ומה לא. אפשר גם למחוק מהשרת את מה שסונכרן מאנשי הקשר.';
 
   @override
   String get realNoAnswer => 'אין תשובה כרגע. נציע שוב בהזדמנות אחרת.';
@@ -555,7 +567,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickConnectingBody => 'חיבור מהיר — אפשר לבטל';
 
   @override
+  String realQuickSeconds(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'עוד $seconds שניות — אפשר לבטל',
+      one: 'עוד שנייה — אפשר לבטל',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get realQuickCancelled => 'החיבור בוטל';
+
+  @override
+  String get realQuickTooLate => 'כבר מאוחר לבטל — השיחה מתחילה';
 
   @override
   String get widgetTip =>
@@ -690,7 +716,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunNoneBody =>
-      'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה — מתחברים לבד.';
+      'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.';
 
   @override
   String get firstRunLater => 'אחר כך';
@@ -794,12 +820,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realTheyDidNotCall => 'לא הגיעה שיחה';
 
   @override
-  String realInAppTitle(String name) {
-    return 'מדברים עם $name';
-  }
+  String get realNoNumbersTitle => 'אי אפשר להתקשר הפעם';
 
   @override
-  String get realInAppBody => 'לא שותפו מספרים, לכן זו שיחה מדומה.';
+  String get realNoNumbersBody =>
+      'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".';
+
+  @override
+  String get realDialFailedTitle => 'לא הצלחנו לפתוח את החייגן';
+
+  @override
+  String realDialFailedBody(String name) {
+    return 'אפשר להתקשר ל$name ידנית.';
+  }
 
   @override
   String get realFeedbackThanks => 'תודה!';
@@ -880,7 +913,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realSaved => 'נשמר';
 
   @override
-  String get realDialFailed => 'לא הצלחנו לפתוח את החייגן — עוברים לשיחה מדומה';
+  String get realDialFailed => 'לא הצלחנו לפתוח את החייגן. אפשר להתקשר ידנית.';
 
   @override
   String realUnmatched(String name) {
@@ -1009,7 +1042,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realPrivacyNote =>
-      'בלי מיקום ובלי הקלטות. השרת יודע רק את השם שלך, מי החברים שלך, ואם יש לך זמן עכשיו.';
+      'בלי מיקום ובלי הקלטות. בשרת נשמר רק מה שהאפליקציה צריכה: שם, מספר ותמונה (אם הוספת), החברים שלך ומתי יש לך זמן. הפירוט המלא במדיניות הפרטיות.';
 
   @override
   String realVoiceOffer(String name, String gender) {
@@ -1053,7 +1086,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realAutoDrivingDialogBody =>
-      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן.\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
+      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
 
   @override
   String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה הזמינות תידלק לבד.';
@@ -1063,7 +1096,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realAutoDrivingNoPermission =>
-      'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ‹ אפליקציות ‹ DriveBond ‹ הרשאות.';
+      'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.';
 
   @override
   String get realAutoDrivingFailed => 'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.';
@@ -1134,7 +1167,14 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realCircleCount(int count) {
-    return '$count אנשים';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count אנשים',
+      one: 'אדם אחד',
+      zero: 'עוד אין אנשים',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1148,7 +1188,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realPhoneRequiredHelp =>
-      'למה כדאי: חברים ששמרו את המספר שלך יתחברו אליך לבד, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל אותו רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.';
+      'למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.';
 
   @override
   String get realContactsTitle => 'חברים מאנשי הקשר';
@@ -1221,7 +1261,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realFreeCount(int count) {
-    return '$count פנויים';
+    return 'יש זמן: $count';
   }
 
   @override
@@ -1303,6 +1343,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get ratingNever => 'לא להציע';
+
+  @override
+  String ratingLabel(int rating) {
+    return 'דירוג $rating מתוך 5';
+  }
 
   @override
   String get ratingTitle => 'כמה בא לי לדבר?';

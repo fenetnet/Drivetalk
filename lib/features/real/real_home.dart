@@ -376,6 +376,15 @@ class _FreeNowCard extends StatelessWidget {
                 },
               ),
             ),
+          // Their faces don't do anything by themselves: say what does.
+          if (!meFree && free.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                l.realFreeHint,
+                style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+              ),
+            ),
         ],
       ),
     );

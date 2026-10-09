@@ -71,10 +71,30 @@ class RoutinesScreen extends ConsumerWidget {
                 ),
                 trailing: IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),
-                  onPressed: () => save([
-                    for (final x in routines)
-                      if (x.id != r.id) x,
-                  ]),
+                  tooltip: l.routineDelete,
+                  onPressed: () async {
+                    final ok = await showDialog<bool>(
+                      context: context,
+                      builder: (d) => AlertDialog(
+                        content: Text(l.routineDeleteConfirm),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(d, false),
+                            child: Text(l.cancel),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.pop(d, true),
+                            child: Text(l.routineDeleteGo),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (ok != true) return;
+                    await save([
+                      for (final x in routines)
+                        if (x.id != r.id) x,
+                    ]);
+                  },
                 ),
               ),
             ),
@@ -110,7 +130,7 @@ class _RoutineEditorState extends State<_RoutineEditor> {
   Widget build(BuildContext context) {
     final l = context.l10n;
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -197,7 +217,7 @@ class _RoutineEditorState extends State<_RoutineEditor> {
             if (widget.circles.isNotEmpty) ...[
               const SizedBox(height: 12),
               Text(
-                l.availableTo,
+                l.routineAvailableTo,
                 style: const TextStyle(color: AppColors.inkSoft),
               ),
               const SizedBox(height: 6),

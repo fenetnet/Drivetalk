@@ -12,6 +12,7 @@ import '../../l10n/app_localizations.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
+import '../../domain/hebrew_text.dart';
 
 /// "Now" for real-mode screens, refreshed every second.
 final realNowProvider = NotifierProvider<RealNow, DateTime>(RealNow.new);
@@ -71,7 +72,7 @@ extension MomentColors on MomentStyle {
   /// Two soft rings behind the picture.
   (Color, Color) get rings => switch (this) {
     MomentStyle.light => (AppColors.blush, AppColors.blushDeep),
-    MomentStyle.coral => (const Color(0xFF1E88E5), const Color(0xFF42A5F5)),
+    MomentStyle.coral => (const Color(0xFF1866BA), const Color(0xFF1A6FC4)),
     MomentStyle.green => (const Color(0xFF367A63), const Color(0xFF3F8A70)),
     MomentStyle.dark => (const Color(0xFF1B1F2D), const Color(0xFF1F2434)),
   };
@@ -551,7 +552,7 @@ class MomentText extends StatelessWidget {
   Widget build(BuildContext context) {
     final st = style;
     return Text(
-      text,
+      joinHebrewPrefixes(text),
       textAlign: TextAlign.center,
       style: TextStyle(
         color: soft ? st.softText : st.text,

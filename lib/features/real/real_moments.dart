@@ -45,7 +45,7 @@ class RealOfferScreen extends ConsumerWidget {
         children: [
           HeroAvatar(
             person: other.toPerson(),
-            size: dark ? 200 : 168,
+            size: dark ? 150 : 168,
             ring: dark ? AppColors.driverRing : Colors.white,
           ),
           const SizedBox(height: 32),
@@ -196,8 +196,15 @@ class RealCallScreen extends ConsumerWidget {
       label: l.callWeAreDone,
       icon: Icons.call_end_rounded,
       style: style,
+      height: dark ? 96 : 76,
       onTap: c.finishCall,
     );
+
+    // Quick connect: the 5 seconds to cancel, counted on screen (the server
+    // has the final word; this is only what the person sees).
+    final quickLeft = call.quick
+        ? 5 - ref.watch(realNowProvider).difference(call.startedAt).inSeconds
+        : 0;
 
     return switch (s.callStage) {
       CallStage.connecting => MomentLayout(
@@ -206,11 +213,20 @@ class RealCallScreen extends ConsumerWidget {
           call.quick
               ? l.realQuickConnecting(call.other.name)
               : l.realCallingNow(call.other.name),
-          body: call.quick ? l.realQuickConnectingBody : null,
+          body: !call.quick
+              ? null
+              : quickLeft > 0
+              ? l.realQuickSeconds(quickLeft)
+              : l.realQuickConnectingBody,
         ),
         actions: [
           if (call.quick)
-            SecondaryPill(label: l.cancel, style: style, onTap: c.cancelCall),
+            SecondaryPill(
+              label: l.cancel,
+              style: style,
+              height: dark ? 120 : 76,
+              onTap: c.cancelCall,
+            ),
         ],
       ),
       CallStage.dialed => MomentLayout(
@@ -235,37 +251,26 @@ class RealCallScreen extends ConsumerWidget {
           ),
         ],
       ),
+      // No phone call is possible: say so plainly (no fake call screen).
       _ => MomentLayout(
         style: style,
-        footer: l.callAudioOnly,
         top: header(
-          l.realInAppTitle(call.other.name),
-          body: l.realInAppBody,
-          extra: Padding(
-            padding: const EdgeInsets.only(top: 28),
-            child: _CallTimer(since: call.startedAt, style: style),
-          ),
+          call.dialFailed ? l.realDialFailedTitle : l.realNoNumbersTitle,
+          body: call.dialFailed
+              ? l.realDialFailedBody(call.other.name)
+              : l.realNoNumbersBody,
         ),
-        actions: [done],
+        actions: [
+          PrimaryPill(
+            label: l.gotIt,
+            style: style,
+            height: dark ? 96 : 76,
+            // Dialed by hand: still ask how it went.
+            onTap: call.dialFailed ? c.finishCall : c.skipFeedback,
+          ),
+        ],
       ),
     };
-  }
-}
-
-class _CallTimer extends ConsumerWidget {
-  const _CallTimer({required this.since, required this.style});
-  final DateTime since;
-  final MomentStyle style;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final now = ref.watch(realNowProvider);
-    final d = now.difference(since);
-    final secs = d.isNegative ? 0 : d.inSeconds;
-    final text =
-        '${(secs ~/ 60).toString().padLeft(2, '0')}:'
-        '${(secs % 60).toString().padLeft(2, '0')}';
-    return MomentText(text, size: 24, style: style, soft: true);
   }
 }
 
