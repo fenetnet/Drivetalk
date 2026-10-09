@@ -1185,7 +1185,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 25;
+  int schema = 26;
 
   @override
   Future<int> schemaVersion() async => schema;

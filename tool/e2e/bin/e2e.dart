@@ -26,6 +26,18 @@ Future<int> dbCount(String sql) async {
   return int.parse((r.stdout as String).trim());
 }
 
+/// Run SQL on the local test database (sets up rare situations).
+Future<void> dbExec(String sql) async {
+  final r = await Process.run('psql', [
+    dbUrl,
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-qc',
+    sql,
+  ]);
+  if (r.exitCode != 0) throw StateError('psql: ${r.stderr}');
+}
+
 /// The 5 quiet minutes after a question that didn't become a call (D-069):
 /// make finished questions look 6 minutes old (local test database only).
 Future<void> skipQuietGap() async {
@@ -54,7 +66,16 @@ Future<SupabaseClient> newUser(String name, String gender) async {
 String uid(SupabaseClient c) => c.auth.currentUser!.id;
 
 Future<List<Map<String, dynamic>>> rows(SupabaseClient c, String table) async =>
-    List<Map<String, dynamic>>.from(await c.from(table).select());
+    List<Map<String, dynamic>>.from(
+      await c
+          .from(table)
+          // Profiles: only the columns the app may read (D-094).
+          .select(
+            table == 'profiles'
+                ? 'id, display_name, gender, photo_version, hide_status'
+                : '*',
+          ),
+    );
 
 Future<void> main() async {
   final me = await newUser('נתנאל', 'male');
@@ -854,6 +875,14 @@ Future<void> main() async {
     w3['state'] == 'cancelled',
     'after cancel: no call, the other side knows',
   );
+  check(
+    await dbCount(
+          "select count(*) from availability where user_id = '${uid(me)}' "
+          'and call_until is not null',
+        ) ==
+        0,
+    'a cancelled quick connect leaves nobody "in a call" (D-094)',
+  );
   await mom.rpc('nudge_offers');
   check(
     (await rows(me, 'match_offers')).where((o) => o['quick'] == true).length ==
@@ -930,7 +959,36 @@ Future<void> main() async {
   );
   await me.rpc('end_call', params: {'p_offer': q2id});
   await shira.rpc('end_call', params: {'p_offer': q2id});
+  // An old call can't be replayed to get the number again (D-094).
+  await dbExec(
+    "update match_offers set accepted_at = now() - interval '31 minutes' "
+    "where id = '$q2id'",
+  );
+  final replay = Map<String, dynamic>.from(
+    await me.rpc('answer_offer', params: {'p_offer': q2id, 'p_accept': true}),
+  );
+  check(
+    replay['phone'] == null,
+    "an old call can't be replayed to get someone's number",
+  );
+  // Stopping availability also ends a quick connect that hasn't started.
+  await dbExec(
+    'insert into match_offers (user_a, user_b, expires_at, status, a_response, '
+    'b_response, quick, accepted_at) values ('
+    "least('${uid(me)}'::uuid, '${uid(shira)}'::uuid), "
+    "greatest('${uid(me)}'::uuid, '${uid(shira)}'::uuid), "
+    "now() + interval '5 minutes', 'accepted', 'accept', 'accept', true, now())",
+  );
   await shira.rpc('clear_availability');
+  check(
+    await dbCount(
+          "select count(*) from match_offers where quick and status = 'accepted' "
+          "and caller is null and '${uid(shira)}' in (user_a, user_b)",
+        ) ==
+        0,
+    'stopping availability also ends a quick connect that has not started',
+  );
+  await skipQuietGap(); // that cancelled connect starts the 5 quiet minutes
   await shira.dispose();
   await mom.rpc('clear_availability');
   await mom.dispose();
@@ -1068,7 +1126,18 @@ Future<void> main() async {
         .isEmpty,
     '...and from their circles',
   );
+  await me.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 15, 'p_circle': cid},
+  );
   await me.from('circles').delete().eq('id', cid);
+  check(
+    await dbCount(
+          "select count(*) from availability where user_id = '${uid(me)}'",
+        ) ==
+        0,
+    'deleting a circle ends availability that was only for it',
+  );
   await temp.dispose();
 
   // --- friends from phone contacts: I pick who (D-074)
@@ -1390,9 +1459,49 @@ Future<void> main() async {
 
   await avi.rpc('clear_availability');
   await noa.rpc('clear_availability');
+  // Privacy fixes from the full review (D-094).
+  try {
+    await me.from('profiles').select('last_seen_at');
+    check(false, "nobody can read when a friend was last active");
+  } on PostgrestException {
+    check(true, "nobody can read when a friend was last active");
+  }
+  try {
+    await me
+        .from('profiles')
+        .update({'last_seen_at': '2099-01-01T00:00:00Z'})
+        .eq('id', uid(me));
+    check(false, "nobody can fake being active");
+  } on PostgrestException {
+    check(true, "nobody can fake being active");
+  }
+  await eve.rpc('block_user', params: {'p_user': uid(me)});
   check(
-    await eve.rpc('schema_version') == 25,
-    'the server says its version (25)',
+    List.from(await eve.rpc('my_blocks')).isEmpty,
+    "blocking a stranger's id reveals nothing about them",
+  );
+  await dbExec(
+    'insert into contact_searches (user_id) '
+    "select '${uid(avi)}' from generate_series(1, 30)",
+  );
+  try {
+    await avi.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h(noaPhone)],
+      },
+    );
+    check(false, 'contacts search: at most 30 a day');
+  } on PostgrestException catch (e) {
+    check(
+      e.message.contains('rate_limited'),
+      'contacts search: at most 30 a day',
+    );
+  }
+  await dbExec("delete from contact_searches where user_id = '${uid(avi)}'");
+  check(
+    await eve.rpc('schema_version') == 26,
+    'the server says its version (26)',
   );
 
   // --- profile photos: private, friends only
