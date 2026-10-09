@@ -48,6 +48,9 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         readLaunchAction(intent)
+        // Android can drop the detection registration (an update, clearing
+        // Play services data): arm it again whenever the app opens.
+        if (DrivingStore(this).enabled) DrivingDetection.register(this)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -58,9 +61,13 @@ class MainActivity : FlutterActivity() {
 
     private fun readLaunchAction(intent: Intent?): Boolean {
         val offer = intent?.getStringExtra(EXTRA_OFFER) ?: return false
+        // "Talk now" counts only for an offer this phone really showed
+        // (another app could send the same intent; then it only opens).
+        val accept = intent.getBooleanExtra(EXTRA_ACCEPT, false) &&
+            DrivingStore(this).wasShown(offer)
         launchAction = mapOf(
             "offerId" to offer,
-            "accept" to intent.getBooleanExtra(EXTRA_ACCEPT, false),
+            "accept" to accept,
         )
         intent.removeExtra(EXTRA_OFFER)
         DrivingNotifications.cancelOffer(this, offer)

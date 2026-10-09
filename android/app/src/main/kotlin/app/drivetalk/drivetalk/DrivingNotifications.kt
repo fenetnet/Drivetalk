@@ -161,7 +161,8 @@ object DrivingNotifications {
     fun showProblem(context: Context) {
         ensureChannels(context)
         val store = DrivingStore(context)
-        val n = builder(context, CHANNEL_STATUS)
+        // The alerts channel: this one must be seen (the status one is quiet).
+        val n = builder(context, CHANNEL_OFFERS)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(store.text("bgFailedTitle", "DriveBond"))
             .setContentText(store.text("bgFailedBody", ""))

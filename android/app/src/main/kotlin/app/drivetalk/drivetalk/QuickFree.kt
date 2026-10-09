@@ -37,13 +37,15 @@ object QuickFree {
         // Show the new state right away; the server call follows.
         store.availableUntil = if (wasFree) 0L else System.currentTimeMillis() + MINUTES * 60_000L
         refreshAll(app)
-        if (wasFree) {
+        // Refused by Android: "free" was undone (and explained) already.
+        val started = if (wasFree) {
             DrivingService.stopAll(app)
+            true
         } else {
             DrivingService.startManual(app)
         }
         io.execute {
-            if (!wasFree) {
+            if (!wasFree && started) {
                 val ok = DrivingApi(store).startManual(MINUTES)
                 if (!ok) {
                     store.availableUntil = 0L

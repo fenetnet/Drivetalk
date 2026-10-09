@@ -49,29 +49,40 @@ class DrivingService : Service() {
 
         // Allowed from the background: activity-recognition events and
         // notification actions are exempt from Android's start limits.
-        private fun send(context: Context, action: String) {
+        // False when Android refused (the caller then must not claim "free").
+        private fun send(context: Context, action: String): Boolean {
             val i = Intent(context, DrivingService::class.java).setAction(action)
-            try {
+            return try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(i)
                 } else {
                     context.startService(i)
                 }
+                true
             } catch (e: Exception) {
-                // Android didn't let the service start (battery saver etc.).
-                // Never leave "free" on the server without alerts on this
-                // phone: undo it and say so.
-                val api = DrivingApi(DrivingStore(context))
-                when (action) {
-                    ACTION_END -> Thread { api.stop() }.start()
-                    ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
-                    ACTION_START -> DrivingNotifications.showProblem(context)
-                    ACTION_MANUAL -> {
-                        Thread { api.stopAll() }.start()
-                        DrivingStore(context).availableUntil = 0L
-                        QuickFree.refreshAll(context)
-                        DrivingNotifications.showProblem(context)
-                    }
+                undo(context, action)
+                false
+            }
+        }
+
+        // Android didn't let the service run (battery saver, the daily
+        // limit on Android 15…). Never leave "free" on the server without
+        // alerts on this phone: undo it and say so.
+        private fun undo(context: Context, action: String?) {
+            val api = DrivingApi(DrivingStore(context))
+            when (action) {
+                ACTION_END -> Thread { api.stop() }.start()
+                ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
+                ACTION_QUIET_END -> Unit
+                ACTION_MANUAL -> {
+                    Thread { api.stopAll() }.start()
+                    DrivingStore(context).availableUntil = 0L
+                    QuickFree.refreshAll(context)
+                    DrivingNotifications.showProblem(context)
+                }
+                else -> {
+                    Thread { api.stop() }.start()
+                    DrivingNotifications.showProblem(context)
                 }
             }
         }
@@ -90,6 +101,10 @@ class DrivingService : Service() {
     private var phoneSentAt = 0L
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    /** The latest start request (so finishing never stops a newer one). */
+    private var lastStartId = 0
+    /** One offers request at a time (a slow network must not pile them up). */
+    private var polling = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -97,15 +112,25 @@ class DrivingService : Service() {
         DrivingNotifications.ensureChannels(this)
         if (intent?.action == ACTION_MANUAL) manual = true
         if (intent?.action == ACTION_START) manual = false
+        lastStartId = startId
         val notification = DrivingNotifications.status(this, manual)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                DrivingNotifications.ID_STATUS,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-            )
-        } else {
-            startForeground(DrivingNotifications.ID_STATUS, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                startForeground(
+                    DrivingNotifications.ID_STATUS,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+                )
+            } else {
+                startForeground(DrivingNotifications.ID_STATUS, notification)
+            }
+        } catch (e: Exception) {
+            // Refused (e.g. Android 15's daily limit): undo, don't crash.
+            if (!running) {
+                undo(this, intent?.action)
+                stopSelf(startId)
+            }
+            return START_NOT_STICKY
         }
         when (intent?.action) {
             ACTION_END -> if (manual && running) Unit else finish(callServer = true)
@@ -163,26 +188,34 @@ class DrivingService : Service() {
                 io.execute { DrivingApi(DrivingStore(ctx)).start() }
             }
             checkPhoneCall(now)
-            io.execute {
-                val offers = DrivingApi(DrivingStore(ctx)).offers() ?: emptyList()
-                main.post {
-                    val store = DrivingStore(ctx)
-                    for (o in offers) {
-                        // Remembered on the phone: not repeated after a restart.
-                        if (store.markShown(o.id)) {
-                            DrivingNotifications.showOffer(ctx, o)
-                            val key = if (o.kind == "quick") "voiceQuick" else "voiceOffer"
-                            speak(store.text(key, "{name}").replace("{name}", o.name))
-                        }
-                    }
-                    // An offer that's gone (cancelled / answered / timed out): remove it.
-                    val now = offers.map { it.id }.toSet()
-                    for (id in quickShown - now) DrivingNotifications.cancelOffer(ctx, id)
-                    quickShown.clear()
-                    quickShown.addAll(now)
-                }
+            if (!polling) {
+                polling = true
+                io.execute { pollOffers(ctx) }
             }
             main.postDelayed(this, POLL_MS)
+        }
+    }
+
+    private fun pollOffers(ctx: Context) {
+        // null = no answer (network): keep what is shown, try again later.
+        val offers = DrivingApi(DrivingStore(ctx)).offers()
+        main.post {
+            polling = false
+            if (offers == null || !running) return@post
+            val store = DrivingStore(ctx)
+            for (o in offers) {
+                // Remembered on the phone: not repeated after a restart.
+                if (store.markShown(o.id)) {
+                    DrivingNotifications.showOffer(ctx, o)
+                    val key = if (o.kind == "quick") "voiceQuick" else "voiceOffer"
+                    speak(store.text(key, "{name}").replace("{name}", o.name))
+                }
+            }
+            // An offer that's gone (cancelled / answered / timed out): remove it.
+            val ids = offers.map { it.id }.toSet()
+            for (id in quickShown - ids) DrivingNotifications.cancelOffer(ctx, id)
+            quickShown.clear()
+            quickShown.addAll(ids)
         }
     }
 
@@ -196,10 +229,15 @@ class DrivingService : Service() {
         val busy = audio.mode == AudioManager.MODE_IN_CALL ||
             audio.mode == AudioManager.MODE_IN_COMMUNICATION
         if (busy == phoneBusy && !(busy && now - phoneSentAt > PHONE_RENEW_MS)) return
-        phoneBusy = busy
+        // Remembered only once the server has it (else: again in 10 s).
         phoneSentAt = now
         val store = DrivingStore(this)
-        io.execute { DrivingApi(store).phoneCall(busy) }
+        io.execute {
+            val ok = DrivingApi(store).phoneCall(busy) != null
+            main.post {
+                if (ok) phoneBusy = busy else phoneSentAt = 0L
+            }
+        }
     }
 
     private fun speak(text: String) {
@@ -212,11 +250,15 @@ class DrivingService : Service() {
         running = false
         main.removeCallbacks(poll)
         val store = DrivingStore(this)
+        // "In a call" doesn't outlive the service.
+        if (phoneBusy) io.execute { DrivingApi(store).phoneCall(false) }
         phoneBusy = false
         store.inVehicle = false
         if (callServer) {
             io.execute { DrivingApi(store).stop() }
         }
+        for (id in quickShown) DrivingNotifications.cancelOffer(this, id)
+        quickShown.clear()
         tts?.shutdown()
         tts = null
         if (manual) store.availableUntil = 0L
@@ -227,7 +269,7 @@ class DrivingService : Service() {
             @Suppress("DEPRECATION")
             stopForeground(true)
         }
-        stopSelf()
+        stopSelf(lastStartId)
     }
 
     /**

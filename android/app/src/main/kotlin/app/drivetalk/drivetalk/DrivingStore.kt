@@ -82,6 +82,13 @@ class DrivingStore(context: Context) {
         return true
     }
 
+    /** Was this offer shown in a notification here (in the last 3 hours)? */
+    fun wasShown(offerId: String): Boolean = try {
+        org.json.JSONObject(prefs.getString("shownOffers", "{}") ?: "{}").has(offerId)
+    } catch (e: Exception) {
+        false
+    }
+
     /** Texts come from the app (Hebrew strings live in the app's ARB file). */
     fun text(name: String, fallback: String): String =
         prefs.getString("text_$name", null) ?: fallback

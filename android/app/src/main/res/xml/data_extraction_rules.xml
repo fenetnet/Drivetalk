@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: this phone's device token must never be copied to another
+     phone or to the cloud backup (a new one is made after a restore). -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="drivetalk_driving.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="drivetalk_driving.xml" />
+    </device-transfer>
+</data-extraction-rules>

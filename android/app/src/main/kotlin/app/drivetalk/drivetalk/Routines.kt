@@ -130,8 +130,11 @@ class RoutineReceiver : BroadcastReceiver() {
                     val ok = DrivingApi(store).startManual(r.minutes, r.mode, r.circle)
                     if (ok) {
                         store.availableUntil = now + r.minutes * 60_000L
-                        DrivingService.startManual(app)
-                        notify(app, store)
+                        // Refused by Android: it already undid "free" and
+                        // said so — no "you're free now" notice then.
+                        if (DrivingService.startManual(app)) {
+                            notify(app, store)
+                        }
                         DrivingEvents.send("quick")
                     }
                 }
