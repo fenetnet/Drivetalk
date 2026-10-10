@@ -24,9 +24,9 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String homeImFreeNow(String gender) {
     String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'יש לי זמן עכשיו',
-      'male': 'יש לי זמן עכשיו',
-      'other': 'יש לי זמן עכשיו',
+      'female': 'יש לך כמה דקות לשיחה?',
+      'male': 'יש לך כמה דקות לשיחה?',
+      'other': 'יש לך כמה דקות לשיחה?',
     });
     return '$_temp0';
   }
@@ -439,10 +439,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNobodyFree =>
-      'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.';
+      'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.';
 
   @override
-  String get realFreeHint => 'רוצים לדבר? לוחצים \"יש לי זמן\" ונציע לכם.';
+  String get realFreeHint =>
+      'רוצים לדבר? בוחרים למטה מה עושים עכשיו, ונציע לכם.';
 
   @override
   String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
@@ -631,7 +632,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realBgFailedBody =>
-      'הטלפון חסם את זה. פותחים את DriveBond ולוחצים \"יש לי זמן\".';
+      'הטלפון חסם את זה. פותחים את DriveBond ובוחרים שוב מה עושים עכשיו.';
 
   @override
   String routineHint(String day, String time) {
@@ -929,7 +930,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realTestSteps =>
-      '1. להזמין חבר\n2. שניכם: \"יש לי זמן\"\n3. שניכם: \"לדבר עכשיו\"';
+      '1. להזמין חבר\n2. שניכם: בוחרים מה עושים עכשיו (למשל \"סתם זמן פנוי\")\n3. שניכם: \"לדבר עכשיו\"';
 
   @override
   String get realStatusServer => 'שרת';
@@ -1147,7 +1148,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realCirclesTitle => 'קבוצות';
 
   @override
-  String get realCirclesIntro => 'לכל קבוצה בוחרים מתי רואים שיש לך זמן.';
+  String get realCirclesIntro =>
+      'לכל קבוצה קובעים אם החברים בה רואים שאפשר לדבר איתך עכשיו.';
 
   @override
   String get realCircleNew => 'קבוצה חדשה';
@@ -1193,15 +1195,14 @@ class AppLocalizationsHe extends AppLocalizations {
   String get circleWork => 'עבודה';
 
   @override
-  String get whoSeesTitle => 'מי רואה שיש לי זמן';
+  String get whoSeesTitle => 'מי רואה שאפשר לדבר איתי';
 
   @override
-  String get whoSeesSubtitle =>
-      'לכל קבוצה: תמיד, אף פעם, או רק בנסיעה / בהפסקה…';
+  String get whoSeesSubtitle => 'משפחה, חברים, עבודה: לכל קבוצה בנפרד';
 
   @override
   String get whoSeesBody =>
-      'לכל קבוצה בוחרים מתי רואים שיש לך זמן. מי שלא רואה גם לא יקבל הצעה לדבר איתך, ולא יודע שהסתרת: מבחינתו פשוט אין לך זמן עכשיו.';
+      'כשמסמנים שיש זמן לשיחה, החברים רואים את זה ויכולים לקבל הצעה לדבר איתך. כאן קובעים, לכל קבוצה, אם היא תראה את זה: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.';
 
   @override
   String get whoSeesTwo => 'מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.';
@@ -1231,25 +1232,25 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String showRuleTitle(String name) {
-    return '$name: מתי רואים שיש לך זמן?';
+    return '$name: מתי הם רואים שאפשר לדבר איתך?';
   }
 
   @override
   String showRuleSeen(String rule) {
-    return 'רואים שיש לך זמן: $rule';
+    return 'רואים שאפשר לדבר איתך: $rule';
   }
 
   @override
   String get friendCirclesTitle => 'קבוצות';
 
   @override
-  String get friendCirclesBody => 'הקבוצות קובעות מתי רואים שיש לך זמן.';
+  String get friendCirclesBody => 'הקבוצה קובעת אם הוא רואה שאפשר לדבר איתך.';
 
   @override
   String get hiddenUnhide => 'לבטל את ההסתרה';
 
   @override
-  String get homeWhatNow => 'מה עושים עכשיו?';
+  String get homeWhatNow => 'בוחרים מה עושים עכשיו, ונמצא חבר שגם פנוי לדבר';
 
   @override
   String get permIntroTitle => 'רגע לפני';

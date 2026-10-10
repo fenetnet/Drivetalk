@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+: this phone's device token must never be copied to another
-     phone or to the cloud backup (a new one is made after a restore). -->
+<!-- Nothing of DriveBond is copied to the cloud backup or to a new phone.
+     A restored login (with old settings) came back half-working after a
+     reinstall; a fresh install must always start clean (D-096). -->
 <data-extraction-rules>
     <cloud-backup>
-        <exclude domain="sharedpref" path="drivetalk_driving.xml" />
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
     </cloud-backup>
     <device-transfer>
-        <exclude domain="sharedpref" path="drivetalk_driving.xml" />
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
     </device-transfer>
 </data-extraction-rules>

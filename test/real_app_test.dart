@@ -121,7 +121,9 @@ void main() {
       await pumpFor(t, 800);
       // No code, no invitation: we're connected.
       expect(
-        find.text('יש לך 20 דקות? לוחצים "יש לי זמן" ונחפש עם מי לדבר.'),
+        find.text(
+          'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.',
+        ),
         findsOneWidget,
       );
 

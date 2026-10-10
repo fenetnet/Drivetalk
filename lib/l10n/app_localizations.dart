@@ -121,7 +121,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeImFreeNow.
   ///
   /// In he, this message translates to:
-  /// **'{gender, select, female{יש לי זמן עכשיו} male{יש לי זמן עכשיו} other{יש לי זמן עכשיו}}'**
+  /// **'{gender, select, female{יש לך כמה דקות לשיחה?} male{יש לך כמה דקות לשיחה?} other{יש לך כמה דקות לשיחה?}}'**
   String homeImFreeNow(String gender);
 
   /// No description provided for @timeLeftMinutes.
@@ -817,13 +817,13 @@ abstract class AppLocalizations {
   /// No description provided for @realNobodyFree.
   ///
   /// In he, this message translates to:
-  /// **'יש לך 20 דקות? לוחצים \"יש לי זמן\" ונחפש עם מי לדבר.'**
+  /// **'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.'**
   String get realNobodyFree;
 
   /// No description provided for @realFreeHint.
   ///
   /// In he, this message translates to:
-  /// **'רוצים לדבר? לוחצים \"יש לי זמן\" ונציע לכם.'**
+  /// **'רוצים לדבר? בוחרים למטה מה עושים עכשיו, ונציע לכם.'**
   String get realFreeHint;
 
   /// No description provided for @realNobodyFreeYet.
@@ -1117,7 +1117,7 @@ abstract class AppLocalizations {
   /// No description provided for @realBgFailedBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון חסם את זה. פותחים את DriveBond ולוחצים \"יש לי זמן\".'**
+  /// **'הטלפון חסם את זה. פותחים את DriveBond ובוחרים שוב מה עושים עכשיו.'**
   String get realBgFailedBody;
 
   /// No description provided for @routineHint.
@@ -1591,7 +1591,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTestSteps.
   ///
   /// In he, this message translates to:
-  /// **'1. להזמין חבר\n2. שניכם: \"יש לי זמן\"\n3. שניכם: \"לדבר עכשיו\"'**
+  /// **'1. להזמין חבר\n2. שניכם: בוחרים מה עושים עכשיו (למשל \"סתם זמן פנוי\")\n3. שניכם: \"לדבר עכשיו\"'**
   String get realTestSteps;
 
   /// No description provided for @realStatusServer.
@@ -1987,7 +1987,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'לכל קבוצה בוחרים מתי רואים שיש לך זמן.'**
+  /// **'לכל קבוצה קובעים אם החברים בה רואים שאפשר לדבר איתך עכשיו.'**
   String get realCirclesIntro;
 
   /// No description provided for @realCircleNew.
@@ -2059,19 +2059,19 @@ abstract class AppLocalizations {
   /// No description provided for @whoSeesTitle.
   ///
   /// In he, this message translates to:
-  /// **'מי רואה שיש לי זמן'**
+  /// **'מי רואה שאפשר לדבר איתי'**
   String get whoSeesTitle;
 
   /// No description provided for @whoSeesSubtitle.
   ///
   /// In he, this message translates to:
-  /// **'לכל קבוצה: תמיד, אף פעם, או רק בנסיעה / בהפסקה…'**
+  /// **'משפחה, חברים, עבודה: לכל קבוצה בנפרד'**
   String get whoSeesSubtitle;
 
   /// No description provided for @whoSeesBody.
   ///
   /// In he, this message translates to:
-  /// **'לכל קבוצה בוחרים מתי רואים שיש לך זמן. מי שלא רואה גם לא יקבל הצעה לדבר איתך, ולא יודע שהסתרת: מבחינתו פשוט אין לך זמן עכשיו.'**
+  /// **'כשמסמנים שיש זמן לשיחה, החברים רואים את זה ויכולים לקבל הצעה לדבר איתך. כאן קובעים, לכל קבוצה, אם היא תראה את זה: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.'**
   String get whoSeesBody;
 
   /// No description provided for @whoSeesTwo.
@@ -2125,13 +2125,13 @@ abstract class AppLocalizations {
   /// No description provided for @showRuleTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name}: מתי רואים שיש לך זמן?'**
+  /// **'{name}: מתי הם רואים שאפשר לדבר איתך?'**
   String showRuleTitle(String name);
 
   /// No description provided for @showRuleSeen.
   ///
   /// In he, this message translates to:
-  /// **'רואים שיש לך זמן: {rule}'**
+  /// **'רואים שאפשר לדבר איתך: {rule}'**
   String showRuleSeen(String rule);
 
   /// No description provided for @friendCirclesTitle.
@@ -2143,7 +2143,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendCirclesBody.
   ///
   /// In he, this message translates to:
-  /// **'הקבוצות קובעות מתי רואים שיש לך זמן.'**
+  /// **'הקבוצה קובעת אם הוא רואה שאפשר לדבר איתך.'**
   String get friendCirclesBody;
 
   /// No description provided for @hiddenUnhide.
@@ -2155,7 +2155,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeWhatNow.
   ///
   /// In he, this message translates to:
-  /// **'מה עושים עכשיו?'**
+  /// **'בוחרים מה עושים עכשיו, ונמצא חבר שגם פנוי לדבר'**
   String get homeWhatNow;
 
   /// No description provided for @permIntroTitle.
