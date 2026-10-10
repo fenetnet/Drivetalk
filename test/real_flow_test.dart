@@ -138,6 +138,20 @@ void main() {
     expect(me.s.snapshot?.friends, isEmpty);
   });
 
+  test(
+    'no number → "add your number" (again a week after "not now")',
+    () async {
+      await me.c.signIn('נתנאל', Gender.male, phone: '');
+      expect(me.c.showAddNumber, isTrue);
+      me.c.addNumberLater();
+      expect(me.c.showAddNumber, isFalse);
+      now = now.add(const Duration(days: 8));
+      expect(me.c.showAddNumber, isTrue);
+      await me.c.setMyPhone('0521111111');
+      expect(me.c.showAddNumber, isFalse);
+    },
+  );
+
   test('joining without a phone number works', () async {
     await me.c.signIn('נתנאל', Gender.male, phone: '');
     expect(me.s.phase, RealPhase.ready);

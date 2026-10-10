@@ -628,6 +628,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get updateHow => 'מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.';
 
   @override
+  String get updateHowStore => 'מעדכנים בגוגל פליי. החברים וההגדרות נשמרים.';
+
+  @override
   String get realBgFailedTitle => 'לא הצלחנו להדליק זמינות ברקע';
 
   @override
@@ -1483,6 +1486,16 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get backgroundAllow => 'להפעיל';
+
+  @override
+  String get addNumberTitle => 'שחברים ימצאו אותך';
+
+  @override
+  String get addNumberBody =>
+      'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אלייך. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".';
+
+  @override
+  String get addNumberGo => 'להוסיף מספר';
 
   @override
   String get notNowShort => 'לא עכשיו';

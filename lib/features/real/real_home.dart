@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
+import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../../real/routine_suggest.dart';
@@ -314,6 +315,7 @@ Widget? _tipCard(
 ) {
   if (s.newBuild != null) return const _UpdateCard();
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  if (c.showAddNumber) return const _AddNumberCard();
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
@@ -662,7 +664,7 @@ class _UpdateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  l.updateHow,
+                  BackendConfig.store ? l.updateHowStore : l.updateHow,
                   style: const TextStyle(
                     fontSize: 13,
                     color: AppColors.inkSoft,
@@ -1062,6 +1064,62 @@ class _BackgroundCard extends ConsumerWidget {
                 TextButton(
                   onPressed: c.dismissBackgroundTip,
                   child: Text(l.notNowShort),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// No number yet: friends can't find me in their contacts, nobody can
+/// call me. One tap to add it (or "not now" for a week).
+class _AddNumberCard extends ConsumerWidget {
+  const _AddNumberCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.phone_rounded, color: AppColors.coralDeep),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.addNumberTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(l.addNumberBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => editMyPhone(context, ref),
+                    child: Text(l.addNumberGo),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: c.addNumberLater,
+                  child: Text(l.realNotNow),
                 ),
               ],
             ),

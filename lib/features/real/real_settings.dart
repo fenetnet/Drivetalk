@@ -431,7 +431,7 @@ class RealSettingsScreen extends ConsumerWidget {
       case 'photo':
         await editMyPhoto(context, ref, hasPhoto: hasPhoto);
       case 'phone':
-        await _editPhone(context, ref);
+        await editMyPhone(context, ref);
     }
   }
 
@@ -533,42 +533,6 @@ class RealSettingsScreen extends ConsumerWidget {
     );
     if ((ok ?? false) && name.text.trim().isNotEmpty) {
       await ref.read(realProvider.notifier).updateProfile(name.text, gender);
-    }
-  }
-
-  Future<void> _editPhone(BuildContext context, WidgetRef ref) async {
-    final l = context.l10n;
-    final phone = TextEditingController(
-      text: ref.read(realProvider).myPhone ?? '',
-    );
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (d) => AlertDialog(
-        title: Text(l.realMyNumber),
-        content: TextField(
-          controller: phone,
-          keyboardType: TextInputType.phone,
-          textDirection: TextDirection.ltr,
-          decoration: InputDecoration(
-            labelText: l.realPhoneLabel,
-            helperText: l.realPhoneHelp,
-            helperMaxLines: 5,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(d, false),
-            child: Text(l.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(d, true),
-            child: Text(l.save),
-          ),
-        ],
-      ),
-    );
-    if (ok ?? false) {
-      await ref.read(realProvider.notifier).setMyPhone(phone.text);
     }
   }
 }

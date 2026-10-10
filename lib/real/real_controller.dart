@@ -57,8 +57,8 @@ final appBuildProvider = Provider<int?>((ref) => null);
 
 /// "Is there a newer version?" (version.json next to the APK).
 final updateCheckerProvider = Provider<UpdateChecker>(
-  // Google Play updates the store build by itself.
-  (ref) => BackendConfig.store ? FakeUpdateChecker() : HttpUpdateChecker(),
+  // Google Play build: ask Google Play; the test APK: the GitHub release.
+  (ref) => BackendConfig.store ? PlayUpdateChecker() : HttpUpdateChecker(),
 );
 
 // ---------------------------------------------------------------------------
@@ -1151,6 +1151,7 @@ class RealController extends Notifier<RealState> {
         await _backend.setMyPhone(phone);
         state = state.copyWith(myPhone: normalizePhone(phone));
       }
+      _phoneKnown = true;
       if (!ref.mounted) return;
       // First: a picture (optional), then my people.
       await _store.setString(_firstRunKey, FirstRunStep.photo.name);
@@ -1182,7 +1183,9 @@ class RealController extends Notifier<RealState> {
   Future<void> _loadPhone() async {
     try {
       final p = await _backend.getMyPhone();
-      if (ref.mounted) state = state.copyWith(myPhone: p);
+      if (!ref.mounted) return;
+      _phoneKnown = true;
+      state = state.copyWith(myPhone: p);
     } on RealBackendException {
       // Not important enough to bother the user.
     }
@@ -1254,6 +1257,7 @@ class RealController extends Notifier<RealState> {
       _micTipKey,
       _presetsKey,
       _permIntroKey,
+      _addNumberKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -2399,6 +2403,25 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ who sees me
 
   static const _presetsKey = 'real.presetCircles.v1';
+  static const _addNumberKey = 'real.addNumberLater.v1';
+
+  /// Whether my number was read from the server (so "no number" is real,
+  /// not just "not loaded yet").
+  var _phoneKnown = false;
+
+  /// "Add your number so friends find you" — when I have none (again a
+  /// week after "not now").
+  bool get showAddNumber {
+    if (!_phoneKnown || state.myPhone != null) return false;
+    final later = DateTime.tryParse(_store.getString(_addNumberKey) ?? '');
+    return later == null || _now().difference(later) > const Duration(days: 7);
+  }
+
+  void addNumberLater() {
+    _store.setString(_addNumberKey, _now().toIso8601String());
+    state = state.copyWith();
+  }
+
   static const _permIntroKey = 'real.permIntro.v1';
 
   /// The first "I have time" on a phone that will ask questions (Android):

@@ -12,6 +12,7 @@ import '../../l10n/app_localizations.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
+import '../common/labels.dart';
 import '../../domain/hebrew_text.dart';
 
 /// "Now" for real-mode screens, refreshed every second.
@@ -736,4 +737,41 @@ class StatusLine extends StatelessWidget {
       ),
     ],
   );
+}
+
+/// "My number": add, change or remove it (shared only after both say yes).
+Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
+  final l = context.l10n;
+  final phone = TextEditingController(
+    text: ref.read(realProvider).myPhone ?? '',
+  );
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.realMyNumber),
+      content: TextField(
+        controller: phone,
+        keyboardType: TextInputType.phone,
+        textDirection: TextDirection.ltr,
+        decoration: InputDecoration(
+          labelText: l.realPhoneLabel,
+          helperText: l.realPhoneHelp,
+          helperMaxLines: 5,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.save),
+        ),
+      ],
+    ),
+  );
+  if (ok ?? false) {
+    await ref.read(realProvider.notifier).setMyPhone(phone.text);
+  }
 }

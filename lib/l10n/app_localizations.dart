@@ -1108,6 +1108,12 @@ abstract class AppLocalizations {
   /// **'מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.'**
   String get updateHow;
 
+  /// No description provided for @updateHowStore.
+  ///
+  /// In he, this message translates to:
+  /// **'מעדכנים בגוגל פליי. החברים וההגדרות נשמרים.'**
+  String get updateHowStore;
+
   /// No description provided for @realBgFailedTitle.
   ///
   /// In he, this message translates to:
@@ -2505,6 +2511,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'להפעיל'**
   String get backgroundAllow;
+
+  /// No description provided for @addNumberTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שחברים ימצאו אותך'**
+  String get addNumberTitle;
+
+  /// No description provided for @addNumberBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אלייך. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".'**
+  String get addNumberBody;
+
+  /// No description provided for @addNumberGo.
+  ///
+  /// In he, this message translates to:
+  /// **'להוסיף מספר'**
+  String get addNumberGo;
 
   /// No description provided for @notNowShort.
   ///
