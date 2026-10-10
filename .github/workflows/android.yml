@@ -5,6 +5,15 @@ name: Android prototype
 on:
   push:
     branches: [main, "claude/**"]
+    # Server-only / docs-only changes don't need a new app build.
+    paths-ignore:
+      - "supabase/**"
+      - "docs/**"
+      - "tool/**"
+      - "invite_site/**"
+      - "store_assets/**"
+      - ".github/workflows/supabase-migrate.yml"
+      - ".github/workflows/invite-site.yml"
   workflow_dispatch:
 
 permissions:

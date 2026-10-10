@@ -1680,6 +1680,10 @@ Future<void> main() async {
       'phone': '+972507777777',
     });
   }
+  // Both in use (the old one opened after the new one was made): both show.
+  await dbExec(
+    "update profiles set last_seen_at = now() where id = '${uid(mOld)}'",
+  );
   check(
     (await rows(
           keren,
@@ -1687,6 +1691,20 @@ Future<void> main() async {
         )).where((p) => p['id'] != uid(keren)).length ==
         2,
     'both accounts show while both are in use',
+  );
+  // A reinstall: the new account was made after the old one's last use.
+  await dbExec(
+    "update profiles set last_seen_at = "
+    "(select created_at - interval '1 minute' from profiles where id = '${uid(mNew)}') "
+    "where id = '${uid(mOld)}'",
+  );
+  check(
+    (await rows(
+          keren,
+          'profiles',
+        )).where((p) => p['id'] != uid(keren)).length ==
+        1,
+    'reinstalled → the old account hides at once (no waiting a day)',
   );
   await dbExec(
     "update profiles set last_seen_at = now() - interval '3 days' "
@@ -1716,8 +1734,8 @@ Future<void> main() async {
   }
 
   check(
-    await eve.rpc('schema_version') == 28,
-    'the server says its version (28)',
+    await eve.rpc('schema_version') == 29,
+    'the server says its version (29)',
   );
 
   // --- profile photos: private, friends only
