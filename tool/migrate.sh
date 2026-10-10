@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
-# Applies new files from supabase/migrations to the real database, once each.
-# Used by .github/workflows/supabase-migrate.yml with the SUPABASE_DB_URL
-# secret (never stored in git). Files the owner already pasted by hand are
-# recognised by an object they create and recorded without re-running.
+# Applies NEW files from supabase/migrations to the real database, once each,
+# in order. Used by .github/workflows/supabase-migrate.yml with the
+# SUPABASE_DB_URL secret (never stored in git).
+#
+# Safety:
+# - Every file records its own name in public.drivetalk_migrations (without
+#   ".sql"). Anything not newer than the newest recorded name is treated as
+#   already there (the owner pasted the older files by hand, in order).
+# - A database with tables but no record at all is refused (never re-run
+#   old files on top of a live database).
+# - DRY_RUN=1 only prints what would be applied.
 set -euo pipefail
 : "${SUPABASE_DB_URL:?missing}"
 q() { psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -tAq -c "$1"; }
@@ -11,29 +18,32 @@ q "create table if not exists public.drivetalk_migrations (
      name text primary key, applied_at timestamptz not null default now());
    alter table public.drivetalk_migrations enable row level security;"
 
-if [ "$(q "select count(*) from public.drivetalk_migrations")" = "0" ]; then
-  # First run: record what is already there.
-  declare -A sentinel=(
-    [20261002000000_two_user_test.sql]="public.profiles"
-    [20261003000000_auto_driving.sql]="public.device_tokens"
-    [20261004000000_circles_quick_unblock.sql]="public.circles"
-    [20261005000000_contacts.sql]="public.contact_hashes"
-  )
-  for f in "${!sentinel[@]}"; do
-    if [ "$(q "select to_regclass('${sentinel[$f]}') is not null")" = "t" ]; then
-      q "insert into public.drivetalk_migrations(name) values ('$f') on conflict do nothing"
-      echo "already there: $f"
-    fi
-  done
+newest=$(q "select coalesce(max(replace(name, '.sql', '')), '') from public.drivetalk_migrations")
+if [ -z "$newest" ] && [ "$(q "select to_regclass('public.profiles') is not null")" = "t" ]; then
+  echo "::error::The database has DriveBond tables but no record of which updates ran. Stopping (nothing changed)."
+  exit 1
 fi
+echo "newest update already in the database: ${newest:-none}"
 
+applied=0
 for path in $(ls supabase/migrations/*.sql | sort); do
-  f=$(basename "$path")
-  if [ "$(q "select count(*) from public.drivetalk_migrations where name = '$f'")" = "1" ]; then
+  base=$(basename "$path" .sql)
+  if [[ -n "$newest" && ! "$base" > "$newest" ]]; then
     continue
   fi
-  echo "applying: $f"
+  if [ "$(q "select count(*) from public.drivetalk_migrations where name in ('$base', '$base.sql')")" != "0" ]; then
+    continue
+  fi
+  if [ "${DRY_RUN:-}" = "1" ]; then
+    echo "would apply: $base"
+    continue
+  fi
+  echo "applying: $base"
   psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q -f "$path"
-  q "insert into public.drivetalk_migrations(name) values ('$f')"
+  q "insert into public.drivetalk_migrations(name) values ('$base') on conflict do nothing"
+  applied=$((applied + 1))
 done
-echo "database is up to date"
+echo "database is up to date ($applied new)"
+if [ "$applied" -gt 0 ]; then
+  echo "server version now: $(q "select schema_version()")"
+fi

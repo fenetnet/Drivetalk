@@ -10,6 +10,11 @@ on:
     branches: [main, "claude/**"]
     paths: ["supabase/migrations/**", "tool/migrate.sh", ".github/workflows/supabase-migrate.yml"]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only show what would be applied (change nothing)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -27,6 +32,8 @@ jobs:
       - name: Apply new migrations
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # A manual run only checks, unless told otherwise; a push applies.
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '' }}
         run: |
           if [ -z "$SUPABASE_DB_URL" ]; then
             echo "::notice::SUPABASE_DB_URL not set — skipping (paste the SQL by hand instead)."
