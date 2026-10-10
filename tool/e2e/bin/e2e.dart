@@ -1666,9 +1666,58 @@ Future<void> main() async {
     await x.dispose();
   }
 
+  // --- one person, one row: an old account (same number) hides (D-099)
+  final keren = await newUser('קרן', 'female');
+  final mOld = await newUser('מעיין', 'female');
+  final mNew = await newUser('מעיין', 'female');
+  for (final x in [mOld, mNew]) {
+    final inv = List<Map<String, dynamic>>.from(
+      await keren.rpc('create_invitation'),
+    ).single;
+    await x.rpc('accept_invitation', params: {'p_token': inv['token']});
+    await x.from('phone_numbers').upsert({
+      'user_id': uid(x),
+      'phone': '+972507777777',
+    });
+  }
   check(
-    await eve.rpc('schema_version') == 27,
-    'the server says its version (27)',
+    (await rows(
+          keren,
+          'profiles',
+        )).where((p) => p['id'] != uid(keren)).length ==
+        2,
+    'both accounts show while both are in use',
+  );
+  await dbExec(
+    "update profiles set last_seen_at = now() - interval '3 days' "
+    "where id = '${uid(mOld)}'",
+  );
+  final kerenSees = (await rows(
+    keren,
+    'profiles',
+  )).where((p) => p['id'] != uid(keren)).toList();
+  check(
+    kerenSees.length == 1 && kerenSees.single['id'] == uid(mNew),
+    'the old account (same number, unused) is hidden — one row',
+  );
+  check(
+    (await rows(mOld, 'profiles')).any((p) => p['id'] == uid(mOld)),
+    'the old account still sees itself (nothing deleted)',
+  );
+  await dbExec(
+    "update profiles set last_seen_at = now() where id = '${uid(mOld)}'",
+  );
+  check(
+    (await rows(keren, 'profiles')).any((p) => p['id'] == uid(mOld)),
+    'opened again → shown again',
+  );
+  for (final x in [keren, mOld, mNew]) {
+    await x.dispose();
+  }
+
+  check(
+    await eve.rpc('schema_version') == 28,
+    'the server says its version (28)',
   );
 
   // --- profile photos: private, friends only
