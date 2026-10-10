@@ -611,7 +611,22 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "קבוצות",
-  "realCirclesIntro": "לכל קבוצה קובעים אם החברים בה רואים שאפשר לדבר איתך עכשיו.",
+  "realCirclesIntro": "בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.",
+  "circleSeesAll": "רואים שאתם פנויים: בכל מצב",
+  "circleSeesSome": "רואים שאתם פנויים: {modes}",
+  "@circleSeesSome": {
+    "placeholders": {
+      "modes": {
+        "type": "String"
+      }
+    }
+  },
+  "circleSeesNone": "הזמינות שלכם מוסתרת מהקבוצה",
+  "circleRuleQuestion": "מתי חברי הקבוצה יוכלו לראות שאתם פנויים?",
+  "modeInDriving": "בנסיעה",
+  "modeInWalking": "בהליכה",
+  "modeInBreak": "בהפסקה",
+  "modeInFree": "בזמן פנוי",
   "realCircleNew": "קבוצה חדשה",
   "realCircleName": "שם הקבוצה (למשל: שכנים)",
   "realCircleQuick": "חיבור מהיר",
@@ -652,14 +667,6 @@
   "@showRuleTitle": {
     "placeholders": {
       "name": {
-        "type": "String"
-      }
-    }
-  },
-  "showRuleSeen": "רואים שאפשר לדבר איתך: {rule}",
-  "@showRuleSeen": {
-    "placeholders": {
-      "rule": {
         "type": "String"
       }
     }

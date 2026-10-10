@@ -1993,8 +1993,56 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'לכל קבוצה קובעים אם החברים בה רואים שאפשר לדבר איתך עכשיו.'**
+  /// **'בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.'**
   String get realCirclesIntro;
+
+  /// No description provided for @circleSeesAll.
+  ///
+  /// In he, this message translates to:
+  /// **'רואים שאתם פנויים: בכל מצב'**
+  String get circleSeesAll;
+
+  /// No description provided for @circleSeesSome.
+  ///
+  /// In he, this message translates to:
+  /// **'רואים שאתם פנויים: {modes}'**
+  String circleSeesSome(String modes);
+
+  /// No description provided for @circleSeesNone.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמינות שלכם מוסתרת מהקבוצה'**
+  String get circleSeesNone;
+
+  /// No description provided for @circleRuleQuestion.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי חברי הקבוצה יוכלו לראות שאתם פנויים?'**
+  String get circleRuleQuestion;
+
+  /// No description provided for @modeInDriving.
+  ///
+  /// In he, this message translates to:
+  /// **'בנסיעה'**
+  String get modeInDriving;
+
+  /// No description provided for @modeInWalking.
+  ///
+  /// In he, this message translates to:
+  /// **'בהליכה'**
+  String get modeInWalking;
+
+  /// No description provided for @modeInBreak.
+  ///
+  /// In he, this message translates to:
+  /// **'בהפסקה'**
+  String get modeInBreak;
+
+  /// No description provided for @modeInFree.
+  ///
+  /// In he, this message translates to:
+  /// **'בזמן פנוי'**
+  String get modeInFree;
 
   /// No description provided for @realCircleNew.
   ///
@@ -2133,12 +2181,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{name}: מתי הם רואים שאפשר לדבר איתך?'**
   String showRuleTitle(String name);
-
-  /// No description provided for @showRuleSeen.
-  ///
-  /// In he, this message translates to:
-  /// **'רואים שאפשר לדבר איתך: {rule}'**
-  String showRuleSeen(String rule);
 
   /// No description provided for @friendCirclesTitle.
   ///

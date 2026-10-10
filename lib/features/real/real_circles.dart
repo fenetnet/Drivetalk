@@ -48,7 +48,7 @@ class RealCirclesSection extends ConsumerWidget {
               ),
               subtitle: Text(
                 '${[l.realCircleCount(c.memberIds.length), if (c.quick) l.realCircleQuick].join(' · ')}'
-                '\n${l.showRuleSeen(showRuleLabel(l, ShowRule(c.showModes)))}',
+                '\n${circleRuleLine(l, ShowRule(c.showModes))}',
               ),
               isThreeLine: true,
               trailing: const Icon(Icons.edit_rounded),
@@ -149,9 +149,7 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
             ),
             const SizedBox(height: 8),
             Text(
-              l.showRuleTitle(
-                _name.text.trim().isEmpty ? l.realCircleNew : _name.text.trim(),
-              ),
+              l.circleRuleQuestion,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             ShowRulePicker(
@@ -207,6 +205,28 @@ String showRuleLabel(AppLocalizations l, ShowRule rule) {
     [
       for (final m in AvailabilityMode.values)
         if (modes.contains(m)) modeLabel(l, m),
+    ].join(', '),
+  );
+}
+
+/// A group's card: "seen free: in every mode" / "…: driving, walking" /
+/// "hidden from the group".
+String circleRuleLine(AppLocalizations l, ShowRule rule) {
+  final modes = rule.modes;
+  if (modes == null || modes.length == AvailabilityMode.values.length) {
+    return l.circleSeesAll;
+  }
+  if (modes.isEmpty) return l.circleSeesNone;
+  return l.circleSeesSome(
+    [
+      for (final m in AvailabilityMode.values)
+        if (modes.contains(m))
+          switch (m) {
+            AvailabilityMode.driving => l.modeInDriving,
+            AvailabilityMode.walking => l.modeInWalking,
+            AvailabilityMode.breakTime => l.modeInBreak,
+            AvailabilityMode.free => l.modeInFree,
+          },
     ].join(', '),
   );
 }

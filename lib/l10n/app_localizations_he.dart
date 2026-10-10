@@ -1152,7 +1152,33 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCirclesIntro =>
-      'לכל קבוצה קובעים אם החברים בה רואים שאפשר לדבר איתך עכשיו.';
+      'בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.';
+
+  @override
+  String get circleSeesAll => 'רואים שאתם פנויים: בכל מצב';
+
+  @override
+  String circleSeesSome(String modes) {
+    return 'רואים שאתם פנויים: $modes';
+  }
+
+  @override
+  String get circleSeesNone => 'הזמינות שלכם מוסתרת מהקבוצה';
+
+  @override
+  String get circleRuleQuestion => 'מתי חברי הקבוצה יוכלו לראות שאתם פנויים?';
+
+  @override
+  String get modeInDriving => 'בנסיעה';
+
+  @override
+  String get modeInWalking => 'בהליכה';
+
+  @override
+  String get modeInBreak => 'בהפסקה';
+
+  @override
+  String get modeInFree => 'בזמן פנוי';
 
   @override
   String get realCircleNew => 'קבוצה חדשה';
@@ -1236,11 +1262,6 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String showRuleTitle(String name) {
     return '$name: מתי הם רואים שאפשר לדבר איתך?';
-  }
-
-  @override
-  String showRuleSeen(String rule) {
-    return 'רואים שאפשר לדבר איתך: $rule';
   }
 
   @override
