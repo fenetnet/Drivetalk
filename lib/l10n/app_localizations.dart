@@ -2491,19 +2491,19 @@ abstract class AppLocalizations {
   /// No description provided for @backgroundTitle.
   ///
   /// In he, this message translates to:
-  /// **'שההצעות יגיעו גם כשהאפליקציה סגורה'**
+  /// **'לא לפספס אף שיחה'**
   String get backgroundTitle;
 
   /// No description provided for @backgroundBody.
   ///
   /// In he, this message translates to:
-  /// **'חיסכון הסוללה של הטלפון עלול לעצור את DriveBond ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.'**
+  /// **'כך נוכל להודיע לך ברגע שחבר מתפנה, ולזהות נסיעה, גם כשהאפליקציה סגורה. ברקע היא עובדת רק כשסימנת שיש לך זמן או בזמן נסיעה.'**
   String get backgroundBody;
 
   /// No description provided for @backgroundAllow.
   ///
   /// In he, this message translates to:
-  /// **'לאפשר פעולה ברקע'**
+  /// **'להפעיל'**
   String get backgroundAllow;
 
   /// No description provided for @notNowShort.

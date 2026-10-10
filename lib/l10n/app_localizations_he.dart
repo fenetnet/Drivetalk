@@ -1474,14 +1474,14 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get backgroundTitle => 'שההצעות יגיעו גם כשהאפליקציה סגורה';
+  String get backgroundTitle => 'לא לפספס אף שיחה';
 
   @override
   String get backgroundBody =>
-      'חיסכון הסוללה של הטלפון עלול לעצור את DriveBond ברקע, ואז זיהוי הנסיעה וההתראות לא עובדים. לחיצה אחת מתקנת.';
+      'כך נוכל להודיע לך ברגע שחבר מתפנה, ולזהות נסיעה, גם כשהאפליקציה סגורה. ברקע היא עובדת רק כשסימנת שיש לך זמן או בזמן נסיעה.';
 
   @override
-  String get backgroundAllow => 'לאפשר פעולה ברקע';
+  String get backgroundAllow => 'להפעיל';
 
   @override
   String get notNowShort => 'לא עכשיו';
