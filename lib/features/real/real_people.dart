@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme.dart';
-import '../../l10n/app_localizations.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
@@ -195,32 +194,9 @@ class RealPeopleScreen extends ConsumerWidget {
               }),
             },
             RatingStars(rating: snap.ratingOf(f.id)),
-            if (snap.intents[f.id] case final i? when i.isActiveAt(now))
-              Text(
-                intentBadge(l, i, now),
-                style: const TextStyle(
-                  color: AppColors.coralDeep,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              tooltip: l.intentTitle,
-              icon: Icon(
-                snap.intents[f.id]?.isActiveAt(now) ?? false
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
-                color: AppColors.coralDeep,
-              ),
-              onPressed: () => openTalkIntentSheet(context, ref, f),
-            ),
-            const Icon(Icons.more_vert_rounded),
-          ],
-        ),
+        trailing: const Icon(Icons.more_vert_rounded),
         onTap: () => _friendActions(context, ref, f),
       ),
     );
@@ -360,6 +336,8 @@ class RealPeopleScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
               const Divider(),
+              FriendCirclesPicker(friend: f),
+              const Divider(),
               ListTile(
                 leading: const Icon(Icons.person_remove_rounded),
                 title: Text(l.unmatch),
@@ -482,85 +460,6 @@ class _ContactsCard extends ConsumerWidget {
         ),
       ),
     );
-  }
-}
-
-/// "אשמח לדבר · היום" — only for the owner's own eyes.
-String intentBadge(AppLocalizations l, TalkIntent i, DateTime now) {
-  final until = i.until;
-  if (until == null) return l.intentBadgeAlways;
-  return until.difference(now) <= const Duration(days: 1)
-      ? l.intentBadgeToday
-      : l.intentBadgeWeek;
-}
-
-/// Today / this week / until I remove it — the friend is never told.
-Future<void> openTalkIntentSheet(
-  BuildContext context,
-  WidgetRef ref,
-  RealProfile f,
-) async {
-  final l = context.l10n;
-  final now = ref.read(realNowProvider);
-  final has =
-      ref.read(realProvider).snapshot?.intents[f.id]?.isActiveAt(now) ?? false;
-  final choice = await showModalBottomSheet<String>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (sheet) => SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              '${l.intentTitle} — ${f.name}',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              l.intentExplain(f.name, genderKey(f.gender)),
-              style: const TextStyle(color: AppColors.inkSoft),
-            ),
-            const SizedBox(height: 16),
-            for (final (key, label) in [
-              ('today', l.intentToday),
-              ('week', l.intentWeek),
-              ('always', l.intentAlways),
-            ])
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: FilledButton.tonal(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                  onPressed: () => Navigator.pop(sheet, key),
-                  child: Text(label, style: const TextStyle(fontSize: 17)),
-                ),
-              ),
-            if (has)
-              TextButton(
-                onPressed: () => Navigator.pop(sheet, 'remove'),
-                child: Text(l.intentRemove),
-              ),
-          ],
-        ),
-      ),
-    ),
-  );
-  if (choice == null) return;
-  final c = ref.read(realProvider.notifier);
-  switch (choice) {
-    case 'today':
-      await c.setTalkIntent(f, TalkIntentSpan.today);
-    case 'week':
-      await c.setTalkIntent(f, TalkIntentSpan.week);
-    case 'always':
-      await c.setTalkIntent(f, TalkIntentSpan.always);
-    case 'remove':
-      await c.clearTalkIntent(f);
   }
 }
 
@@ -729,6 +628,63 @@ class ContactPickList extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Which of my groups this friend is in (that decides when they see me
+/// free). Each tap saves.
+class FriendCirclesPicker extends ConsumerWidget {
+  const FriendCirclesPicker({super.key, required this.friend});
+  final RealProfile friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final s = ref.watch(realProvider);
+    final circles = s.snapshot?.circles ?? const <RealCircle>[];
+    if (circles.isEmpty) return const SizedBox.shrink();
+    final inIds = {
+      for (final c in circles)
+        if (c.memberIds.contains(friend.id)) c.id,
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.friendCirclesTitle,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Text(
+            l.friendCirclesBody,
+            style: const TextStyle(color: AppColors.inkSoft, fontSize: 13),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final c in circles)
+                FilterChip(
+                  label: Text(c.name),
+                  selected: inIds.contains(c.id),
+                  onSelected: s.busy
+                      ? null
+                      : (on) => ref
+                            .read(realProvider.notifier)
+                            .setFriendCircles(
+                              friend,
+                              on
+                                  ? {...inIds, c.id}
+                                  : ({...inIds}..remove(c.id)),
+                            ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

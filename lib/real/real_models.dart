@@ -209,7 +209,24 @@ class RealSnapshot {
     this.ratings = const {},
     this.hidden = false,
     this.inactiveDays = const {},
+    this.othersModes,
   });
+
+  /// "Everyone else" (friends in none of my circles): who sees that I'm
+  /// free. null = always, empty = never.
+  final Set<AvailabilityMode>? othersModes;
+
+  /// Does [friendId] see me free in [mode] (by my circles' rules)?
+  bool showsMeTo(String friendId, AvailabilityMode mode) {
+    final mine = [
+      for (final c in circles)
+        if (c.memberIds.contains(friendId)) c,
+    ];
+    if (mine.isEmpty) return othersModes == null || othersModes!.contains(mode);
+    return mine.every(
+      (c) => c.showModes == null || c.showModes!.contains(mode),
+    );
+  }
 
   /// Friend id → whole days since they last opened the app (0 = today).
   final Map<String, int> inactiveDays;
@@ -275,6 +292,7 @@ class RealSnapshot {
       ratings: ratings,
       hidden: hidden,
       inactiveDays: inactiveDays,
+      othersModes: othersModes,
     );
   }
 
@@ -300,6 +318,7 @@ class RealSnapshot {
       ratings: ratings,
       hidden: hidden,
       inactiveDays: inactiveDays,
+      othersModes: othersModes,
     );
   }
 
@@ -454,20 +473,51 @@ class RealCircle {
     required this.name,
     this.quick = false,
     this.memberIds = const {},
+    this.showModes,
   });
   final String id;
   final String name;
   final bool quick;
   final Set<String> memberIds;
 
-  RealCircle copyWith({String? name, bool? quick, Set<String>? memberIds}) =>
-      RealCircle(
-        id: id,
-        name: name ?? this.name,
-        quick: quick ?? this.quick,
-        memberIds: memberIds ?? this.memberIds,
-      );
+  /// Who sees that I'm free: null = always, empty = never, otherwise only
+  /// in these modes. Someone in two circles sees me only if both allow.
+  final Set<AvailabilityMode>? showModes;
+
+  RealCircle copyWith({
+    String? name,
+    bool? quick,
+    Set<String>? memberIds,
+    ShowRule? show,
+  }) => RealCircle(
+    id: id,
+    name: name ?? this.name,
+    quick: quick ?? this.quick,
+    memberIds: memberIds ?? this.memberIds,
+    showModes: show == null ? showModes : show.modes,
+  );
 }
+
+/// A "who sees me" rule, with "always" (null modes) as a real value.
+class ShowRule {
+  const ShowRule(this.modes);
+  static const always = ShowRule(null);
+  static const never = ShowRule({});
+  final Set<AvailabilityMode>? modes;
+
+  bool allows(AvailabilityMode m) => modes == null || modes!.contains(m);
+}
+
+/// Server form: null = always; [] = never; ['driving', …].
+List<String>? modesToKeys(Set<AvailabilityMode>? modes) => modes == null
+    ? null
+    : [
+        for (final m in AvailabilityMode.values)
+          if (modes.contains(m)) m.name,
+      ];
+
+Set<AvailabilityMode>? modesFromKeys(Object? keys) =>
+    keys is List ? {for (final k in keys) modeFromKey(k as String?)} : null;
 
 /// A note for the owner: feedback or a report.
 class OwnerNote {

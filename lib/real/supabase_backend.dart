@@ -156,7 +156,7 @@ class SupabaseRealBackend implements RealBackend {
       // Circles are optional: an older server without them still works.
       _c
           .from('circles')
-          .select('id, name, quick, circle_members(member)')
+          .select('id, name, quick, show_modes, circle_members(member)')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
@@ -181,6 +181,14 @@ class SupabaseRealBackend implements RealBackend {
           .from('profiles')
           .select('hide_status')
           .eq('id', me)
+          .then<List<Map<String, dynamic>>>(
+            (r) => r,
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
+      // "Everyone else": who sees that I'm free (mine only).
+      _c
+          .from('others_visibility')
+          .select('show_modes')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
@@ -236,6 +244,7 @@ class SupabaseRealBackend implements RealBackend {
             id: r['id'] as String,
             name: r['name'] as String,
             quick: r['quick'] == true,
+            showModes: modesFromKeys(r['show_modes']),
             memberIds: {
               for (final m in (r['circle_members'] as List? ?? const []))
                 (m as Map)['member'] as String,
@@ -251,6 +260,7 @@ class SupabaseRealBackend implements RealBackend {
           r['user_id'] as String: (r['days'] as num).toInt(),
       },
       hidden: results[8].firstOrNull?['hide_status'] == true,
+      othersModes: modesFromKeys(results[9].firstOrNull?['show_modes']),
       fetchedAt: DateTime.now(),
     );
   });
@@ -339,11 +349,17 @@ class SupabaseRealBackend implements RealBackend {
       if (!_missingFunction(e)) rethrow;
       id = await _saveCircleOld(circle);
     }
+    // Who sees that I'm free (my own circle: the owner policy allows it).
+    await _c
+        .from('circles')
+        .update({'show_modes': modesToKeys(circle.showModes)})
+        .eq('id', id);
     return RealCircle(
       id: id,
       name: circle.name.trim(),
       quick: circle.quick,
       memberIds: circle.memberIds,
+      showModes: circle.showModes,
     );
   });
 
@@ -592,6 +608,20 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<void> setHideStatus(bool hide) =>
       _guard(() => _c.rpc('set_hide_status', params: {'p_hide': hide}));
+
+  @override
+  Future<void> setOthersVisibility(Set<AvailabilityMode>? modes) =>
+      _guard(() async {
+        await _c.from('others_visibility').upsert({
+          'user_id': _c.auth.currentUser!.id,
+          'show_modes': modesToKeys(modes),
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        });
+      });
+
+  @override
+  Future<void> ensurePresetCircles(List<String> names) =>
+      _guard(() => _c.rpc('ensure_preset_circles', params: {'p_names': names}));
 
   @override
   Future<String> createDeviceToken() =>

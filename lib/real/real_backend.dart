@@ -94,6 +94,13 @@ abstract class RealBackend {
   /// Hide my status from friends (and theirs from me).
   Future<void> setHideStatus(bool hide);
 
+  /// "Everyone else" (friends in none of my circles): who sees that I'm
+  /// free. null = always, empty = never.
+  Future<void> setOthersVisibility(Set<AvailabilityMode>? modes);
+
+  /// Family / friends / work, created once per person (empty).
+  Future<void> ensurePresetCircles(List<String> names);
+
   /// My profile photo (a small JPEG); null removes it.
   Future<void> setPhoto(Uint8List? jpeg);
 

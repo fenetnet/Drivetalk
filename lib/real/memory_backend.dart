@@ -124,6 +124,25 @@ class MemoryServer {
     (c) => c.$1 == x && c.$2.quick && c.$2.memberIds.contains(y),
   );
 
+  /// "Everyone else" rule per user (null / missing = always).
+  final othersModes = <String, Set<AvailabilityMode>?>{};
+  final presetsDone = <String>{};
+
+  /// Does [viewer] see [owner] free in [mode]? (Like can_see on the server.)
+  bool canSee(String viewer, String owner, AvailabilityMode mode) {
+    final mine = [
+      for (final c in circles.values)
+        if (c.$1 == owner && c.$2.memberIds.contains(viewer)) c.$2,
+    ];
+    if (mine.isEmpty) {
+      final o = othersModes[owner];
+      return o == null || o.contains(mode);
+    }
+    return mine.every(
+      (c) => c.showModes == null || c.showModes!.contains(mode),
+    );
+  }
+
   bool inAudience(String? circleId, String viewer) =>
       circleId == null ||
       (circles[circleId]?.$2.memberIds.contains(viewer) ?? false);
@@ -238,6 +257,10 @@ class MemoryServer {
       final theirs = availability[other]!;
       if (!inAudience(mine.circleId, other) ||
           !inAudience(theirs.circleId, user) ||
+          // Both must see each other; and someone must be able to dial.
+          !canSee(other, user, mine.mode) ||
+          !canSee(user, other, theirs.mode) ||
+          (phones[user] == null && phones[other] == null) ||
           _hasOpenOffer(other) ||
           _inCall(other) ||
           _onPhone(other) ||
@@ -562,6 +585,7 @@ class MemoryRealBackend implements RealBackend {
               (e.key == me ||
                   (now.isBefore(e.value.expiresAt) &&
                       server.inAudience(e.value.circleId, me) &&
+                      server.canSee(me, e.key, e.value.mode) &&
                       !server.hidden.contains(e.key) &&
                       !server.hidden.contains(me))))
             e.key: e.value.withBusy(server.busyUntil(e.key)),
@@ -607,6 +631,7 @@ class MemoryRealBackend implements RealBackend {
             f.id: server.ratingOf(me, f.id),
       },
       hidden: server.hidden.contains(me),
+      othersModes: server.othersModes[me],
       inactiveDays: {
         for (final f in friends)
           if (server.lastSeen[f.id] case final t?)
@@ -1040,6 +1065,29 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
+  Future<void> setOthersVisibility(Set<AvailabilityMode>? modes) async {
+    if (offline) throw const RealBackendException('offline');
+    server.othersModes[_uid] = modes == null ? null : {...modes};
+    server._changed();
+  }
+
+  @override
+  Future<void> ensurePresetCircles(List<String> names) async {
+    final me = _uid;
+    if (!server.presetsDone.add(me)) return;
+    for (final n in names.take(5)) {
+      final name = n.trim();
+      if (name.isEmpty || name.length > 30) continue;
+      if (server.circles.values.any((c) => c.$1 == me && c.$2.name == name)) {
+        continue;
+      }
+      final id = server._newId('circle');
+      server.circles[id] = (me, RealCircle(id: id, name: name, memberIds: {}));
+    }
+    server._changed();
+  }
+
+  @override
   Future<void> setHideStatus(bool hide) async {
     final me = _uid;
     hide ? server.hidden.add(me) : server.hidden.remove(me);
@@ -1109,6 +1157,7 @@ class MemoryRealBackend implements RealBackend {
       name: name,
       quick: circle.quick,
       memberIds: {...circle.memberIds},
+      showModes: circle.showModes,
     );
     server.circles[id] = (me, saved);
     server._changed();
@@ -1185,7 +1234,7 @@ class MemoryRealBackend implements RealBackend {
   Map<String, bool> get realtimeTables => const {};
 
   /// Tests can pretend the server is older.
-  int schema = 26;
+  int schema = 27;
 
   @override
   Future<int> schemaVersion() async => schema;
@@ -1207,6 +1256,8 @@ class MemoryRealBackend implements RealBackend {
     server.removed.removeWhere((k) => k.split('|').contains(me));
     server.ratings.removeWhere((k, _) => k.split('|').contains(me));
     server.hidden.remove(me);
+    server.othersModes.remove(me);
+    server.presetsDone.remove(me);
     server.deviceTokens.removeWhere((_, u) => u == me);
     server.connections.removeWhere((c) => c.split('|').contains(me));
     server.offers.removeWhere((_, o) => o.a == me || o.b == me);

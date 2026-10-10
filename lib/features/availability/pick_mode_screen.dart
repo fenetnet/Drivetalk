@@ -11,66 +11,7 @@ typedef StartAvailability = void Function(
   String? circleId,
 );
 
-/// Step 1: what are you doing? (driving / walking / break / just free)
-class PickModeScreen extends StatelessWidget {
-  const PickModeScreen({
-    super.key,
-    required this.onStart,
-    this.realCircles = const [],
-  });
-  final StartAvailability onStart;
-
-  /// Real mode: my circles as (id, name).
-  final List<(String, String)> realCircles;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    return Scaffold(
-      appBar: AppBar(),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                l.pickModeTitle,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  children: [
-                    for (final m in AvailabilityMode.values)
-                      _BigTile(
-                        icon: modeIcon(m),
-                        label: modeLabel(l, m),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => PickDurationScreen(
-                              mode: m,
-                              onStart: onStart,
-                              realCircles: realCircles,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Step 2: for how long? 15/30/45/60 or "until I finish the drive".
+/// For how long? 15/30/45/60 or "until I finish the drive".
 /// Optionally: available only to one of my private circles.
 class PickDurationScreen extends StatefulWidget {
   const PickDurationScreen({
@@ -194,9 +135,8 @@ class _PickDurationState extends State<PickDurationScreen> {
 }
 
 class _BigTile extends StatelessWidget {
-  const _BigTile({required this.label, required this.onTap, this.icon});
+  const _BigTile({required this.label, required this.onTap});
   final String label;
-  final IconData? icon;
   final VoidCallback onTap;
 
   @override
@@ -211,10 +151,6 @@ class _BigTile extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[
-                Icon(icon, size: 44, color: AppColors.terracotta),
-                const SizedBox(height: 12),
-              ],
               Text(
                 label,
                 style: const TextStyle(

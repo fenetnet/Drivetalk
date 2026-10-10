@@ -306,7 +306,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get routineAvailableTo => 'עם מי מתאים לדבר בזמן הזה?';
 
   @override
-  String get availableToEveryone => 'כולם';
+  String get availableToEveryone => 'כרגיל';
 
   @override
   String get driverListening => 'מקשיבים… אפשר לומר \"כן\" או \"לא\"';
@@ -679,7 +679,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realDeleteAccountConfirm =>
-      'הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.';
+      'הכול נמחק מהשרת: שם, מספר, חברים, קבוצות ותמונה. אי אפשר לבטל.';
 
   @override
   String get realDeleteAccountGo => 'למחוק';
@@ -1144,16 +1144,16 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realUnblock => 'ביטול חסימה';
 
   @override
-  String get realCirclesTitle => 'מעגלים';
+  String get realCirclesTitle => 'קבוצות';
 
   @override
-  String get realCirclesIntro => 'קבוצות פרטיות. אפשר לסמן זמן פנוי רק לקבוצה.';
+  String get realCirclesIntro => 'לכל קבוצה בוחרים מתי רואים שיש לך זמן.';
 
   @override
-  String get realCircleNew => 'מעגל חדש';
+  String get realCircleNew => 'קבוצה חדשה';
 
   @override
-  String get realCircleName => 'שם המעגל (למשל: משפחה)';
+  String get realCircleName => 'שם הקבוצה (למשל: שכנים)';
 
   @override
   String get realCircleQuick => 'חיבור מהיר';
@@ -1163,7 +1163,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.';
 
   @override
-  String get realCircleMembers => 'מי במעגל';
+  String get realCircleMembers => 'מי בקבוצה';
 
   @override
   String realCircleCount(int count) {
@@ -1178,10 +1178,88 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realCircleDelete => 'מחיקת המעגל';
+  String get realCircleDelete => 'מחיקת הקבוצה';
 
   @override
   String get realCircleNoFriends => 'קודם צריך להזמין חברים';
+
+  @override
+  String get circleFamily => 'משפחה';
+
+  @override
+  String get circleFriends => 'חברים';
+
+  @override
+  String get circleWork => 'עבודה';
+
+  @override
+  String get whoSeesTitle => 'מי רואה שיש לי זמן';
+
+  @override
+  String get whoSeesSubtitle =>
+      'לכל קבוצה: תמיד, אף פעם, או רק בנסיעה / בהפסקה…';
+
+  @override
+  String get whoSeesBody =>
+      'לכל קבוצה בוחרים מתי רואים שיש לך זמן. מי שלא רואה גם לא יקבל הצעה לדבר איתך, ולא יודע שהסתרת: מבחינתו פשוט אין לך זמן עכשיו.';
+
+  @override
+  String get whoSeesTwo => 'מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.';
+
+  @override
+  String get whoSeesOthers => 'כל השאר';
+
+  @override
+  String get whoSeesOthersBody => 'חברים שלא נמצאים באף קבוצה';
+
+  @override
+  String get whoSeesPeople => 'אנשים בקבוצה';
+
+  @override
+  String get showAlways => 'תמיד';
+
+  @override
+  String get showNever => 'אף פעם';
+
+  @override
+  String get showOnly => 'רק כש…';
+
+  @override
+  String showOnlyModes(String modes) {
+    return 'רק: $modes';
+  }
+
+  @override
+  String showRuleTitle(String name) {
+    return '$name: מתי רואים שיש לך זמן?';
+  }
+
+  @override
+  String showRuleSeen(String rule) {
+    return 'רואים שיש לך זמן: $rule';
+  }
+
+  @override
+  String get friendCirclesTitle => 'קבוצות';
+
+  @override
+  String get friendCirclesBody => 'הקבוצות קובעות מתי רואים שיש לך זמן.';
+
+  @override
+  String get hiddenUnhide => 'לבטל את ההסתרה';
+
+  @override
+  String get homeWhatNow => 'מה עושים עכשיו?';
+
+  @override
+  String get permIntroTitle => 'רגע לפני';
+
+  @override
+  String get permIntroBody =>
+      'כדי שהשיחה תתחיל מיד כששניכם אומרים \"כן\", ושנוכל להודיע כשחבר מתפנה, הטלפון ישאל כמה שאלות:\n\n• שיחות טלפון — כדי לחייג בלחיצה אחת.\n• התראות — כדי להודיע גם כשהאפליקציה סגורה.\n• מיקרופון (בנסיעה) — כדי לענות \"כן\" או \"לא\" בקול. שום דבר לא מוקלט.';
+
+  @override
+  String get permIntroGo => 'הבנתי, ממשיכים';
 
   @override
   String get realPhoneRequired => 'מספר טלפון (לא חובה)';
@@ -1388,11 +1466,11 @@ class AppLocalizationsHe extends AppLocalizations {
       'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.';
 
   @override
-  String get realLaterButton => 'לא עכשיו — אחזור אליך';
+  String get realLaterButton => 'אולי אחר כך';
 
   @override
   String realLaterNote(String name) {
-    return 'מ$name: עכשיו לא מתאים, אחזור אליך.';
+    return 'מ$name: עכשיו לא מתאים, אולי אחר כך.';
   }
 
   @override

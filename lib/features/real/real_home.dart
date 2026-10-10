@@ -13,11 +13,43 @@ import '../common/widgets.dart';
 import 'real_common.dart';
 import 'real_people.dart';
 
-void openRealAvailabilityPicker(WidgetRef ref) {
+/// "Driving / walking / break / free" tapped on Home: straight to "for how
+/// long?" (the first time, one short note about the phone's questions).
+Future<void> openRealDuration(
+  BuildContext context,
+  WidgetRef ref,
+  AvailabilityMode mode,
+) async {
+  final c = ref.read(realProvider.notifier);
+  if (c.needsPermissionIntro) {
+    final l = context.l10n;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.permIntroTitle),
+        content: SingleChildScrollView(child: Text(l.permIntroBody)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(d, true),
+            child: Text(l.permIntroGo),
+          ),
+        ],
+      ),
+    );
+    if (go != true) return;
+    c.markPermissionIntroShown();
+  }
   final circles = ref.read(realProvider).snapshot?.circles ?? const [];
-  navigatorKey.currentState?.push(
+  // A message at the bottom would fly between the two pages: clear it.
+  messengerKey.currentState?.removeCurrentSnackBar();
+  await navigatorKey.currentState?.push(
     MaterialPageRoute<void>(
-      builder: (_) => PickModeScreen(
+      builder: (_) => PickDurationScreen(
+        mode: mode,
         realCircles: [for (final c in circles) (c.id, c.name)],
         onStart: (mode, minutes, circleId) => ref
             .read(realProvider.notifier)
@@ -25,6 +57,85 @@ void openRealAvailabilityPicker(WidgetRef ref) {
       ),
     ),
   );
+}
+
+/// "I have time now — what are you doing?" Four buttons, one tap each.
+class _ModeButtons extends ConsumerWidget {
+  const _ModeButtons({required this.title, required this.busy});
+  final String title;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    Widget tile(AvailabilityMode m) => Expanded(
+      child: SizedBox(
+        height: 96,
+        child: FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.terracotta,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            elevation: 4,
+            shadowColor: const Color(0x661565C0),
+          ),
+          onPressed: busy ? null : () => openRealDuration(context, ref, m),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(modeIcon(m), size: 32),
+              const SizedBox(height: 6),
+              Text(
+                modeLabel(l, m),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          l.homeWhatNow,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            tile(AvailabilityMode.driving),
+            const SizedBox(width: 12),
+            tile(AvailabilityMode.walking),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            tile(AvailabilityMode.breakTime),
+            const SizedBox(width: 12),
+            tile(AvailabilityMode.free),
+          ],
+        ),
+      ],
+    );
+  }
 }
 
 /// The automatic-driving switch, with its one-time explanation.
@@ -165,26 +276,18 @@ class RealHomeScreen extends ConsumerWidget {
                     now: now,
                     meFree: mine != null,
                   ),
-                if (snap != null && snap.intents.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  _IntentsCard(snap: snap, now: now),
-                ],
                 // At most ONE small card at a time (the most useful one).
                 if (_tipCard(s, c, now, snap) case final tip?) ...[
                   const SizedBox(height: 16),
                   tip,
                 ],
                 const SizedBox(height: 28),
-                Center(
-                  child: mine == null
-                      ? _FreeButton(
-                          label: l.homeImFreeNow(g),
-                          onTap: s.busy
-                              ? null
-                              : () => openRealAvailabilityPicker(ref),
-                        )
-                      : _MyStatus(mine: mine, now: now, gender: g),
-                ),
+                if (mine == null)
+                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
+                else
+                  Center(
+                    child: _MyStatus(mine: mine, now: now, gender: g),
+                  ),
                 const SizedBox(height: 28),
                 if (snap != null && snap.friends.isNotEmpty) ...[
                   _WeekCard(week: snap.weekAt(now)),
@@ -211,7 +314,6 @@ Widget? _tipCard(
 ) {
   if (s.newBuild != null) return const _UpdateCard();
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
-  if (c.inactiveFriend case final f?) return _InactiveCard(friend: f);
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
   if (c.routineSuggestion(now) case final hint?) {
@@ -385,154 +487,6 @@ class _FreeNowCard extends StatelessWidget {
                 style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-/// "I'd like to talk": the people I marked (only I see this).
-class _IntentsCard extends ConsumerWidget {
-  const _IntentsCard({required this.snap, required this.now});
-  final RealSnapshot snap;
-  final DateTime now;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final people = [
-      for (final f in snap.friends)
-        if (snap.intents[f.id]?.isActiveAt(now) ?? false) f,
-    ];
-    if (people.isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: AppColors.blush,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.favorite_rounded, color: AppColors.coralDeep),
-              const SizedBox(width: 8),
-              Text(
-                l.homeIntentsTitle,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final f in people)
-                ActionChip(
-                  avatar: PersonAvatar(person: f.toPerson(), size: 24),
-                  label: Text(f.name),
-                  onPressed: () => openTalkIntentSheet(context, ref, f),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            l.homeIntentsBody,
-            style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// The big round "I'm free now" button, with soft rings and a slow pulse.
-class _FreeButton extends StatefulWidget {
-  const _FreeButton({required this.label, required this.onTap});
-  final String label;
-  final VoidCallback? onTap;
-
-  @override
-  State<_FreeButton> createState() => _FreeButtonState();
-}
-
-class _FreeButtonState extends State<_FreeButton>
-    with SingleTickerProviderStateMixin {
-  late final _pulse = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2400),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 260,
-      height: 260,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          AnimatedBuilder(
-            animation: _pulse,
-            builder: (_, _) => Container(
-              width: 236 + 16 * _pulse.value,
-              height: 236 + 16 * _pulse.value,
-              decoration: const BoxDecoration(
-                color: AppColors.blush,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Container(
-            width: 210,
-            height: 210,
-            decoration: const BoxDecoration(
-              color: AppColors.blushDeep,
-              shape: BoxShape.circle,
-            ),
-          ),
-          SizedBox(
-            width: 176,
-            height: 176,
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.terracotta,
-                foregroundColor: Colors.white,
-                shape: const CircleBorder(),
-                elevation: 8,
-                shadowColor: const Color(0x661565C0),
-                padding: const EdgeInsets.all(20),
-              ),
-              onPressed: widget.onTap,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.mic_rounded, size: 36),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.label,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Rubik',
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      height: 1.15,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -981,19 +935,33 @@ class RealDriverHome extends ConsumerWidget {
 }
 
 /// My status is hidden: so I don't see who's free either.
-class _HiddenCard extends StatelessWidget {
+/// (Set by an older version of the app; this one uses "who sees me".)
+class _HiddenCard extends ConsumerWidget {
   const _HiddenCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.visibility_off_rounded, color: AppColors.inkSoft),
-            const SizedBox(width: 12),
-            Expanded(child: Text(context.l10n.hiddenNote)),
+            Row(
+              children: [
+                const Icon(
+                  Icons.visibility_off_rounded,
+                  color: AppColors.inkSoft,
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(context.l10n.hiddenNote)),
+              ],
+            ),
+            TextButton(
+              onPressed: () =>
+                  ref.read(realProvider.notifier).setHideStatus(false),
+              child: Text(context.l10n.hiddenUnhide),
+            ),
           ],
         ),
       ),
@@ -1094,51 +1062,6 @@ class _BackgroundCard extends ConsumerWidget {
                 TextButton(
                   onPressed: c.dismissBackgroundTip,
                   child: Text(l.notNowShort),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A friend hasn't opened DriveTalk for a week: remove them? (Once.)
-class _InactiveCard extends ConsumerWidget {
-  const _InactiveCard({required this.friend});
-  final RealProfile friend;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final busy = ref.watch(realProvider.select((s) => s.busy));
-    final c = ref.read(realProvider.notifier);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l.inactiveTitle(friend.name),
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 4),
-            Text(l.inactiveBody),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: busy ? null : () => c.unmatch(friend),
-                    child: Text(l.inactiveRemove),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                TextButton(
-                  onPressed: () => c.keepInactive(friend),
-                  child: Text(l.inactiveKeep),
                 ),
               ],
             ),

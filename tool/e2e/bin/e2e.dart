@@ -56,10 +56,18 @@ void check(bool ok, String what) {
   if (!ok) failures++;
 }
 
+var _autoPhone = 0;
+
+/// A new person. Everyone gets a number (an offer needs at least one of
+/// the two to have one — D-095); tests that need "no number" delete it.
 Future<SupabaseClient> newUser(String name, String gender) async {
   final c = SupabaseClient(url, anonKey);
   await c.auth.signInAnonymously();
   await c.rpc('ensure_profile', params: {'p_name': name, 'p_gender': gender});
+  await c.from('phone_numbers').upsert({
+    'user_id': c.auth.currentUser!.id,
+    'phone': '+97254${(1000000 + _autoPhone++ * 7919 % 9000000)}',
+  });
   return c;
 }
 
@@ -79,6 +87,8 @@ Future<List<Map<String, dynamic>>> rows(SupabaseClient c, String table) async =>
 
 Future<void> main() async {
   final me = await newUser('נתנאל', 'male');
+  // I share my number later in the story (who calls whom depends on it).
+  await me.from('phone_numbers').delete().eq('user_id', uid(me));
   final yoni = await newUser('יוני', 'male');
   final eve = await newUser('איב', 'female');
 
@@ -226,7 +236,11 @@ Future<void> main() async {
     'only I am free → no offer yet',
   );
 
-  // --- both free → offer for both
+  // --- both free → offer for both (a call needs at least one number)
+  await yoni.from('phone_numbers').upsert({
+    'user_id': uid(yoni),
+    'phone': '+972501234567',
+  });
   await yoni.rpc(
     'set_availability',
     params: {'p_mode': 'walking', 'p_minutes': 20},
@@ -266,7 +280,10 @@ Future<void> main() async {
     'phone': '+972501234567',
   });
   check(
-    (await rows(me, 'phone_numbers')).isEmpty,
+    (await rows(
+      me,
+      'phone_numbers',
+    )).where((r) => r['user_id'] == uid(yoni)).isEmpty,
     "I can't read Yoni's number directly",
   );
   final early = List<Map<String, dynamic>>.from(
@@ -1050,6 +1067,8 @@ Future<void> main() async {
   } on PostgrestException {
     check(true, 'only for my connections');
   }
+  // The heart no longer reorders offers (D-095): the stars do.
+  await me.rpc('set_rating', params: {'p_friend': uid(p2), 'p_rating': 5});
   await p1.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
   await p2.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
   await me.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 15});
@@ -1063,7 +1082,7 @@ Future<void> main() async {
           withIntent.single['user_a'],
           withIntent.single['user_b'],
         }.contains(uid(p2)),
-    '"I\'d like to talk with Dad" → Dad is offered first',
+    'Dad has 5 stars → Dad is offered first',
   );
   await me.rpc('clear_talk_intent', params: {'p_user': uid(p2)});
   check((await rows(me, 'talk_intents')).isEmpty, 'I can remove it');
@@ -1499,9 +1518,157 @@ Future<void> main() async {
     );
   }
   await dbExec("delete from contact_searches where user_id = '${uid(avi)}'");
+  // --- who sees that I'm free (D-095)
+  final ho = await newUser('הדס', 'female');
+  final boss = await newUser('בוס', 'male');
+  {
+    final inv = List<Map<String, dynamic>>.from(
+      await ho.rpc('create_invitation'),
+    ).single;
+    await boss.rpc('accept_invitation', params: {'p_token': inv['token']});
+  }
+  await ho.rpc(
+    'ensure_preset_circles',
+    params: {
+      'p_names': ['משפחה', 'חברים', 'עבודה'],
+    },
+  );
+  await ho.rpc(
+    'ensure_preset_circles',
+    params: {
+      'p_names': ['משפחה', 'חברים', 'עבודה'],
+    },
+  );
+  final hoCircles = await rows(ho, 'circles');
   check(
-    await eve.rpc('schema_version') == 26,
-    'the server says its version (26)',
+    hoCircles.length == 3,
+    'family / friends / work are created once (not twice)',
+  );
+  final work = hoCircles.firstWhere((c) => c['name'] == 'עבודה');
+  await ho.from('circle_members').insert({
+    'circle_id': work['id'],
+    'member': uid(boss),
+  });
+  await ho
+      .from('circles')
+      .update({'show_modes': <String>[]})
+      .eq('id', work['id']);
+  await ho.rpc(
+    'set_availability',
+    params: {'p_mode': 'breakTime', 'p_minutes': 15},
+  );
+  await boss.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 15},
+  );
+  check(
+    (await rows(
+      boss,
+      'availability',
+    )).where((a) => a['user_id'] == uid(ho)).isEmpty,
+    'work: never → the boss does not see me free',
+  );
+  check(
+    (await rows(ho, 'availability')).any((a) => a['user_id'] == uid(boss)),
+    'I still see the boss free',
+  );
+  check(
+    (await rows(
+      ho,
+      'match_offers',
+    )).where((o) => o['status'] == 'pending').isEmpty,
+    'and nobody is asked (an offer would tell him I am free)',
+  );
+  check(
+    await boss.rpc('sees_availability', params: {'p_owner': uid(ho)}) == false,
+    'asking "do I see her?" says no — like the list',
+  );
+  try {
+    await boss.rpc(
+      'can_see',
+      params: {'p_viewer': uid(boss), 'p_owner': uid(ho), 'p_mode': 'free'},
+    );
+    check(false, "nobody can probe someone else's rules");
+  } on PostgrestException {
+    check(true, "nobody can probe someone else's rules");
+  }
+  check((await rows(boss, 'circles')).isEmpty, "the boss can't see my groups");
+  // Only while driving: a break stays hidden, driving is seen.
+  await ho
+      .from('circles')
+      .update({
+        'show_modes': ['driving'],
+      })
+      .eq('id', work['id']);
+  check(
+    (await rows(
+      boss,
+      'availability',
+    )).where((a) => a['user_id'] == uid(ho)).isEmpty,
+    'work: only driving → my break stays hidden',
+  );
+  await ho.rpc(
+    'set_availability',
+    params: {'p_mode': 'driving', 'p_minutes': 15},
+  );
+  check(
+    (await rows(boss, 'availability')).any((a) => a['user_id'] == uid(ho)),
+    'work: only driving → driving is seen',
+  );
+  check(
+    (await rows(ho, 'match_offers')).any((o) => o['status'] == 'pending'),
+    'seen again → we can be asked',
+  );
+  // "Everyone else": friends in no group.
+  await ho.from('circle_members').delete().eq('circle_id', work['id']);
+  await ho.from('others_visibility').upsert({
+    'user_id': uid(ho),
+    'show_modes': <String>[],
+  });
+  check(
+    (await rows(
+      boss,
+      'availability',
+    )).where((a) => a['user_id'] == uid(ho)).isEmpty,
+    'everyone else: never → hidden from friends in no group',
+  );
+  check(
+    (await rows(boss, 'others_visibility')).isEmpty,
+    "nobody reads my \"everyone else\" rule",
+  );
+  for (final x in [ho, boss]) {
+    await x.rpc('clear_availability');
+    await x.dispose();
+  }
+
+  // --- no number on either side → no question (the call couldn't happen)
+  final nn1 = await newUser('בלי', 'male');
+  final nn2 = await newUser('מספר', 'female');
+  {
+    final inv = List<Map<String, dynamic>>.from(
+      await nn1.rpc('create_invitation'),
+    ).single;
+    await nn2.rpc('accept_invitation', params: {'p_token': inv['token']});
+  }
+  for (final x in [nn1, nn2]) {
+    await x.from('phone_numbers').delete().eq('user_id', uid(x));
+    await x.rpc(
+      'set_availability',
+      params: {'p_mode': 'free', 'p_minutes': 15},
+    );
+  }
+  check(
+    (await rows(nn1, 'match_offers')).isEmpty,
+    'nobody has a number → no question',
+  );
+  for (final x in [nn1, nn2]) {
+    await x.rpc('clear_availability');
+    await x.dispose();
+  }
+
+  check(
+    await eve.rpc('schema_version') == 27,
+    'the server says its version (27)',
   );
 
   // --- profile photos: private, friends only

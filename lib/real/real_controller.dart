@@ -411,7 +411,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 26;
+const kRequiredSchema = 27;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -597,6 +597,7 @@ class RealController extends Notifier<RealState> {
     unawaited(_handleLaunchAction());
     unawaited(_maybeSyncContacts());
     unawaited(_ensureDevice());
+    unawaited(_ensurePresets(thenRefresh: true));
     _openPendingInvite();
   }
 
@@ -1159,6 +1160,7 @@ class RealController extends Notifier<RealState> {
         busy: false,
         firstRun: FirstRunStep.photo,
       );
+      await _ensurePresets();
       await refresh();
       _openPendingInvite();
       unawaited(_ensureDevice());
@@ -1250,6 +1252,8 @@ class RealController extends Notifier<RealState> {
       _bgTipKey,
       _usedFreeKey,
       _micTipKey,
+      _presetsKey,
+      _permIntroKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -2392,11 +2396,77 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
+  // ------------------------------------------------------------ who sees me
+
+  static const _presetsKey = 'real.presetCircles.v1';
+  static const _permIntroKey = 'real.permIntro.v1';
+
+  /// The first "I have time" on a phone that will ask questions (Android):
+  /// one short note about them first.
+  bool get needsPermissionIntro =>
+      state.driving.supported && _store.getString(_permIntroKey) == null;
+
+  void markPermissionIntroShown() => _store.setString(_permIntroKey, 'shown');
+
+  /// Family / friends / work, once (empty; the server remembers it too).
+  Future<void> _ensurePresets({bool thenRefresh = false}) async {
+    if (_store.getString(_presetsKey) != null) return;
+    try {
+      await _backend.ensurePresetCircles([
+        _l.circleFamily,
+        _l.circleFriends,
+        _l.circleWork,
+      ]);
+      await _store.setString(_presetsKey, 'done');
+      if (thenRefresh && ref.mounted) await refresh();
+    } on RealBackendException {
+      // Next start.
+    }
+  }
+
+  /// Who in this circle sees that I'm free (always / never / some modes).
+  Future<bool> setCircleRule(RealCircle circle, ShowRule rule) =>
+      saveCircle(circle.copyWith(show: rule));
+
+  /// "Everyone else" (friends in none of my circles).
+  Future<void> setOthersRule(ShowRule rule) async {
+    await _run(() async {
+      await _backend.setOthersVisibility(rule.modes);
+      _notify(RealNoticeKind.saved);
+    });
+    _lastNudge = null; // who can be asked may have changed: look now
+    await refresh();
+  }
+
+  /// Put a friend in exactly these circles of mine.
+  Future<void> setFriendCircles(RealProfile f, Set<String> circleIds) async {
+    final circles = state.snapshot?.circles ?? const <RealCircle>[];
+    await _run(() async {
+      for (final c in circles) {
+        final inIt = c.memberIds.contains(f.id);
+        final want = circleIds.contains(c.id);
+        if (inIt == want) continue;
+        await _backend.saveCircle(
+          c.copyWith(
+            memberIds: {
+              for (final m in c.memberIds)
+                if (m != f.id) m,
+              if (want) f.id,
+            },
+          ),
+        );
+      }
+    });
+    _lastNudge = null;
+    await refresh();
+  }
+
   Future<bool> saveCircle(RealCircle circle) async {
     final ok = await _run(() async {
       await _backend.saveCircle(circle);
       _notify(RealNoticeKind.saved);
     });
+    _lastNudge = null;
     await refresh();
     return ok;
   }

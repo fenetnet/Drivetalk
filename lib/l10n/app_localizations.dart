@@ -595,7 +595,7 @@ abstract class AppLocalizations {
   /// No description provided for @availableToEveryone.
   ///
   /// In he, this message translates to:
-  /// **'כולם'**
+  /// **'כרגיל'**
   String get availableToEveryone;
 
   /// No description provided for @driverListening.
@@ -1201,7 +1201,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDeleteAccountConfirm.
   ///
   /// In he, this message translates to:
-  /// **'הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.'**
+  /// **'הכול נמחק מהשרת: שם, מספר, חברים, קבוצות ותמונה. אי אפשר לבטל.'**
   String get realDeleteAccountConfirm;
 
   /// No description provided for @realDeleteAccountGo.
@@ -1981,25 +1981,25 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesTitle.
   ///
   /// In he, this message translates to:
-  /// **'מעגלים'**
+  /// **'קבוצות'**
   String get realCirclesTitle;
 
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'קבוצות פרטיות. אפשר לסמן זמן פנוי רק לקבוצה.'**
+  /// **'לכל קבוצה בוחרים מתי רואים שיש לך זמן.'**
   String get realCirclesIntro;
 
   /// No description provided for @realCircleNew.
   ///
   /// In he, this message translates to:
-  /// **'מעגל חדש'**
+  /// **'קבוצה חדשה'**
   String get realCircleNew;
 
   /// No description provided for @realCircleName.
   ///
   /// In he, this message translates to:
-  /// **'שם המעגל (למשל: משפחה)'**
+  /// **'שם הקבוצה (למשל: שכנים)'**
   String get realCircleName;
 
   /// No description provided for @realCircleQuick.
@@ -2017,7 +2017,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCircleMembers.
   ///
   /// In he, this message translates to:
-  /// **'מי במעגל'**
+  /// **'מי בקבוצה'**
   String get realCircleMembers;
 
   /// No description provided for @realCircleCount.
@@ -2029,7 +2029,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCircleDelete.
   ///
   /// In he, this message translates to:
-  /// **'מחיקת המעגל'**
+  /// **'מחיקת הקבוצה'**
   String get realCircleDelete;
 
   /// No description provided for @realCircleNoFriends.
@@ -2037,6 +2037,144 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'קודם צריך להזמין חברים'**
   String get realCircleNoFriends;
+
+  /// No description provided for @circleFamily.
+  ///
+  /// In he, this message translates to:
+  /// **'משפחה'**
+  String get circleFamily;
+
+  /// No description provided for @circleFriends.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים'**
+  String get circleFriends;
+
+  /// No description provided for @circleWork.
+  ///
+  /// In he, this message translates to:
+  /// **'עבודה'**
+  String get circleWork;
+
+  /// No description provided for @whoSeesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מי רואה שיש לי זמן'**
+  String get whoSeesTitle;
+
+  /// No description provided for @whoSeesSubtitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לכל קבוצה: תמיד, אף פעם, או רק בנסיעה / בהפסקה…'**
+  String get whoSeesSubtitle;
+
+  /// No description provided for @whoSeesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'לכל קבוצה בוחרים מתי רואים שיש לך זמן. מי שלא רואה גם לא יקבל הצעה לדבר איתך, ולא יודע שהסתרת: מבחינתו פשוט אין לך זמן עכשיו.'**
+  String get whoSeesBody;
+
+  /// No description provided for @whoSeesTwo.
+  ///
+  /// In he, this message translates to:
+  /// **'מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.'**
+  String get whoSeesTwo;
+
+  /// No description provided for @whoSeesOthers.
+  ///
+  /// In he, this message translates to:
+  /// **'כל השאר'**
+  String get whoSeesOthers;
+
+  /// No description provided for @whoSeesOthersBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים שלא נמצאים באף קבוצה'**
+  String get whoSeesOthersBody;
+
+  /// No description provided for @whoSeesPeople.
+  ///
+  /// In he, this message translates to:
+  /// **'אנשים בקבוצה'**
+  String get whoSeesPeople;
+
+  /// No description provided for @showAlways.
+  ///
+  /// In he, this message translates to:
+  /// **'תמיד'**
+  String get showAlways;
+
+  /// No description provided for @showNever.
+  ///
+  /// In he, this message translates to:
+  /// **'אף פעם'**
+  String get showNever;
+
+  /// No description provided for @showOnly.
+  ///
+  /// In he, this message translates to:
+  /// **'רק כש…'**
+  String get showOnly;
+
+  /// No description provided for @showOnlyModes.
+  ///
+  /// In he, this message translates to:
+  /// **'רק: {modes}'**
+  String showOnlyModes(String modes);
+
+  /// No description provided for @showRuleTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name}: מתי רואים שיש לך זמן?'**
+  String showRuleTitle(String name);
+
+  /// No description provided for @showRuleSeen.
+  ///
+  /// In he, this message translates to:
+  /// **'רואים שיש לך זמן: {rule}'**
+  String showRuleSeen(String rule);
+
+  /// No description provided for @friendCirclesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'קבוצות'**
+  String get friendCirclesTitle;
+
+  /// No description provided for @friendCirclesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'הקבוצות קובעות מתי רואים שיש לך זמן.'**
+  String get friendCirclesBody;
+
+  /// No description provided for @hiddenUnhide.
+  ///
+  /// In he, this message translates to:
+  /// **'לבטל את ההסתרה'**
+  String get hiddenUnhide;
+
+  /// No description provided for @homeWhatNow.
+  ///
+  /// In he, this message translates to:
+  /// **'מה עושים עכשיו?'**
+  String get homeWhatNow;
+
+  /// No description provided for @permIntroTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'רגע לפני'**
+  String get permIntroTitle;
+
+  /// No description provided for @permIntroBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי שהשיחה תתחיל מיד כששניכם אומרים \"כן\", ושנוכל להודיע כשחבר מתפנה, הטלפון ישאל כמה שאלות:\n\n• שיחות טלפון — כדי לחייג בלחיצה אחת.\n• התראות — כדי להודיע גם כשהאפליקציה סגורה.\n• מיקרופון (בנסיעה) — כדי לענות \"כן\" או \"לא\" בקול. שום דבר לא מוקלט.'**
+  String get permIntroBody;
+
+  /// No description provided for @permIntroGo.
+  ///
+  /// In he, this message translates to:
+  /// **'הבנתי, ממשיכים'**
+  String get permIntroGo;
 
   /// No description provided for @realPhoneRequired.
   ///
@@ -2341,13 +2479,13 @@ abstract class AppLocalizations {
   /// No description provided for @realLaterButton.
   ///
   /// In he, this message translates to:
-  /// **'לא עכשיו — אחזור אליך'**
+  /// **'אולי אחר כך'**
   String get realLaterButton;
 
   /// No description provided for @realLaterNote.
   ///
   /// In he, this message translates to:
-  /// **'מ{name}: עכשיו לא מתאים, אחזור אליך.'**
+  /// **'מ{name}: עכשיו לא מתאים, אולי אחר כך.'**
   String realLaterNote(String name);
 
   /// No description provided for @backgroundTitle.

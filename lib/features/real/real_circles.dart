@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
+import '../../domain/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
@@ -45,11 +47,10 @@ class RealCirclesSection extends ConsumerWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                [
-                  l.realCircleCount(c.memberIds.length),
-                  if (c.quick) l.realCircleQuick,
-                ].join(' · '),
+                '${[l.realCircleCount(c.memberIds.length), if (c.quick) l.realCircleQuick].join(' · ')}'
+                '\n${l.showRuleSeen(showRuleLabel(l, ShowRule(c.showModes)))}',
               ),
+              isThreeLine: true,
               trailing: const Icon(Icons.edit_rounded),
               onTap: () => openCircleEditor(context, c),
             ),
@@ -89,6 +90,7 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
   late final _name = TextEditingController(text: widget.circle?.name ?? '');
   late bool _quick = widget.circle?.quick ?? false;
   late final Set<String> _members = {...?widget.circle?.memberIds};
+  late ShowRule _rule = ShowRule(widget.circle?.showModes);
 
   Future<void> _save() async {
     final c = ref.read(realProvider.notifier);
@@ -98,6 +100,7 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
         name: _name.text,
         quick: _quick,
         memberIds: _members,
+        showModes: _rule.modes,
       ),
     );
     if (ok && mounted) Navigator.of(context).pop();
@@ -146,6 +149,17 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
             ),
             const SizedBox(height: 8),
             Text(
+              l.showRuleTitle(
+                _name.text.trim().isEmpty ? l.realCircleNew : _name.text.trim(),
+              ),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            ShowRulePicker(
+              rule: _rule,
+              onChanged: (r) => setState(() => _rule = r),
+            ),
+            const SizedBox(height: 8),
+            Text(
               l.realCircleMembers,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -179,6 +193,235 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// "Always" / "Never" / "Only when: driving, break…" in words.
+String showRuleLabel(AppLocalizations l, ShowRule rule) {
+  final modes = rule.modes;
+  if (modes == null) return l.showAlways;
+  if (modes.isEmpty) return l.showNever;
+  return l.showOnlyModes(
+    [
+      for (final m in AvailabilityMode.values)
+        if (modes.contains(m)) modeLabel(l, m),
+    ].join(', '),
+  );
+}
+
+/// Always / never / only in some modes.
+class ShowRulePicker extends StatelessWidget {
+  const ShowRulePicker({
+    super.key,
+    required this.rule,
+    required this.onChanged,
+  });
+  final ShowRule rule;
+  final ValueChanged<ShowRule> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final modes = rule.modes;
+    final kind = modes == null
+        ? 'always'
+        : modes.isEmpty
+        ? 'never'
+        : 'only';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        RadioGroup<String>(
+          groupValue: kind,
+          onChanged: (k) => onChanged(switch (k) {
+            'always' => ShowRule.always,
+            'never' => ShowRule.never,
+            // A first mode so "only…" means something; change it below.
+            _ => const ShowRule({AvailabilityMode.driving}),
+          }),
+          child: Column(
+            children: [
+              for (final (k, label) in [
+                ('always', l.showAlways),
+                ('never', l.showNever),
+                ('only', l.showOnly),
+              ])
+                RadioListTile<String>(
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  value: k,
+                  title: Text(label),
+                ),
+            ],
+          ),
+        ),
+        if (kind == 'only')
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final m in AvailabilityMode.values)
+                FilterChip(
+                  avatar: Icon(modeIcon(m), size: 18),
+                  label: Text(modeLabel(l, m)),
+                  selected: modes!.contains(m),
+                  onSelected: (on) {
+                    final next = {...modes};
+                    on ? next.add(m) : next.remove(m);
+                    onChanged(ShowRule(next));
+                  },
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+/// A sheet with the picker and "save".
+Future<ShowRule?> pickShowRule(
+  BuildContext context, {
+  required String title,
+  required ShowRule initial,
+}) => showModalBottomSheet<ShowRule>(
+  context: context,
+  isScrollControlled: true,
+  showDragHandle: true,
+  builder: (_) => _RuleSheet(title: title, initial: initial),
+);
+
+class _RuleSheet extends StatefulWidget {
+  const _RuleSheet({required this.title, required this.initial});
+  final String title;
+  final ShowRule initial;
+
+  @override
+  State<_RuleSheet> createState() => _RuleSheetState();
+}
+
+class _RuleSheetState extends State<_RuleSheet> {
+  late ShowRule _rule = widget.initial;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            ShowRulePicker(
+              rule: _rule,
+              onChanged: (r) => setState(() => _rule = r),
+            ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, _rule),
+              child: Text(l.save),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Settings → "Who sees that I'm free": every circle and "everyone else".
+class WhoSeesMeScreen extends ConsumerWidget {
+  const WhoSeesMeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final snap = ref.watch(realProvider.select((s) => s.snapshot));
+    final c = ref.read(realProvider.notifier);
+    final circles = snap?.circles ?? const <RealCircle>[];
+    final others = ShowRule(snap?.othersModes);
+    final friends = snap?.friends ?? const <RealProfile>[];
+    final inNone = [
+      for (final f in friends)
+        if (!circles.any((x) => x.memberIds.contains(f.id))) f,
+    ];
+    return Scaffold(
+      appBar: AppBar(title: Text(l.whoSeesTitle)),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        children: [
+          Text(l.whoSeesBody, style: const TextStyle(color: AppColors.inkSoft)),
+          const SizedBox(height: 12),
+          for (final circle in circles)
+            Card(
+              margin: const EdgeInsets.only(bottom: 10),
+              child: ListTile(
+                leading: const Icon(
+                  Icons.group_work_rounded,
+                  color: AppColors.sageDark,
+                ),
+                title: Text(
+                  circle.name,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  '${showRuleLabel(l, ShowRule(circle.showModes))}'
+                  ' · ${l.realCircleCount(circle.memberIds.length)}',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () async {
+                  final r = await pickShowRule(
+                    context,
+                    title: l.showRuleTitle(circle.name),
+                    initial: ShowRule(circle.showModes),
+                  );
+                  if (r != null) await c.setCircleRule(circle, r);
+                },
+              ),
+            ),
+          Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              leading: const Icon(
+                Icons.people_outline_rounded,
+                color: AppColors.inkSoft,
+              ),
+              title: Text(
+                l.whoSeesOthers,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                '${showRuleLabel(l, others)}'
+                ' · ${l.realCircleCount(inNone.length)}',
+              ),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () async {
+                final r = await pickShowRule(
+                  context,
+                  title: l.showRuleTitle(l.whoSeesOthers),
+                  initial: others,
+                );
+                if (r != null) await c.setOthersRule(r);
+              },
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(l.whoSeesTwo, style: const TextStyle(color: AppColors.inkSoft)),
+          const SizedBox(height: 16),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+            onPressed: friends.isEmpty
+                ? null
+                : () => openCircleEditor(context, null),
+            icon: const Icon(Icons.add_rounded),
+            label: Text(
+              friends.isEmpty ? l.realCircleNoFriends : l.realCircleNew,
+            ),
+          ),
+        ],
       ),
     );
   }

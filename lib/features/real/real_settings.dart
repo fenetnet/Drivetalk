@@ -12,6 +12,7 @@ import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
+import 'real_circles.dart';
 import 'real_common.dart';
 import 'real_home.dart';
 import 'real_stats.dart';
@@ -134,14 +135,18 @@ class RealSettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: c.openNotificationSettings,
                 ),
-              SwitchListTile(
-                secondary: const Icon(Icons.visibility_off_rounded),
-                title: Text(l.hideStatusTitle),
-                subtitle: Text(l.hideStatusBody),
-                value: s.snapshot?.hidden ?? false,
-                onChanged: s.busy || s.snapshot == null
+              ListTile(
+                leading: const Icon(Icons.visibility_rounded),
+                title: Text(l.whoSeesTitle),
+                subtitle: Text(l.whoSeesSubtitle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: s.snapshot == null
                     ? null
-                    : c.setHideStatus,
+                    : () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const WhoSeesMeScreen(),
+                        ),
+                      ),
               ),
               ListTile(
                 leading: const Icon(Icons.system_update_rounded),

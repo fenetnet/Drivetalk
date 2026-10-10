@@ -166,7 +166,7 @@
   "routineStart": "כן",
   "availableTo": "עם מי מתאים לדבר עכשיו?",
   "routineAvailableTo": "עם מי מתאים לדבר בזמן הזה?",
-  "availableToEveryone": "כולם",
+  "availableToEveryone": "כרגיל",
   "driverListening": "מקשיבים… אפשר לומר \"כן\" או \"לא\"",
   "callWeAreDone": "סיימנו",
   "noticeMicDenied": "אין הרשאת מיקרופון — עונים בכפתורים. אפשר לאשר בהגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
@@ -362,7 +362,7 @@
   "settingsSpeakNames": "להקריא שמות",
   "settingsSpeakNamesBody": "הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).",
   "realDeleteAccount": "למחוק את החשבון והמידע שלי",
-  "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, מעגלים ותמונה. אי אפשר לבטל.",
+  "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, קבוצות ותמונה. אי אפשר לבטל.",
   "realDeleteAccountGo": "למחוק",
   "realDeleteAccountDone": "החשבון והמידע נמחקו",
   "realNotifPublic": "יש הצעה חדשה ב-DriveBond",
@@ -609,13 +609,13 @@
   "realBlockedTitle": "חסומים",
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
-  "realCirclesTitle": "מעגלים",
-  "realCirclesIntro": "קבוצות פרטיות. אפשר לסמן זמן פנוי רק לקבוצה.",
-  "realCircleNew": "מעגל חדש",
-  "realCircleName": "שם המעגל (למשל: משפחה)",
+  "realCirclesTitle": "קבוצות",
+  "realCirclesIntro": "לכל קבוצה בוחרים מתי רואים שיש לך זמן.",
+  "realCircleNew": "קבוצה חדשה",
+  "realCircleName": "שם הקבוצה (למשל: שכנים)",
   "realCircleQuick": "חיבור מהיר",
   "realCircleQuickBody": "אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.",
-  "realCircleMembers": "מי במעגל",
+  "realCircleMembers": "מי בקבוצה",
   "realCircleCount": "{count, plural, =0{עוד אין אנשים} =1{אדם אחד} other{{count} אנשים}}",
   "@realCircleCount": {
     "placeholders": {
@@ -624,8 +624,52 @@
       }
     }
   },
-  "realCircleDelete": "מחיקת המעגל",
+  "realCircleDelete": "מחיקת הקבוצה",
   "realCircleNoFriends": "קודם צריך להזמין חברים",
+  "circleFamily": "משפחה",
+  "circleFriends": "חברים",
+  "circleWork": "עבודה",
+  "whoSeesTitle": "מי רואה שיש לי זמן",
+  "whoSeesSubtitle": "לכל קבוצה: תמיד, אף פעם, או רק בנסיעה / בהפסקה…",
+  "whoSeesBody": "לכל קבוצה בוחרים מתי רואים שיש לך זמן. מי שלא רואה גם לא יקבל הצעה לדבר איתך, ולא יודע שהסתרת: מבחינתו פשוט אין לך זמן עכשיו.",
+  "whoSeesTwo": "מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.",
+  "whoSeesOthers": "כל השאר",
+  "whoSeesOthersBody": "חברים שלא נמצאים באף קבוצה",
+  "whoSeesPeople": "אנשים בקבוצה",
+  "showAlways": "תמיד",
+  "showNever": "אף פעם",
+  "showOnly": "רק כש…",
+  "showOnlyModes": "רק: {modes}",
+  "@showOnlyModes": {
+    "placeholders": {
+      "modes": {
+        "type": "String"
+      }
+    }
+  },
+  "showRuleTitle": "{name}: מתי רואים שיש לך זמן?",
+  "@showRuleTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "showRuleSeen": "רואים שיש לך זמן: {rule}",
+  "@showRuleSeen": {
+    "placeholders": {
+      "rule": {
+        "type": "String"
+      }
+    }
+  },
+  "friendCirclesTitle": "קבוצות",
+  "friendCirclesBody": "הקבוצות קובעות מתי רואים שיש לך זמן.",
+  "hiddenUnhide": "לבטל את ההסתרה",
+  "homeWhatNow": "מה עושים עכשיו?",
+  "permIntroTitle": "רגע לפני",
+  "permIntroBody": "כדי שהשיחה תתחיל מיד כששניכם אומרים \"כן\", ושנוכל להודיע כשחבר מתפנה, הטלפון ישאל כמה שאלות:\n\n• שיחות טלפון — כדי לחייג בלחיצה אחת.\n• התראות — כדי להודיע גם כשהאפליקציה סגורה.\n• מיקרופון (בנסיעה) — כדי לענות \"כן\" או \"לא\" בקול. שום דבר לא מוקלט.",
+  "permIntroGo": "הבנתי, ממשיכים",
   "realPhoneRequired": "מספר טלפון (לא חובה)",
   "realPhoneRequiredHelp": "למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.",
   "realContactsTitle": "חברים מאנשי הקשר",
@@ -752,8 +796,8 @@
   "hideStatusTitle": "להסתיר מתי יש לי זמן",
   "hideStatusBody": "החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.",
   "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.",
-  "realLaterButton": "לא עכשיו — אחזור אליך",
-  "realLaterNote": "מ{name}: עכשיו לא מתאים, אחזור אליך.",
+  "realLaterButton": "אולי אחר כך",
+  "realLaterNote": "מ{name}: עכשיו לא מתאים, אולי אחר כך.",
   "@realLaterNote": {
     "placeholders": {
       "name": {

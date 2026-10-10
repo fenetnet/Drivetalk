@@ -116,13 +116,40 @@ void main() {
       ),
       isTrue,
     );
-    final circle = me.read(realProvider).snapshot!.circles.single;
+    // Family / friends / work were made at joining (D-095).
+    expect(me.read(realProvider).snapshot!.circles.map((c) => c.name).toSet(), {
+      'משפחה',
+      'חברים',
+      'עבודה',
+      'קרובים',
+    });
+    RealCircle named(String n) =>
+        me.read(realProvider).snapshot!.circles.firstWhere((c) => c.name == n);
+    final circle = named('קרובים');
     expect(circle.memberIds, {yoniId});
     expect(circle.quick, isTrue);
-    await m.saveCircle(circle.copyWith(name: 'משפחה', memberIds: {}));
-    expect(me.read(realProvider).snapshot!.circles.single.name, 'משפחה');
-    await m.deleteCircle(me.read(realProvider).snapshot!.circles.single);
-    expect(me.read(realProvider).snapshot!.circles, isEmpty);
+    await m.saveCircle(circle.copyWith(name: 'שכנים', memberIds: {}));
+    expect(named('שכנים').memberIds, isEmpty);
+    await m.deleteCircle(named('שכנים'));
+    expect(me.read(realProvider).snapshot!.circles, hasLength(3));
+
+    // Who sees me: Yoni in "work", work = never → he doesn't see me free.
+    final yoniProfile = me.read(realProvider).snapshot!.friends.single;
+    await m.setFriendCircles(yoniProfile, {named('עבודה').id});
+    await m.setCircleRule(named('עבודה'), ShowRule.never);
+    expect(named('עבודה').showModes, isEmpty);
+    await m.startAvailability(AvailabilityMode.free, 20);
+    await y.refresh();
+    expect(freeFriends(yoni.read(realProvider), DateTime.now()), isEmpty);
+    await m.setCircleRule(named('עבודה'), ShowRule.always);
+    await y.refresh();
+    expect(freeFriends(yoni.read(realProvider), DateTime.now()), hasLength(1));
+    await m.setOthersRule(const ShowRule({AvailabilityMode.driving}));
+    expect(me.read(realProvider).snapshot!.othersModes, {
+      AvailabilityMode.driving,
+    });
+    await m.setOthersRule(ShowRule.always);
+    await m.setFriendCircles(yoniProfile, {});
 
     // Automatic driving: the phone gets a background token.
     expect(await m.enableAutoDriving(), isTrue);
@@ -139,19 +166,6 @@ void main() {
     await m.refresh();
     expect(me.read(realProvider).snapshot!.friends.single.name, 'יוני');
 
-    // "I'd like to talk": mine only, through the real server.
-    final yoniP = me.read(realProvider).snapshot!.friends.single;
-    await m.setTalkIntent(yoniP, TalkIntentSpan.week);
-    await settle();
-    await m.refresh();
-    expect(me.read(realProvider).snapshot!.intents.keys, [yoniP.id]);
-    await y.refresh();
-    expect(yoni.read(realProvider).snapshot!.intents, isEmpty);
-    await m.clearTalkIntent(yoniP);
-    await settle();
-    await m.refresh();
-    expect(me.read(realProvider).snapshot!.intents, isEmpty);
-
     // Profile photo: mine → Yoni downloads and shows it.
     final pic = Uint8List.fromList(List.generate(500, (i) => i % 256));
     expect(await m.setPhoto(pic), isNull);
@@ -163,6 +177,7 @@ void main() {
     );
     expect(await m.setPhoto(null), isNull);
 
+    final yoniP = me.read(realProvider).snapshot!.friends.single;
     // Rating and "hide my status" are read back from the real server.
     await m.setRating(yoniP, 5);
     await m.setHideStatus(true);

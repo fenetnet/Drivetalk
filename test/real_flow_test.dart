@@ -112,7 +112,12 @@ void main() {
   }
 
   /// Sign both in and connect them through an invitation link.
-  Future<void> connect({String? myPhone, String? yoniPhone}) async {
+  // A call needs at least one number (no offer otherwise), so I have one
+  // unless a test says otherwise ('' = none).
+  Future<void> connect({
+    String? myPhone = '0521111111',
+    String? yoniPhone,
+  }) async {
     await me.c.signIn('נתנאל', Gender.male, phone: myPhone);
     await yoni.c.signIn('יוני', Gender.male, phone: yoniPhone);
     final message = await me.c.createInviteMessage();
@@ -332,7 +337,7 @@ void main() {
   test(
     'both free → both asked → both yes → I call Yoni on the phone',
     () async {
-      await connect(yoniPhone: '050-123-4567');
+      await connect(myPhone: '', yoniPhone: '050-123-4567');
       await me.c.startAvailability(AvailabilityMode.walking, 30);
       await yoni.c.refresh();
       expect(currentOffer(me.s, now), isNull, reason: 'only I am free');
@@ -487,19 +492,20 @@ void main() {
     expect(freeFriends(me.s, now), hasLength(1));
   });
 
-  test('no numbers shared → simulated in-app call', () async {
-    await connect();
-    await me.c.startAvailability(AvailabilityMode.free, 30);
-    await yoni.c.startAvailability(AvailabilityMode.free, 30);
-    await me.c.refresh();
-    await me.c.respond(currentOffer(me.s, now)!, accept: true);
-    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
-    await pump();
-    await me.c.refresh();
-    await pump();
-    expect(me.s.callStage, CallStage.inApp);
-    expect(yoni.s.callStage, CallStage.inApp);
-  });
+  test(
+    'nobody has a number → no question (the call couldn\'t happen)',
+    () async {
+      await connect(myPhone: '');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await yoni.c.refresh();
+      expect(currentOffer(me.s, now), isNull);
+      expect(currentOffer(yoni.s, now), isNull);
+      // Both still see each other free.
+      expect(freeFriends(me.s, now), hasLength(1));
+    },
+  );
 
   test('"not now" → the other side hears only "didn\'t work out"', () async {
     await connect();
@@ -953,7 +959,9 @@ void main() {
         await connect();
         final circle = RealCircle(id: '', name: 'משפחה', memberIds: const {});
         await me.c.saveCircle(circle);
-        final saved = me.s.snapshot!.circles.single;
+        final saved = me.s.snapshot!.circles.firstWhere(
+          (c) => c.name == 'משפחה' && c.memberIds.isEmpty,
+        );
         await me.c.startAvailability(
           AvailabilityMode.walking,
           30,
@@ -1332,7 +1340,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 26)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 27)'));
     });
 
     test(
@@ -1426,6 +1434,102 @@ void main() {
       now = DateTime(2026, 10, 21, 9);
       me.c.dismissRoutineSuggestion(me.c.routineSuggestion(now)!);
       expect(me.c.routineSuggestion(now), isNull);
+    });
+  });
+
+  group('who sees that I\'m free', () {
+    RealCircle circleNamed(Phone p, String name) =>
+        p.s.snapshot!.circles.firstWhere((c) => c.name == name);
+
+    test('family, friends and work are ready (empty) after joining', () async {
+      await connect();
+      expect(me.s.snapshot!.circles.map((c) => c.name).toSet(), {
+        'משפחה',
+        'חברים',
+        'עבודה',
+      });
+      expect(me.s.snapshot!.circles.every((c) => c.memberIds.isEmpty), isTrue);
+      expect(
+        me.s.snapshot!.circles.every((c) => c.showModes == null),
+        isTrue,
+        reason: 'always, until I change it',
+      );
+    });
+
+    test(
+      'work: never → the boss neither sees me free nor gets asked',
+      () async {
+        await connect();
+        final boss = me.s.snapshot!.friends.single;
+        await me.c.setFriendCircles(boss, {circleNamed(me, 'עבודה').id});
+        await me.c.setCircleRule(circleNamed(me, 'עבודה'), ShowRule.never);
+        await me.c.startAvailability(AvailabilityMode.breakTime, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        await yoni.c.refresh();
+        // He sees nothing (not even that I hid: I'm simply not free).
+        expect(freeFriends(yoni.s, now), isEmpty);
+        expect(currentOffer(yoni.s, now), isNull);
+        // I still see him free, but no question comes either.
+        expect(freeFriends(me.s, now), hasLength(1));
+        expect(currentOffer(me.s, now), isNull);
+        // Back to "always": he sees me, and we're asked.
+        await me.c.setCircleRule(circleNamed(me, 'עבודה'), ShowRule.always);
+        await me.c.refresh();
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), hasLength(1));
+        expect(currentOffer(me.s, now), isNotNull);
+      },
+    );
+
+    test('family: only while driving', () async {
+      await connect();
+      final dad = me.s.snapshot!.friends.single;
+      await me.c.setFriendCircles(dad, {circleNamed(me, 'משפחה').id});
+      await me.c.setCircleRule(
+        circleNamed(me, 'משפחה'),
+        const ShowRule({AvailabilityMode.driving}),
+      );
+      await me.c.startAvailability(AvailabilityMode.breakTime, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), isEmpty, reason: 'a break: hidden');
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), hasLength(1), reason: 'driving: seen');
+    });
+
+    test('in two groups: seen only if both allow', () async {
+      await connect();
+      final f = me.s.snapshot!.friends.single;
+      await me.c.setFriendCircles(f, {
+        circleNamed(me, 'חברים').id,
+        circleNamed(me, 'עבודה').id,
+      });
+      await me.c.setCircleRule(circleNamed(me, 'עבודה'), ShowRule.never);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), isEmpty);
+      // Out of "work" → "friends" (always) decides.
+      await me.c.setFriendCircles(f, {circleNamed(me, 'חברים').id});
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), hasLength(1));
+    });
+
+    test('"everyone else" covers friends in no group', () async {
+      await connect();
+      await me.c.setOthersRule(ShowRule.never);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), isEmpty);
+      expect(currentOffer(yoni.s, now), isNull);
+      expect(me.s.snapshot!.othersModes, isEmpty);
+      // In "friends" (always): seen again.
+      await me.c.setFriendCircles(me.s.snapshot!.friends.single, {
+        circleNamed(me, 'חברים').id,
+      });
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), hasLength(1));
     });
   });
 
