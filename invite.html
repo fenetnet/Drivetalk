@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>הזמנה ל-DriveBond</title>
+<link rel="stylesheet" href="style.css" id="css">
+<script>
+  // Works both at the site root (Cloudflare Pages) and under /<repo>/ (GitHub Pages).
+  (function () {
+    var p = location.pathname, i = p.indexOf('/i/');
+    var base = i >= 0 ? p.slice(0, i) : p.replace(/\/[^/]*$/, '');
+    document.getElementById('css').href = base + '/style.css';
+    window.DT_BASE = base;
+  })();
+</script>
+</head>
+<body>
+<main>
+  <div class="logo">🚗💬</div>
+  <h1 id="title">קיבלת הזמנה ל-DriveBond</h1>
+  <p class="lead">כששניכם פנויים, DriveBond פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
+  <p class="small">אחרי ההתקנה לוחצים "פתיחה באפליקציה" — ואתם מחוברים. שיחה מתחילה רק אם שניכם אומרים כן.</p>
+
+  <section class="card" id="has-app">
+    <h2>כבר יש לך את האפליקציה?</h2>
+    <a class="btn primary" id="open-app" href="#">פתיחה באפליקציה</a>
+  </section>
+
+  <section class="card">
+    <h2>אין עדיין?</h2>
+    <ol>
+      <li><a class="btn" id="download" href="#">הורדת האפליקציה (אנדרואיד)</a></li>
+      <li id="install-step">פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
+      <li>חוזרים לדף הזה ולוחצים <b>"פתיחה באפליקציה"</b>.</li>
+    </ol>
+    <p class="small">אייפון: גרסה תגיע בהמשך.</p>
+  </section>
+
+  <section class="card" id="code-card">
+    <h2>או להקליד את הקוד</h2>
+    <p class="small">באפליקציה: האנשים שלי ← יש לי קוד הזמנה</p>
+    <div class="code" id="code" dir="ltr"></div>
+    <button class="btn" id="copy">העתקת הקוד</button>
+  </section>
+
+  <p class="small muted">בלי מיקום, בלי הקלטות. אפשר לחסום או להסיר בכל רגע.</p>
+</main>
+<script>
+(function () {
+  var base = window.DT_BASE || '';
+  // Read the code from /i/<code> or ?t=<code>.
+  var m = location.pathname.match(/\/i\/([A-Za-z0-9_-]{16,64})/);
+  var code = m ? m[1] : new URLSearchParams(location.search).get('t');
+  if (!code || !/^[A-Za-z0-9_-]{16,64}$/.test(code)) code = null;
+
+  // Who invited me (their own first name, put in the link by their app).
+  var from = new URLSearchParams(location.search).get('from');
+  if (from && from.length <= 40) {
+    document.getElementById('title').textContent = 'קיבלת הזמנה מ־' + from + ' ל-DriveBond';
+  }
+
+  function start() {
+    var cfg = window.DT_CONFIG || {};
+    // Sent from the Google Play app (?p=1): install from the store too.
+    var play = new URLSearchParams(location.search).get('p') === '1' && cfg.playUrl;
+    var apk = play ? cfg.playUrl : cfg.apkUrl;
+    var dl = document.getElementById('download');
+    dl.href = apk;
+    if (play) {
+      dl.textContent = 'הורדה מ-Google Play';
+      document.getElementById('install-step').textContent = 'מתקינים מהחנות (כמו כל אפליקציה).';
+    }
+    var codeEl = document.getElementById('code');
+    if (!code) {
+      document.getElementById('has-app').style.display = 'none';
+      codeEl.textContent = '—';
+      document.getElementById('copy').style.display = 'none';
+      return;
+    }
+    codeEl.textContent = code;
+    var isAndroid = /android/i.test(navigator.userAgent);
+    var open = document.getElementById('open-app');
+    open.href = isAndroid
+      ? 'intent://invite/' + code + '#Intent;scheme=drivetalk;package=' +
+        cfg.packageName + ';S.browser_fallback_url=' +
+        encodeURIComponent(apk) + ';end'
+      : 'drivetalk://invite/' + code;
+    document.getElementById('copy').onclick = function () {
+      var done = function () { this.textContent = 'הועתק ✓'; }.bind(this);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).then(done, function () {});
+      }
+    };
+  }
+  // Load the public settings from the site root (works under /i/<code> too).
+  var s = document.createElement('script');
+  s.src = base + '/config.js';
+  s.onload = start;
+  document.body.appendChild(s);
+})();
+</script>
+</body>
+</html>
