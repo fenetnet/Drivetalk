@@ -152,6 +152,17 @@ void main() {
     },
   );
 
+  test(
+    'my invitation used → "new in your list" once; not for the one who joined',
+    () async {
+      await connect();
+      expect(me.c.newFriend?.name, 'יוני');
+      expect(yoni.c.newFriend, isNull);
+      me.c.dismissNewFriend(me.c.newFriend!);
+      expect(me.c.newFriend, isNull);
+    },
+  );
+
   test('joining without a phone number works', () async {
     await me.c.signIn('נתנאל', Gender.male, phone: '');
     expect(me.s.phase, RealPhase.ready);
@@ -1030,6 +1041,11 @@ void main() {
       expect(me.s.notice?.kind, RealNoticeKind.contactsFound);
       await yoni.c.refresh();
       expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
+      // Yoni is told once that I added him; I'm not (I did it myself).
+      expect(yoni.c.newFriend?.name, 'נתנאל');
+      expect(me.c.newFriend, isNull);
+      yoni.c.dismissNewFriend(yoni.c.newFriend!);
+      expect(yoni.c.newFriend, isNull);
     });
 
     test('removed → not suggested again from contacts (both sides)', () async {

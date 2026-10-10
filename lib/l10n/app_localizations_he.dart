@@ -1519,6 +1519,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String get addNumberGo => 'להוסיף מספר';
 
   @override
+  String newFriendTitle(String name) {
+    return 'חדש ברשימה שלך: $name';
+  }
+
+  @override
+  String get newFriendBody =>
+      'התחברתם — מאנשי הקשר או מהזמנה. מעכשיו תוכלו לקבל הצעה לדבר כששניכם פנויים.';
+
+  @override
+  String get newFriendGroup => 'לבחור קבוצה';
+
+  @override
+  String get newFriendOk => 'מעולה';
+
+  @override
   String get notNowShort => 'לא עכשיו';
 
   @override

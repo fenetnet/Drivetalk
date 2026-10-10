@@ -1258,6 +1258,7 @@ class RealController extends Notifier<RealState> {
       _presetsKey,
       _permIntroKey,
       _addNumberKey,
+      _knownFriendsKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -1501,6 +1502,8 @@ class RealController extends Notifier<RealState> {
       _shownOfferId = offer.id;
       _event('offer_shown');
     }
+    // The first time on this phone: everyone already here is "known".
+    if (_knownFriends == null) _rememberFriends(snap.friends.map((f) => f.id));
     final hasFriends = snap.friends.isNotEmpty;
     if (hasFriends && !_hadFriends) _event('first_friend_connected');
     _hadFriends = hasFriends;
@@ -2008,6 +2011,8 @@ class RealController extends Notifier<RealState> {
   Future<void> acceptInvite() async {
     final inv = state.invite;
     if (inv == null) return;
+    final before = {...?state.snapshot?.friends.map((f) => f.id)};
+    _joiningInvite = true;
     await _run(() async {
       final r = await _backend.acceptInvitation(inv.token);
       final name = inv.info?.inviterName;
@@ -2027,7 +2032,16 @@ class RealController extends Notifier<RealState> {
           _notify(RealNoticeKind.inviteProblem, code: r.name);
       }
     });
-    await refresh();
+    try {
+      await refresh();
+      // The one I just joined through their invitation isn't news to me.
+      _rememberFriends([
+        for (final f in state.snapshot?.friends ?? const <RealProfile>[])
+          if (!before.contains(f.id)) f.id,
+      ]);
+    } finally {
+      _joiningInvite = false;
+    }
   }
 
   void dismissInvite() => state = state.copyWith(invite: null);
@@ -2225,6 +2239,7 @@ class RealController extends Notifier<RealState> {
     if (picked.isEmpty) return;
     _markSeen(picked.map((m) => m.id));
     final ids = {for (final m in picked) m.id};
+    _rememberFriends(ids); // I added them: no "X added you" card
     final ok = await _run(() async {
       final names = await _backend.addContacts(ids.toList());
       if (!ref.mounted) return;
@@ -2257,6 +2272,7 @@ class RealController extends Notifier<RealState> {
   /// Bring back someone I removed: friends again at once.
   Future<bool> restoreFriend(ContactMatch m) async {
     var ok = false;
+    _rememberFriends([m.id]);
     await _run(() async => ok = await _backend.restoreFriend(m.id));
     if (ok) _notify(RealNoticeKind.contactsFound, name: m.name);
     await refresh();
@@ -2404,6 +2420,39 @@ class RealController extends Notifier<RealState> {
 
   static const _presetsKey = 'real.presetCircles.v1';
   static const _addNumberKey = 'real.addNumberLater.v1';
+  static const _knownFriendsKey = 'real.knownFriends.v1';
+  var _joiningInvite = false;
+
+  Set<String>? get _knownFriends {
+    final raw = _store.getString(_knownFriendsKey);
+    if (raw == null) return null;
+    try {
+      return {for (final x in jsonDecode(raw) as List) x as String};
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _rememberFriends(Iterable<String> ids) {
+    final all = {...?_knownFriends, ...ids}.toList();
+    final keep = all.length > 1000 ? all.sublist(all.length - 1000) : all;
+    _store.setString(_knownFriendsKey, jsonEncode(keep));
+  }
+
+  /// A friend who appeared without me adding them on this phone: they
+  /// found me in their contacts, or used my invitation. One card each.
+  RealProfile? get newFriend {
+    final known = _knownFriends;
+    if (known == null || _joiningInvite) return null;
+    return state.snapshot?.friends
+        .where((f) => !known.contains(f.id))
+        .firstOrNull;
+  }
+
+  void dismissNewFriend(RealProfile f) {
+    _rememberFriends([f.id]);
+    state = state.copyWith();
+  }
 
   /// Whether my number was read from the server (so "no number" is real,
   /// not just "not loaded yet").

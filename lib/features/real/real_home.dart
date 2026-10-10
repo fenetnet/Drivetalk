@@ -314,6 +314,7 @@ Widget? _tipCard(
   RealSnapshot? snap,
 ) {
   if (s.newBuild != null) return const _UpdateCard();
+  if (c.newFriend case final f?) return _NewFriendCard(friend: f);
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
   if (c.showAddNumber) return const _AddNumberCard();
   if (c.showBackgroundTip) return const _BackgroundCard();
@@ -1120,6 +1121,77 @@ class _AddNumberCard extends ConsumerWidget {
                 TextButton(
                   onPressed: c.addNumberLater,
                   child: Text(l.realNotNow),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Someone joined my list without me adding them here (they found me in
+/// their contacts, or used my invitation): say so once, and offer a group
+/// (which decides when they see me free).
+class _NewFriendCard extends ConsumerWidget {
+  const _NewFriendCard({required this.friend});
+  final RealProfile friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.mint,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                RealAvatar(person: friend.toPerson(), size: 40),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.newFriendTitle(friend.name),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(l.newFriendBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () async {
+                      await showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        showDragHandle: true,
+                        builder: (_) => SafeArea(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: FriendCirclesPicker(friend: friend),
+                          ),
+                        ),
+                      );
+                      c.dismissNewFriend(friend);
+                    },
+                    child: Text(l.newFriendGroup),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                FilledButton(
+                  onPressed: () => c.dismissNewFriend(friend),
+                  child: Text(l.newFriendOk),
                 ),
               ],
             ),

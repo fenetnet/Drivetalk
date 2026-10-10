@@ -2572,6 +2572,30 @@ abstract class AppLocalizations {
   /// **'להוסיף מספר'**
   String get addNumberGo;
 
+  /// No description provided for @newFriendTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חדש ברשימה שלך: {name}'**
+  String newFriendTitle(String name);
+
+  /// No description provided for @newFriendBody.
+  ///
+  /// In he, this message translates to:
+  /// **'התחברתם — מאנשי הקשר או מהזמנה. מעכשיו תוכלו לקבל הצעה לדבר כששניכם פנויים.'**
+  String get newFriendBody;
+
+  /// No description provided for @newFriendGroup.
+  ///
+  /// In he, this message translates to:
+  /// **'לבחור קבוצה'**
+  String get newFriendGroup;
+
+  /// No description provided for @newFriendOk.
+  ///
+  /// In he, this message translates to:
+  /// **'מעולה'**
+  String get newFriendOk;
+
   /// No description provided for @notNowShort.
   ///
   /// In he, this message translates to:
