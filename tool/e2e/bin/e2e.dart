@@ -1733,9 +1733,68 @@ Future<void> main() async {
     await x.dispose();
   }
 
+  // --- a friend reinstalled, I'm only connected to the OLD account: they
+  //     don't vanish, and the contacts search offers the new one (D-102)
+  final gali = await newUser('גלי', 'female');
+  final tOld = await newUser('תמר', 'female');
+  {
+    final inv = List<Map<String, dynamic>>.from(
+      await gali.rpc('create_invitation'),
+    ).single;
+    await tOld.rpc('accept_invitation', params: {'p_token': inv['token']});
+  }
+  await tOld.from('phone_numbers').upsert({
+    'user_id': uid(tOld),
+    'phone': '+972548888888',
+  });
+  await dbExec(
+    "update profiles set last_seen_at = now() - interval '1 hour' "
+    "where id = '${uid(tOld)}'",
+  );
+  final tNew = await newUser('תמר', 'female'); // reinstalled
+  await tNew.from('phone_numbers').upsert({
+    'user_id': uid(tNew),
+    'phone': '+972548888888',
+  });
   check(
-    await eve.rpc('schema_version') == 29,
-    'the server says its version (29)',
+    (await rows(gali, 'profiles')).any((p) => p['id'] == uid(tOld)),
+    "reinstalled friend I'm not connected to anew: still in my list",
+  );
+  final found = List<Map<String, dynamic>>.from(
+    await gali.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [sha256.convert(utf8.encode('+972548888888')).toString()],
+      },
+    ),
+  );
+  check(
+    found.length == 1 &&
+        found.single['user_id'] == uid(tNew) &&
+        found.single['is_friend'] == false,
+    'the contacts search offers the account she uses now (to add)',
+  );
+  await gali.rpc(
+    'add_contacts',
+    params: {
+      'p_users': [uid(tNew)],
+    },
+  );
+  final galiSees = (await rows(
+    gali,
+    'profiles',
+  )).where((p) => p['id'] != uid(gali)).toList();
+  check(
+    galiSees.length == 1 && galiSees.single['id'] == uid(tNew),
+    'added again → one row (the new account)',
+  );
+  for (final x in [gali, tOld, tNew]) {
+    await x.dispose();
+  }
+
+  check(
+    await eve.rpc('schema_version') == 30,
+    'the server says its version (30)',
   );
 
   // --- profile photos: private, friends only
