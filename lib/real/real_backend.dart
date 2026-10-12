@@ -152,6 +152,46 @@ abstract class RealBackend {
   Future<void> deleteCircle(String circleId);
   Future<void> unmatch(String userId);
   Future<void> report(String userId, ReportReason reason);
+
+  /// Tap a free friend: ask them now (my tap is my yes). Returns asked /
+  /// me_not_free / not_free / busy / not_now / no_number / rate_limited.
+  Future<String> askFriend(String userId);
+
+  /// "Still free" after a question I didn't answer.
+  Future<bool> stillFree();
+
+  /// "Ready now" during the first minutes of an automatic trip.
+  Future<bool> readyNow();
+
+  /// "Keep automatic detection" after trips with no answer.
+  Future<void> keepAuto();
+
+  /// More minutes on my (manual) free time. Returns the new end.
+  Future<DateTime?> extendAvailability(int minutes);
+
+  /// Private settings (null = unchanged).
+  Future<void> setSettings({
+    bool? anonymous,
+    bool? hideInCall,
+    int? quietFrom,
+    int? quietTo,
+    bool clearQuiet = false,
+    String? timeZone,
+  });
+
+  /// Keep a friend who added me from their contacts.
+  Future<bool> approveFriend(String userId);
+
+  /// A short technical note about a crash (no personal data).
+  Future<void> reportCrash({
+    required String build,
+    required String kind,
+    required String message,
+    required String stack,
+  });
+
+  /// Owner only: the latest crash notes.
+  Future<List<OwnerNote>> ownerCrashes();
 }
 
 /// A failure the UI can show in simple words. [code] is a short machine

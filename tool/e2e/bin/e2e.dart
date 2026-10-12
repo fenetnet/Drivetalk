@@ -704,6 +704,16 @@ Future<void> main() async {
     'set_availability',
     params: {'p_mode': 'free', 'p_minutes': 30},
   );
+  check(
+    List.from(
+      await background.rpc('auto_offers', params: {'p_token': device}),
+    ).isEmpty,
+    'the first 5 minutes of a trip: no questions (D-106)',
+  );
+  // The 5 quiet minutes are over.
+  await dbExec(
+    "update availability set quiet_until = null where user_id = '${uid(me)}'",
+  );
   final pending = List<Map<String, dynamic>>.from(
     await background.rpc('auto_offers', params: {'p_token': device}),
   );
@@ -1792,9 +1802,11 @@ Future<void> main() async {
     await x.dispose();
   }
 
+  await calmAndPrivate();
+
   check(
-    await eve.rpc('schema_version') == 30,
-    'the server says its version (30)',
+    await eve.rpc('schema_version') == 31,
+    'the server says its version (31)',
   );
 
   // --- profile photos: private, friends only
@@ -1849,4 +1861,363 @@ Future<void> main() async {
   }
   stdout.writeln(failures == 0 ? '\nALL PASSED' : '\n$failures FAILED');
   exit(failures == 0 ? 0 : 1);
+}
+
+Future<void> befriend(SupabaseClient a, SupabaseClient b) async {
+  final inv = List<Map<String, dynamic>>.from(
+    await a.rpc('create_invitation'),
+  ).single;
+  await b.rpc('accept_invitation', params: {'p_token': inv['token']});
+}
+
+Future<void> free(SupabaseClient c, [int minutes = 30]) => c.rpc(
+  'set_availability',
+  params: {'p_mode': 'free', 'p_minutes': minutes},
+);
+
+Future<Map<String, dynamic>> status(SupabaseClient c) async =>
+    Map<String, dynamic>.from(await c.rpc('my_status') as Map);
+
+List<Map<String, dynamic>> pendingOffers(List<Map<String, dynamic>> offers) => [
+  for (final o in offers)
+    if (o['status'] == 'pending') o,
+];
+
+/// D-103…D-106: calmer, more private, clearer about time.
+Future<void> calmAndPrivate() async {
+  // --- "free without my name" (D-103)
+  final ana = await newUser('ענת', 'female');
+  final ben = await newUser('בן', 'male');
+  final gal = await newUser('גל', 'male');
+  await befriend(ana, ben);
+  await befriend(gal, ben);
+  await ana.rpc('set_settings', params: {'p_anonymous': true});
+  await free(ana);
+  check(
+    !(await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'without my name: a friend doesn\'t see that I\'m free',
+  );
+  check(
+    (await status(ben))['hidden_free'] == 1,
+    'without my name: friends see "1 friend free"',
+  );
+  check(
+    (await status(ana))['anonymous'] == true,
+    'my own setting reads back',
+  );
+  await free(gal);
+  await free(ben);
+  final benOffers = pendingOffers(await rows(ben, 'match_offers'));
+  check(
+    benOffers.length == 1 &&
+        {benOffers.single['user_a'], benOffers.single['user_b']}.contains(
+          uid(gal),
+        ),
+    'a friend who shows their name is asked first',
+  );
+  check(
+    benOffers.single['shared_until'] != null,
+    'the question says until when both are free',
+  );
+  // Fair: who hides their name sees only a number too.
+  await ana.rpc('clear_availability');
+  await free(ana);
+  check(
+    !(await rows(ana, 'availability')).any((a) => a['user_id'] != uid(ana)),
+    'without my name: I see no names either',
+  );
+  check(
+    ((await status(ana))['hidden_free'] as num) >= 1,
+    'without my name: I see how many are free',
+  );
+  for (final c in [ana, ben, gal]) {
+    await c.rpc('clear_availability');
+  }
+  await ana.rpc('set_settings', params: {'p_anonymous': false});
+
+  // --- hide "in a call" (D-106)
+  await ana.rpc('set_settings', params: {'p_hide_in_call': true});
+  await skipQuietGap();
+  final token = await ana.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  await free(ana);
+  check(
+    (await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'free and not in a call: friends see me',
+  );
+  await bg.rpc('device_phone_call', params: {'p_token': token, 'p_on': true});
+  check(
+    !(await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'hide "in a call": in a call I simply look not free',
+  );
+  await bg.rpc('device_phone_call', params: {'p_token': token, 'p_on': false});
+  await ana.rpc('clear_availability');
+  await ana.rpc('set_settings', params: {'p_hide_in_call': false});
+
+  // --- no answer → not offered (and not seen) until "still free" (D-104)
+  await skipQuietGap();
+  await free(ana);
+  await free(ben);
+  var offer = pendingOffers(await rows(ana, 'match_offers')).single;
+  await ana.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  // 30 seconds without an answer from Ben; I stop waiting.
+  await dbExec(
+    "update match_offers set created_at = created_at - interval '30 seconds' "
+    "where id = '${offer['id']}'",
+  );
+  await ana.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': false},
+  );
+  final benMine = (await rows(
+    ben,
+    'availability',
+  )).firstWhere((a) => a['user_id'] == uid(ben));
+  check(benMine['missed_at'] != null, 'no answer → marked on my side');
+  check(
+    !(await rows(gal, 'availability')).any((a) => a['user_id'] == uid(ben)),
+    'no answer → friends see me as not free',
+  );
+  // Ana said yes: she isn't held 5 minutes; Gal becomes free → asked now.
+  await befriend(ana, gal);
+  await free(gal);
+  final anaOffers = pendingOffers(await rows(ana, 'match_offers'));
+  check(
+    anaOffers.length == 1 &&
+        {anaOffers.single['user_a'], anaOffers.single['user_b']}.contains(
+          uid(gal),
+        ),
+    'whoever said yes gets the next friend right away',
+  );
+  check(
+    pendingOffers(await rows(ben, 'match_offers')).isEmpty,
+    'no answer → no more questions for me',
+  );
+  check(await ben.rpc('still_free') == true, '"still free" works');
+  check(
+    (await rows(gal, 'availability')).any((a) => a['user_id'] == uid(ben)),
+    '"still free" → friends see me again',
+  );
+  for (final c in [ana, ben, gal]) {
+    await c.rpc('clear_availability');
+  }
+
+  // --- tap a free friend: ask directly (D-104)
+  await skipQuietGap();
+  await free(ben);
+  check(
+    await ana.rpc('ask_friend', params: {'p_user': uid(ben)}) == 'me_not_free',
+    'asking needs me to be free',
+  );
+  await ana.rpc('set_settings', params: {'p_anonymous': true});
+  await free(ana);
+  // (Ana and Ben may already have a question from the matching.)
+  for (final o in pendingOffers(await rows(ana, 'match_offers'))) {
+    await ana.rpc('answer_offer', params: {'p_offer': o['id'], 'p_accept': false});
+  }
+  await skipQuietGap();
+  await dbExec(
+    "update match_offers set created_at = created_at - interval '1 hour' "
+    "where '${uid(ana)}' in (user_a, user_b)",
+  );
+  check(
+    await ana.rpc('ask_friend', params: {'p_user': uid(ben)}) == 'not_free',
+    'without my name I can\'t pick a friend by name',
+  );
+  await ana.rpc('set_settings', params: {'p_anonymous': false});
+  final asked = await ana.rpc('ask_friend', params: {'p_user': uid(ben)});
+  check(asked == 'asked', 'tap a free friend → they are asked now');
+  offer = pendingOffers(await rows(ben, 'match_offers')).single;
+  check(
+    offer['direct'] == true &&
+        (offer['user_a'] == uid(ana)
+            ? offer['a_response']
+            : offer['b_response']) ==
+            'accept',
+    'my tap counts as my yes',
+  );
+  final r = Map<String, dynamic>.from(
+    await ben.rpc(
+          'answer_offer',
+          params: {'p_offer': offer['id'], 'p_accept': true},
+        )
+        as Map,
+  );
+  check(r['status'] == 'accepted', 'their yes → a call');
+  for (final c in [ana, ben]) {
+    await c.rpc('end_call', params: {'p_offer': offer['id']});
+    await c.rpc('clear_availability');
+  }
+
+  // --- extend my free time
+  await free(gal, 10);
+  final before = DateTime.parse(
+    (await rows(gal, 'availability')).firstWhere(
+          (a) => a['user_id'] == uid(gal),
+        )['expires_at']
+        as String,
+  );
+  final after = DateTime.parse(
+    await gal.rpc('extend_availability', params: {'p_minutes': 20}) as String,
+  );
+  check(
+    after.difference(before).inMinutes == 20,
+    '"extend" adds minutes to my free time',
+  );
+  await gal.rpc('clear_availability');
+
+  // --- automatic trip: quiet hours, 5 quiet minutes, one question (D-106)
+  final dov = await newUser('דב', 'male');
+  final eli = await newUser('אלי', 'male');
+  final hila = await newUser('הילה', 'female');
+  await befriend(dov, eli);
+  await befriend(dov, hila);
+  final dovToken = await dov.rpc('create_device_token') as String;
+  await dov.rpc(
+    'set_settings',
+    params: {'p_quiet_from': 0, 'p_quiet_to': 1439, 'p_time_zone': 'UTC'},
+  );
+  check(
+    await bg.rpc('auto_start', params: {'p_token': dovToken}) == 'quiet_hours',
+    'quiet hours: a trip doesn\'t make me free',
+  );
+  await dov.rpc('set_settings', params: {'p_clear_quiet': true});
+  check(
+    await bg.rpc('auto_start', params: {'p_token': dovToken}) == 'available',
+    'outside quiet hours: a trip makes me free',
+  );
+  await free(eli);
+  await free(hila);
+  check(
+    pendingOffers(await rows(dov, 'match_offers')).isEmpty,
+    'the first 5 minutes of a trip: no question',
+  );
+  check(
+    await dov.rpc('ready_now') == true,
+    '"ready now" ends the 5 quiet minutes',
+  );
+  offer = pendingOffers(await rows(dov, 'match_offers')).single;
+  // Dov doesn't answer; the question runs out.
+  await dbExec(
+    "update availability set started_at = started_at - interval '5 minutes' "
+    "where user_id = '${uid(dov)}'",
+  );
+  await dbExec(
+    "update match_offers set created_at = now() - interval '3 minutes', "
+    "expires_at = now() - interval '1 second' where id = '${offer['id']}'",
+  );
+  await dbExec('select public.expire_stale()');
+  check(
+    (await status(dov))['auto_missed'] == 1,
+    'a missed question on a trip is counted',
+  );
+  await dov.rpc('still_free');
+  await skipQuietGap();
+  await dov.rpc('nudge_offers');
+  check(
+    pendingOffers(await rows(dov, 'match_offers')).isEmpty,
+    'one unanswered question per trip — no second one',
+  );
+  await dov.rpc('keep_auto');
+  check(
+    (await status(dov))['auto_missed'] == 0,
+    '"keep automatic" resets the count',
+  );
+  await bg.rpc('auto_stop', params: {'p_token': dovToken});
+  for (final c in [eli, hila]) {
+    await c.rpc('clear_availability');
+  }
+
+  // --- added from contacts by someone I haven't saved (D-106)
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final n = (DateTime.now().millisecondsSinceEpoch % 9000000) + 1000000;
+  final yaelPhone = '+97253$n';
+  final omerPhone = '+97255$n';
+  final yael = await newUser('יעל', 'female');
+  final omer = await newUser('עומר', 'male');
+  await yael.from('phone_numbers').upsert({
+    'user_id': uid(yael),
+    'phone': yaelPhone,
+  });
+  await omer.from('phone_numbers').upsert({
+    'user_id': uid(omer),
+    'phone': omerPhone,
+  });
+  await omer.rpc(
+    'find_friends',
+    params: {
+      'p_hashes': [h(yaelPhone)],
+    },
+  );
+  await omer.rpc(
+    'add_contacts',
+    params: {
+      'p_users': [uid(yael)],
+    },
+  );
+  check(
+    List.from((await status(yael))['pending'] as List).contains(uid(omer)),
+    'I\'m asked whether to keep someone who added me',
+  );
+  await free(yael);
+  check(
+    !(await rows(omer, 'availability')).any((a) => a['user_id'] == uid(yael)),
+    'until I decide, they don\'t see when I\'m free',
+  );
+  check(
+    (await rows(yael, 'profiles')).any((p) => p['id'] == uid(omer)),
+    'I do see who added me',
+  );
+  await free(omer);
+  check(
+    pendingOffers(await rows(omer, 'match_offers')).isEmpty,
+    'until I decide, no question between us',
+  );
+  check(
+    await yael.rpc('approve_friend', params: {'p_user': uid(omer)}) == true,
+    '"keep" works',
+  );
+  check(
+    (await rows(omer, 'availability')).any((a) => a['user_id'] == uid(yael)),
+    'after "keep" they see when I\'m free',
+  );
+  check(
+    pendingOffers(await rows(omer, 'match_offers')).length == 1,
+    'after "keep" a question can come',
+  );
+
+  // --- crash notes: short, only the owner reads them
+  await yael.rpc(
+    'report_crash',
+    params: {
+      'p_build': '99',
+      'p_kind': 'flutter',
+      'p_message': 'x' * 900,
+      'p_stack': 'y' * 9000,
+    },
+  );
+  check(
+    await dbCount(
+          "select count(*) from crash_reports where user_id = '${uid(yael)}' "
+          'and length(message) = 500 and length(stack) = 4000',
+        ) ==
+        1,
+    'a crash note is saved (and trimmed)',
+  );
+  try {
+    await yael.rpc('owner_crashes');
+    check(false, 'only the owner reads crash notes');
+  } on PostgrestException {
+    check(true, 'only the owner reads crash notes');
+  }
+
+  for (final c in [yael, omer]) {
+    await c.rpc('clear_availability');
+  }
+  for (final c in [ana, ben, gal, dov, eli, hila, yael, omer, bg]) {
+    await c.dispose();
+  }
 }

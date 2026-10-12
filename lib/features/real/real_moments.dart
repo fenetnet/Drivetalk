@@ -21,14 +21,39 @@ class RealOfferScreen extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final now = ref.watch(realNowProvider);
-    final other = s.snapshot!.friend(offer.otherId(s.myId!))!;
+    // (A friend who just left the list: nothing to show — never a crash.)
+    final other = s.snapshot?.friend(offer.otherId(s.myId ?? ''));
+    if (other == null) return const SizedBox.shrink();
     final theirs = s.snapshot!.availability[other.id];
     final g = genderKey(other.gender);
     final style = dark ? MomentStyle.dark : MomentStyle.coral;
     final when = theirs != null && theirs.isActiveAt(now)
-        ? '${modeLabel(l, theirs.mode)} · '
-              '${l.timeLeftMinutes(theirs.minutesLeftAt(now))}'
+        ? theirs.auto
+              ? modeLabel(l, theirs.mode)
+              : '${modeLabel(l, theirs.mode)} · '
+                    '${l.timeLeftMinutes(theirs.minutesLeftAt(now))}'
         : null;
+    // Only what we know: how long both are free, when they last talked.
+    final shared = offer.sharedUntil?.difference(now).inMinutes;
+    final last = offer.lastTalk;
+    final days = last == null
+        ? null
+        : DateTime(
+            now.year,
+            now.month,
+            now.day,
+          ).difference(DateTime(last.year, last.month, last.day)).inDays;
+    final facts = [
+      if (shared != null && shared > 0) l.offerShared(shared),
+      if (days == null)
+        l.offerFirstTalk
+      else if (days <= 0)
+        l.offerLastTalkToday
+      else if (days < 14)
+        l.offerLastTalkDays(days)
+      else
+        l.offerLastTalkDate('${last!.day}/${last.month}'),
+    ].join(' · ');
 
     return MomentLayout(
       style: style,
@@ -61,6 +86,11 @@ class RealOfferScreen extends ConsumerWidget {
             style: style,
             soft: true,
           ),
+          // Not while driving: as little text as possible.
+          if (!dark) ...[
+            const SizedBox(height: 12),
+            MomentText(facts, size: 16, style: style, soft: true),
+          ],
         ],
       ),
       actions: [
@@ -107,7 +137,8 @@ class RealWaitingScreen extends ConsumerWidget {
     final l = context.l10n;
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
-    final other = s.snapshot!.friend(offer.otherId(s.myId!))!;
+    final other = s.snapshot?.friend(offer.otherId(s.myId ?? ''));
+    if (other == null) return const SizedBox.shrink();
     final style = dark ? MomentStyle.dark : MomentStyle.coral;
     return MomentLayout(
       style: style,
@@ -137,6 +168,24 @@ class RealWaitingScreen extends ConsumerWidget {
           height: dark ? 88 : 60,
           onTap: () => c.cancelWaiting(offer),
         ),
+        // Someone else is free: stop waiting here and pick them (D-104).
+        if (!dark &&
+            freeFriends(
+              s,
+              ref.watch(realNowProvider),
+            ).any((f) => f.$1.id != other.id))
+          TextButton(
+            onPressed: () => c.cancelWaiting(offer),
+            child: Text(
+              l.waitOther,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                decoration: TextDecoration.underline,
+                decorationColor: Colors.white,
+              ),
+            ),
+          ),
       ],
     );
   }

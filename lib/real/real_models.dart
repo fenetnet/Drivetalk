@@ -90,8 +90,19 @@ class RealAvailability {
     this.circleId,
     this.auto = false,
     this.busyUntil,
+    this.missedAt,
+    this.quietUntil,
   });
   final String userId;
+
+  /// I didn't answer a question: no more questions, and friends see me as
+  /// not free, until I say "still free" (my own row only).
+  final DateTime? missedAt;
+
+  /// An automatic trip's first minutes: no questions until then.
+  final DateTime? quietUntil;
+  bool get missed => missedAt != null;
+  bool quietAt(DateTime now) => quietUntil != null && now.isBefore(quietUntil!);
 
   /// In a call (through the app or any other phone call) until then.
   final DateTime? busyUntil;
@@ -116,7 +127,27 @@ class RealAvailability {
     circleId: circleId,
     auto: auto,
     busyUntil: until,
+    missedAt: missedAt,
+    quietUntil: quietUntil,
   );
+
+  /// The same, with these marks (null clears one).
+  RealAvailability withMarks({
+    required DateTime? missedAt,
+    required DateTime? quietUntil,
+    DateTime? expiresAt,
+  }) => RealAvailability(
+    userId: userId,
+    mode: mode,
+    startedAt: startedAt,
+    expiresAt: expiresAt ?? this.expiresAt,
+    circleId: circleId,
+    auto: auto,
+    busyUntil: busyUntil,
+    missedAt: missedAt,
+    quietUntil: quietUntil,
+  );
+
   int minutesLeftAt(DateTime now) {
     final s = expiresAt.difference(now).inSeconds;
     return s <= 0 ? 0 : (s / 60).ceil();
@@ -147,6 +178,9 @@ class RealOffer {
     this.caller,
     this.notBefore,
     this.laterFrom,
+    this.sharedUntil,
+    this.lastTalk,
+    this.direct = false,
   });
   final String id;
   final String userA;
@@ -174,6 +208,15 @@ class RealOffer {
   /// Who said "not now — I'll get back to you" (null = nobody).
   final String? laterFrom;
 
+  /// Both are free until about then (null = unknown, e.g. a trip).
+  final DateTime? sharedUntil;
+
+  /// When the two last talked through the app (null = never).
+  final DateTime? lastTalk;
+
+  /// Someone tapped the other one (not the app's suggestion).
+  final bool direct;
+
   String otherId(String me) => me == userA ? userB : userA;
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
 }
@@ -194,6 +237,41 @@ class ContactMatch {
       ContactMatch(id, local, hash: hash, isFriend: isFriend);
 }
 
+/// About me, from the server; friends can't read any of it.
+class MyStatus {
+  const MyStatus({
+    this.anonymous = false,
+    this.hideInCall = false,
+    this.quietFrom,
+    this.quietTo,
+    this.autoMissed = 0,
+    this.hiddenFree = 0,
+    this.pending = const {},
+  });
+
+  /// "Free without my name": friends see only how many are free (and so
+  /// do I).
+  final bool anonymous;
+
+  /// In a call I simply look not free.
+  final bool hideInCall;
+
+  /// Quiet hours, minutes after midnight (null = none).
+  final int? quietFrom;
+  final int? quietTo;
+  bool get hasQuietHours =>
+      quietFrom != null && quietTo != null && quietFrom != quietTo;
+
+  /// Automatic trips in a row with an unanswered question.
+  final int autoMissed;
+
+  /// Free friends I can't see by name (their choice or mine).
+  final int hiddenFree;
+
+  /// Friends who added me from their contacts and wait for my "keep".
+  final Set<String> pending;
+}
+
 /// What I can see right now.
 class RealSnapshot {
   const RealSnapshot({
@@ -210,7 +288,11 @@ class RealSnapshot {
     this.hidden = false,
     this.inactiveDays = const {},
     this.othersModes,
+    this.status = const MyStatus(),
   });
+
+  /// My private settings and counts (see [MyStatus]).
+  final MyStatus status;
 
   /// "Everyone else" (friends in none of my circles): who sees that I'm
   /// free. null = always, empty = never.
@@ -293,6 +375,7 @@ class RealSnapshot {
       hidden: hidden,
       inactiveDays: inactiveDays,
       othersModes: othersModes,
+      status: status,
     );
   }
 
@@ -319,6 +402,7 @@ class RealSnapshot {
       hidden: hidden,
       inactiveDays: inactiveDays,
       othersModes: othersModes,
+      status: status,
     );
   }
 

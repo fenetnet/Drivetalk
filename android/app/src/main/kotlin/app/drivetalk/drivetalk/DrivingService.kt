@@ -4,12 +4,15 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import java.util.Locale
 import java.util.concurrent.Executors
 
@@ -33,6 +36,12 @@ class DrivingService : Service() {
         private const val MAX_MS = 3 * 60 * 60 * 1000L
         /** "In a call" lasts 3 minutes on the server: renew every 2. */
         private const val PHONE_RENEW_MS = 2 * 60 * 1000L
+
+        /** Spoken like directions: other sound is lowered, not stopped. */
+        private val VOICE_ATTRS: AudioAttributes = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build()
 
         fun start(context: Context) = send(context, ACTION_START)
 
@@ -158,6 +167,14 @@ class DrivingService : Service() {
             if (status == TextToSpeech.SUCCESS) {
                 tts?.language = Locale.forLanguageTag("he-IL")
                 tts?.setSpeechRate(1.15f)
+                // Like a navigation app: music / Waze get quieter meanwhile.
+                tts?.setAudioAttributes(VOICE_ATTRS)
+                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(utteranceId: String?) {}
+                    override fun onDone(utteranceId: String?) = releaseFocus()
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(utteranceId: String?) = releaseFocus()
+                })
                 ttsReady = true
             }
         }
@@ -243,7 +260,28 @@ class DrivingService : Service() {
     private fun speak(text: String) {
         // On screen, the app asks by voice itself — never twice.
         if (MainActivity.onScreen) return
-        if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "offer")
+        if (!ttsReady) return
+        requestFocus()
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "offer")
+    }
+
+    private var focus: AudioFocusRequest? = null
+
+    private fun requestFocus() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val audio = getSystemService(AUDIO_SERVICE) as? AudioManager ?: return
+        val r = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK)
+            .setAudioAttributes(VOICE_ATTRS)
+            .build()
+        focus = r
+        audio.requestAudioFocus(r)
+    }
+
+    private fun releaseFocus() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val audio = getSystemService(AUDIO_SERVICE) as? AudioManager ?: return
+        focus?.let { audio.abandonAudioFocusRequest(it) }
+        focus = null
     }
 
     private fun finish(callServer: Boolean) {
@@ -259,6 +297,7 @@ class DrivingService : Service() {
         }
         for (id in quickShown) DrivingNotifications.cancelOffer(this, id)
         quickShown.clear()
+        releaseFocus()
         tts?.shutdown()
         tts = null
         if (manual) store.availableUntil = 0L

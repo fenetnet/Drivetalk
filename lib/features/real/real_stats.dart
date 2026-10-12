@@ -44,12 +44,30 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
           }
           final m = snap.data;
           if (m == null) return Center(child: Text(l.statsFailed));
-          Widget row(String label, String key, [String extra = '']) => ListTile(
+          // A clear name and one line saying what it counts.
+          Widget row(
+            String label,
+            String hint,
+            String key, {
+            String extra = '',
+            _Notes? open,
+          }) => ListTile(
             title: Text(label),
-            trailing: Text(
-              '${m[key]?.round() ?? '—'}$extra',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            subtitle: Text(hint),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${m[key]?.round() ?? '—'}$extra',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                if (open != null) const Icon(Icons.chevron_right_rounded),
+              ],
             ),
+            onTap: open == null ? null : () => _openNotes(context, open),
           );
           final offers = (m['offers'] ?? 0) + (m['quick'] ?? 0);
           return ListView(
@@ -67,56 +85,62 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                 }),
               ),
               const SizedBox(height: 12),
-              row(l.statsUsers, 'users'),
-              row(l.statsNewUsers, 'new_users'),
-              row(l.statsActiveUsers, 'active_users'),
-              row(l.statsFriendships, 'friendships'),
+              row(l.statsUsers, l.statsUsersHint, 'users'),
+              row(l.statsNewUsers, l.statsNewUsersHint, 'new_users'),
+              row(l.statsActiveUsers, l.statsActiveUsersHint, 'active_users'),
+              row(l.statsFriendships, l.statsFriendshipsHint, 'friendships'),
               const Divider(),
-              row(l.statsFreeTimes, 'free_times'),
-              row(l.statsOffers, 'offers'),
-              row(l.statsQuick, 'quick'),
-              row(l.statsBothYes, 'both_yes', pct(m['both_yes'], offers)),
-              row(l.statsTalked, 'talked', pct(m['talked'], offers)),
-              row(l.statsDeclined, 'declined', pct(m['declined'], offers)),
-              row(l.statsLater, 'later'),
-              row(l.statsNoAnswer, 'no_answer', pct(m['no_answer'], offers)),
-              ListTile(
-                title: Text(l.statsReports),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${m['reports']?.round() ?? '—'}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
-                ),
-                onTap: () => _openNotes(context, reports: true),
+              row(l.statsFreeTimes, l.statsFreeTimesHint, 'free_times'),
+              row(l.statsOffers, l.statsOffersHint, 'offers'),
+              row(l.statsQuick, l.statsQuickHint, 'quick'),
+              row(
+                l.statsBothYes,
+                l.statsBothYesHint,
+                'both_yes',
+                extra: pct(m['both_yes'], offers),
               ),
-              ListTile(
-                title: Text(l.statsFeedback),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${m['feedback']?.round() ?? '—'}',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const Icon(Icons.chevron_right_rounded),
-                  ],
-                ),
-                onTap: () => _openNotes(context, reports: false),
+              row(
+                l.statsTalked,
+                l.statsTalkedHint,
+                'talked',
+                extra: pct(m['talked'], offers),
+              ),
+              row(
+                l.statsDeclined,
+                l.statsDeclinedHint,
+                'declined',
+                extra: pct(m['declined'], offers),
+              ),
+              row(l.statsLater, l.statsLaterHint, 'later'),
+              row(
+                l.statsNoAnswer,
+                l.statsNoAnswerHint,
+                'no_answer',
+                extra: pct(m['no_answer'], offers),
+              ),
+              const Divider(),
+              row(
+                l.statsReports,
+                l.statsReportsHint,
+                'reports',
+                open: _Notes.reports,
+              ),
+              row(
+                l.statsFeedback,
+                l.statsFeedbackHint,
+                'feedback',
+                open: _Notes.feedback,
+              ),
+              row(
+                l.statsCrashes,
+                l.statsCrashesHint,
+                'crashes',
+                open: _Notes.crashes,
               ),
               const Divider(),
               ListTile(
                 title: Text(l.statsDialMs),
+                subtitle: Text(l.statsDialMsHint),
                 trailing: Text(
                   m['dial_ms'] == null
                       ? '—'
@@ -140,24 +164,33 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
   }
 }
 
-void _openNotes(BuildContext context, {required bool reports}) => Navigator.of(
-  context,
-).push(MaterialPageRoute<void>(builder: (_) => _NotesScreen(reports: reports)));
+enum _Notes { reports, feedback, crashes }
 
-/// Owner only: the latest feedback or reports, newest first.
+void _openNotes(BuildContext context, _Notes kind) =>
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => _NotesScreen(kind)));
+
+/// Owner only: the latest feedback, reports or crash notes, newest first.
 class _NotesScreen extends ConsumerWidget {
-  const _NotesScreen({required this.reports});
-  final bool reports;
+  const _NotesScreen(this.kind);
+  final _Notes kind;
+  bool get reports => kind == _Notes.reports;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: Text(reports ? l.statsReportsTitle : l.statsFeedbackTitle),
+        title: Text(switch (kind) {
+          _Notes.reports => l.statsReportsTitle,
+          _Notes.feedback => l.statsFeedbackTitle,
+          _Notes.crashes => l.statsCrashesTitle,
+        }),
       ),
       body: FutureBuilder<List<OwnerNote>?>(
-        future: ref.read(realProvider.notifier).ownerNotes(reports: reports),
+        future: kind == _Notes.crashes
+            ? ref.read(realProvider.notifier).ownerCrashes()
+            : ref.read(realProvider.notifier).ownerNotes(reports: reports),
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
             return const Center(child: CircularProgressIndicator());

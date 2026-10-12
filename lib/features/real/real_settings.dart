@@ -148,6 +148,32 @@ class RealSettingsScreen extends ConsumerWidget {
                         ),
                       ),
               ),
+              SwitchListTile(
+                secondary: const Icon(Icons.person_off_rounded),
+                title: Text(l.settingsAnonymous),
+                subtitle: Text(l.settingsAnonymousHint),
+                value: s.snapshot?.status.anonymous ?? false,
+                onChanged: s.snapshot == null || s.busy ? null : c.setAnonymous,
+              ),
+              SwitchListTile(
+                secondary: const Icon(Icons.phone_disabled_rounded),
+                title: Text(l.settingsHideInCall),
+                subtitle: Text(l.settingsHideInCallHint),
+                value: s.snapshot?.status.hideInCall ?? false,
+                onChanged: s.snapshot == null || s.busy
+                    ? null
+                    : c.setHideInCall,
+              ),
+              if (s.driving.supported)
+                ListTile(
+                  leading: const Icon(Icons.bedtime_rounded),
+                  title: Text(l.settingsQuietHours),
+                  subtitle: Text(_quietLine(context, s.snapshot?.status)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: s.snapshot == null || s.busy
+                      ? null
+                      : () => _pickQuietHours(context, ref),
+                ),
               ListTile(
                 leading: const Icon(Icons.system_update_rounded),
                 title: Text(l.updateCheck),
@@ -634,4 +660,68 @@ Future<void> _sendFeedback(BuildContext context, WidgetRef ref) async {
     await ref.read(realProvider.notifier).sendFeedback(text.text);
   }
   text.dispose();
+}
+
+String _hhmm(int minutes) =>
+    '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
+    '${(minutes % 60).toString().padLeft(2, '0')}';
+
+String _quietLine(BuildContext context, MyStatus? st) {
+  final l = context.l10n;
+  if (st == null || !st.hasQuietHours) return l.settingsQuietOff;
+  return l.settingsQuietOn(_hhmm(st.quietFrom!), _hhmm(st.quietTo!));
+}
+
+/// Quiet hours: from / to (or off). Only automatic trips are affected.
+Future<void> _pickQuietHours(BuildContext context, WidgetRef ref) async {
+  final l = context.l10n;
+  final c = ref.read(realProvider.notifier);
+  final st = ref.read(realProvider).snapshot?.status;
+  if (st != null && st.hasQuietHours) {
+    final clear = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (d) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit_rounded),
+              title: Text(l.quietSet),
+              onTap: () => Navigator.pop(d, false),
+            ),
+            ListTile(
+              leading: const Icon(Icons.close_rounded),
+              title: Text(l.quietClear),
+              onTap: () => Navigator.pop(d, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (clear == null || !context.mounted) return;
+    if (clear) {
+      await c.setQuietHours(null, null);
+      return;
+    }
+  }
+  final from = await showTimePicker(
+    context: context,
+    helpText: l.quietPickFrom,
+    initialTime: TimeOfDay(
+      hour: (st?.quietFrom ?? 22 * 60) ~/ 60,
+      minute: (st?.quietFrom ?? 0) % 60,
+    ),
+  );
+  if (from == null || !context.mounted) return;
+  final to = await showTimePicker(
+    context: context,
+    helpText: l.quietPickTo,
+    initialTime: TimeOfDay(
+      hour: (st?.quietTo ?? 7 * 60) ~/ 60,
+      minute: (st?.quietTo ?? 0) % 60,
+    ),
+  );
+  if (to == null) return;
+  await c.setQuietHours(from.hour * 60 + from.minute, to.hour * 60 + to.minute);
 }

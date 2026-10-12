@@ -218,7 +218,7 @@
   "realWaitingForFriends": "כשחבר יהיה פנוי — נשאל את שניכם.",
   "realFreeFriendsTitle": "עכשיו",
   "realNobodyFree": "יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.",
-  "realFreeHint": "רוצים לדבר? בוחרים למטה מה עושים עכשיו, ונציע לכם.",
+  "realFreeHint": "רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.",
   "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
   "homeIntentsTitle": "אשמח לדבר",
   "homeIntentsBody": "כשתהיו פנויים יחד — נציע אותם קודם.",
@@ -840,19 +840,19 @@
   "statsFailed": "לא הצלחנו לטעון. אם זה חוזר, צריך להכניס שוב את קוד הניהול (לחיצה ארוכה על \"בדיקת עדכון\").",
   "statsWeek": "7 ימים",
   "statsMonth": "30 ימים",
-  "statsUsers": "משתמשים (סה״כ)",
-  "statsNewUsers": "הצטרפו בתקופה",
-  "statsActiveUsers": "פתחו את האפליקציה בתקופה",
-  "statsFriendships": "חיבורים בין אנשים (סה״כ)",
-  "statsFreeTimes": "פעמים שסימנו \"יש לי זמן\"",
+  "statsUsers": "אנשים באפליקציה",
+  "statsNewUsers": "הצטרפו",
+  "statsActiveUsers": "נכנסו לאפליקציה",
+  "statsFriendships": "חברויות",
+  "statsFreeTimes": "\"יש לי זמן\"",
   "statsOffers": "הצעות לדבר",
   "statsQuick": "חיבורים מהירים",
   "statsBothYes": "שניהם אמרו כן",
-  "statsTalked": "דיברו בפועל (לפי המשוב)",
+  "statsTalked": "דיברו בפועל",
   "statsDeclined": "\"לא עכשיו\"",
-  "statsLater": "מתוכם \"אחזור אליך\"",
+  "statsLater": "\"אחזור אליך\"",
   "statsNoAnswer": "בלי תשובה",
-  "statsDialMs": "זמן מ\"כן\" שני עד חיוג (חציון)",
+  "statsDialMs": "כמה מהר מתחיל החיוג",
   "statsSeconds": "שנ׳",
   "statsNote": "רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.",
   "notificationsTitle": "התראות",
@@ -932,5 +932,176 @@
   "removedTitle": "אנשים שהסרתי",
   "removedBody": "אפשר להחזיר — וחוזרים להיות חברים מיד.",
   "removedEmpty": "לא הסרת אף אחד.",
-  "removedRestore": "להחזיר"
+  "removedRestore": "להחזיר",
+  "statsUsersHint": "כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)",
+  "statsNewUsersHint": "נרשמו לראשונה בתקופה הזו",
+  "statsActiveUsersHint": "פתחו אותה לפחות פעם אחת בתקופה",
+  "statsFriendshipsHint": "כמה זוגות חברים מחוברים באפליקציה (בסך הכול)",
+  "statsFreeTimesHint": "כמה פעמים מישהו סימן שהוא פנוי",
+  "statsOffersHint": "כמה פעמים הצענו לשני חברים פנויים לדבר",
+  "statsQuickHint": "שיחות שהתחילו בלי לשאול (שני הצדדים הסכימו מראש)",
+  "statsBothYesHint": "הצעות שהפכו לשיחה",
+  "statsTalkedHint": "לפי מה שענו אחרי השיחה",
+  "statsDeclinedHint": "אחד הצדדים סירב להצעה",
+  "statsLaterHint": "מתוך ה\"לא עכשיו\"",
+  "statsNoAnswerHint": "אף אחד לא ענה בזמן",
+  "statsReportsHint": "דיווחים על משתמשים. לחיצה לפרטים",
+  "statsFeedbackHint": "הודעות שנשלחו אליך מתוך האפליקציה. לחיצה לפרטים",
+  "statsCrashes": "קריסות",
+  "statsCrashesHint": "תקלות שהאפליקציה דיווחה עליהן לבד. לחיצה לפרטים",
+  "statsDialMsHint": "מה\"כן\" השני ועד שהטלפון מחייג (בדרך כלל)",
+  "statsCrashesTitle": "קריסות אחרונות",
+  "askTitle": "לדבר עם {name} עכשיו?",
+  "@askTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askBody": "נשאל אם מתאים עכשיו. אם כן, מתחילים לדבר.",
+  "askBodyNotFree": "נסמן שגם לך יש זמן (30 דקות), ונשאל אם מתאים עכשיו.",
+  "askYes": "כן, לשאול",
+  "askNotFree": "נראה של{name} כבר אין זמן כרגע.",
+  "@askNotFree": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askBusy": "ל{name} לא מתאים ממש עכשיו. נציע כשיתאים.",
+  "@askBusy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNotNow": "כבר שאלנו את {name} הפעם. נחכה לפעם הבאה.",
+  "@askNotNow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNoNumber": "אי אפשר להתקשר: לאף אחד מכם אין מספר טלפון באפליקציה.",
+  "askMeNotFree": "קודם צריך לסמן שיש לך זמן.",
+  "askFailed": "לא הצלחנו לשאול עכשיו. אפשר לנסות שוב.",
+  "friendKept": "{name} ברשימה שלך",
+  "@friendKept": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hiddenFreeLine": "{count, plural, =1{ועוד חבר אחד פנוי, בלי שם} other{ועוד {count} חברים פנויים, בלי שם}}",
+  "@hiddenFreeLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anonymousSeeNote": "בחרת להופיע בלי שם, ולכן גם כאן רואים רק כמה פנויים.",
+  "missedTitle": "לא ענית, אז הפסקנו להציע אותך.",
+  "missedBody": "בינתיים החברים לא רואים שיש לך זמן. עדיין יש לך זמן?",
+  "missedYes": "כן, יש לי זמן",
+  "missedNo": "לא עכשיו",
+  "autoMissedTitle": "בנסיעות האחרונות לא ענית.",
+  "autoMissedBody": "להשאיר את הזיהוי האוטומטי של נסיעות?",
+  "autoMissedKeep": "להשאיר",
+  "autoMissedOff": "לכבות",
+  "graceTitle": "כמה דקות להתארגן",
+  "graceBody": "אחר כך נציע שיחה, אם מישהו פנוי.",
+  "graceReady": "אפשר כבר עכשיו",
+  "graceNotThisTrip": "לא בנסיעה הזו",
+  "extendButton": "להאריך",
+  "extendTitle": "להאריך בעוד…",
+  "extendBy": "+{minutes} דק׳",
+  "@extendBy": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUntilTime": "עד שעה…",
+  "durationUntilTimeCapped": "אפשר עד 3 שעות, אז סימנו עד {time}.",
+  "@durationUntilTimeCapped": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingTitle": "הצטרפת לרשימה של {name}",
+  "@pendingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingBody": "המספר של {name} לא שמור אצלך, ולכן {name} עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?",
+  "@pendingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingKeep": "להשאיר",
+  "pendingRemove": "להסיר",
+  "offerShared": "שניכם פנויים עוד כ-{minutes} דק׳",
+  "@offerShared": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "offerLastTalkToday": "כבר דיברתם היום",
+  "offerLastTalkDays": "{days, plural, =1{דיברתם אתמול} other{דיברתם לפני {days} ימים}}",
+  "@offerLastTalkDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "offerLastTalkDate": "לא דיברתם מאז {date}",
+  "@offerLastTalkDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "offerFirstTalk": "זו תהיה השיחה הראשונה שלכם כאן",
+  "waitOther": "לדבר עם מישהו אחר",
+  "settingsAnonymous": "להופיע בלי שם כשיש לי זמן",
+  "settingsAnonymousHint": "החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.",
+  "settingsHideInCall": "להסתיר כשאני בשיחה",
+  "settingsHideInCallHint": "בזמן שיחה החברים פשוט לא יראו שיש לך זמן.",
+  "settingsQuietHours": "שעות שקטות",
+  "settingsQuietOff": "בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.",
+  "settingsQuietOn": "{from}–{to}: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
+  "@settingsQuietOn": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "quietPickFrom": "מאיזו שעה?",
+  "quietPickTo": "עד איזו שעה?",
+  "quietClear": "לבטל שעות שקטות",
+  "quietSet": "לבחור שעות",
+  "realNotifChannelTalk": "הצעות לדבר"
 }

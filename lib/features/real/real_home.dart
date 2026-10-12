@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
@@ -276,6 +277,8 @@ class RealHomeScreen extends ConsumerWidget {
                     busy: busyFriends(s, now),
                     now: now,
                     meFree: mine != null,
+                    hiddenFree: snap?.status.hiddenFree ?? 0,
+                    anonymous: snap?.status.anonymous ?? false,
                   ),
                 // At most ONE small card at a time (the most useful one).
                 if (_tipCard(s, c, now, snap) case final tip?) ...[
@@ -313,7 +316,14 @@ Widget? _tipCard(
   DateTime now,
   RealSnapshot? snap,
 ) {
+  // "Still free?" after a question I didn't answer — only here, in the app.
+  if (myActiveAvailability(s, now)?.missed ?? false) return const _MissedCard();
   if (s.newBuild != null) return const _UpdateCard();
+  if (s.driving.enabled && (snap?.status.autoMissed ?? 0) >= 2) {
+    return const _AutoMissedCard();
+  }
+  // Someone added me from their contacts: keep them?
+  if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
   if (c.newFriend case final f?) return _NewFriendCard(friend: f);
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
   if (c.showAddNumber) return const _AddNumberCard();
@@ -382,13 +392,19 @@ class _Blob extends StatelessWidget {
 }
 
 /// "Free now" card: friends' faces with a green ring.
-class _FreeNowCard extends StatelessWidget {
+class _FreeNowCard extends ConsumerWidget {
   const _FreeNowCard({
     required this.free,
     required this.busy,
     required this.now,
     required this.meFree,
+    this.hiddenFree = 0,
+    this.anonymous = false,
   });
+
+  /// Free friends without a name (their choice, or mine — D-103).
+  final int hiddenFree;
+  final bool anonymous;
   final List<(RealProfile, RealAvailability)> free;
 
   /// Free, but in a call right now: shown after the free ones.
@@ -397,8 +413,9 @@ class _FreeNowCard extends StatelessWidget {
   final bool meFree;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
+    final total = free.length + hiddenFree;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -426,17 +443,16 @@ class _FreeNowCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (free.isNotEmpty)
-                MomentChip(text: l.realFreeCount(free.length)),
+              if (total > 0) MomentChip(text: l.realFreeCount(total)),
             ],
           ),
           const SizedBox(height: 16),
-          if (free.isEmpty && busy.isEmpty)
+          if (free.isEmpty && busy.isEmpty && hiddenFree == 0)
             Text(
               meFree ? l.realNobodyFreeYet : l.realNobodyFree,
               style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
             )
-          else
+          else if (free.isNotEmpty || busy.isNotEmpty)
             SizedBox(
               height: 138,
               child: ListView.separated(
@@ -448,41 +464,64 @@ class _FreeNowCard extends StatelessWidget {
                   final (p, a) = inCall ? busy[i - free.length] : free[i];
                   return SizedBox(
                     width: 76,
-                    child: Column(
-                      children: [
-                        RealAvatar(person: p.toPerson(), online: !inCall),
-                        const SizedBox(height: 8),
-                        Text(
-                          p.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      // Tap a free friend: ask them now.
+                      onTap: inCall
+                          ? null
+                          : () => askFreeFriend(context, ref, p),
+                      child: Column(
+                        children: [
+                          RealAvatar(person: p.toPerson(), online: !inCall),
+                          const SizedBox(height: 8),
+                          Text(
+                            p.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        StatusLine(
-                          icon: inCall ? Icons.call_rounded : modeIcon(a.mode),
-                          // The picture says how (car, coffee…); the text
-                          // just how long.
-                          text: inCall
-                              ? l.inCall
-                              : l.timeLeftMinutes(a.minutesLeftAt(now)),
-                          color: inCall
-                              ? AppColors.coralDeep
-                              : AppColors.inkSoft,
-                          bold: inCall,
-                          size: 12,
-                          center: true,
-                        ),
-                      ],
+                          StatusLine(
+                            icon: inCall
+                                ? Icons.call_rounded
+                                : modeIcon(a.mode),
+                            // The picture says how (car, coffee…); the text
+                            // just how long.
+                            text: inCall ? l.inCall : timeLeftLabel(l, a, now),
+                            color: inCall
+                                ? AppColors.coralDeep
+                                : AppColors.inkSoft,
+                            bold: inCall,
+                            size: 12,
+                            center: true,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
-          // Their faces don't do anything by themselves: say what does.
-          if (!meFree && free.isNotEmpty)
+          if (hiddenFree > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                l.hiddenFreeLine(hiddenFree),
+                style: const TextStyle(fontSize: 15),
+              ),
+            ),
+          if (anonymous && total > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                l.anonymousSeeNote,
+                style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+              ),
+            ),
+          // Their faces can be tapped: say so.
+          if (free.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
@@ -552,7 +591,7 @@ class _MyStatus extends ConsumerWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      l.timeLeftMinutes(mine.minutesLeftAt(now)),
+                      timeLeftLabel(l, mine, now),
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 15,
@@ -570,12 +609,264 @@ class _MyStatus extends ConsumerWidget {
           style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
         ),
         const SizedBox(height: 12),
-        OutlinedButton.icon(
-          onPressed: c.stopAvailability,
-          icon: const Icon(Icons.stop_rounded),
-          label: Text(l.stopAvailability),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 8,
+          children: [
+            // A trip ends by itself: nothing to extend.
+            if (!mine.auto)
+              OutlinedButton.icon(
+                onPressed: () => _extend(context, ref),
+                icon: const Icon(Icons.more_time_rounded),
+                label: Text(l.extendButton),
+              ),
+            OutlinedButton.icon(
+              onPressed: c.stopAvailability,
+              icon: const Icon(Icons.stop_rounded),
+              label: Text(l.stopAvailability),
+            ),
+          ],
         ),
       ],
+    );
+  }
+}
+
+Future<void> _extend(BuildContext context, WidgetRef ref) async {
+  final l = context.l10n;
+  final minutes = await showModalBottomSheet<int>(
+    context: context,
+    showDragHandle: true,
+    builder: (d) => SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.extendTitle,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                for (final m in const [10, 20, 30, 60]) ...[
+                  Expanded(
+                    child: FilledButton.tonal(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(56),
+                      ),
+                      onPressed: () => Navigator.pop(d, m),
+                      child: Text(l.extendBy(m)),
+                    ),
+                  ),
+                  if (m != 60) const SizedBox(width: 8),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+  if (minutes != null) {
+    await ref.read(realProvider.notifier).extendAvailability(minutes);
+  }
+}
+
+/// "15 more min" — or, on an automatic trip (its end isn't known), just
+/// what it is.
+String timeLeftLabel(AppLocalizations l, RealAvailability a, DateTime now) =>
+    a.auto ? modeLabel(l, a.mode) : l.timeLeftMinutes(a.minutesLeftAt(now));
+
+/// Tap a free friend: "talk with X now?" → they're asked (my tap is my
+/// yes). If I'm not free yet, I'm marked free for 30 minutes first.
+Future<void> askFreeFriend(
+  BuildContext context,
+  WidgetRef ref,
+  RealProfile friend,
+) async {
+  final l = context.l10n;
+  final meFree =
+      myActiveAvailability(ref.read(realProvider), ref.read(realNowProvider)) !=
+      null;
+  final go = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.askTitle(friend.name)),
+      content: Text(meFree ? l.askBody : l.askBodyNotFree),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.askYes),
+        ),
+      ],
+    ),
+  );
+  if (go != true) return;
+  final c = ref.read(realProvider.notifier);
+  if (!meFree && !await c.startAvailability(AvailabilityMode.free, 30)) {
+    return;
+  }
+  await c.askFriend(friend);
+}
+
+/// I didn't answer a question: no more questions (and friends see me as
+/// not free) until I say so.
+class _MissedCard extends ConsumerWidget {
+  const _MissedCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.missedTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(l.missedBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy ? null : c.stillFree,
+                    child: Text(l.missedYes),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  onPressed: busy ? null : c.stopAvailability,
+                  child: Text(l.missedNo),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Trips in a row with no answer: keep automatic detection? (Only here.)
+class _AutoMissedCard extends ConsumerWidget {
+  const _AutoMissedCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.autoMissedTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 4),
+            Text(l.autoMissedBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy ? null : () => c.keepAuto(keep: true),
+                    child: Text(l.autoMissedKeep),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  onPressed: busy ? null : () => c.keepAuto(keep: false),
+                  child: Text(l.autoMissedOff),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Someone added me from their contacts, but I don't have their number:
+/// they don't see when I'm free until I keep them.
+class _PendingFriendCard extends ConsumerWidget {
+  const _PendingFriendCard({required this.friend});
+  final RealProfile friend;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    return Card(
+      color: AppColors.mint,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                RealAvatar(person: friend.toPerson(), size: 40),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    l.pendingTitle(friend.name),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(l.pendingBody(friend.name)),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton(
+                    onPressed: busy ? null : () => c.approveFriend(friend),
+                    child: Text(l.pendingKeep),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                OutlinedButton(
+                  onPressed: busy
+                      ? null
+                      : () async {
+                          c.dismissNewFriend(friend);
+                          await c.unmatch(friend);
+                        },
+                  child: Text(l.pendingRemove),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -893,6 +1184,71 @@ class RealDriverHome extends ConsumerWidget {
     final now = ref.watch(realNowProvider);
     final mine = myActiveAvailability(s, now);
     final c = ref.read(realProvider.notifier);
+    // A question went unanswered: two big buttons, nothing else.
+    if (mine != null && mine.missed) {
+      return MomentLayout(
+        style: MomentStyle.dark,
+        footer: l.driverSafety,
+        top: Column(
+          children: [
+            MomentText(l.missedTitle, size: 30, style: MomentStyle.dark),
+          ],
+        ),
+        actions: [
+          PrimaryPill(
+            label: l.missedYes,
+            style: MomentStyle.dark,
+            height: 110,
+            onTap: s.busy ? null : c.stillFree,
+          ),
+          SecondaryPill(
+            label: l.missedNo,
+            style: MomentStyle.dark,
+            height: 88,
+            onTap: c.stopAvailability,
+          ),
+        ],
+      );
+    }
+    // The first minutes of an automatic trip: no questions yet.
+    if (mine != null && mine.quietAt(now)) {
+      return MomentLayout(
+        style: MomentStyle.dark,
+        footer: l.driverSafety,
+        top: Column(
+          children: [
+            const Icon(
+              Icons.directions_car_rounded,
+              color: Colors.white,
+              size: 64,
+            ),
+            const SizedBox(height: 24),
+            MomentText(l.graceTitle, size: 30, style: MomentStyle.dark),
+            const SizedBox(height: 8),
+            MomentText(
+              l.graceBody,
+              size: 20,
+              style: MomentStyle.dark,
+              soft: true,
+            ),
+          ],
+        ),
+        actions: [
+          PrimaryPill(
+            label: l.graceReady,
+            style: MomentStyle.dark,
+            height: 110,
+            onTap: s.busy ? null : c.readyNow,
+          ),
+          SecondaryPill(
+            label: l.graceNotThisTrip,
+            style: MomentStyle.dark,
+            height: 88,
+            onTap: c.stopAvailability,
+          ),
+        ],
+      );
+    }
     return MomentLayout(
       style: MomentStyle.dark,
       footer: l.driverSafety,
@@ -914,7 +1270,7 @@ class RealDriverHome extends ConsumerWidget {
           ),
           const SizedBox(height: 28),
           MomentText(l.driverSearching, size: 30, style: MomentStyle.dark),
-          if (mine != null) ...[
+          if (mine != null && !mine.auto) ...[
             const SizedBox(height: 6),
             MomentText(
               l.timeLeftMinutes(mine.minutesLeftAt(now)),

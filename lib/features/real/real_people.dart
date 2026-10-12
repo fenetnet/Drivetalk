@@ -182,9 +182,10 @@ class RealPeopleScreen extends ConsumerWidget {
               ),
               final a? when a.isActiveAt(now) => StatusLine(
                 icon: modeIcon(a.mode),
-                text:
-                    '${modeLabel(l, a.mode)} · '
-                    '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
+                text: a.auto
+                    ? modeLabel(l, a.mode)
+                    : '${modeLabel(l, a.mode)} · '
+                          '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
                 color: AppColors.sageDark,
               ),
               _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {

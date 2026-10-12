@@ -443,7 +443,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realFreeHint =>
-      'רוצים לדבר? בוחרים למטה מה עושים עכשיו, ונציע לכם.';
+      'רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.';
 
   @override
   String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
@@ -1570,19 +1570,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get statsMonth => '30 ימים';
 
   @override
-  String get statsUsers => 'משתמשים (סה״כ)';
+  String get statsUsers => 'אנשים באפליקציה';
 
   @override
-  String get statsNewUsers => 'הצטרפו בתקופה';
+  String get statsNewUsers => 'הצטרפו';
 
   @override
-  String get statsActiveUsers => 'פתחו את האפליקציה בתקופה';
+  String get statsActiveUsers => 'נכנסו לאפליקציה';
 
   @override
-  String get statsFriendships => 'חיבורים בין אנשים (סה״כ)';
+  String get statsFriendships => 'חברויות';
 
   @override
-  String get statsFreeTimes => 'פעמים שסימנו \"יש לי זמן\"';
+  String get statsFreeTimes => '\"יש לי זמן\"';
 
   @override
   String get statsOffers => 'הצעות לדבר';
@@ -1594,19 +1594,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get statsBothYes => 'שניהם אמרו כן';
 
   @override
-  String get statsTalked => 'דיברו בפועל (לפי המשוב)';
+  String get statsTalked => 'דיברו בפועל';
 
   @override
   String get statsDeclined => '\"לא עכשיו\"';
 
   @override
-  String get statsLater => 'מתוכם \"אחזור אליך\"';
+  String get statsLater => '\"אחזור אליך\"';
 
   @override
   String get statsNoAnswer => 'בלי תשובה';
 
   @override
-  String get statsDialMs => 'זמן מ\"כן\" שני עד חיוג (חציון)';
+  String get statsDialMs => 'כמה מהר מתחיל החיוג';
 
   @override
   String get statsSeconds => 'שנ׳';
@@ -1725,4 +1725,265 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get removedRestore => 'להחזיר';
+
+  @override
+  String get statsUsersHint => 'כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)';
+
+  @override
+  String get statsNewUsersHint => 'נרשמו לראשונה בתקופה הזו';
+
+  @override
+  String get statsActiveUsersHint => 'פתחו אותה לפחות פעם אחת בתקופה';
+
+  @override
+  String get statsFriendshipsHint =>
+      'כמה זוגות חברים מחוברים באפליקציה (בסך הכול)';
+
+  @override
+  String get statsFreeTimesHint => 'כמה פעמים מישהו סימן שהוא פנוי';
+
+  @override
+  String get statsOffersHint => 'כמה פעמים הצענו לשני חברים פנויים לדבר';
+
+  @override
+  String get statsQuickHint =>
+      'שיחות שהתחילו בלי לשאול (שני הצדדים הסכימו מראש)';
+
+  @override
+  String get statsBothYesHint => 'הצעות שהפכו לשיחה';
+
+  @override
+  String get statsTalkedHint => 'לפי מה שענו אחרי השיחה';
+
+  @override
+  String get statsDeclinedHint => 'אחד הצדדים סירב להצעה';
+
+  @override
+  String get statsLaterHint => 'מתוך ה\"לא עכשיו\"';
+
+  @override
+  String get statsNoAnswerHint => 'אף אחד לא ענה בזמן';
+
+  @override
+  String get statsReportsHint => 'דיווחים על משתמשים. לחיצה לפרטים';
+
+  @override
+  String get statsFeedbackHint =>
+      'הודעות שנשלחו אליך מתוך האפליקציה. לחיצה לפרטים';
+
+  @override
+  String get statsCrashes => 'קריסות';
+
+  @override
+  String get statsCrashesHint =>
+      'תקלות שהאפליקציה דיווחה עליהן לבד. לחיצה לפרטים';
+
+  @override
+  String get statsDialMsHint => 'מה\"כן\" השני ועד שהטלפון מחייג (בדרך כלל)';
+
+  @override
+  String get statsCrashesTitle => 'קריסות אחרונות';
+
+  @override
+  String askTitle(String name) {
+    return 'לדבר עם $name עכשיו?';
+  }
+
+  @override
+  String get askBody => 'נשאל אם מתאים עכשיו. אם כן, מתחילים לדבר.';
+
+  @override
+  String get askBodyNotFree =>
+      'נסמן שגם לך יש זמן (30 דקות), ונשאל אם מתאים עכשיו.';
+
+  @override
+  String get askYes => 'כן, לשאול';
+
+  @override
+  String askNotFree(String name) {
+    return 'נראה של$name כבר אין זמן כרגע.';
+  }
+
+  @override
+  String askBusy(String name) {
+    return 'ל$name לא מתאים ממש עכשיו. נציע כשיתאים.';
+  }
+
+  @override
+  String askNotNow(String name) {
+    return 'כבר שאלנו את $name הפעם. נחכה לפעם הבאה.';
+  }
+
+  @override
+  String get askNoNumber =>
+      'אי אפשר להתקשר: לאף אחד מכם אין מספר טלפון באפליקציה.';
+
+  @override
+  String get askMeNotFree => 'קודם צריך לסמן שיש לך זמן.';
+
+  @override
+  String get askFailed => 'לא הצלחנו לשאול עכשיו. אפשר לנסות שוב.';
+
+  @override
+  String friendKept(String name) {
+    return '$name ברשימה שלך';
+  }
+
+  @override
+  String hiddenFreeLine(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ועוד $count חברים פנויים, בלי שם',
+      one: 'ועוד חבר אחד פנוי, בלי שם',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get anonymousSeeNote =>
+      'בחרת להופיע בלי שם, ולכן גם כאן רואים רק כמה פנויים.';
+
+  @override
+  String get missedTitle => 'לא ענית, אז הפסקנו להציע אותך.';
+
+  @override
+  String get missedBody =>
+      'בינתיים החברים לא רואים שיש לך זמן. עדיין יש לך זמן?';
+
+  @override
+  String get missedYes => 'כן, יש לי זמן';
+
+  @override
+  String get missedNo => 'לא עכשיו';
+
+  @override
+  String get autoMissedTitle => 'בנסיעות האחרונות לא ענית.';
+
+  @override
+  String get autoMissedBody => 'להשאיר את הזיהוי האוטומטי של נסיעות?';
+
+  @override
+  String get autoMissedKeep => 'להשאיר';
+
+  @override
+  String get autoMissedOff => 'לכבות';
+
+  @override
+  String get graceTitle => 'כמה דקות להתארגן';
+
+  @override
+  String get graceBody => 'אחר כך נציע שיחה, אם מישהו פנוי.';
+
+  @override
+  String get graceReady => 'אפשר כבר עכשיו';
+
+  @override
+  String get graceNotThisTrip => 'לא בנסיעה הזו';
+
+  @override
+  String get extendButton => 'להאריך';
+
+  @override
+  String get extendTitle => 'להאריך בעוד…';
+
+  @override
+  String extendBy(int minutes) {
+    return '+$minutes דק׳';
+  }
+
+  @override
+  String get durationUntilTime => 'עד שעה…';
+
+  @override
+  String durationUntilTimeCapped(String time) {
+    return 'אפשר עד 3 שעות, אז סימנו עד $time.';
+  }
+
+  @override
+  String pendingTitle(String name) {
+    return 'הצטרפת לרשימה של $name';
+  }
+
+  @override
+  String pendingBody(String name) {
+    return 'המספר של $name לא שמור אצלך, ולכן $name עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?';
+  }
+
+  @override
+  String get pendingKeep => 'להשאיר';
+
+  @override
+  String get pendingRemove => 'להסיר';
+
+  @override
+  String offerShared(int minutes) {
+    return 'שניכם פנויים עוד כ-$minutes דק׳';
+  }
+
+  @override
+  String get offerLastTalkToday => 'כבר דיברתם היום';
+
+  @override
+  String offerLastTalkDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: 'דיברתם לפני $days ימים',
+      one: 'דיברתם אתמול',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String offerLastTalkDate(String date) {
+    return 'לא דיברתם מאז $date';
+  }
+
+  @override
+  String get offerFirstTalk => 'זו תהיה השיחה הראשונה שלכם כאן';
+
+  @override
+  String get waitOther => 'לדבר עם מישהו אחר';
+
+  @override
+  String get settingsAnonymous => 'להופיע בלי שם כשיש לי זמן';
+
+  @override
+  String get settingsAnonymousHint =>
+      'החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.';
+
+  @override
+  String get settingsHideInCall => 'להסתיר כשאני בשיחה';
+
+  @override
+  String get settingsHideInCallHint =>
+      'בזמן שיחה החברים פשוט לא יראו שיש לך זמן.';
+
+  @override
+  String get settingsQuietHours => 'שעות שקטות';
+
+  @override
+  String get settingsQuietOff =>
+      'בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.';
+
+  @override
+  String settingsQuietOn(String from, String to) {
+    return '$from–$to: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.';
+  }
+
+  @override
+  String get quietPickFrom => 'מאיזו שעה?';
+
+  @override
+  String get quietPickTo => 'עד איזו שעה?';
+
+  @override
+  String get quietClear => 'לבטל שעות שקטות';
+
+  @override
+  String get quietSet => 'לבחור שעות';
+
+  @override
+  String get realNotifChannelTalk => 'הצעות לדבר';
 }

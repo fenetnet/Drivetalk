@@ -124,6 +124,15 @@ class RealRoot extends ConsumerWidget {
       RealNoticeKind.contactsNone => l.realContactsNone,
       RealNoticeKind.contactsNoPermission => l.realContactsNoPermission,
       RealNoticeKind.unblockedReconnected => l.realUnblockedBack(n.name ?? ''),
+      RealNoticeKind.askFailed => switch (n.code) {
+        'not_free' => l.askNotFree(n.name ?? ''),
+        'busy' => l.askBusy(n.name ?? ''),
+        'not_now' => l.askNotNow(n.name ?? ''),
+        'no_number' => l.askNoNumber,
+        'me_not_free' => l.askMeNotFree,
+        _ => l.askFailed,
+      },
+      RealNoticeKind.friendKept => l.friendKept(n.name ?? ''),
     };
   }
 }

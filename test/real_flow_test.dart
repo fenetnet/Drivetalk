@@ -693,6 +693,10 @@ void main() {
       expect(freeFriends(yoni.s, now).single.$2.mode, AvailabilityMode.driving);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
+      // The first minutes of a trip: no question (D-106) — until "ready now".
+      expect(currentOffer(me.s, now), isNull);
+      expect(myActiveAvailability(me.s, now)!.quietAt(now), isTrue);
+      await me.c.readyNow();
       final offer = currentOffer(me.s, now)!;
       expect(isRealDriving(me.s, now), isTrue, reason: 'driver screen');
 
@@ -827,7 +831,13 @@ void main() {
         now = now.add(const Duration(minutes: 2, seconds: 1));
         await me.c.refresh();
         expect(currentOffer(me.s, now), isNull, reason: 'over after 2 min');
+        // No answer → no more questions until I say "still free" (D-104).
+        expect(myActiveAvailability(me.s, now)!.missed, isTrue);
         now = now.add(const Duration(minutes: 5, seconds: 1));
+        await me.c.refresh();
+        expect(currentOffer(me.s, now), isNull, reason: 'not asked again');
+        await me.c.stillFree();
+        expect(myActiveAvailability(me.s, now)!.missed, isFalse);
       }
       expect(asked, hasLength(3), reason: 'each friend once');
       await me.c.refresh();
@@ -1370,7 +1380,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 27)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 31)'));
     });
 
     test(
@@ -1682,5 +1692,189 @@ void main() {
     expect(msg, contains('https://example.com/app.apk'));
     expect(msg, contains('AbCdEfGhIjKlMnOpQrStUv'));
     expect(parseInviteToken(msg), 'AbCdEfGhIjKlMnOpQrStUv');
+  });
+
+  group('calm and private (D-103…D-106)', () {
+    test('tap a free friend → they are asked; my tap is my yes', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      // (The matching may have asked us already: say no to start clean.)
+      await yoni.c.refresh();
+      if (currentOffer(yoni.s, now) case final o?) {
+        await yoni.c.respond(o, accept: false);
+      }
+      now = now.add(const Duration(hours: 1));
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await refreshBoth();
+      if (currentOffer(me.s, now) case final o?) {
+        await me.c.cancelWaiting(o);
+      }
+      await refreshBoth();
+      final friend = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      expect(await me.c.askFriend(friend), isTrue);
+      expect(waitingOffer(me.s, now), isNotNull, reason: 'I wait for Yoni');
+      await yoni.c.refresh();
+      final o = currentOffer(yoni.s, now)!;
+      expect(o.direct, isTrue);
+      expect(o.sharedUntil, isNotNull, reason: 'until when both are free');
+      await yoni.c.respond(o, accept: true);
+      await pump(20);
+      expect(yoni.s.callStage, isNot(CallStage.none));
+    });
+
+    test('asking when not free is refused clearly', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+      await me.c.refresh();
+      final friend = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      expect(await me.c.askFriend(friend), isFalse);
+      expect(me.s.notice?.kind, RealNoticeKind.askFailed);
+      expect(me.s.notice?.code, 'me_not_free');
+    });
+
+    test(
+      'no answer → not asked, not seen; "still free" brings me back',
+      () async {
+        await connect();
+        await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await refreshBoth();
+        expect(currentOffer(me.s, now), isNotNull);
+        now = now.add(const Duration(minutes: 2, seconds: 1));
+        server.expireStale();
+        await refreshBoth();
+        expect(myActiveAvailability(me.s, now)!.missed, isTrue);
+        expect(
+          freeFriends(yoni.s, now),
+          isEmpty,
+          reason: 'friends see me as not free',
+        );
+        await me.c.stillFree();
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), hasLength(1));
+      },
+    );
+
+    test('free without my name: friends see only a number', () async {
+      await connect();
+      await me.c.setAnonymous(true);
+      expect(me.s.snapshot!.status.anonymous, isTrue);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), isEmpty);
+      expect(yoni.s.snapshot!.status.hiddenFree, 1);
+      // Fair: I see only a number too.
+      await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+      await me.c.refresh();
+      expect(freeFriends(me.s, now), isEmpty);
+      expect(me.s.snapshot!.status.hiddenFree, 1);
+    });
+
+    test('hide "in a call": in a call I look simply not free', () async {
+      await connect();
+      await me.c.setHideInCall(true);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), hasLength(1));
+      server.phoneCall(me.backend.userId!, true);
+      await yoni.c.refresh();
+      expect(freeFriends(yoni.s, now), isEmpty);
+      expect(busyFriends(yoni.s, now), isEmpty, reason: 'not "in a call"');
+    });
+
+    test(
+      'added from contacts by someone I have not saved → I decide',
+      () async {
+        await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+        yoni.contacts.numbers = ['0521111111'];
+        await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+        await yoni.c.syncContacts();
+        await yoni.c.addContacts(yoni.c.contactMatches);
+        await me.c.refresh();
+        await pump(20);
+        final yoniId = yoni.backend.userId!;
+        expect(me.s.snapshot!.status.pending, {yoniId});
+        expect(me.c.pendingFriend?.id, yoniId);
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), isEmpty, reason: 'until I decide');
+        await me.c.approveFriend(me.c.pendingFriend!);
+        expect(me.c.pendingFriend, isNull);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), hasLength(1));
+      },
+    );
+
+    test('someone I do have saved is kept without asking', () async {
+      me.contacts.numbers = ['0532222222'];
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.syncContacts();
+      yoni.contacts.numbers = ['0521111111'];
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      await yoni.c.syncContacts();
+      await yoni.c.addContacts(yoni.c.contactMatches);
+      await me.c.refresh();
+      await pump(20);
+      // My contacts were searched before Yoni joined: looked at again.
+      expect(me.s.snapshot!.status.pending, isEmpty);
+      expect(me.c.pendingFriend, isNull);
+    });
+
+    test('extend my free time', () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.free, 10);
+      await me.c.extendAvailability(20);
+      expect(myActiveAvailability(me.s, now)!.minutesLeftAt(now), 30);
+    });
+
+    test('quiet hours: a trip does not make me free', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      await me.c.setQuietHours(7 * 60, 9 * 60); // now is 08:00
+      expect(server.autoStart(me.driving.token!), 'quiet_hours');
+      await me.c.setQuietHours(null, null);
+      expect(server.autoStart(me.driving.token!), 'available');
+    });
+
+    test(
+      'one unanswered question per trip; two trips → asked to keep',
+      () async {
+        await connect();
+        await me.c.enableAutoDriving();
+        final token = me.driving.token!;
+        for (var trip = 1; trip <= 2; trip++) {
+          expect(server.autoStart(token), 'available');
+          await me.c.readyNow();
+          await yoni.c.startAvailability(AvailabilityMode.free, 60);
+          await me.c.refresh();
+          expect(currentOffer(me.s, now), isNotNull, reason: 'trip $trip');
+          now = now.add(const Duration(minutes: 2, seconds: 1));
+          server.expireStale();
+          server.autoStop(token);
+          await yoni.c.stopAvailability();
+          now = now.add(const Duration(hours: 1));
+        }
+        await me.c.refresh();
+        expect(me.s.snapshot!.status.autoMissed, 2);
+        await me.c.keepAuto(keep: true);
+        expect(me.s.snapshot!.status.autoMissed, 0);
+      },
+    );
+
+    test(
+      'a crash note waits on the phone until it reaches the server',
+      () async {
+        await connect();
+        me.backend.offline = true;
+        await me.c.reportCrash('flutter', StateError('boom'), StackTrace.empty);
+        expect(server.crashes, isEmpty);
+        me.backend.offline = false;
+        await me.c.flushCrashes();
+        expect(server.crashes.single['message'], contains('boom'));
+        expect(server.crashes.single['build'], '10');
+      },
+    );
   });
 }

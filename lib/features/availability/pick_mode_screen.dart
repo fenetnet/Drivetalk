@@ -11,7 +11,8 @@ typedef StartAvailability = void Function(
   String? circleId,
 );
 
-/// For how long? 15/30/45/60 or "until I finish the drive".
+/// For how long? 10/20/30/60, "until…" (a clock) or "until I finish the
+/// drive".
 /// Optionally: available only to one of my private circles.
 class PickDurationScreen extends StatefulWidget {
   const PickDurationScreen({
@@ -41,6 +42,43 @@ class _PickDurationState extends State<PickDurationScreen> {
       _circleId,
     );
     Navigator.of(context).popUntil((r) => r.isFirst);
+  }
+
+  /// "Until…": a clock. At most 3 hours from now (the server's limit).
+  Future<void> _untilTime() async {
+    final l = context.l10n;
+    final now = DateTime.now();
+    final soon = now.add(const Duration(hours: 1));
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: soon.hour, minute: 0),
+    );
+    if (picked == null || !mounted) return;
+    var until = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      picked.hour,
+      picked.minute,
+    );
+    // An earlier hour means tomorrow (e.g. 00:30 picked at 23:00).
+    if (!until.isAfter(now)) until = until.add(const Duration(days: 1));
+    var minutes = (until.difference(now).inSeconds / 60).ceil();
+    if (minutes > _tripCapMinutes) {
+      minutes = _tripCapMinutes;
+      final end = now.add(const Duration(minutes: _tripCapMinutes));
+      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+        SnackBar(
+          content: Text(
+            l.durationUntilTimeCapped(
+              '${end.hour.toString().padLeft(2, '0')}:'
+              '${end.minute.toString().padLeft(2, '0')}',
+            ),
+          ),
+        ),
+      );
+    }
+    _start(minutes: minutes);
   }
 
   @override
@@ -104,7 +142,7 @@ class _PickDurationState extends State<PickDurationScreen> {
                   crossAxisSpacing: 16,
                   childAspectRatio: 1.4,
                   children: [
-                    for (final m in const [15, 30, 45, 60])
+                    for (final m in const [10, 20, 30, 60])
                       _BigTile(
                         label: l.minutesShort(m),
                         onTap: () => _start(minutes: m),
@@ -112,6 +150,18 @@ class _PickDurationState extends State<PickDurationScreen> {
                   ],
                 ),
               ),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(56),
+                ),
+                onPressed: _untilTime,
+                icon: const Icon(Icons.schedule_rounded),
+                label: Text(
+                  l.durationUntilTime,
+                  style: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 12),
               if (mode == AvailabilityMode.driving) ...[
                 FilledButton.icon(
                   onPressed: () => _start(untilTripEnds: true),

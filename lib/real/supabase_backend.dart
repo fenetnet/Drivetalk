@@ -110,15 +110,16 @@ class SupabaseRealBackend implements RealBackend {
           .from('availability')
           .select(
             'user_id, mode, started_at, expires_at, circle_id, source, '
-            'call_until, phone_until',
+            'call_until, phone_until, missed_at, quiet_until',
           )
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            // Older server (before "in a call").
+            // Older server (before D-104).
             onError: (Object _) => _c
                 .from('availability')
                 .select(
-                  'user_id, mode, started_at, expires_at, circle_id, source',
+                  'user_id, mode, started_at, expires_at, circle_id, source, '
+                  'call_until, phone_until',
                 ),
           ),
       _c
@@ -193,6 +194,13 @@ class SupabaseRealBackend implements RealBackend {
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // My private settings and counts (optional on an older server).
+      _c
+          .rpc('my_status')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [Map<String, dynamic>.from(r as Map)],
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -218,6 +226,8 @@ class SupabaseRealBackend implements RealBackend {
               _maybeTime(r['call_until']),
               _maybeTime(r['phone_until']),
             ),
+            missedAt: _maybeTime(r['missed_at']),
+            quietUntil: _maybeTime(r['quiet_until']),
           ),
       },
       offers: [for (final r in results[2]) _offer(r)],
@@ -261,6 +271,7 @@ class SupabaseRealBackend implements RealBackend {
       },
       hidden: results[8].firstOrNull?['hide_status'] == true,
       othersModes: modesFromKeys(results[9].firstOrNull?['show_modes']),
+      status: _myStatus(results[10].firstOrNull),
       fetchedAt: DateTime.now(),
     );
   });
@@ -745,6 +756,89 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<List<OwnerNote>> ownerCrashes() => _guard(() async {
+    final rows = await _c.rpc('owner_crashes') as List;
+    return [
+      for (final r in rows.cast<Map>())
+        OwnerNote(
+          _time(r['created_at']),
+          '${r['kind'] ?? ''} · ${r['build'] ?? ''}',
+          '${r['message'] ?? ''}\n\n${r['stack'] ?? ''}'.trim(),
+        ),
+    ];
+  });
+
+  @override
+  Future<String> askFriend(String userId) => _guard(
+    () async =>
+        await _c.rpc('ask_friend', params: {'p_user': userId}) as String,
+  );
+
+  @override
+  Future<bool> stillFree() =>
+      _guard(() async => await _c.rpc('still_free') == true);
+
+  @override
+  Future<bool> readyNow() =>
+      _guard(() async => await _c.rpc('ready_now') == true);
+
+  @override
+  Future<void> keepAuto() => _guard(() async => _c.rpc('keep_auto'));
+
+  @override
+  Future<DateTime?> extendAvailability(int minutes) => _guard(
+    () async => _maybeTime(
+      await _c.rpc('extend_availability', params: {'p_minutes': minutes}),
+    ),
+  );
+
+  @override
+  Future<void> setSettings({
+    bool? anonymous,
+    bool? hideInCall,
+    int? quietFrom,
+    int? quietTo,
+    bool clearQuiet = false,
+    String? timeZone,
+  }) => _guard(
+    () async => _c.rpc(
+      'set_settings',
+      params: {
+        'p_anonymous': ?anonymous,
+        'p_hide_in_call': ?hideInCall,
+        'p_quiet_from': ?quietFrom,
+        'p_quiet_to': ?quietTo,
+        'p_clear_quiet': clearQuiet,
+        'p_time_zone': ?timeZone,
+      },
+    ),
+  );
+
+  @override
+  Future<bool> approveFriend(String userId) => _guard(
+    () async =>
+        await _c.rpc('approve_friend', params: {'p_user': userId}) == true,
+  );
+
+  @override
+  Future<void> reportCrash({
+    required String build,
+    required String kind,
+    required String message,
+    required String stack,
+  }) => _guard(
+    () async => _c.rpc(
+      'report_crash',
+      params: {
+        'p_build': build,
+        'p_kind': kind,
+        'p_message': message,
+        'p_stack': stack,
+      },
+    ),
+  );
+
+  @override
   Future<void> touchSeen() async {
     try {
       await _c.rpc('touch_seen');
@@ -964,7 +1058,22 @@ class SupabaseRealBackend implements RealBackend {
     caller: r['caller'] as String?,
     notBefore: r['not_before'] == null ? null : _time(r['not_before']),
     laterFrom: r['later_from'] as String?,
+    sharedUntil: _maybeTime(r['shared_until']),
+    lastTalk: _maybeTime(r['last_talk']),
+    direct: r['direct'] == true,
   );
+
+  static MyStatus _myStatus(Map<String, dynamic>? r) => r == null
+      ? const MyStatus()
+      : MyStatus(
+          anonymous: r['anonymous'] == true,
+          hideInCall: r['hide_in_call'] == true,
+          quietFrom: (r['quiet_from'] as num?)?.toInt(),
+          quietTo: (r['quiet_to'] as num?)?.toInt(),
+          autoMissed: (r['auto_missed'] as num?)?.toInt() ?? 0,
+          hiddenFree: (r['hidden_free'] as num?)?.toInt() ?? 0,
+          pending: {for (final x in (r['pending'] as List? ?? const [])) '$x'},
+        );
 
   static bool? _answer(Object? v) => switch (v) {
     'accept' => true,

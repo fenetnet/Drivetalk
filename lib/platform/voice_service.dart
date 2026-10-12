@@ -97,6 +97,12 @@ class DeviceVoiceService implements VoiceService {
     await _tts.setSpeechRate(0.58); // 0.5 = normal on Android
     await _tts.setPitch(1.05);
     await _tts.awaitSpeakCompletion(true);
+    // Like a navigation app: music / Waze get quieter while we speak.
+    try {
+      await _tts.setAudioAttributesForNavigation();
+    } catch (_) {
+      // Not on this platform.
+    }
     try {
       final voices = await _tts.getVoices as List?;
       final hebrew = [
@@ -129,7 +135,7 @@ class DeviceVoiceService implements VoiceService {
   Future<void> speak(String text) async {
     try {
       await _configure();
-      await _tts.speak(joinHebrewPrefixes(text));
+      await _tts.speak(joinHebrewPrefixes(text), focus: true);
     } catch (_) {
       // No TTS engine — the screen still shows everything.
     }

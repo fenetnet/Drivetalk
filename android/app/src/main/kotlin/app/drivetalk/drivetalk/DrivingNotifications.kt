@@ -6,12 +6,18 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 
 /** Notifications while driving: "you're available" and "X is free — talk?". */
 object DrivingNotifications {
     const val CHANNEL_STATUS = "driving_status"
     const val CHANNEL_OFFERS = "driving_offers"
+
+    /** "X is free — talk?": its own soft chime and vibration (D-106). */
+    const val CHANNEL_TALK = "talk_offers"
+    private val VIBRATION = longArrayOf(0, 120, 90, 120, 90, 380)
     const val ID_STATUS = 7001
     private const val ID_PROBLEM = 7002
     private const val ID_OFFER_BASE = 7100
@@ -34,6 +40,21 @@ object DrivingNotifications {
                 NotificationManager.IMPORTANCE_HIGH,
             ),
         )
+        val talk = NotificationChannel(
+            CHANNEL_TALK,
+            store.text("channelTalk", "Talk now?"),
+            NotificationManager.IMPORTANCE_HIGH,
+        )
+        talk.setSound(
+            Uri.parse("android.resource://${context.packageName}/${R.raw.offer_chime}"),
+            AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build(),
+        )
+        talk.enableVibration(true)
+        talk.vibrationPattern = VIBRATION
+        nm.createNotificationChannel(talk)
     }
 
     private fun builder(context: Context, channel: String): Notification.Builder =
@@ -95,7 +116,8 @@ object DrivingNotifications {
         val store = DrivingStore(context)
         val req = 100 + (offer.id.hashCode() and 0xffff)
         val quick = offer.kind == "quick"
-        val b = builder(context, CHANNEL_OFFERS)
+        ensureChannels(context)
+        val b = builder(context, CHANNEL_TALK)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(
                 store.text(if (quick) "quickTitle" else "offerTitle", "{name}")
@@ -139,7 +161,7 @@ object DrivingNotifications {
             )
         }
         // Lock screen: no name, just "a new suggestion in DriveBond".
-        val public = builder(context, CHANNEL_OFFERS)
+        val public = builder(context, CHANNEL_TALK)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(store.text("publicOffer", "DriveBond"))
             .build()
@@ -150,6 +172,10 @@ object DrivingNotifications {
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                     @Suppress("DEPRECATION")
                     setPriority(Notification.PRIORITY_HIGH)
+                    @Suppress("DEPRECATION")
+                    setSound(Uri.parse("android.resource://${context.packageName}/${R.raw.offer_chime}"))
+                    @Suppress("DEPRECATION")
+                    setVibrate(VIBRATION)
                 }
             }
             .build()

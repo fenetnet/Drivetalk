@@ -61,6 +61,7 @@ class MemoryServer {
 
   /// [x] disconnects from [y] (remove, block) — remembered, with who did it.
   void disconnect(String x, String y) {
+    pendingFor.remove(_pair(x, y));
     if (connections.remove(_pair(x, y))) {
       removed.add(_pair(x, y));
       removedBy[_pair(x, y)] = x;
@@ -111,6 +112,68 @@ class MemoryServer {
   bool connected(String x, String y) => connections.contains(_pair(x, y));
   bool blockedBetween(String x, String y) =>
       blocks.contains('$x|$y') || blocks.contains('$y|$x');
+
+  // D-103…D-106: private settings (like the new profile columns).
+  final anonymous = <String>{};
+  final hideInCall = <String>{};
+  final quietHours = <String, (int, int)>{};
+  final autoMissed = <String, int>{};
+
+  /// Pair → the one who must decide (added from contacts).
+  final pendingFor = <String, String>{};
+  final crashes = <Map<String, String>>[];
+
+  bool inQuietHours(String u) {
+    final q = quietHours[u];
+    if (q == null || q.$1 == q.$2) return false;
+    final t = now();
+    final m = t.hour * 60 + t.minute;
+    return q.$1 < q.$2 ? m >= q.$1 && m < q.$2 : m >= q.$1 || m < q.$2;
+  }
+
+  bool awaitsApproval(String owner, String viewer) =>
+      pendingFor[_pair(owner, viewer)] == owner;
+  bool pairPending(String x, String y) => pendingFor.containsKey(_pair(x, y));
+
+  /// Can [u] get a question right now (their own side)?
+  bool canBeAsked(String u) {
+    final a = availability[u];
+    if (a == null || !now().isBefore(a.expiresAt)) return false;
+    if (a.missed || a.quietAt(now())) return false;
+    if (autoSet.contains(u) && inQuietHours(u)) return false;
+    return !_hasOpenOffer(u) && !_inCall(u) && !_onPhone(u);
+  }
+
+  /// Does [viewer] see [owner] free (apart from "without my name")?
+  bool seesFree(String viewer, String owner) {
+    final a = availability[owner];
+    if (a == null || !now().isBefore(a.expiresAt) || a.missed) return false;
+    final busy = busyUntil(owner);
+    return connected(viewer, owner) &&
+        !blockedBetween(viewer, owner) &&
+        inAudience(a.circleId, viewer) &&
+        canSee(viewer, owner, a.mode) &&
+        !hidden.contains(owner) &&
+        !hidden.contains(viewer) &&
+        !awaitsApproval(owner, viewer) &&
+        !(hideInCall.contains(owner) && busy != null && now().isBefore(busy));
+  }
+
+  /// A question ended without an answer from someone (after 25 seconds):
+  /// they get no more questions and look not free until "still free".
+  void _ended(_Offer o) {
+    if (o.quick) return;
+    if (o.updatedAt.difference(o.createdAt) < const Duration(seconds: 25)) {
+      return;
+    }
+    for (final (u, answer) in [(o.a, o.aAccepted), (o.b, o.bAccepted)]) {
+      if (answer != null) continue;
+      final a = availability[u];
+      if (a == null || a.missed || !now().isBefore(a.expiresAt)) continue;
+      if (autoSet.contains(u)) autoMissed[u] = (autoMissed[u] ?? 0) + 1;
+      availability[u] = a.withMarks(missedAt: now(), quietUntil: a.quietUntil);
+    }
+  }
 
   bool _activeAvail(String user) {
     final a = availability[user];
@@ -214,10 +277,11 @@ class MemoryServer {
         o
           ..status = OfferStatus.expired
           ..updatedAt = o.expiresAt;
+        _ended(o);
       }
     }
     if (!_activeAvail(user)) return;
-    if (_hasOpenOffer(user) || _inCall(user) || _onPhone(user)) return;
+    if (!canBeAsked(user)) return;
     final mine = availability[user]!;
     // 5 quiet minutes after a question that didn't become a call; after 3
     // such questions in this window, no more.
@@ -230,6 +294,7 @@ class MemoryServer {
             connected(user, other) &&
             !blockedBetween(user, other) &&
             !_snoozed(user, other) &&
+            !pairPending(user, other) &&
             ratingOf(user, other) > 0 &&
             ratingOf(other, user) > 0)
           other,
@@ -238,6 +303,10 @@ class MemoryServer {
     candidates.sort((x, y) {
       final q = (mutualQuick(y) ? 1 : 0) - (mutualQuick(x) ? 1 : 0);
       if (q != 0) return q;
+      // Friends who show their name first (D-103).
+      final n =
+          (anonymous.contains(x) ? 1 : 0) - (anonymous.contains(y) ? 1 : 0);
+      if (n != 0) return n;
       final w =
           (_wantsToTalk(user, y) ? 1 : 0) - (_wantsToTalk(user, x) ? 1 : 0);
       if (w != 0) return w;
@@ -261,9 +330,7 @@ class MemoryServer {
           !canSee(other, user, mine.mode) ||
           !canSee(user, other, theirs.mode) ||
           (phones[user] == null && phones[other] == null) ||
-          _hasOpenOffer(other) ||
-          _inCall(other) ||
-          _onPhone(other) ||
+          !canBeAsked(other) ||
           _quietGap(other) ||
           _askedEnough(other, theirs.startedAt)) {
         continue;
@@ -308,15 +375,18 @@ class MemoryServer {
       // A question waits 2 minutes for answers, then it's over.
       final answerBy = since.add(const Duration(minutes: 2));
       if (!quick && answerBy.isBefore(until)) until = answerBy;
-      offers[id] = _Offer(
-        id: id,
-        a: pair[0],
-        b: pair[1],
-        createdAt: since,
-        updatedAt: since,
-        expiresAt: until,
-        quick: quick,
-      );
+      offers[id] =
+          _Offer(
+              id: id,
+              a: pair[0],
+              b: pair[1],
+              createdAt: since,
+              updatedAt: since,
+              expiresAt: until,
+              quick: quick,
+            )
+            ..lastTalk = _lastTalk(user, other)
+            ..sharedUntil = _sharedUntil(user, other);
       if (quick) {
         offers[id]!
           ..status = OfferStatus.accepted
@@ -328,27 +398,47 @@ class MemoryServer {
     }
   }
 
+  /// Both free until (automatic trips don't count: their end isn't known).
+  DateTime? _sharedUntil(String x, String y) {
+    final times = [
+      for (final u in [x, y])
+        if (!autoSet.contains(u) && availability[u] != null)
+          availability[u]!.expiresAt,
+    ];
+    if (times.isEmpty) return null;
+    return times.reduce((p, q) => p.isBefore(q) ? p : q);
+  }
+
+  static bool? _answerOf(_Offer o, String u) =>
+      u == o.a ? o.aAccepted : o.bAccepted;
+
   static bool _endedWithoutCall(_Offer o) =>
       o.status == OfferStatus.declined ||
       o.status == OfferStatus.expired ||
       o.status == OfferStatus.cancelled;
 
-  bool _askedEnough(String user, DateTime since) =>
-      offers.values
-          .where(
-            (o) =>
-                (o.a == user || o.b == user) &&
-                !o.quick &&
-                !o.createdAt.isBefore(since) &&
-                _endedWithoutCall(o),
-          )
-          .length >=
-      3;
+  /// 3 questions for a free time; on an automatic trip one I didn't say
+  /// yes to is enough.
+  bool _askedEnough(String user, DateTime since) {
+    final ended = offers.values.where(
+      (o) =>
+          (o.a == user || o.b == user) &&
+          !o.quick &&
+          !o.createdAt.isBefore(since) &&
+          _endedWithoutCall(o),
+    );
+    if (autoSet.contains(user)) {
+      return ended.any((o) => _answerOf(o, user) != true);
+    }
+    return ended.length >= 3;
+  }
 
+  /// 5 quiet minutes — only for whoever didn't say yes (D-104).
   bool _quietGap(String user) => offers.values.any(
     (o) =>
         (o.a == user || o.b == user) &&
         _endedWithoutCall(o) &&
+        _answerOf(o, user) != true &&
         now().difference(o.updatedAt) < const Duration(minutes: 5),
   );
 
@@ -393,6 +483,7 @@ class MemoryServer {
         now().isBefore(cur.expiresAt) &&
         autoSet.contains(me) &&
         now().difference(cur.startedAt) < const Duration(minutes: 170);
+    if (!renewing && inQuietHours(me)) return 'quiet_hours';
     final start = renewing ? cur.startedAt : now();
     var until = now().add(Duration(minutes: minutes.clamp(15, 180)));
     final cap = start.add(const Duration(hours: 3));
@@ -402,6 +493,12 @@ class MemoryServer {
       mode: AvailabilityMode.driving,
       startedAt: start,
       expiresAt: until,
+      auto: true,
+      // A new trip: 5 quiet minutes first (D-106).
+      missedAt: renewing ? cur.missedAt : null,
+      quietUntil: renewing
+          ? cur.quietUntil
+          : now().add(const Duration(minutes: 5)),
     );
     autoSet.add(me);
     _createOffersFor(me);
@@ -436,6 +533,7 @@ class MemoryServer {
         o
           ..status = OfferStatus.expired
           ..updatedAt = now();
+        _ended(o);
       }
     }
     _changed();
@@ -485,6 +583,9 @@ class _Offer {
   bool endedA = false;
   bool endedB = false;
   bool? talked;
+  DateTime? sharedUntil;
+  DateTime? lastTalk;
+  bool direct = false;
 
   RealOffer toReal() => RealOffer(
     id: id,
@@ -500,6 +601,9 @@ class _Offer {
     notBefore: notBefore,
     laterFrom: laterFrom,
     quick: quick,
+    sharedUntil: sharedUntil,
+    lastTalk: lastTalk,
+    direct: direct,
   );
 }
 
@@ -583,11 +687,9 @@ class MemoryRealBackend implements RealBackend {
         for (final e in server.availability.entries)
           if (visible.contains(e.key) &&
               (e.key == me ||
-                  (now.isBefore(e.value.expiresAt) &&
-                      server.inAudience(e.value.circleId, me) &&
-                      server.canSee(me, e.key, e.value.mode) &&
-                      !server.hidden.contains(e.key) &&
-                      !server.hidden.contains(me))))
+                  (server.seesFree(me, e.key) &&
+                      !server.anonymous.contains(e.key) &&
+                      !server.anonymous.contains(me))))
             e.key: e.value.withBusy(server.busyUntil(e.key)),
       },
       offers: [
@@ -632,6 +734,25 @@ class MemoryRealBackend implements RealBackend {
       },
       hidden: server.hidden.contains(me),
       othersModes: server.othersModes[me],
+      status: MyStatus(
+        anonymous: server.anonymous.contains(me),
+        hideInCall: server.hideInCall.contains(me),
+        quietFrom: server.quietHours[me]?.$1,
+        quietTo: server.quietHours[me]?.$2,
+        autoMissed: server.autoMissed[me] ?? 0,
+        hiddenFree: [
+          for (final f in friends)
+            if (server.seesFree(me, f.id) &&
+                (server.anonymous.contains(f.id) ||
+                    server.anonymous.contains(me)) &&
+                !(server.busyUntil(f.id)?.isAfter(now) ?? false))
+              f,
+        ].length,
+        pending: {
+          for (final e in server.pendingFor.entries)
+            if (e.value == me) e.key.split('|').firstWhere((x) => x != me),
+        },
+      ),
       inactiveDays: {
         for (final f in friends)
           if (server.lastSeen[f.id] case final t?)
@@ -783,6 +904,7 @@ class MemoryRealBackend implements RealBackend {
       'declined': count((o) => o.status == OfferStatus.declined),
       'later': count((o) => o.laterFrom != null),
       'no_answer': count((o) => o.status == OfferStatus.expired),
+      'crashes': server.crashes.length,
     };
   }
 
@@ -816,13 +938,19 @@ class MemoryRealBackend implements RealBackend {
       o
         ..status = OfferStatus.expired
         ..updatedAt = server.now();
+      server._ended(o);
       server._changed();
       return OfferAnswer(o.status);
     }
-    if (me == o.a) {
-      o.aAccepted = accept;
-    } else {
-      o.bAccepted = accept;
+    server.autoMissed.remove(me);
+    // Withdrawing my yes (I stopped waiting) keeps it a yes (D-104).
+    final withdrawn = !accept && MemoryServer._answerOf(o, me) == true;
+    if (!withdrawn) {
+      if (me == o.a) {
+        o.aAccepted = accept;
+      } else {
+        o.bAccepted = accept;
+      }
     }
     if (!accept) {
       o.status = OfferStatus.declined;
@@ -853,6 +981,7 @@ class MemoryRealBackend implements RealBackend {
       }
     }
     o.updatedAt = server.now();
+    if (o.status == OfferStatus.declined) server._ended(o);
     server._changed();
     final iCall = o.status == OfferStatus.accepted && o.caller == me;
     return OfferAnswer(
@@ -977,6 +1106,14 @@ class MemoryRealBackend implements RealBackend {
       for (final h in hashes)
         if (users.contains(h)) h,
     };
+    // Whoever added me and is in my contacts: kept (I know them).
+    server.pendingFor.removeWhere((pair, who) {
+      if (who != me) return false;
+      final other = pair.split('|').firstWhere((x) => x != me);
+      final phone = server.phones[other];
+      return phone != null &&
+          server.contactHashes[me]!.contains(hashPhone(phone));
+    });
     return _rows(me);
   }
 
@@ -1019,6 +1156,12 @@ class MemoryRealBackend implements RealBackend {
     for (final m in _matches(me)) {
       if (!userIds.contains(m.id)) continue;
       server.connect(me, m.id);
+      // They don't have my number saved (as far as we know): they decide.
+      final mine = server.phones[me];
+      if (mine == null ||
+          !(server.contactHashes[m.id]?.contains(hashPhone(mine)) ?? false)) {
+        server.pendingFor[MemoryServer._pair(me, m.id)] = m.id;
+      }
       names.add(m.name);
     }
     server._createOffersFor(me);
@@ -1313,6 +1456,206 @@ class MemoryRealBackend implements RealBackend {
           '${r['reason']}',
         ),
     ];
+  }
+
+  @override
+  Future<List<OwnerNote>> ownerCrashes() async {
+    if (!server.owners.contains(_uid)) {
+      throw const RealBackendException('not_owner');
+    }
+    return [
+      for (final c in server.crashes.reversed)
+        OwnerNote(
+          server.now(),
+          '${c['kind']} · ${c['build']}',
+          '${c['message']}',
+        ),
+    ];
+  }
+
+  @override
+  Future<void> reportCrash({
+    required String build,
+    required String kind,
+    required String message,
+    required String stack,
+  }) async {
+    _uid;
+    server.crashes.add({
+      'build': build,
+      'kind': kind,
+      'message': message,
+      'stack': stack,
+    });
+  }
+
+  @override
+  Future<String> askFriend(String userId) async {
+    final me = _uid;
+    final now = server.now();
+    final mine = server.availability[me];
+    if (mine == null || !now.isBefore(mine.expiresAt)) return 'me_not_free';
+    final theirs = server.availability[userId];
+    if (theirs == null ||
+        userId == me ||
+        !server.seesFree(me, userId) ||
+        server.anonymous.contains(userId) ||
+        server.anonymous.contains(me) ||
+        server.pairPending(me, userId) ||
+        server.ratingOf(userId, me) == 0) {
+      return 'not_free';
+    }
+    if (server.phones[me] == null && server.phones[userId] == null) {
+      return 'no_number';
+    }
+    if (!server.canBeAsked(userId) ||
+        server._askedEnough(userId, theirs.startedAt)) {
+      return 'busy';
+    }
+    final pair = MemoryServer._pair(me, userId).split('|');
+    final saidNo = server.offers.values.any(
+      (o) =>
+          o.a == pair[0] &&
+          o.b == pair[1] &&
+          ((o.status == OfferStatus.accepted &&
+                  o.acceptedAt != null &&
+                  now.difference(o.acceptedAt!) <
+                      const Duration(minutes: 30)) ||
+              // They already said no to us this time.
+              (o.status == OfferStatus.declined &&
+                  MemoryServer._answerOf(o, userId) == false &&
+                  !o.createdAt.isBefore(theirs.startedAt))),
+    );
+    if (saidNo) return 'not_now';
+    for (final o in server.offers.values) {
+      if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
+        o
+          ..status = OfferStatus.cancelled
+          ..updatedAt = now;
+      }
+    }
+    final id = server._newId('offer');
+    var until = mine.expiresAt.isBefore(theirs.expiresAt)
+        ? mine.expiresAt
+        : theirs.expiresAt;
+    final answerBy = now.add(const Duration(minutes: 2));
+    if (answerBy.isBefore(until)) until = answerBy;
+    server.offers[id] =
+        _Offer(
+            id: id,
+            a: pair[0],
+            b: pair[1],
+            createdAt: now,
+            updatedAt: now,
+            expiresAt: until,
+          )
+          ..direct = true
+          ..lastTalk = server._lastTalk(me, userId)
+          ..sharedUntil = server._sharedUntil(me, userId);
+    if (me == pair[0]) {
+      server.offers[id]!.aAccepted = true;
+    } else {
+      server.offers[id]!.bAccepted = true;
+    }
+    server._changed();
+    return 'asked';
+  }
+
+  @override
+  Future<bool> stillFree() async {
+    final me = _uid;
+    final a = server.availability[me];
+    if (a == null || !a.missed || !server.now().isBefore(a.expiresAt)) {
+      return false;
+    }
+    server.availability[me] = a.withMarks(
+      missedAt: null,
+      quietUntil: a.quietUntil,
+    );
+    server._createOffersFor(me);
+    server._changed();
+    return true;
+  }
+
+  @override
+  Future<bool> readyNow() async {
+    final me = _uid;
+    final a = server.availability[me];
+    if (a == null || !a.quietAt(server.now())) return false;
+    server.availability[me] = a.withMarks(
+      missedAt: a.missedAt,
+      quietUntil: null,
+    );
+    server._createOffersFor(me);
+    server._changed();
+    return true;
+  }
+
+  @override
+  Future<void> keepAuto() async => server.autoMissed.remove(_uid);
+
+  @override
+  Future<DateTime?> extendAvailability(int minutes) async {
+    final me = _uid;
+    if (minutes < 1 || minutes > 180) {
+      throw const RealBackendException('invalid_minutes');
+    }
+    final a = server.availability[me];
+    if (a == null ||
+        server.autoSet.contains(me) ||
+        !server.now().isBefore(a.expiresAt)) {
+      return null;
+    }
+    var until = a.expiresAt.add(Duration(minutes: minutes));
+    final cap = a.startedAt.add(const Duration(hours: 3));
+    if (until.isAfter(cap)) until = cap;
+    server.availability[me] = a.withMarks(
+      missedAt: a.missedAt,
+      quietUntil: a.quietUntil,
+      expiresAt: until,
+    );
+    server._changed();
+    return until;
+  }
+
+  @override
+  Future<void> setSettings({
+    bool? anonymous,
+    bool? hideInCall,
+    int? quietFrom,
+    int? quietTo,
+    bool clearQuiet = false,
+    String? timeZone,
+  }) async {
+    final me = _uid;
+    void flag(Set<String> s, bool? on) {
+      if (on == true) s.add(me);
+      if (on == false) s.remove(me);
+    }
+
+    flag(server.anonymous, anonymous);
+    flag(server.hideInCall, hideInCall);
+    if (clearQuiet) {
+      server.quietHours.remove(me);
+    } else if (quietFrom != null || quietTo != null) {
+      final cur = server.quietHours[me];
+      server.quietHours[me] = (
+        quietFrom ?? cur?.$1 ?? 0,
+        quietTo ?? cur?.$2 ?? 0,
+      );
+    }
+    server._changed();
+  }
+
+  @override
+  Future<bool> approveFriend(String userId) async {
+    final me = _uid;
+    final pair = MemoryServer._pair(me, userId);
+    if (server.pendingFor[pair] != me) return false;
+    server.pendingFor.remove(pair);
+    server._createOffersFor(me);
+    server._changed();
+    return true;
   }
 
   @override

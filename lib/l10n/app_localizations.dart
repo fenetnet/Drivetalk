@@ -823,7 +823,7 @@ abstract class AppLocalizations {
   /// No description provided for @realFreeHint.
   ///
   /// In he, this message translates to:
-  /// **'רוצים לדבר? בוחרים למטה מה עושים עכשיו, ונציע לכם.'**
+  /// **'רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.'**
   String get realFreeHint;
 
   /// No description provided for @realNobodyFreeYet.
@@ -2659,31 +2659,31 @@ abstract class AppLocalizations {
   /// No description provided for @statsUsers.
   ///
   /// In he, this message translates to:
-  /// **'משתמשים (סה״כ)'**
+  /// **'אנשים באפליקציה'**
   String get statsUsers;
 
   /// No description provided for @statsNewUsers.
   ///
   /// In he, this message translates to:
-  /// **'הצטרפו בתקופה'**
+  /// **'הצטרפו'**
   String get statsNewUsers;
 
   /// No description provided for @statsActiveUsers.
   ///
   /// In he, this message translates to:
-  /// **'פתחו את האפליקציה בתקופה'**
+  /// **'נכנסו לאפליקציה'**
   String get statsActiveUsers;
 
   /// No description provided for @statsFriendships.
   ///
   /// In he, this message translates to:
-  /// **'חיבורים בין אנשים (סה״כ)'**
+  /// **'חברויות'**
   String get statsFriendships;
 
   /// No description provided for @statsFreeTimes.
   ///
   /// In he, this message translates to:
-  /// **'פעמים שסימנו \"יש לי זמן\"'**
+  /// **'\"יש לי זמן\"'**
   String get statsFreeTimes;
 
   /// No description provided for @statsOffers.
@@ -2707,7 +2707,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsTalked.
   ///
   /// In he, this message translates to:
-  /// **'דיברו בפועל (לפי המשוב)'**
+  /// **'דיברו בפועל'**
   String get statsTalked;
 
   /// No description provided for @statsDeclined.
@@ -2719,7 +2719,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsLater.
   ///
   /// In he, this message translates to:
-  /// **'מתוכם \"אחזור אליך\"'**
+  /// **'\"אחזור אליך\"'**
   String get statsLater;
 
   /// No description provided for @statsNoAnswer.
@@ -2731,7 +2731,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsDialMs.
   ///
   /// In he, this message translates to:
-  /// **'זמן מ\"כן\" שני עד חיוג (חציון)'**
+  /// **'כמה מהר מתחיל החיוג'**
   String get statsDialMs;
 
   /// No description provided for @statsSeconds.
@@ -2943,6 +2943,426 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'להחזיר'**
   String get removedRestore;
+
+  /// No description provided for @statsUsersHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)'**
+  String get statsUsersHint;
+
+  /// No description provided for @statsNewUsersHint.
+  ///
+  /// In he, this message translates to:
+  /// **'נרשמו לראשונה בתקופה הזו'**
+  String get statsNewUsersHint;
+
+  /// No description provided for @statsActiveUsersHint.
+  ///
+  /// In he, this message translates to:
+  /// **'פתחו אותה לפחות פעם אחת בתקופה'**
+  String get statsActiveUsersHint;
+
+  /// No description provided for @statsFriendshipsHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה זוגות חברים מחוברים באפליקציה (בסך הכול)'**
+  String get statsFriendshipsHint;
+
+  /// No description provided for @statsFreeTimesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה פעמים מישהו סימן שהוא פנוי'**
+  String get statsFreeTimesHint;
+
+  /// No description provided for @statsOffersHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה פעמים הצענו לשני חברים פנויים לדבר'**
+  String get statsOffersHint;
+
+  /// No description provided for @statsQuickHint.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחות שהתחילו בלי לשאול (שני הצדדים הסכימו מראש)'**
+  String get statsQuickHint;
+
+  /// No description provided for @statsBothYesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעות שהפכו לשיחה'**
+  String get statsBothYesHint;
+
+  /// No description provided for @statsTalkedHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לפי מה שענו אחרי השיחה'**
+  String get statsTalkedHint;
+
+  /// No description provided for @statsDeclinedHint.
+  ///
+  /// In he, this message translates to:
+  /// **'אחד הצדדים סירב להצעה'**
+  String get statsDeclinedHint;
+
+  /// No description provided for @statsLaterHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוך ה\"לא עכשיו\"'**
+  String get statsLaterHint;
+
+  /// No description provided for @statsNoAnswerHint.
+  ///
+  /// In he, this message translates to:
+  /// **'אף אחד לא ענה בזמן'**
+  String get statsNoAnswerHint;
+
+  /// No description provided for @statsReportsHint.
+  ///
+  /// In he, this message translates to:
+  /// **'דיווחים על משתמשים. לחיצה לפרטים'**
+  String get statsReportsHint;
+
+  /// No description provided for @statsFeedbackHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הודעות שנשלחו אליך מתוך האפליקציה. לחיצה לפרטים'**
+  String get statsFeedbackHint;
+
+  /// No description provided for @statsCrashes.
+  ///
+  /// In he, this message translates to:
+  /// **'קריסות'**
+  String get statsCrashes;
+
+  /// No description provided for @statsCrashesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'תקלות שהאפליקציה דיווחה עליהן לבד. לחיצה לפרטים'**
+  String get statsCrashesHint;
+
+  /// No description provided for @statsDialMsHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מה\"כן\" השני ועד שהטלפון מחייג (בדרך כלל)'**
+  String get statsDialMsHint;
+
+  /// No description provided for @statsCrashesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'קריסות אחרונות'**
+  String get statsCrashesTitle;
+
+  /// No description provided for @askTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לדבר עם {name} עכשיו?'**
+  String askTitle(String name);
+
+  /// No description provided for @askBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נשאל אם מתאים עכשיו. אם כן, מתחילים לדבר.'**
+  String get askBody;
+
+  /// No description provided for @askBodyNotFree.
+  ///
+  /// In he, this message translates to:
+  /// **'נסמן שגם לך יש זמן (30 דקות), ונשאל אם מתאים עכשיו.'**
+  String get askBodyNotFree;
+
+  /// No description provided for @askYes.
+  ///
+  /// In he, this message translates to:
+  /// **'כן, לשאול'**
+  String get askYes;
+
+  /// No description provided for @askNotFree.
+  ///
+  /// In he, this message translates to:
+  /// **'נראה של{name} כבר אין זמן כרגע.'**
+  String askNotFree(String name);
+
+  /// No description provided for @askBusy.
+  ///
+  /// In he, this message translates to:
+  /// **'ל{name} לא מתאים ממש עכשיו. נציע כשיתאים.'**
+  String askBusy(String name);
+
+  /// No description provided for @askNotNow.
+  ///
+  /// In he, this message translates to:
+  /// **'כבר שאלנו את {name} הפעם. נחכה לפעם הבאה.'**
+  String askNotNow(String name);
+
+  /// No description provided for @askNoNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'אי אפשר להתקשר: לאף אחד מכם אין מספר טלפון באפליקציה.'**
+  String get askNoNumber;
+
+  /// No description provided for @askMeNotFree.
+  ///
+  /// In he, this message translates to:
+  /// **'קודם צריך לסמן שיש לך זמן.'**
+  String get askMeNotFree;
+
+  /// No description provided for @askFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לשאול עכשיו. אפשר לנסות שוב.'**
+  String get askFailed;
+
+  /// No description provided for @friendKept.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} ברשימה שלך'**
+  String friendKept(String name);
+
+  /// No description provided for @hiddenFreeLine.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =1{ועוד חבר אחד פנוי, בלי שם} other{ועוד {count} חברים פנויים, בלי שם}}'**
+  String hiddenFreeLine(int count);
+
+  /// No description provided for @anonymousSeeNote.
+  ///
+  /// In he, this message translates to:
+  /// **'בחרת להופיע בלי שם, ולכן גם כאן רואים רק כמה פנויים.'**
+  String get anonymousSeeNote;
+
+  /// No description provided for @missedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא ענית, אז הפסקנו להציע אותך.'**
+  String get missedTitle;
+
+  /// No description provided for @missedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בינתיים החברים לא רואים שיש לך זמן. עדיין יש לך זמן?'**
+  String get missedBody;
+
+  /// No description provided for @missedYes.
+  ///
+  /// In he, this message translates to:
+  /// **'כן, יש לי זמן'**
+  String get missedYes;
+
+  /// No description provided for @missedNo.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עכשיו'**
+  String get missedNo;
+
+  /// No description provided for @autoMissedTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בנסיעות האחרונות לא ענית.'**
+  String get autoMissedTitle;
+
+  /// No description provided for @autoMissedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'להשאיר את הזיהוי האוטומטי של נסיעות?'**
+  String get autoMissedBody;
+
+  /// No description provided for @autoMissedKeep.
+  ///
+  /// In he, this message translates to:
+  /// **'להשאיר'**
+  String get autoMissedKeep;
+
+  /// No description provided for @autoMissedOff.
+  ///
+  /// In he, this message translates to:
+  /// **'לכבות'**
+  String get autoMissedOff;
+
+  /// No description provided for @graceTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה דקות להתארגן'**
+  String get graceTitle;
+
+  /// No description provided for @graceBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אחר כך נציע שיחה, אם מישהו פנוי.'**
+  String get graceBody;
+
+  /// No description provided for @graceReady.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר כבר עכשיו'**
+  String get graceReady;
+
+  /// No description provided for @graceNotThisTrip.
+  ///
+  /// In he, this message translates to:
+  /// **'לא בנסיעה הזו'**
+  String get graceNotThisTrip;
+
+  /// No description provided for @extendButton.
+  ///
+  /// In he, this message translates to:
+  /// **'להאריך'**
+  String get extendButton;
+
+  /// No description provided for @extendTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'להאריך בעוד…'**
+  String get extendTitle;
+
+  /// No description provided for @extendBy.
+  ///
+  /// In he, this message translates to:
+  /// **'+{minutes} דק׳'**
+  String extendBy(int minutes);
+
+  /// No description provided for @durationUntilTime.
+  ///
+  /// In he, this message translates to:
+  /// **'עד שעה…'**
+  String get durationUntilTime;
+
+  /// No description provided for @durationUntilTimeCapped.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר עד 3 שעות, אז סימנו עד {time}.'**
+  String durationUntilTimeCapped(String time);
+
+  /// No description provided for @pendingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'הצטרפת לרשימה של {name}'**
+  String pendingTitle(String name);
+
+  /// No description provided for @pendingBody.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר של {name} לא שמור אצלך, ולכן {name} עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?'**
+  String pendingBody(String name);
+
+  /// No description provided for @pendingKeep.
+  ///
+  /// In he, this message translates to:
+  /// **'להשאיר'**
+  String get pendingKeep;
+
+  /// No description provided for @pendingRemove.
+  ///
+  /// In he, this message translates to:
+  /// **'להסיר'**
+  String get pendingRemove;
+
+  /// No description provided for @offerShared.
+  ///
+  /// In he, this message translates to:
+  /// **'שניכם פנויים עוד כ-{minutes} דק׳'**
+  String offerShared(int minutes);
+
+  /// No description provided for @offerLastTalkToday.
+  ///
+  /// In he, this message translates to:
+  /// **'כבר דיברתם היום'**
+  String get offerLastTalkToday;
+
+  /// No description provided for @offerLastTalkDays.
+  ///
+  /// In he, this message translates to:
+  /// **'{days, plural, =1{דיברתם אתמול} other{דיברתם לפני {days} ימים}}'**
+  String offerLastTalkDays(int days);
+
+  /// No description provided for @offerLastTalkDate.
+  ///
+  /// In he, this message translates to:
+  /// **'לא דיברתם מאז {date}'**
+  String offerLastTalkDate(String date);
+
+  /// No description provided for @offerFirstTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'זו תהיה השיחה הראשונה שלכם כאן'**
+  String get offerFirstTalk;
+
+  /// No description provided for @waitOther.
+  ///
+  /// In he, this message translates to:
+  /// **'לדבר עם מישהו אחר'**
+  String get waitOther;
+
+  /// No description provided for @settingsAnonymous.
+  ///
+  /// In he, this message translates to:
+  /// **'להופיע בלי שם כשיש לי זמן'**
+  String get settingsAnonymous;
+
+  /// No description provided for @settingsAnonymousHint.
+  ///
+  /// In he, this message translates to:
+  /// **'החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.'**
+  String get settingsAnonymousHint;
+
+  /// No description provided for @settingsHideInCall.
+  ///
+  /// In he, this message translates to:
+  /// **'להסתיר כשאני בשיחה'**
+  String get settingsHideInCall;
+
+  /// No description provided for @settingsHideInCallHint.
+  ///
+  /// In he, this message translates to:
+  /// **'בזמן שיחה החברים פשוט לא יראו שיש לך זמן.'**
+  String get settingsHideInCallHint;
+
+  /// No description provided for @settingsQuietHours.
+  ///
+  /// In he, this message translates to:
+  /// **'שעות שקטות'**
+  String get settingsQuietHours;
+
+  /// No description provided for @settingsQuietOff.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.'**
+  String get settingsQuietOff;
+
+  /// No description provided for @settingsQuietOn.
+  ///
+  /// In he, this message translates to:
+  /// **'{from}–{to}: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.'**
+  String settingsQuietOn(String from, String to);
+
+  /// No description provided for @quietPickFrom.
+  ///
+  /// In he, this message translates to:
+  /// **'מאיזו שעה?'**
+  String get quietPickFrom;
+
+  /// No description provided for @quietPickTo.
+  ///
+  /// In he, this message translates to:
+  /// **'עד איזו שעה?'**
+  String get quietPickTo;
+
+  /// No description provided for @quietClear.
+  ///
+  /// In he, this message translates to:
+  /// **'לבטל שעות שקטות'**
+  String get quietClear;
+
+  /// No description provided for @quietSet.
+  ///
+  /// In he, this message translates to:
+  /// **'לבחור שעות'**
+  String get quietSet;
+
+  /// No description provided for @realNotifChannelTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעות לדבר'**
+  String get realNotifChannelTalk;
 }
 
 class _AppLocalizationsDelegate

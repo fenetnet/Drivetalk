@@ -55,6 +55,9 @@ final appVersionProvider = Provider<String>((ref) => '?');
 /// This build's number (CI run number); null when unknown (e.g. tests).
 final appBuildProvider = Provider<int?>((ref) => null);
 
+/// The phone's time zone name (for quiet hours on the server).
+final timeZoneProvider = Provider<String?>((ref) => null);
+
 /// "Is there a newer version?" (version.json next to the APK).
 final updateCheckerProvider = Provider<UpdateChecker>(
   // Google Play build: ask Google Play; the test APK: the GitHub release.
@@ -141,6 +144,10 @@ enum RealNoticeKind {
   contactsNone,
   contactsNoPermission,
   unblockedReconnected,
+
+  /// Tapping a free friend didn't ask them ([RealNotice.code] says why).
+  askFailed,
+  friendKept,
 }
 
 class RealNotice {
@@ -411,7 +418,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 27;
+const kRequiredSchema = 31;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -591,6 +598,7 @@ class RealController extends Notifier<RealState> {
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
     unawaited(_backend.touchSeen());
+    unawaited(flushCrashes());
     if (state.serverSchema == null) unawaited(_checkSchema());
     unawaited(_loadPhone());
     unawaited(_loadDriving());
@@ -1029,6 +1037,7 @@ class RealController extends Notifier<RealState> {
   Map<String, String> _nativeTexts() => {
     'channelStatus': _l.realNotifChannelStatus,
     'channelOffers': _l.realNotifChannelOffers,
+    'channelTalk': _l.realNotifChannelTalk,
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
@@ -1332,6 +1341,7 @@ class RealController extends Notifier<RealState> {
       );
       _react(snap);
       unawaited(_loadPhotos(snap));
+      unawaited(_checkPending(snap));
       if (state.serverSchema == null) unawaited(_checkSchema());
     } on RealBackendException catch (e) {
       if (ref.mounted) _setError(e.code);
@@ -2368,6 +2378,164 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  // ------------------------------------------------- calm & private (D-106)
+
+  /// Tap a free friend: ask them now (my tap is my yes). True if asked.
+  Future<bool> askFriend(RealProfile friend) async {
+    _stopVoice();
+    // My own open question gives way (the server cancels it too).
+    final w = waitingOffer(state, _now());
+    if (w != null) _markHandled(w.id);
+    String? result;
+    final ok = await _run(() async {
+      result = await _backend.askFriend(friend.id);
+    });
+    if (ok && result != 'asked' && ref.mounted) {
+      _notify(
+        RealNoticeKind.askFailed,
+        name: friend.name,
+        gender: friend.gender,
+        code: result,
+      );
+    }
+    if (result == 'asked') _event('ask_friend');
+    await refresh();
+    return result == 'asked';
+  }
+
+  /// "Still free" after a question I didn't answer.
+  Future<void> stillFree() async {
+    await _run(_backend.stillFree);
+    await refresh();
+  }
+
+  /// "Ready now": the first quiet minutes of an automatic trip end.
+  Future<void> readyNow() async {
+    await _run(_backend.readyNow);
+    await refresh();
+  }
+
+  /// After trips with no answer: keep automatic detection (or turn it off).
+  Future<void> keepAuto({required bool keep}) async {
+    await _run(_backend.keepAuto);
+    if (!keep) {
+      await disableAutoDriving();
+    } else {
+      await refresh();
+    }
+  }
+
+  /// More minutes on my free time.
+  Future<void> extendAvailability(int minutes) async {
+    await _run(() => _backend.extendAvailability(minutes));
+    await refresh();
+    if (ref.mounted) unawaited(_watchWhileFree());
+  }
+
+  /// "Free without my name" (friends see only how many are free).
+  Future<void> setAnonymous(bool on) async {
+    await _run(() => _backend.setSettings(anonymous: on));
+    await refresh();
+  }
+
+  /// In a call, look simply not free.
+  Future<void> setHideInCall(bool on) async {
+    await _run(() => _backend.setSettings(hideInCall: on));
+    await refresh();
+  }
+
+  /// Quiet hours (minutes after midnight); null = none.
+  Future<void> setQuietHours(int? from, int? to) async {
+    await _run(
+      () => from == null || to == null
+          ? _backend.setSettings(clearQuiet: true)
+          : _backend.setSettings(
+              quietFrom: from,
+              quietTo: to,
+              timeZone: ref.read(timeZoneProvider),
+            ),
+    );
+    await refresh();
+  }
+
+  /// Keep a friend who added me from their contacts.
+  Future<void> approveFriend(RealProfile f) async {
+    _rememberFriends([f.id]);
+    final ok = await _run(() => _backend.approveFriend(f.id));
+    if (ok && ref.mounted) {
+      _notify(RealNoticeKind.friendKept, name: f.name, gender: f.gender);
+    }
+    await refresh();
+  }
+
+  /// Owner only: crash notes (null = couldn't load / not owner).
+  Future<List<OwnerNote>?> ownerCrashes() async {
+    try {
+      return await _backend.ownerCrashes();
+    } on RealBackendException catch (e) {
+      _notOwner(e);
+      return null;
+    }
+  }
+
+  static const _crashesKey = 'real.crashes.v1';
+
+  /// A crash: a short technical note to the owner (no personal data).
+  /// Kept on the phone until it reaches the server.
+  Future<void> reportCrash(String kind, Object error, StackTrace? stack) async {
+    final note = {
+      'kind': kind,
+      'message': _short('$error', 500),
+      'stack': _short('${stack ?? ''}', 4000),
+    };
+    final queue = _crashQueue()..add(note);
+    await _store.setString(
+      _crashesKey,
+      jsonEncode(queue.length > 5 ? queue.sublist(queue.length - 5) : queue),
+    );
+    await flushCrashes();
+  }
+
+  List<Map<String, dynamic>> _crashQueue() {
+    try {
+      return [
+        for (final x
+            in jsonDecode(_store.getString(_crashesKey) ?? '[]') as List)
+          Map<String, dynamic>.from(x as Map),
+      ];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  var _flushing = false;
+
+  /// Send crash notes waiting on the phone (after a restart too).
+  Future<void> flushCrashes() async {
+    if (_flushing || _backend.userId == null) return;
+    final queue = _crashQueue();
+    if (queue.isEmpty) return;
+    _flushing = true;
+    try {
+      for (final c in queue) {
+        await _backend.reportCrash(
+          build: '${ref.read(appBuildProvider) ?? ''}',
+          kind: '${c['kind']}',
+          message: '${c['message']}',
+          stack: '${c['stack']}',
+        );
+      }
+      await _store.setString(_crashesKey, null);
+    } catch (_) {
+      // Next start.
+    } finally {
+      _flushing = false;
+    }
+  }
+
+  static String _short(String s, int max) =>
+      s.length <= max ? s : s.substring(0, max);
+
   /// Hide my status from friends (and theirs from me). Offers go on.
   Future<void> setHideStatus(bool hide) async {
     await _run(() => _backend.setHideStatus(hide));
@@ -2439,13 +2607,45 @@ class RealController extends Notifier<RealState> {
     _store.setString(_knownFriendsKey, jsonEncode(keep));
   }
 
+  /// Pending "keep?" questions already checked against my contacts.
+  final _pendingChecked = <String>{};
+
+  /// Someone added me and the server doesn't know I have their number
+  /// (e.g. they joined after my last contacts search): look again first,
+  /// so I'm not asked about someone I do have saved.
+  Future<void> _checkPending(RealSnapshot snap) async {
+    final fresh = snap.status.pending.difference(_pendingChecked);
+    if (fresh.isEmpty) return;
+    _pendingChecked.addAll(fresh);
+    final synced = _store.getString(_contactsSyncKey) != null;
+    if (synced &&
+        _store.getString(_contactsOffKey) == null &&
+        await ref.read(contactsReaderProvider).hasPermission()) {
+      await syncContacts(ask: false, quiet: true, auto: true);
+    }
+    if (ref.mounted) state = state.copyWith();
+  }
+
+  /// Someone who added me from their contacts and waits for my "keep"
+  /// (after my contacts were checked again).
+  RealProfile? get pendingFriend {
+    final snap = state.snapshot;
+    if (snap == null) return null;
+    for (final id in snap.status.pending) {
+      if (!_pendingChecked.contains(id)) continue;
+      if (snap.friend(id) case final f?) return f;
+    }
+    return null;
+  }
+
   /// A friend who appeared without me adding them on this phone: they
   /// found me in their contacts, or used my invitation. One card each.
   RealProfile? get newFriend {
     final known = _knownFriends;
     if (known == null || _joiningInvite) return null;
+    final pending = state.snapshot?.status.pending ?? const {};
     return state.snapshot?.friends
-        .where((f) => !known.contains(f.id))
+        .where((f) => !known.contains(f.id) && !pending.contains(f.id))
         .firstOrNull;
   }
 
