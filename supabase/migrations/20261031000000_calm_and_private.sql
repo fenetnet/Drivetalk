@@ -22,10 +22,6 @@
 -- - "Extend" my free time.
 -- Crash reports: a short technical note, no personal data (owner only).
 
-create or replace function public.schema_version()
-returns integer language sql immutable as $$ select 31 $$;
-grant execute on function public.schema_version() to anon, authenticated;
-
 -- ------------------------------------------------------------ columns
 
 alter table public.profiles
@@ -898,6 +894,11 @@ end;
 $$;
 revoke all on function public.app_stats(integer) from public, anon;
 grant execute on function public.app_stats(integer) to authenticated;
+
+-- Last: the version says 31 only once everything above is in.
+create or replace function public.schema_version()
+returns integer language sql immutable as $$ select 31 $$;
+grant execute on function public.schema_version() to anon, authenticated;
 
 insert into public.drivetalk_migrations (name)
 values ('20261031000000_calm_and_private') on conflict do nothing;
