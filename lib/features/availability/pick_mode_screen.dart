@@ -100,8 +100,9 @@ class _PickDurationState extends State<PickDurationScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        // Scrolls only if it doesn't fit (small phone, large text).
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -135,21 +136,23 @@ class _PickDurationState extends State<PickDurationScreen> {
                 ),
               ],
               const SizedBox(height: 20),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.4,
-                  children: [
-                    for (final m in const [10, 20, 30, 60])
-                      _BigTile(
-                        label: l.minutesShort(m),
-                        onTap: () => _start(minutes: m),
-                      ),
-                  ],
-                ),
+              // "Until…" right under the minutes, not at the bottom.
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1.4,
+                children: [
+                  for (final m in const [10, 20, 30, 60])
+                    _BigTile(
+                      label: l.minutesShort(m),
+                      onTap: () => _start(minutes: m),
+                    ),
+                ],
               ),
+              const SizedBox(height: 16),
               OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(56),

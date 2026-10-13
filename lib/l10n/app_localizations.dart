@@ -3331,7 +3331,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsQuietOn.
   ///
   /// In he, this message translates to:
-  /// **'{from}–{to}: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.'**
+  /// **'בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.'**
   String settingsQuietOn(String from, String to);
 
   /// No description provided for @quietPickFrom.

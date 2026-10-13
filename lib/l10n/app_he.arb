@@ -1088,7 +1088,7 @@
   "settingsHideInCallHint": "בזמן שיחה החברים פשוט לא יראו שיש לך זמן.",
   "settingsQuietHours": "שעות שקטות",
   "settingsQuietOff": "בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.",
-  "settingsQuietOn": "{from}–{to}: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
+  "settingsQuietOn": "בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
   "@settingsQuietOn": {
     "placeholders": {
       "from": {

@@ -1969,7 +1969,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String settingsQuietOn(String from, String to) {
-    return '$from–$to: בנסיעה שמזוהה לבד לא נסמן אותך פנוי.';
+    return 'בין השעה $from לשעה $to, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.';
   }
 
   @override
