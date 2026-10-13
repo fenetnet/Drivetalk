@@ -80,7 +80,7 @@ class RealRoot extends ConsumerWidget {
         } else if (s.callStage == CallStage.feedback && !dark) {
           // Never while driving: it waits until the drive ends.
           body = const RealFeedbackScreen();
-        } else if (dark) {
+        } else if (showDriverScreen(s, now)) {
           body = const RealDriverHome();
         } else {
           body = const RealShell();
@@ -92,7 +92,7 @@ class RealRoot extends ConsumerWidget {
   static bool _takeover(RealState s, DateTime now) =>
       s.invite != null ||
       // Driver mode: no lists or small buttons left on top of it.
-      isRealDriving(s, now) ||
+      showDriverScreen(s, now) ||
       (s.callStage != CallStage.none && s.callStage != CallStage.feedback) ||
       currentOffer(s, now) != null ||
       waitingOffer(s, now) != null;

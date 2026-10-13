@@ -1998,4 +1998,10 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get driverNobodyBody => 'כשמישהו יתפנה, נציע לכם לדבר.';
+
+  @override
+  String get driverNormalView => 'למסך הרגיל';
+
+  @override
+  String get driverBack => 'חזרה למסך הנהיגה';
 }

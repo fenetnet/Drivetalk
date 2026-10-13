@@ -3387,6 +3387,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כשמישהו יתפנה, נציע לכם לדבר.'**
   String get driverNobodyBody;
+
+  /// No description provided for @driverNormalView.
+  ///
+  /// In he, this message translates to:
+  /// **'למסך הרגיל'**
+  String get driverNormalView;
+
+  /// No description provided for @driverBack.
+  ///
+  /// In he, this message translates to:
+  /// **'חזרה למסך הנהיגה'**
+  String get driverBack;
 }
 
 class _AppLocalizationsDelegate

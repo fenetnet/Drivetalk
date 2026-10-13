@@ -252,6 +252,20 @@ class RealHomeScreen extends ConsumerWidget {
                     icon: Icons.system_update_alt_rounded,
                   ),
                 ],
+                if (isRealDriving(s, now)) ...[
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                    ),
+                    onPressed: () => c.showNormalView(false),
+                    icon: const Icon(Icons.directions_car_rounded),
+                    label: Text(
+                      l.driverBack,
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                ],
                 if (s.lastError == 'offline') ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -1327,6 +1341,19 @@ class RealDriverHome extends ConsumerWidget {
           style: MomentStyle.dark,
           height: 96,
           onTap: c.stopAvailability,
+        ),
+        // A look at the regular screen (back with one tap from there).
+        TextButton(
+          onPressed: () => c.showNormalView(true),
+          child: Text(
+            l.driverNormalView,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white,
+            ),
+          ),
         ),
       ],
     );

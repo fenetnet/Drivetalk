@@ -1107,5 +1107,7 @@
   "driverFreeTitle": "מי פנוי עכשיו",
   "driverFreeHint": "לוחצים על חבר, ונשאל אותו.",
   "driverNobody": "עוד אין חבר פנוי",
-  "driverNobodyBody": "כשמישהו יתפנה, נציע לכם לדבר."
+  "driverNobodyBody": "כשמישהו יתפנה, נציע לכם לדבר.",
+  "driverNormalView": "למסך הרגיל",
+  "driverBack": "חזרה למסך הנהיגה"
 }

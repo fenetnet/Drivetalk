@@ -1736,6 +1736,21 @@ void main() {
       expect(askableFriends(me.s, now), isEmpty);
     });
 
+    test('while driving: a look at the regular screen, then back', () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      expect(showDriverScreen(me.s, now), isTrue);
+      me.c.showNormalView(true);
+      expect(showDriverScreen(me.s, now), isFalse);
+      me.c.showNormalView(false);
+      expect(showDriverScreen(me.s, now), isTrue);
+      // The choice lasts one trip only.
+      me.c.showNormalView(true);
+      now = now.add(const Duration(minutes: 1));
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      expect(showDriverScreen(me.s, now), isTrue);
+    });
+
     test('asking when not free is refused clearly', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);

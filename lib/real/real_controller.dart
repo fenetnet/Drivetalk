@@ -224,7 +224,12 @@ class RealState {
     this.serverSchema,
     this.newBuild,
     this.admin = false,
+    this.normalViewFor,
   });
+
+  /// While driving, I chose the regular screen for this trip (its start
+  /// time). A new trip shows the driver screen again.
+  final DateTime? normalViewFor;
 
   /// My routines ("every weekday at 8:00, driving").
   final List<Routine> routines;
@@ -298,6 +303,7 @@ class RealState {
     int? serverSchema,
     int? newBuild,
     bool? admin,
+    Object? normalViewFor = _keep,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -326,6 +332,9 @@ class RealState {
     serverSchema: serverSchema ?? this.serverSchema,
     newBuild: newBuild ?? this.newBuild,
     admin: admin ?? this.admin,
+    normalViewFor: identical(normalViewFor, _keep)
+        ? this.normalViewFor
+        : normalViewFor as DateTime?,
     firstRun: identical(firstRun, _keep)
         ? this.firstRun
         : firstRun as FirstRunStep?,
@@ -419,6 +428,13 @@ RealOffer? waitingOffer(RealState s, DateTime now) {
 
 bool isRealDriving(RealState s, DateTime now) =>
     myActiveAvailability(s, now)?.mode == AvailabilityMode.driving;
+
+/// The big driver screen — unless I chose the regular one for this trip.
+bool showDriverScreen(RealState s, DateTime now) {
+  final mine = myActiveAvailability(s, now);
+  return mine?.mode == AvailabilityMode.driving &&
+      s.normalViewFor != mine!.startedAt;
+}
 
 // ---------------------------------------------------------------------------
 // Controller
@@ -2414,6 +2430,12 @@ class RealController extends Notifier<RealState> {
     if (result == 'asked') _event('ask_friend');
     await refresh();
     return result == 'asked';
+  }
+
+  /// While driving: the regular screen for a moment (or back).
+  void showNormalView(bool on) {
+    final mine = myActiveAvailability(state, _now());
+    state = state.copyWith(normalViewFor: on ? mine?.startedAt : null);
   }
 
   /// "Still free" after a question I didn't answer.
