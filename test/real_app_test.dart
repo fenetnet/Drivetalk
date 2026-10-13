@@ -122,7 +122,7 @@ void main() {
       // No code, no invitation: we're connected.
       expect(
         find.text(
-          'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.',
+          'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.',
         ),
         findsOneWidget,
       );

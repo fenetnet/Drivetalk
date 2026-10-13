@@ -439,7 +439,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNobodyFree =>
-      'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.';
+      'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.';
 
   @override
   String get realFreeHint =>

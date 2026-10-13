@@ -817,7 +817,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNobodyFree.
   ///
   /// In he, this message translates to:
-  /// **'יש לך כמה דקות? בוחרים למטה מה עושים עכשיו (נסיעה, הליכה…), ונחפש עם מי לדבר.'**
+  /// **'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.'**
   String get realNobodyFree;
 
   /// No description provided for @realFreeHint.
