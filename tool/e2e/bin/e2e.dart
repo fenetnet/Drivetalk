@@ -1805,8 +1805,8 @@ Future<void> main() async {
   await calmAndPrivate();
 
   check(
-    await eve.rpc('schema_version') == 33,
-    'the server says its version (33)',
+    await eve.rpc('schema_version') == 34,
+    'the server says its version (34)',
   );
 
   // --- profile photos: private, friends only
@@ -2300,6 +2300,16 @@ Future<void> calmAndPrivate() async {
     await ron.rpc('ask_friend', params: {'p_user': uid(tal)}) == 'asked',
     'during a pause, tapping still asks',
   );
+  final talToken = await tal.rpc('create_device_token') as String;
+  final talBg = SupabaseClient(url, anonKey);
+  final heard = List<Map<String, dynamic>>.from(
+    await talBg.rpc('auto_offers', params: {'p_token': talToken}),
+  );
+  check(
+    heard.length == 1 && heard.single['kind'] == 'direct',
+    'the phone says "Ron wants to talk with you" (not "Ron is free")',
+  );
+  await talBg.dispose();
   for (final c in [ron, tal]) {
     await c.rpc('clear_availability');
   }

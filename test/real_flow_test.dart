@@ -1387,7 +1387,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 33)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 34)'));
     });
 
     test(
@@ -1725,6 +1725,11 @@ void main() {
       await yoni.c.refresh();
       final o = currentOffer(yoni.s, now)!;
       expect(o.direct, isTrue);
+      expect(
+        o.askedBy(me.backend.userId!),
+        isTrue,
+        reason: '"Netanel wants to talk with you"',
+      );
       expect(o.sharedUntil, isNotNull, reason: 'until when both are free');
       await yoni.c.respond(o, accept: true);
       await pump(20);

@@ -8,7 +8,10 @@ import java.net.URL
 /** The background calls (device token only). Never on the main thread. */
 class DrivingApi(private val store: DrivingStore) {
 
-    /** kind: "ask" (talk?) or "quick" (quick connect, already agreed). */
+    /**
+     * kind: "ask" (talk?), "direct" (a friend tapped me: "X wants to talk
+     * with you") or "quick" (quick connect, already agreed).
+     */
     data class Offer(val id: String, val name: String, val kind: String = "ask")
 
     private fun rpc(fn: String, body: JSONObject): String? {

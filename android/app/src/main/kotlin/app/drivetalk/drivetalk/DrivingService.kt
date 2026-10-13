@@ -224,7 +224,11 @@ class DrivingService : Service() {
                 // Remembered on the phone: not repeated after a restart.
                 if (store.markShown(o.id)) {
                     DrivingNotifications.showOffer(ctx, o)
-                    val key = if (o.kind == "quick") "voiceQuick" else "voiceOffer"
+                    val key = when (o.kind) {
+                        "quick" -> "voiceQuick"
+                        "direct" -> "voiceDirect"
+                        else -> "voiceOffer"
+                    }
                     speak(store.text(key, "{name}").replace("{name}", o.name))
                 }
             }

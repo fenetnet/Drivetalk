@@ -218,6 +218,10 @@ class RealOffer {
   final bool direct;
 
   String otherId(String me) => me == userA ? userB : userA;
+
+  /// The other side tapped me ("X wants to talk with you", D-109).
+  bool askedBy(String other) =>
+      direct && (other == userA ? aAccepted : bAccepted) == true;
   bool? myAnswer(String me) => me == userA ? aAccepted : bAccepted;
 }
 

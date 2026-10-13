@@ -3465,6 +3465,36 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא הצלחנו לדבר'**
   String get afterCallNoTalk;
+
+  /// No description provided for @directTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} רוצה לדבר איתך'**
+  String directTitle(String name);
+
+  /// No description provided for @directAsk.
+  ///
+  /// In he, this message translates to:
+  /// **'מתאים לך עכשיו?'**
+  String get directAsk;
+
+  /// No description provided for @directAskShort.
+  ///
+  /// In he, this message translates to:
+  /// **'רוצה לדבר איתך. לענות?'**
+  String get directAskShort;
+
+  /// No description provided for @voiceDirect.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} רוצה לדבר איתך. לענות?'**
+  String voiceDirect(String name);
+
+  /// No description provided for @voiceDirectAnon.
+  ///
+  /// In he, this message translates to:
+  /// **'חבר רוצה לדבר איתך. לענות?'**
+  String get voiceDirectAnon;
 }
 
 class _AppLocalizationsDelegate

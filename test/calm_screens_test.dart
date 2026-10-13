@@ -209,6 +209,27 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('a friend who tapped me: "X wants to talk with you"', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      final f = friend.read(realProvider.notifier);
+      // No automatic question between us: only the tap. (Yoni's own
+      // rating stops the app's suggestions, never his own tap.)
+      await f.setRating(friend.read(realProvider).snapshot!.friends.single, 0);
+      await c.startAvailability(AvailabilityMode.free, 60);
+      await f.startAvailability(AvailabilityMode.free, 60);
+      await f.askFriend(friend.read(realProvider).snapshot!.friends.single);
+      await c.refresh();
+    });
+    final offer = currentOffer(me.read(realProvider), now)!;
+    await _show(t, me, RealOfferScreen(offer: offer, dark: false));
+    expect(find.text('יונתן־אלכסנדר רוצה לדבר איתך'), findsOneWidget);
+    expect(find.text('מתאים לך עכשיו?'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
   testWidgets('the question says how long both are free', (t) async {
     final (me, friend) = await twoFriends(t);
     await t.runAsync(() async {

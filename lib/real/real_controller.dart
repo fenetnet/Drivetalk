@@ -447,7 +447,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 33;
+const kRequiredSchema = 34;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1071,6 +1071,10 @@ class RealController extends Notifier<RealState> {
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
     'offerTitle': _l.realOfferTitle('{name}', 'other'),
+    'directTitle': _l.directTitle('{name}'),
+    'voiceDirect': state.prefs.speakNames
+        ? _l.voiceDirect('{name}')
+        : _l.voiceDirectAnon,
     'offerBody': _l.realOfferNote,
     'talk': _l.realTalkNow,
     'notNow': _l.realNotNow,
@@ -1699,9 +1703,14 @@ class RealController extends Notifier<RealState> {
   Future<void> _askByVoice(RealOffer offer, RealProfile p) async {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
+    final direct = offer.askedBy(p.id);
     await voice.speak(
       state.prefs.speakNames
-          ? _l.realVoiceOffer(p.name, _genderKey(p.gender))
+          ? direct
+                ? _l.voiceDirect(p.name)
+                : _l.realVoiceOffer(p.name, _genderKey(p.gender))
+          : direct
+          ? _l.voiceDirectAnon
           : _l.realVoiceOfferAnon,
     );
     if (seq != _voiceSeq || !ref.mounted) return;

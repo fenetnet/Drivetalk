@@ -120,7 +120,14 @@ object DrivingNotifications {
         val b = builder(context, CHANNEL_TALK)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
             .setContentTitle(
-                store.text(if (quick) "quickTitle" else "offerTitle", "{name}")
+                store.text(
+                    when {
+                        quick -> "quickTitle"
+                        offer.kind == "direct" -> "directTitle"
+                        else -> "offerTitle"
+                    },
+                    "{name}",
+                )
                     .replace("{name}", offer.name),
             )
             .setContentText(store.text(if (quick) "quickBody" else "offerBody", ""))

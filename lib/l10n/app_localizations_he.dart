@@ -2046,4 +2046,23 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get afterCallNoTalk => 'לא הצלחנו לדבר';
+
+  @override
+  String directTitle(String name) {
+    return '$name רוצה לדבר איתך';
+  }
+
+  @override
+  String get directAsk => 'מתאים לך עכשיו?';
+
+  @override
+  String get directAskShort => 'רוצה לדבר איתך. לענות?';
+
+  @override
+  String voiceDirect(String name) {
+    return '$name רוצה לדבר איתך. לענות?';
+  }
+
+  @override
+  String get voiceDirectAnon => 'חבר רוצה לדבר איתך. לענות?';
 }

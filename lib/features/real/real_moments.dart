@@ -26,6 +26,8 @@ class RealOfferScreen extends ConsumerWidget {
     if (other == null) return const SizedBox.shrink();
     final theirs = s.snapshot!.availability[other.id];
     final g = genderKey(other.gender);
+    // They tapped me: say so ("X wants to talk with you").
+    final direct = offer.askedBy(other.id);
     final style = dark ? MomentStyle.dark : MomentStyle.coral;
     final when = theirs != null && theirs.isActiveAt(now)
         ? theirs.auto
@@ -75,13 +77,23 @@ class RealOfferScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
           MomentText(
-            dark ? other.name : l.realOfferName(other.name, g),
+            dark
+                ? other.name
+                : direct
+                ? l.directTitle(other.name)
+                : l.realOfferName(other.name, g),
             size: dark ? 44 : 38,
             style: style,
           ),
           const SizedBox(height: 10),
           MomentText(
-            dark ? l.realOfferAskShort(g) : l.realOfferAsk,
+            dark
+                ? direct
+                      ? l.directAskShort
+                      : l.realOfferAskShort(g)
+                : direct
+                ? l.directAsk
+                : l.realOfferAsk,
             size: 22,
             style: style,
             soft: true,

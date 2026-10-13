@@ -1148,5 +1148,24 @@
   "afterCallTomorrow": "מחר",
   "afterCall3": "בעוד 3 ימים",
   "afterCallWeek": "בעוד שבוע",
-  "afterCallNoTalk": "לא הצלחנו לדבר"
+  "afterCallNoTalk": "לא הצלחנו לדבר",
+  "directTitle": "{name} רוצה לדבר איתך",
+  "@directTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "directAsk": "מתאים לך עכשיו?",
+  "directAskShort": "רוצה לדבר איתך. לענות?",
+  "voiceDirect": "{name} רוצה לדבר איתך. לענות?",
+  "@voiceDirect": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceDirectAnon": "חבר רוצה לדבר איתך. לענות?"
 }
