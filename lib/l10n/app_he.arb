@@ -1167,5 +1167,18 @@
       }
     }
   },
-  "voiceDirectAnon": "חבר רוצה לדבר איתך. לענות?"
+  "voiceDirectAnon": "חבר רוצה לדבר איתך. לענות?",
+  "callToMain": "למסך הראשי",
+  "@callToMain": {
+    "description": "On the call screen: leave it for the main screen during the call"
+  },
+  "callBackToCall": "בשיחה עם {name} · חזרה למסך השיחה",
+  "@callBackToCall": {
+    "description": "Banner on the main screen during a call",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

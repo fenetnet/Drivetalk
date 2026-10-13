@@ -66,8 +66,9 @@ class RealRoot extends ConsumerWidget {
       case RealPhase.ready:
         final offer = currentOffer(s, now);
         final waiting = waitingOffer(s, now);
-        if (s.callStage != CallStage.none &&
-            s.callStage != CallStage.feedback) {
+        final inCall =
+            s.callStage != CallStage.none && s.callStage != CallStage.feedback;
+        if (inCall && !s.callHidden) {
           body = RealCallScreen(dark: dark);
         } else if (s.invite != null) {
           body = RealInviteScreen(invite: s.invite!);
@@ -85,6 +86,10 @@ class RealRoot extends ConsumerWidget {
         } else {
           body = const RealShell();
         }
+        // The call set aside: a banner on top brings it back.
+        if (inCall && s.callHidden && s.call != null) {
+          return _BackToCall(name: s.call!.other.name, dark: dark, child: body);
+        }
     }
     return body;
   }
@@ -93,7 +98,9 @@ class RealRoot extends ConsumerWidget {
       s.invite != null ||
       // Driver mode: no lists or small buttons left on top of it.
       showDriverScreen(s, now) ||
-      (s.callStage != CallStage.none && s.callStage != CallStage.feedback) ||
+      (s.callStage != CallStage.none &&
+          s.callStage != CallStage.feedback &&
+          !s.callHidden) ||
       currentOffer(s, now) != null ||
       waitingOffer(s, now) != null;
 
@@ -443,4 +450,64 @@ class _Blob extends StatelessWidget {
     height: size,
     decoration: BoxDecoration(color: color, shape: BoxShape.circle),
   );
+}
+
+/// During a call I left for the main screen: one tap goes back to it.
+class _BackToCall extends ConsumerWidget {
+  const _BackToCall({
+    required this.name,
+    required this.dark,
+    required this.child,
+  });
+  final String name;
+  final bool dark;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Column(
+      children: [
+        Material(
+          color: AppColors.sageDark,
+          child: SafeArea(
+            bottom: false,
+            child: InkWell(
+              onTap: () => ref.read(realProvider.notifier).hideCall(false),
+              child: Container(
+                constraints: BoxConstraints(minHeight: dark ? 72 : 56),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.phone_in_talk_rounded,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l.callBackToCall(name),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: dark ? 20 : 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            child: child,
+          ),
+        ),
+      ],
+    );
+  }
 }

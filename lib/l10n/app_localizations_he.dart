@@ -2065,4 +2065,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get voiceDirectAnon => 'חבר רוצה לדבר איתך. לענות?';
+
+  @override
+  String get callToMain => 'למסך הראשי';
+
+  @override
+  String callBackToCall(String name) {
+    return 'בשיחה עם $name · חזרה למסך השיחה';
+  }
 }

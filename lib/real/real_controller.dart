@@ -225,7 +225,15 @@ class RealState {
     this.newBuild,
     this.admin = false,
     this.normalViewFor,
+    this.callHiddenFor,
   });
+
+  /// I left the call screen for the main one during this call (its offer
+  /// id); a banner brings it back. Another call shows its screen again.
+  final String? callHiddenFor;
+
+  /// The call screen is set aside for now.
+  bool get callHidden => call != null && callHiddenFor == call!.offerId;
 
   /// While driving, I chose the regular screen for this trip (its start
   /// time). A new trip shows the driver screen again.
@@ -304,6 +312,7 @@ class RealState {
     int? newBuild,
     bool? admin,
     Object? normalViewFor = _keep,
+    Object? callHiddenFor = _keep,
   }) => RealState(
     phase: phase ?? this.phase,
     snapshot: identical(snapshot, _keep)
@@ -335,6 +344,9 @@ class RealState {
     normalViewFor: identical(normalViewFor, _keep)
         ? this.normalViewFor
         : normalViewFor as DateTime?,
+    callHiddenFor: identical(callHiddenFor, _keep)
+        ? this.callHiddenFor
+        : callHiddenFor as String?,
     firstRun: identical(firstRun, _keep)
         ? this.firstRun
         : firstRun as FirstRunStep?,
@@ -2447,6 +2459,11 @@ class RealController extends Notifier<RealState> {
   void showNormalView(bool on) {
     final mine = myActiveAvailability(state, _now());
     state = state.copyWith(normalViewFor: on ? mine?.startedAt : null);
+  }
+
+  /// During a call: the main screen for a moment (or back to the call).
+  void hideCall(bool hide) {
+    state = state.copyWith(callHiddenFor: hide ? state.call?.offerId : null);
   }
 
   /// "Still free" after a question I didn't answer.

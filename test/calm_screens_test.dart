@@ -4,9 +4,11 @@ import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
+import 'package:drivetalk/features/real/real_root.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
+import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
@@ -14,6 +16,16 @@ import 'package:drivetalk/real/real_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+/// Dials nothing (the call screens only need "it's ringing").
+class _QuietDialer extends PhoneDialer {
+  @override
+  Future<bool> requestDirectCall() async => false;
+
+  @override
+  Future<DialResult> call(String number, {bool direct = true}) async =>
+      DialResult.calling;
+}
 
 ProviderContainer _phone(
   MemoryServer server, {
@@ -27,6 +39,7 @@ ProviderContainer _phone(
     voiceServiceProvider.overrideWithValue(SilentVoiceService()),
     contactsReaderProvider.overrideWithValue(contacts ?? FakeContactsReader()),
     drivingDetectorProvider.overrideWithValue(driving ?? FakeDrivingDetector()),
+    phoneDialerProvider.overrideWithValue(_QuietDialer()),
   ],
 );
 
@@ -206,6 +219,47 @@ void main() {
     expect(t.takeException(), isNull);
     await t.tap(find.text('סגירה'));
     await t.pump(const Duration(milliseconds: 300));
+    await _close(t);
+  });
+
+  testWidgets('during a call: to the main screen and back', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      final f = friend.read(realProvider.notifier);
+      await c.startAvailability(AvailabilityMode.free, 60);
+      await f.startAvailability(AvailabilityMode.free, 60);
+      await f.refresh();
+      await c.refresh();
+      final now0 = server.now();
+      await c.respond(currentOffer(me.read(realProvider), now0)!, accept: true);
+      await f.respond(
+        currentOffer(friend.read(realProvider), now0)!,
+        accept: true,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await c.refresh();
+      await f.refresh();
+    });
+    // Whoever waits for the other's call.
+    final waiter =
+        me.read(realProvider).callStage == CallStage.waitingForTheirCall
+        ? me
+        : friend;
+    expect(waiter.read(realProvider).callStage, CallStage.waitingForTheirCall);
+    await _show(t, waiter, const RealRoot());
+    expect(find.text('לא הגיעה שיחה'), findsOneWidget);
+
+    await t.tap(find.text('למסך הראשי'));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('לא הגיעה שיחה'), findsNothing);
+    expect(find.textContaining('חזרה למסך השיחה'), findsOneWidget);
+    expect(t.takeException(), isNull);
+
+    await t.tap(find.textContaining('חזרה למסך השיחה'));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('לא הגיעה שיחה'), findsOneWidget);
+    expect(t.takeException(), isNull);
     await _close(t);
   });
 

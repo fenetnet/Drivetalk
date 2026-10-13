@@ -3495,6 +3495,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חבר רוצה לדבר איתך. לענות?'**
   String get voiceDirectAnon;
+
+  /// On the call screen: leave it for the main screen during the call
+  ///
+  /// In he, this message translates to:
+  /// **'למסך הראשי'**
+  String get callToMain;
+
+  /// Banner on the main screen during a call
+  ///
+  /// In he, this message translates to:
+  /// **'בשיחה עם {name} · חזרה למסך השיחה'**
+  String callBackToCall(String name);
 }
 
 class _AppLocalizationsDelegate

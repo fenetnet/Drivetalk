@@ -253,6 +253,16 @@ class RealCallScreen extends ConsumerWidget {
       ],
     );
 
+    // Leave the call screen for the main one (a banner brings it back).
+    final toMain = TextButton.icon(
+      onPressed: () => c.hideCall(true),
+      icon: const Icon(Icons.home_rounded, color: Colors.white),
+      label: Text(
+        l.callToMain,
+        style: const TextStyle(color: Colors.white, fontSize: 16),
+      ),
+    );
+
     final done = PrimaryPill(
       label: l.callWeAreDone,
       icon: Icons.call_end_rounded,
@@ -292,11 +302,13 @@ class RealCallScreen extends ConsumerWidget {
       ),
       CallStage.dialed => MomentLayout(
         style: style,
+        header: toMain,
         top: header(l.realCallingNow(call.other.name), body: l.realDialedBody),
         actions: [done],
       ),
       CallStage.waitingForTheirCall => MomentLayout(
         style: style,
+        header: toMain,
         top: header(
           l.realTheyCallTitle(call.other.name, g),
           body: l.realTheyCallBody,
