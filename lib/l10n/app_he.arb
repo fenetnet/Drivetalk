@@ -1103,5 +1103,9 @@
   "quietPickTo": "עד איזו שעה?",
   "quietClear": "לבטל שעות שקטות",
   "quietSet": "לבחור שעות",
-  "realNotifChannelTalk": "הצעות לדבר"
+  "realNotifChannelTalk": "הצעות לדבר",
+  "driverFreeTitle": "מי פנוי עכשיו",
+  "driverFreeHint": "לוחצים על חבר, ונשאל אותו.",
+  "driverNobody": "עוד אין חבר פנוי",
+  "driverNobodyBody": "כשמישהו יתפנה, נציע לכם לדבר."
 }

@@ -194,6 +194,17 @@ class SupabaseRealBackend implements RealBackend {
             (r) => r,
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // Free friends I can really ask (optional on an older server).
+      _c
+          .rpc('askable_friends')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [
+              for (final x in r as List) {'id': '$x'},
+            ],
+            onError: (Object _) => [
+              {'old': true},
+            ],
+          ),
       // My private settings and counts (optional on an older server).
       _c
           .rpc('my_status')
@@ -271,7 +282,10 @@ class SupabaseRealBackend implements RealBackend {
       },
       hidden: results[8].firstOrNull?['hide_status'] == true,
       othersModes: modesFromKeys(results[9].firstOrNull?['show_modes']),
-      status: _myStatus(results[10].firstOrNull),
+      status: _myStatus(results[11].firstOrNull),
+      askable: results[10].firstOrNull?['old'] == true
+          ? null
+          : {for (final r in results[10]) r['id'] as String},
       fetchedAt: DateTime.now(),
     );
   });

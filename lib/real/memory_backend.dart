@@ -81,6 +81,12 @@ class MemoryServer {
     snoozes['$y|$x'],
   ].any((u) => u != null && now().isBefore(u));
 
+  /// [from] asked not to be offered [to] again soon.
+  bool _snoozedBy(String from, String to) {
+    final u = snoozes['$from|$to'];
+    return u != null && now().isBefore(u);
+  }
+
   /// "from|to" → (created, until or null).
   final intents = <String, (DateTime, DateTime?)>{};
 
@@ -157,6 +163,44 @@ class MemoryServer {
         !hidden.contains(viewer) &&
         !awaitsApproval(owner, viewer) &&
         !(hideInCall.contains(owner) && busy != null && now().isBefore(busy));
+  }
+
+  /// Why [me] can't ask [user] right now ('ok' = can; like ask_check).
+  String askCheck(String me, String user, {required bool meFree}) {
+    final t = now();
+    final mine = availability[me];
+    if (meFree && (mine == null || !t.isBefore(mine.expiresAt))) {
+      return 'me_not_free';
+    }
+    final theirs = availability[user];
+    if (theirs == null ||
+        user == me ||
+        !seesFree(me, user) ||
+        anonymous.contains(user) ||
+        anonymous.contains(me) ||
+        pairPending(me, user) ||
+        ratingOf(user, me) == 0 ||
+        _snoozedBy(user, me)) {
+      return 'not_free';
+    }
+    if (phones[me] == null && phones[user] == null) return 'no_number';
+    if (!canBeAsked(user) || _askedEnough(user, theirs.startedAt)) {
+      return 'busy';
+    }
+    final pair = _pair(me, user).split('|');
+    final saidNo = offers.values.any(
+      (o) =>
+          o.a == pair[0] &&
+          o.b == pair[1] &&
+          ((o.status == OfferStatus.accepted &&
+                  o.acceptedAt != null &&
+                  t.difference(o.acceptedAt!) < const Duration(minutes: 30)) ||
+              // They already said no to us this time.
+              (o.status == OfferStatus.declined &&
+                  _answerOf(o, user) == false &&
+                  !o.createdAt.isBefore(theirs.startedAt))),
+    );
+    return saidNo ? 'not_now' : 'ok';
   }
 
   /// A question ended without an answer from someone (after 25 seconds):
@@ -734,6 +778,10 @@ class MemoryRealBackend implements RealBackend {
       },
       hidden: server.hidden.contains(me),
       othersModes: server.othersModes[me],
+      askable: {
+        for (final f in friends)
+          if (server.askCheck(me, f.id, meFree: false) == 'ok') f.id,
+      },
       status: MyStatus(
         anonymous: server.anonymous.contains(me),
         hideInCall: server.hideInCall.contains(me),
@@ -1493,40 +1541,11 @@ class MemoryRealBackend implements RealBackend {
   Future<String> askFriend(String userId) async {
     final me = _uid;
     final now = server.now();
-    final mine = server.availability[me];
-    if (mine == null || !now.isBefore(mine.expiresAt)) return 'me_not_free';
-    final theirs = server.availability[userId];
-    if (theirs == null ||
-        userId == me ||
-        !server.seesFree(me, userId) ||
-        server.anonymous.contains(userId) ||
-        server.anonymous.contains(me) ||
-        server.pairPending(me, userId) ||
-        server.ratingOf(userId, me) == 0) {
-      return 'not_free';
-    }
-    if (server.phones[me] == null && server.phones[userId] == null) {
-      return 'no_number';
-    }
-    if (!server.canBeAsked(userId) ||
-        server._askedEnough(userId, theirs.startedAt)) {
-      return 'busy';
-    }
+    final why = server.askCheck(me, userId, meFree: true);
+    if (why != 'ok') return why;
+    final mine = server.availability[me]!;
+    final theirs = server.availability[userId]!;
     final pair = MemoryServer._pair(me, userId).split('|');
-    final saidNo = server.offers.values.any(
-      (o) =>
-          o.a == pair[0] &&
-          o.b == pair[1] &&
-          ((o.status == OfferStatus.accepted &&
-                  o.acceptedAt != null &&
-                  now.difference(o.acceptedAt!) <
-                      const Duration(minutes: 30)) ||
-              // They already said no to us this time.
-              (o.status == OfferStatus.declined &&
-                  MemoryServer._answerOf(o, userId) == false &&
-                  !o.createdAt.isBefore(theirs.startedAt))),
-    );
-    if (saidNo) return 'not_now';
     for (final o in server.offers.values) {
       if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
         o

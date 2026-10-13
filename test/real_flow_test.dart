@@ -1380,7 +1380,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 31)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 32)'));
     });
 
     test(
@@ -1722,6 +1722,18 @@ void main() {
       await yoni.c.respond(o, accept: true);
       await pump(20);
       expect(yoni.s.callStage, isNot(CallStage.none));
+    });
+
+    test('only friends I can really ask are listed (D-107)', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+      await me.c.refresh();
+      expect(askableFriends(me.s, now), hasLength(1));
+      // Yoni doesn't want questions from me: not listed (not even free).
+      await yoni.c.setRating(yoni.s.snapshot!.friend(me.backend.userId!)!, 0);
+      await me.c.refresh();
+      expect(freeFriends(me.s, now), hasLength(1));
+      expect(askableFriends(me.s, now), isEmpty);
     });
 
     test('asking when not free is refused clearly', () async {

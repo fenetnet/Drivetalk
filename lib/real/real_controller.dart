@@ -354,6 +354,19 @@ List<(RealProfile, RealAvailability)> freeFriends(RealState s, DateTime now) {
   ]..sort((x, y) => y.$2.expiresAt.compareTo(x.$2.expiresAt));
 }
 
+/// Free friends I can really ask now (D-107): not those who'd refuse
+/// anyway (rated me "never", said no this time, busy, quiet minutes…).
+List<(RealProfile, RealAvailability)> askableFriends(
+  RealState s,
+  DateTime now,
+) {
+  final can = s.snapshot?.askable;
+  return [
+    for (final f in freeFriends(s, now))
+      if (can == null || can.contains(f.$1.id)) f,
+  ];
+}
+
 /// Friends who marked themselves free but are in a call right now.
 List<(RealProfile, RealAvailability)> busyFriends(RealState s, DateTime now) {
   final snap = s.snapshot;
@@ -418,7 +431,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 31;
+const kRequiredSchema = 32;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 

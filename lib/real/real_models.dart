@@ -289,7 +289,12 @@ class RealSnapshot {
     this.inactiveDays = const {},
     this.othersModes,
     this.status = const MyStatus(),
+    this.askable,
   });
+
+  /// Free friends I can really ask now (D-107). null = unknown (an older
+  /// server): nobody is filtered out.
+  final Set<String>? askable;
 
   /// My private settings and counts (see [MyStatus]).
   final MyStatus status;
@@ -376,6 +381,7 @@ class RealSnapshot {
       inactiveDays: inactiveDays,
       othersModes: othersModes,
       status: status,
+      askable: askable,
     );
   }
 
@@ -403,6 +409,7 @@ class RealSnapshot {
       inactiveDays: inactiveDays,
       othersModes: othersModes,
       status: status,
+      askable: askable,
     );
   }
 

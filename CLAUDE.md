@@ -56,8 +56,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   contacts who use DriveTalk and the user picks who to add (connected at
   once; anyone can remove; removed pairs never come back from contacts) (D-074).
 - No infinite-scroll feed. No anonymous random chat as a core feature.
-- Driver mode: huge buttons, minimal text, no typing, no scrolling lists,
-  one person at a time (normal mode shows up to 3 options).
+- Driver mode: huge buttons, minimal text, no typing, no scrolling lists.
+  Up to 3 free friends as big tappable circles (owner decision D-107);
+  a question is still one person at a time.
 - Match explanations must only use data we actually have — never invent reasons.
 - Matching weights live in configuration, not hard-coded in logic.
 - Block / Report / Unmatch / Don't-suggest-again exist from day one.

@@ -166,6 +166,29 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('driving: free friends as big circles, one tap asks', (t) async {
+    final driving = FakeDrivingDetector();
+    final (me, friend) = await twoFriends(t, driving: driving);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      // No automatic question between us (so the screen stays as is).
+      await c.setRating(me.read(realProvider).snapshot!.friends.single, 0);
+      await c.enableAutoDriving();
+      server.autoStart(driving.token!);
+      await c.readyNow();
+      await friend
+          .read(realProvider.notifier)
+          .startAvailability(AvailabilityMode.breakTime, 60);
+      await c.refresh();
+    });
+    await _show(t, me, const RealDriverHome());
+    expect(find.text('מי פנוי עכשיו'), findsOneWidget);
+    expect(find.text('יונתן־אלכסנדר'), findsOneWidget);
+    expect(find.text('לוחצים על חבר, ונשאל אותו.'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
   testWidgets('the question says how long both are free', (t) async {
     final (me, friend) = await twoFriends(t);
     await t.runAsync(() async {

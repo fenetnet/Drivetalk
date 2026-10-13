@@ -187,14 +187,7 @@ class RealHomeScreen extends ConsumerWidget {
     final me = snap?.me;
     final mine = myActiveAvailability(s, now);
     // People I haven't talked with in a while come first.
-    final free = [...freeFriends(s, now)]
-      ..sort((a, b) {
-        final ta = snap?.lastTalk[a.$1.id];
-        final tb = snap?.lastTalk[b.$1.id];
-        if (ta == null) return tb == null ? 0 : -1;
-        if (tb == null) return 1;
-        return ta.compareTo(tb);
-      });
+    final free = friendsToShow(s, now);
     final g = genderKey(me?.gender ?? Gender.unspecified);
     final hour = now.hour;
     final greet = hour < 5
@@ -674,6 +667,18 @@ Future<void> _extend(BuildContext context, WidgetRef ref) async {
   if (minutes != null) {
     await ref.read(realProvider.notifier).extendAvailability(minutes);
   }
+}
+
+/// Free friends I can ask, people I haven't talked with in a while first.
+List<(RealProfile, RealAvailability)> friendsToShow(RealState s, DateTime now) {
+  final last = s.snapshot?.lastTalk ?? const <String, DateTime>{};
+  return [...askableFriends(s, now)]..sort((a, b) {
+    final ta = last[a.$1.id];
+    final tb = last[b.$1.id];
+    if (ta == null) return tb == null ? 0 : -1;
+    if (tb == null) return 1;
+    return ta.compareTo(tb);
+  });
 }
 
 /// "15 more min" — or, on an automatic trip (its end isn't known), just
@@ -1249,6 +1254,7 @@ class RealDriverHome extends ConsumerWidget {
         ],
       );
     }
+    final free = friendsToShow(s, now);
     return MomentLayout(
       style: MomentStyle.dark,
       footer: l.driverSafety,
@@ -1259,17 +1265,51 @@ class RealDriverHome extends ConsumerWidget {
       ),
       top: Column(
         children: [
-          PulsingCircle(
-            size: 160,
-            color: AppColors.sage.withValues(alpha: 0.35),
-            child: Icon(
-              Icons.directions_car_rounded,
-              color: Colors.white,
-              size: 64,
+          if (free.isEmpty) ...[
+            PulsingCircle(
+              size: 160,
+              color: AppColors.sage.withValues(alpha: 0.35),
+              child: Icon(
+                Icons.directions_car_rounded,
+                color: Colors.white,
+                size: 64,
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
-          MomentText(l.driverSearching, size: 30, style: MomentStyle.dark),
+            const SizedBox(height: 28),
+            MomentText(l.driverNobody, size: 30, style: MomentStyle.dark),
+            const SizedBox(height: 6),
+            MomentText(
+              l.driverNobodyBody,
+              size: 18,
+              style: MomentStyle.dark,
+              soft: true,
+            ),
+          ] else ...[
+            // Who's free now: up to 3 big circles, one tap asks (D-107).
+            MomentText(l.driverFreeTitle, size: 28, style: MomentStyle.dark),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final (p, a) in free.take(3))
+                  Expanded(
+                    child: _DriverFriend(
+                      friend: p,
+                      label: modeLabel(l, a.mode),
+                      onTap: s.busy ? null : () => c.askFriend(p),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            MomentText(
+              l.driverFreeHint,
+              size: 18,
+              style: MomentStyle.dark,
+              soft: true,
+            ),
+          ],
           if (mine != null && !mine.auto) ...[
             const SizedBox(height: 6),
             MomentText(
@@ -1289,6 +1329,61 @@ class RealDriverHome extends ConsumerWidget {
           onTap: c.stopAvailability,
         ),
       ],
+    );
+  }
+}
+
+/// One free friend on the driver screen: a big picture, name, what
+/// they're doing. The whole thing is one big button.
+class _DriverFriend extends StatelessWidget {
+  const _DriverFriend({
+    required this.friend,
+    required this.label,
+    required this.onTap,
+  });
+  final RealProfile friend;
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Column(
+          children: [
+            HeroAvatar(
+              person: friend.toPerson(),
+              size: 88,
+              ring: AppColors.driverRing,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              friend.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.75),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

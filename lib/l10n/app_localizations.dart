@@ -3363,6 +3363,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הצעות לדבר'**
   String get realNotifChannelTalk;
+
+  /// No description provided for @driverFreeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מי פנוי עכשיו'**
+  String get driverFreeTitle;
+
+  /// No description provided for @driverFreeHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לוחצים על חבר, ונשאל אותו.'**
+  String get driverFreeHint;
+
+  /// No description provided for @driverNobody.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין חבר פנוי'**
+  String get driverNobody;
+
+  /// No description provided for @driverNobodyBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשמישהו יתפנה, נציע לכם לדבר.'**
+  String get driverNobodyBody;
 }
 
 class _AppLocalizationsDelegate

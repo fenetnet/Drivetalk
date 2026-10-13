@@ -1805,8 +1805,8 @@ Future<void> main() async {
   await calmAndPrivate();
 
   check(
-    await eve.rpc('schema_version') == 31,
-    'the server says its version (31)',
+    await eve.rpc('schema_version') == 32,
+    'the server says its version (32)',
   );
 
   // --- profile photos: private, friends only
@@ -1870,10 +1870,8 @@ Future<void> befriend(SupabaseClient a, SupabaseClient b) async {
   await b.rpc('accept_invitation', params: {'p_token': inv['token']});
 }
 
-Future<void> free(SupabaseClient c, [int minutes = 30]) => c.rpc(
-  'set_availability',
-  params: {'p_mode': 'free', 'p_minutes': minutes},
-);
+Future<void> free(SupabaseClient c, [int minutes = 30]) =>
+    c.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': minutes});
 
 Future<Map<String, dynamic>> status(SupabaseClient c) async =>
     Map<String, dynamic>.from(await c.rpc('my_status') as Map);
@@ -1901,18 +1899,16 @@ Future<void> calmAndPrivate() async {
     (await status(ben))['hidden_free'] == 1,
     'without my name: friends see "1 friend free"',
   );
-  check(
-    (await status(ana))['anonymous'] == true,
-    'my own setting reads back',
-  );
+  check((await status(ana))['anonymous'] == true, 'my own setting reads back');
   await free(gal);
   await free(ben);
   final benOffers = pendingOffers(await rows(ben, 'match_offers'));
   check(
     benOffers.length == 1 &&
-        {benOffers.single['user_a'], benOffers.single['user_b']}.contains(
-          uid(gal),
-        ),
+        {
+          benOffers.single['user_a'],
+          benOffers.single['user_b'],
+        }.contains(uid(gal)),
     'a friend who shows their name is asked first',
   );
   check(
@@ -1987,9 +1983,10 @@ Future<void> calmAndPrivate() async {
   final anaOffers = pendingOffers(await rows(ana, 'match_offers'));
   check(
     anaOffers.length == 1 &&
-        {anaOffers.single['user_a'], anaOffers.single['user_b']}.contains(
-          uid(gal),
-        ),
+        {
+          anaOffers.single['user_a'],
+          anaOffers.single['user_b'],
+        }.contains(uid(gal)),
     'whoever said yes gets the next friend right away',
   );
   check(
@@ -2016,7 +2013,10 @@ Future<void> calmAndPrivate() async {
   await free(ana);
   // (Ana and Ben may already have a question from the matching.)
   for (final o in pendingOffers(await rows(ana, 'match_offers'))) {
-    await ana.rpc('answer_offer', params: {'p_offer': o['id'], 'p_accept': false});
+    await ana.rpc(
+      'answer_offer',
+      params: {'p_offer': o['id'], 'p_accept': false},
+    );
   }
   await skipQuietGap();
   await dbExec(
@@ -2034,8 +2034,8 @@ Future<void> calmAndPrivate() async {
   check(
     offer['direct'] == true &&
         (offer['user_a'] == uid(ana)
-            ? offer['a_response']
-            : offer['b_response']) ==
+                ? offer['a_response']
+                : offer['b_response']) ==
             'accept',
     'my tap counts as my yes',
   );
@@ -2055,9 +2055,10 @@ Future<void> calmAndPrivate() async {
   // --- extend my free time
   await free(gal, 10);
   final before = DateTime.parse(
-    (await rows(gal, 'availability')).firstWhere(
-          (a) => a['user_id'] == uid(gal),
-        )['expires_at']
+    (await rows(
+          gal,
+          'availability',
+        )).firstWhere((a) => a['user_id'] == uid(gal))['expires_at']
         as String,
   );
   final after = DateTime.parse(
@@ -2189,6 +2190,43 @@ Future<void> calmAndPrivate() async {
     'after "keep" a question can come',
   );
 
+  // --- only friends I can really ask are listed (D-107)
+  final kim = await newUser('קים', 'female');
+  final lev = await newUser('לב', 'male');
+  await befriend(kim, lev);
+  await free(lev);
+  Future<List<String>> askable(SupabaseClient c) async => [
+    for (final x in await c.rpc('askable_friends') as List) '$x',
+  ];
+  check(
+    (await askable(kim)).contains(uid(lev)),
+    'a free friend I can ask is listed (even when I\'m not free)',
+  );
+  await lev.rpc('set_rating', params: {'p_friend': uid(kim), 'p_rating': 0});
+  check(
+    !(await askable(kim)).contains(uid(lev)),
+    'someone who doesn\'t want questions from me isn\'t listed',
+  );
+  await lev.rpc('set_rating', params: {'p_friend': uid(kim), 'p_rating': 3});
+  await free(kim);
+  for (final o in pendingOffers(await rows(kim, 'match_offers'))) {
+    await lev.rpc(
+      'answer_offer',
+      params: {'p_offer': o['id'], 'p_accept': false},
+    );
+  }
+  check(
+    !(await askable(kim)).contains(uid(lev)),
+    'someone who just said no to me isn\'t listed',
+  );
+  check(
+    await kim.rpc('ask_friend', params: {'p_user': uid(lev)}) == 'not_now',
+    'and tapping them doesn\'t ask again',
+  );
+  for (final c in [kim, lev]) {
+    await c.rpc('clear_availability');
+  }
+
   // --- crash notes: short, only the owner reads them
   await yael.rpc(
     'report_crash',
@@ -2217,7 +2255,7 @@ Future<void> calmAndPrivate() async {
   for (final c in [yael, omer]) {
     await c.rpc('clear_availability');
   }
-  for (final c in [ana, ben, gal, dov, eli, hila, yael, omer, bg]) {
+  for (final c in [ana, ben, gal, dov, eli, hila, yael, omer, kim, lev, bg]) {
     await c.dispose();
   }
 }

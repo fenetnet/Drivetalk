@@ -1986,4 +1986,16 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNotifChannelTalk => 'הצעות לדבר';
+
+  @override
+  String get driverFreeTitle => 'מי פנוי עכשיו';
+
+  @override
+  String get driverFreeHint => 'לוחצים על חבר, ונשאל אותו.';
+
+  @override
+  String get driverNobody => 'עוד אין חבר פנוי';
+
+  @override
+  String get driverNobodyBody => 'כשמישהו יתפנה, נציע לכם לדבר.';
 }
