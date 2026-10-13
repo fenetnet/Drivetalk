@@ -189,6 +189,26 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('a free friend I can\'t ask now is shown faded', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final f = friend.read(realProvider.notifier);
+      // Yoni doesn't want questions from me (his private choice).
+      await f.setRating(friend.read(realProvider).snapshot!.friends.single, 0);
+      await f.startAvailability(AvailabilityMode.driving, 60);
+      await me.read(realProvider.notifier).refresh();
+    });
+    await _show(t, me, const RealHomeScreen());
+    expect(find.text('לא כרגע'), findsOneWidget);
+    await t.tap(find.text('יונתן־אלכסנדר'));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('אי אפשר לפנות ליונתן־אלכסנדר כרגע'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.tap(find.text('סגירה'));
+    await t.pump(const Duration(milliseconds: 300));
+    await _close(t);
+  });
+
   testWidgets('the question says how long both are free', (t) async {
     final (me, friend) = await twoFriends(t);
     await t.runAsync(() async {

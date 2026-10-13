@@ -3399,6 +3399,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חזרה למסך הנהיגה'**
   String get driverBack;
+
+  /// No description provided for @freeNotNow.
+  ///
+  /// In he, this message translates to:
+  /// **'לא כרגע'**
+  String get freeNotNow;
+
+  /// No description provided for @freeNotNowTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אי אפשר לפנות ל{name} כרגע'**
+  String freeNotNowTitle(String name);
+
+  /// No description provided for @freeNotNowBody.
+  ///
+  /// In he, this message translates to:
+  /// **'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.'**
+  String get freeNotNowBody;
 }
 
 class _AppLocalizationsDelegate

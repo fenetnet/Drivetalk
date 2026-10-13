@@ -282,6 +282,10 @@ class RealHomeScreen extends ConsumerWidget {
                   _FreeNowCard(
                     free: free,
                     busy: busyFriends(s, now),
+                    notNow: [
+                      for (final f in freeFriends(s, now))
+                        if (!free.any((x) => x.$1.id == f.$1.id)) f,
+                    ],
                     now: now,
                     meFree: mine != null,
                     hiddenFree: snap?.status.hiddenFree ?? 0,
@@ -407,7 +411,12 @@ class _FreeNowCard extends ConsumerWidget {
     required this.meFree,
     this.hiddenFree = 0,
     this.anonymous = false,
+    this.notNow = const [],
   });
+
+  /// Free, but they can't be asked right now (shown faded, last; why is
+  /// never said — it may be their private choice).
+  final List<(RealProfile, RealAvailability)> notNow;
 
   /// Free friends without a name (their choice, or mine — D-103).
   final int hiddenFree;
@@ -454,57 +463,71 @@ class _FreeNowCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (free.isEmpty && busy.isEmpty && hiddenFree == 0)
+          if (free.isEmpty && busy.isEmpty && notNow.isEmpty && hiddenFree == 0)
             Text(
               meFree ? l.realNobodyFreeYet : l.realNobodyFree,
               style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
             )
-          else if (free.isNotEmpty || busy.isNotEmpty)
+          else if (free.isNotEmpty || busy.isNotEmpty || notNow.isNotEmpty)
             SizedBox(
               height: 138,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: free.length + busy.length,
+                itemCount: free.length + busy.length + notNow.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 14),
                 itemBuilder: (_, i) {
-                  final inCall = i >= free.length;
-                  final (p, a) = inCall ? busy[i - free.length] : free[i];
+                  final faded = i >= free.length + busy.length;
+                  final inCall = !faded && i >= free.length;
+                  final (p, a) = faded
+                      ? notNow[i - free.length - busy.length]
+                      : inCall
+                      ? busy[i - free.length]
+                      : free[i];
                   return SizedBox(
                     width: 76,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      // Tap a free friend: ask them now.
-                      onTap: inCall
-                          ? null
-                          : () => askFreeFriend(context, ref, p),
-                      child: Column(
-                        children: [
-                          RealAvatar(person: p.toPerson(), online: !inCall),
-                          const SizedBox(height: 8),
-                          Text(
-                            p.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                    child: Opacity(
+                      opacity: faded ? 0.45 : 1,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        // Tap a free friend: ask them now.
+                        onTap: inCall
+                            ? null
+                            : faded
+                            ? () => _notNowNote(context, p)
+                            : () => askFreeFriend(context, ref, p),
+                        child: Column(
+                          children: [
+                            RealAvatar(person: p.toPerson(), online: !inCall),
+                            const SizedBox(height: 8),
+                            Text(
+                              p.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          StatusLine(
-                            icon: inCall
-                                ? Icons.call_rounded
-                                : modeIcon(a.mode),
-                            // The picture says how (car, coffee…); the text
-                            // just how long.
-                            text: inCall ? l.inCall : timeLeftLabel(l, a, now),
-                            color: inCall
-                                ? AppColors.coralDeep
-                                : AppColors.inkSoft,
-                            bold: inCall,
-                            size: 12,
-                            center: true,
-                          ),
-                        ],
+                            StatusLine(
+                              icon: inCall
+                                  ? Icons.call_rounded
+                                  : modeIcon(a.mode),
+                              // The picture says how (car, coffee…); the text
+                              // just how long.
+                              text: inCall
+                                  ? l.inCall
+                                  : faded
+                                  ? l.freeNotNow
+                                  : timeLeftLabel(l, a, now),
+                              color: inCall
+                                  ? AppColors.coralDeep
+                                  : AppColors.inkSoft,
+                              bold: inCall,
+                              size: 12,
+                              center: true,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -734,6 +757,22 @@ Future<void> askFreeFriend(
     return;
   }
   await c.askFriend(friend);
+}
+
+/// A free friend who can't be asked right now: say so gently, never why
+/// (it may be their own choice).
+Future<void> _notNowNote(BuildContext context, RealProfile p) {
+  final l = context.l10n;
+  return showDialog<void>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.freeNotNowTitle(p.name)),
+      content: Text(l.freeNotNowBody),
+      actions: [
+        FilledButton(onPressed: () => Navigator.pop(d), child: Text(l.close)),
+      ],
+    ),
+  );
 }
 
 /// I didn't answer a question: no more questions (and friends see me as

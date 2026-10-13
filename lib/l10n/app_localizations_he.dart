@@ -2004,4 +2004,16 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get driverBack => 'חזרה למסך הנהיגה';
+
+  @override
+  String get freeNotNow => 'לא כרגע';
+
+  @override
+  String freeNotNowTitle(String name) {
+    return 'אי אפשר לפנות ל$name כרגע';
+  }
+
+  @override
+  String get freeNotNowBody =>
+      'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.';
 }
