@@ -2021,4 +2021,29 @@ class AppLocalizationsHe extends AppLocalizations {
   String freeNotNowMine(String name) {
     return 'זה בגלל שעוד לא אישרת את $name ברשימה שלך. אחרי האישור אפשר לדבר מיד.';
   }
+
+  @override
+  String afterCallTitle(String name) {
+    return 'מתי להציע לך שוב את $name?';
+  }
+
+  @override
+  String afterCallNote(String name) {
+    return 'בינתיים אפשר תמיד ללחוץ על $name ולשאול בעצמך.';
+  }
+
+  @override
+  String get afterCallAny => 'בכל זמן';
+
+  @override
+  String get afterCallTomorrow => 'מחר';
+
+  @override
+  String get afterCall3 => 'בעוד 3 ימים';
+
+  @override
+  String get afterCallWeek => 'בעוד שבוע';
+
+  @override
+  String get afterCallNoTalk => 'לא הצלחנו לדבר';
 }

@@ -447,7 +447,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 32;
+const kRequiredSchema = 33;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1980,12 +1980,14 @@ class RealController extends Notifier<RealState> {
   }
 
   /// After the call: it was good / not again soon / we didn't talk.
-  Future<void> sendOutcome(CallOutcome outcome) async {
+  /// After the call: when to suggest them again (0 = any time) and
+  /// whether we really talked. Skipping keeps the 3 quiet days (D-108).
+  Future<void> afterCall(int days, {bool talked = true}) async {
     final call = state.call;
     state = state.copyWith(callStage: CallStage.none, call: null);
     if (call == null) return;
     try {
-      await _backend.sendCallOutcome(call.offerId, outcome);
+      await _backend.afterCall(call.offerId, days: days, talked: talked);
       _event('call_feedback_submitted');
       if (ref.mounted) _notify(RealNoticeKind.feedbackThanks);
     } on RealBackendException catch (e) {

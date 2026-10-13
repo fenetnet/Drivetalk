@@ -164,8 +164,8 @@ void main() {
       expect(find.text('סיימנו'), findsOneWidget);
       await t.tap(find.text('סיימנו'));
       await pumpFor(t, 500);
-      expect(find.text('היה טוב'), findsOneWidget);
-      await t.tap(find.text('היה טוב'));
+      expect(find.text('מתי להציע לך שוב את יוני?'), findsOneWidget);
+      await t.tap(find.text('בעוד 3 ימים'));
       await pumpFor(t, 500);
       expect(find.text('תודה!'), findsOneWidget);
       expect(server.feedback, hasLength(1));

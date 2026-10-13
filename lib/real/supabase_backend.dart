@@ -536,29 +536,32 @@ class SupabaseRealBackend implements RealBackend {
       e.message.toLowerCase().contains('could not find the function');
 
   @override
-  Future<void> sendCallOutcome(String offerId, CallOutcome outcome) =>
-      _guard(() async {
-        final key = switch (outcome) {
-          CallOutcome.good => 'good',
-          CallOutcome.notSoon => 'not_soon',
-          CallOutcome.noTalk => 'no_talk',
-        };
-        try {
-          await _c.rpc(
-            'call_feedback',
-            params: {'p_offer': offerId, 'p_result': key},
-          );
-        } on PostgrestException catch (e) {
-          if (!_missingFunction(e)) rethrow;
-          // Older server: the plain feedback row.
-          await _c.from('feedback').insert({
-            'offer_id': offerId,
-            'talked': outcome != CallOutcome.noTalk,
-            if (outcome == CallOutcome.good) 'rating': 'good',
-            if (outcome == CallOutcome.notSoon) 'rating': 'notReally',
-          });
-        }
-      });
+  Future<void> afterCall(
+    String offerId, {
+    required int days,
+    required bool talked,
+  }) => _guard(() async {
+    try {
+      await _c.rpc(
+        'after_call',
+        params: {'p_offer': offerId, 'p_days': days, 'p_talked': talked},
+      );
+    } on PostgrestException catch (e) {
+      if (!_missingFunction(e)) rethrow;
+      // Older server: the closest old answer.
+      await _c.rpc(
+        'call_feedback',
+        params: {
+          'p_offer': offerId,
+          'p_result': !talked
+              ? 'no_talk'
+              : days >= 7
+              ? 'not_soon'
+              : 'good',
+        },
+      );
+    }
+  });
 
   @override
   Future<String?> getMyPhone() => _guard(() async {

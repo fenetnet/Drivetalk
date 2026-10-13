@@ -3423,6 +3423,48 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'זה בגלל שעוד לא אישרת את {name} ברשימה שלך. אחרי האישור אפשר לדבר מיד.'**
   String freeNotNowMine(String name);
+
+  /// No description provided for @afterCallTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי להציע לך שוב את {name}?'**
+  String afterCallTitle(String name);
+
+  /// No description provided for @afterCallNote.
+  ///
+  /// In he, this message translates to:
+  /// **'בינתיים אפשר תמיד ללחוץ על {name} ולשאול בעצמך.'**
+  String afterCallNote(String name);
+
+  /// No description provided for @afterCallAny.
+  ///
+  /// In he, this message translates to:
+  /// **'בכל זמן'**
+  String get afterCallAny;
+
+  /// No description provided for @afterCallTomorrow.
+  ///
+  /// In he, this message translates to:
+  /// **'מחר'**
+  String get afterCallTomorrow;
+
+  /// No description provided for @afterCall3.
+  ///
+  /// In he, this message translates to:
+  /// **'בעוד 3 ימים'**
+  String get afterCall3;
+
+  /// No description provided for @afterCallWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'בעוד שבוע'**
+  String get afterCallWeek;
+
+  /// No description provided for @afterCallNoTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לדבר'**
+  String get afterCallNoTalk;
 }
 
 class _AppLocalizationsDelegate

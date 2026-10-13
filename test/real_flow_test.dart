@@ -396,9 +396,9 @@ void main() {
 
       me.c.finishCall();
       expect(me.s.callStage, CallStage.feedback);
-      await me.c.sendOutcome(CallOutcome.good);
+      await me.c.afterCall(0);
       expect(me.s.callStage, CallStage.none);
-      expect(server.feedback.single['outcome'], 'good');
+      expect(server.feedback.single['talked'], isTrue);
     },
   );
 
@@ -478,7 +478,7 @@ void main() {
     await pump();
     expect(me.s.callStage, CallStage.waitingForTheirCall);
     me.c.finishCall();
-    await me.c.sendOutcome(CallOutcome.good);
+    await me.c.afterCall(0);
     now = now.add(const Duration(seconds: 16));
     await third.c.refresh();
     expect(currentOffer(third.s, now), isNotNull, reason: 'call over → next');
@@ -1219,9 +1219,13 @@ void main() {
       await me.c.respond(currentOffer(me.s, now)!, accept: true);
       await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
       await me.c.refresh();
-      expect(me.s.snapshot!.lastTalk[yoniId], isNull, reason: 'yes ≠ talked');
+      expect(
+        me.s.snapshot!.lastTalk[yoniId],
+        isNotNull,
+        reason: 'a call counts as a talk right away (D-108)',
+      );
       me.c.finishCall();
-      await me.c.sendOutcome(CallOutcome.good);
+      await me.c.afterCall(0);
       await me.c.refresh();
       expect(me.s.snapshot!.lastTalk[yoniId], isNotNull);
     });
@@ -1291,7 +1295,7 @@ void main() {
       await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
       await me.c.refresh();
       me.c.finishCall();
-      await me.c.sendOutcome(CallOutcome.good);
+      await me.c.afterCall(0);
       await me.c.refresh();
       expect(me.s.snapshot!.weekAt(now), (1, 1));
       expect(me.s.snapshot!.weekAt(now.add(const Duration(days: 8))), (0, 0));
@@ -1327,42 +1331,45 @@ void main() {
     dad.dispose();
   });
 
-  test('only real talks count; "not soon" pauses the pair quietly', () async {
-    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-    Future<void> talk(CallOutcome outcome) async {
+  test(
+    '"we didn\'t talk" takes it back; "in a week" pauses the pair',
+    () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      Future<void> talk(int days, {bool talked = true}) async {
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        await me.c.respond(currentOffer(me.s, now)!, accept: true);
+        await yoni.c.refresh();
+        await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+        await me.c.refresh();
+        await pump();
+        me.c.finishCall();
+        await me.c.afterCall(days, talked: talked);
+        yoni.c.finishCall();
+        await yoni.c.afterCall(days, talked: talked);
+        await me.c.refresh();
+      }
+
+      await talk(0, talked: false);
+      expect(me.s.snapshot!.weekAt(now), (0, 0), reason: 'two yeses ≠ a talk');
+      now = now.add(const Duration(minutes: 31));
+      await talk(7);
+      expect(me.s.snapshot!.weekAt(now), (1, 1));
+      // An hour later both are free again: not offered (paused for a while).
+      now = now.add(const Duration(hours: 1));
       await me.c.startAvailability(AvailabilityMode.free, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
-      await me.c.respond(currentOffer(me.s, now)!, accept: true);
-      await yoni.c.refresh();
-      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      expect(currentOffer(me.s, now), isNull);
+      // After a week, again.
+      now = now.add(const Duration(days: 8));
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
-      await pump();
-      me.c.finishCall();
-      await me.c.sendOutcome(outcome);
-      yoni.c.finishCall();
-      await yoni.c.sendOutcome(outcome);
-      await me.c.refresh();
-    }
-
-    await talk(CallOutcome.noTalk);
-    expect(me.s.snapshot!.weekAt(now), (0, 0), reason: 'two yeses ≠ a talk');
-    now = now.add(const Duration(minutes: 31));
-    await talk(CallOutcome.notSoon);
-    expect(me.s.snapshot!.weekAt(now), (1, 1));
-    // An hour later both are free again: not offered (paused for a while).
-    now = now.add(const Duration(hours: 1));
-    await me.c.startAvailability(AvailabilityMode.free, 30);
-    await yoni.c.startAvailability(AvailabilityMode.free, 30);
-    await me.c.refresh();
-    expect(currentOffer(me.s, now), isNull);
-    // After a week, again.
-    now = now.add(const Duration(days: 8));
-    await me.c.startAvailability(AvailabilityMode.free, 30);
-    await yoni.c.startAvailability(AvailabilityMode.free, 30);
-    await me.c.refresh();
-    expect(currentOffer(me.s, now), isNotNull);
-  });
+      expect(currentOffer(me.s, now), isNotNull);
+    },
+  );
 
   test('a newer version is announced (and only a newer one)', () async {
     await connect();
@@ -1380,7 +1387,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 32)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 33)'));
     });
 
     test(
@@ -1770,6 +1777,45 @@ void main() {
         isTrue,
       );
     });
+
+    test(
+      'after a call: 3 quiet days unless I choose otherwise (D-108)',
+      () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        Future<void> callAndSkip() async {
+          await me.c.startAvailability(AvailabilityMode.free, 30);
+          await yoni.c.startAvailability(AvailabilityMode.free, 30);
+          await me.c.refresh();
+          await me.c.respond(currentOffer(me.s, now)!, accept: true);
+          await yoni.c.refresh();
+          await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+          await me.c.refresh();
+          await pump();
+          me.c.finishCall();
+          me.c.skipFeedback();
+          yoni.c.finishCall();
+          yoni.c.skipFeedback();
+        }
+
+        await callAndSkip();
+        await me.c.refresh();
+        expect(me.s.snapshot!.weekAt(now), (1, 1), reason: 'a call is a talk');
+        now = now.add(const Duration(days: 2));
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        expect(currentOffer(me.s, now), isNull, reason: 'paused 3 days');
+        // Tapping still asks.
+        final yoniP = me.s.snapshot!.friend(yoni.backend.userId!)!;
+        expect(await me.c.askFriend(yoniP), isTrue);
+        await me.c.cancelWaiting(waitingOffer(me.s, now)!);
+        now = now.add(const Duration(days: 1, minutes: 1));
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        expect(currentOffer(me.s, now), isNotNull, reason: 'after 3 days');
+      },
+    );
 
     test('asking when not free is refused clearly', () async {
       await connect();

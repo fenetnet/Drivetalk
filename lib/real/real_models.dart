@@ -473,7 +473,6 @@ class TalkIntent {
 enum TalkIntentSpan { today, week, always }
 
 /// After a call: it was good / talked but not again soon / didn't talk.
-enum CallOutcome { good, notSoon, noTalk }
 
 /// The server's reply to "talk?" (yes/no).
 class OfferAnswer {

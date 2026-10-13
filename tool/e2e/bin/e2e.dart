@@ -1805,8 +1805,8 @@ Future<void> main() async {
   await calmAndPrivate();
 
   check(
-    await eve.rpc('schema_version') == 32,
-    'the server says its version (32)',
+    await eve.rpc('schema_version') == 33,
+    'the server says its version (33)',
   );
 
   // --- profile photos: private, friends only
@@ -2231,6 +2231,79 @@ Future<void> calmAndPrivate() async {
     await c.rpc('clear_availability');
   }
 
+  // --- after a call: when to suggest them again (D-108)
+  final ron = await newUser('רון', 'male');
+  final tal = await newUser('טל', 'female');
+  await befriend(ron, tal);
+  await free(ron);
+  await free(tal);
+  var call = pendingOffers(await rows(ron, 'match_offers')).single;
+  await ron.rpc(
+    'answer_offer',
+    params: {'p_offer': call['id'], 'p_accept': true},
+  );
+  await tal.rpc(
+    'answer_offer',
+    params: {'p_offer': call['id'], 'p_accept': true},
+  );
+  call = (await rows(
+    ron,
+    'match_offers',
+  )).firstWhere((o) => o['id'] == call['id']);
+  check(call['talked'] == true, 'a call counts as a talk right away');
+  String pair(String a, String b) =>
+      "((from_user = '$a' and to_user = '$b') or (from_user = '$b' and to_user = '$a'))";
+  check(
+    await dbCount(
+          "select count(*) from pair_snoozes where ${pair(uid(ron), uid(tal))} "
+          "and until > now() + interval '2 days 23 hours'",
+        ) ==
+        2,
+    'after a call: 3 quiet days for the pair (each side)',
+  );
+  await ron.rpc(
+    'after_call',
+    params: {'p_offer': call['id'], 'p_days': 0, 'p_talked': true},
+  );
+  await tal.rpc(
+    'after_call',
+    params: {'p_offer': call['id'], 'p_days': 7, 'p_talked': false},
+  );
+  check(
+    (await rows(
+          ron,
+          'match_offers',
+        )).firstWhere((o) => o['id'] == call['id'])['talked'] ==
+        false,
+    '"we didn\'t manage to talk" takes the talk back',
+  );
+  check(
+    await dbCount(
+          "select count(*) from pair_snoozes where from_user = '${uid(ron)}' "
+          "and to_user = '${uid(tal)}'",
+        ) ==
+        0,
+    '"any time" removes my pause',
+  );
+  // The longer one wins: Tal asked for a week → no automatic question.
+  await dbExec(
+    "update match_offers set accepted_at = accepted_at - interval '1 hour' "
+    "where id = '${call['id']}'",
+  );
+  await skipQuietGap();
+  await ron.rpc('nudge_offers');
+  check(
+    pendingOffers(await rows(ron, 'match_offers')).isEmpty,
+    'a pause by either side stops the automatic suggestions',
+  );
+  check(
+    await ron.rpc('ask_friend', params: {'p_user': uid(tal)}) == 'asked',
+    'during a pause, tapping still asks',
+  );
+  for (final c in [ron, tal]) {
+    await c.rpc('clear_availability');
+  }
+
   // --- crash notes: short, only the owner reads them
   await yael.rpc(
     'report_crash',
@@ -2259,7 +2332,21 @@ Future<void> calmAndPrivate() async {
   for (final c in [yael, omer]) {
     await c.rpc('clear_availability');
   }
-  for (final c in [ana, ben, gal, dov, eli, hila, yael, omer, kim, lev, bg]) {
+  for (final c in [
+    ana,
+    ben,
+    gal,
+    dov,
+    eli,
+    hila,
+    yael,
+    omer,
+    kim,
+    lev,
+    ron,
+    tal,
+    bg,
+  ]) {
     await c.dispose();
   }
 }

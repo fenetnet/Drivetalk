@@ -333,7 +333,21 @@ class RealFeedbackScreen extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final call = s.call;
+    final name = call?.other.name ?? '';
+    Widget choice(String label, int days, {bool main = false}) => SizedBox(
+      height: 60,
+      child: main
+          ? FilledButton(
+              onPressed: () => c.afterCall(days),
+              child: Text(label, style: const TextStyle(fontSize: 18)),
+            )
+          : OutlinedButton(
+              onPressed: () => c.afterCall(days),
+              child: Text(label, style: const TextStyle(fontSize: 18)),
+            ),
+    );
     return MomentLayout(
+      // Skipping keeps the usual 3 quiet days.
       header: Align(
         alignment: AlignmentDirectional.centerEnd,
         child: TextButton(onPressed: c.skipFeedback, child: Text(l.skip)),
@@ -342,75 +356,31 @@ class RealFeedbackScreen extends ConsumerWidget {
         children: [
           if (call != null) HeroAvatar(person: call.other.toPerson()),
           const SizedBox(height: 28),
-          MomentText(l.outcomeQuestion, size: 30),
+          MomentText(l.afterCallTitle(name), size: 28),
+          const SizedBox(height: 8),
+          MomentText(l.afterCallNote(name), size: 16, soft: true),
         ],
       ),
       actions: [
         Row(
           children: [
-            Expanded(
-              child: _RatingTile(
-                label: l.outcomeGood,
-                icon: Icons.sentiment_very_satisfied_rounded,
-                onTap: () => c.sendOutcome(CallOutcome.good),
-              ),
-            ),
+            Expanded(child: choice(l.afterCallAny, 0)),
             const SizedBox(width: 10),
-            Expanded(
-              child: _RatingTile(
-                label: l.outcomeNotSoon,
-                icon: Icons.snooze_rounded,
-                onTap: () => c.sendOutcome(CallOutcome.notSoon),
-              ),
-            ),
+            Expanded(child: choice(l.afterCallTomorrow, 1)),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(child: choice(l.afterCall3, 3, main: true)),
+            const SizedBox(width: 10),
+            Expanded(child: choice(l.afterCallWeek, 7)),
           ],
         ),
         TextButton(
-          onPressed: () => c.sendOutcome(CallOutcome.noTalk),
-          child: Text(l.outcomeNoTalk),
+          onPressed: () => c.afterCall(0, talked: false),
+          child: Text(l.afterCallNoTalk),
         ),
       ],
-    );
-  }
-}
-
-class _RatingTile extends StatelessWidget {
-  const _RatingTile({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
-      elevation: 2,
-      shadowColor: const Color(0x221565C0),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(24),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          child: Column(
-            children: [
-              Icon(icon, size: 40, color: AppColors.terracotta),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

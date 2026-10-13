@@ -81,12 +81,6 @@ class MemoryServer {
     snoozes['$y|$x'],
   ].any((u) => u != null && now().isBefore(u));
 
-  /// [from] asked not to be offered [to] again soon.
-  bool _snoozedBy(String from, String to) {
-    final u = snoozes['$from|$to'];
-    return u != null && now().isBefore(u);
-  }
-
   /// "from|to" → (created, until or null).
   final intents = <String, (DateTime, DateTime?)>{};
 
@@ -179,8 +173,7 @@ class MemoryServer {
         anonymous.contains(user) ||
         anonymous.contains(me) ||
         pairPending(me, user) ||
-        ratingOf(user, me) == 0 ||
-        _snoozedBy(user, me)) {
+        ratingOf(user, me) == 0) {
       return 'not_free';
     }
     if (phones[me] == null && phones[user] == null) return 'no_number';
@@ -194,6 +187,7 @@ class MemoryServer {
           o.b == pair[1] &&
           ((o.status == OfferStatus.accepted &&
                   o.acceptedAt != null &&
+                  !(o.endedA && o.endedB) &&
                   t.difference(o.acceptedAt!) < const Duration(minutes: 30)) ||
               // They already said no to us this time.
               (o.status == OfferStatus.declined &&
@@ -437,6 +431,7 @@ class MemoryServer {
           ..aAccepted = true
           ..bAccepted = true
           ..acceptedAt = since;
+        _accepted(offers[id]!);
       }
       return;
     }
@@ -509,8 +504,22 @@ class MemoryServer {
     o
       ..status = OfferStatus.cancelled
       ..updatedAt = now();
+    // Cancelled before it began: no pause.
+    snoozes
+      ..remove('${o.a}|${o.b}')
+      ..remove('${o.b}|${o.a}');
     _changed();
     return true;
+  }
+
+  /// A call happened: a talk, and 3 quiet days for the pair (D-108).
+  void _accepted(_Offer o) {
+    o.talked ??= true;
+    final until = now().add(const Duration(days: 3));
+    for (final k in ['${o.a}|${o.b}', '${o.b}|${o.a}']) {
+      final cur = snoozes[k];
+      if (cur == null || cur.isBefore(until)) snoozes[k] = until;
+    }
   }
 
   /// The background calls of the driving service (device token only).
@@ -1018,6 +1027,7 @@ class MemoryRealBackend implements RealBackend {
         ..caller = onlyIShare ? other : me
         ..acceptedAt = server.now()
         ..notBefore = server.now();
+      server._accepted(o);
       for (final x in server.offers.values) {
         if (x.id != o.id &&
             x.status == OfferStatus.pending &&
@@ -1096,7 +1106,11 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<void> sendCallOutcome(String offerId, CallOutcome outcome) async {
+  Future<void> afterCall(
+    String offerId, {
+    required int days,
+    required bool talked,
+  }) async {
     final me = _uid;
     if (offline) throw const RealBackendException('offline');
     final o = server.offers[offerId];
@@ -1110,18 +1124,16 @@ class MemoryRealBackend implements RealBackend {
     server.feedback.add({
       'user': me,
       'offer': o.id,
-      'talked': outcome != CallOutcome.noTalk,
-      'outcome': outcome.name,
+      'talked': talked,
+      'days': days,
     });
-    if (outcome != CallOutcome.noTalk) {
-      o.talked = true;
-    } else {
-      o.talked ??= false;
-    }
+    o.talked = talked;
     if (o.a == me) o.endedA = true;
     if (o.b == me) o.endedB = true;
-    if (outcome == CallOutcome.notSoon) {
-      server.snoozes['$me|$other'] = server.now().add(const Duration(days: 7));
+    if (days == 0) {
+      server.snoozes.remove('$me|$other');
+    } else {
+      server.snoozes['$me|$other'] = server.now().add(Duration(days: days));
     }
     o.updatedAt = server.now();
     server._changed();

@@ -64,7 +64,13 @@ abstract class RealBackend {
 
   /// After a call (also ends it for me). "Not soon" quietly pauses the
   /// pair for a while; "no talk" doesn't count as a talk.
-  Future<void> sendCallOutcome(String offerId, CallOutcome outcome);
+  /// After a call: when to suggest them again (0 = any time; the longer
+  /// of both sides wins) and whether we really talked (D-108).
+  Future<void> afterCall(
+    String offerId, {
+    required int days,
+    required bool talked,
+  });
 
   /// My phone number for regular calls (null = not shared).
   Future<String?> getMyPhone();

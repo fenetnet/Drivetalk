@@ -1127,5 +1127,26 @@
         "type": "String"
       }
     }
-  }
+  },
+  "afterCallTitle": "מתי להציע לך שוב את {name}?",
+  "@afterCallTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterCallNote": "בינתיים אפשר תמיד ללחוץ על {name} ולשאול בעצמך.",
+  "@afterCallNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterCallAny": "בכל זמן",
+  "afterCallTomorrow": "מחר",
+  "afterCall3": "בעוד 3 ימים",
+  "afterCallWeek": "בעוד שבוע",
+  "afterCallNoTalk": "לא הצלחנו לדבר"
 }
