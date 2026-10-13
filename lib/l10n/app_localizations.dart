@@ -3417,6 +3417,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.'**
   String get freeNotNowBody;
+
+  /// No description provided for @freeNotNowMine.
+  ///
+  /// In he, this message translates to:
+  /// **'זה בגלל שעוד לא אישרת את {name} ברשימה שלך. אחרי האישור אפשר לדבר מיד.'**
+  String freeNotNowMine(String name);
 }
 
 class _AppLocalizationsDelegate

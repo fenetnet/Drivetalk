@@ -2016,4 +2016,9 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get freeNotNowBody =>
       'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.';
+
+  @override
+  String freeNotNowMine(String name) {
+    return 'זה בגלל שעוד לא אישרת את $name ברשימה שלך. אחרי האישור אפשר לדבר מיד.';
+  }
 }

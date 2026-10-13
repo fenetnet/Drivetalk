@@ -1751,6 +1751,26 @@ void main() {
       expect(showDriverScreen(me.s, now), isTrue);
     });
 
+    test('what I pressed never stops me from tapping a friend', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await me.c.refresh();
+      // I said "not now" to the app's suggestion…
+      final o = currentOffer(me.s, now)!;
+      await me.c.respond(o, accept: false);
+      // …and I don't want him suggested automatically.
+      await me.c.setRating(me.s.snapshot!.friend(yoni.backend.userId!)!, 0);
+      await me.c.refresh();
+      expect(askableFriends(me.s, now).map((f) => f.$1.id), [
+        yoni.backend.userId,
+      ], reason: 'my own choices only stop the automatic suggestions');
+      expect(
+        await me.c.askFriend(me.s.snapshot!.friend(yoni.backend.userId!)!),
+        isTrue,
+      );
+    });
+
     test('asking when not free is refused clearly', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);

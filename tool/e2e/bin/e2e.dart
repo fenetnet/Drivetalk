@@ -2223,6 +2223,10 @@ Future<void> calmAndPrivate() async {
     await kim.rpc('ask_friend', params: {'p_user': uid(lev)}) == 'not_now',
     'and tapping them doesn\'t ask again',
   );
+  check(
+    await lev.rpc('ask_friend', params: {'p_user': uid(kim)}) == 'asked',
+    'my own "no" never stops me from tapping them myself',
+  );
   for (final c in [kim, lev]) {
     await c.rpc('clear_availability');
   }

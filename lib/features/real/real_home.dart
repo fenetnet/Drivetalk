@@ -493,7 +493,7 @@ class _FreeNowCard extends ConsumerWidget {
                         onTap: inCall
                             ? null
                             : faded
-                            ? () => _notNowNote(context, p)
+                            ? () => _notNowNote(context, ref, p)
                             : () => askFreeFriend(context, ref, p),
                         child: Column(
                           children: [
@@ -761,15 +761,30 @@ Future<void> askFreeFriend(
 
 /// A free friend who can't be asked right now: say so gently, never why
 /// (it may be their own choice).
-Future<void> _notNowNote(BuildContext context, RealProfile p) {
+/// If it's because of me (they added me and I haven't kept them yet),
+/// I can undo it right there.
+Future<void> _notNowNote(BuildContext context, WidgetRef ref, RealProfile p) {
   final l = context.l10n;
+  final c = ref.read(realProvider.notifier);
+  final mine =
+      ref.read(realProvider).snapshot?.status.pending.contains(p.id) ?? false;
   return showDialog<void>(
     context: context,
     builder: (d) => AlertDialog(
       title: Text(l.freeNotNowTitle(p.name)),
-      content: Text(l.freeNotNowBody),
+      content: Text(mine ? l.freeNotNowMine(p.name) : l.freeNotNowBody),
       actions: [
-        FilledButton(onPressed: () => Navigator.pop(d), child: Text(l.close)),
+        if (mine) ...[
+          TextButton(onPressed: () => Navigator.pop(d), child: Text(l.close)),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(d);
+              c.approveFriend(p);
+            },
+            child: Text(l.pendingKeep),
+          ),
+        ] else
+          FilledButton(onPressed: () => Navigator.pop(d), child: Text(l.close)),
       ],
     ),
   );
