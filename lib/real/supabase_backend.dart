@@ -219,6 +219,13 @@ class SupabaseRealBackend implements RealBackend {
             (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // My pauses after calls (optional on an older server).
+      _c
+          .rpc('my_pauses')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -297,6 +304,13 @@ class SupabaseRealBackend implements RealBackend {
       quickTheirs: {
         for (final r in results[12])
           if (r['theirs'] == true) r['user_id'] as String,
+      },
+      pauses: {
+        for (final r in results[13])
+          r['user_id'] as String: (
+            until: _time(r['until']),
+            chosen: r['chosen'] == true,
+          ),
       },
       askable: results[10].firstOrNull?['old'] == true
           ? null
@@ -647,6 +661,10 @@ class SupabaseRealBackend implements RealBackend {
       params: {'p_friend': friendId, 'p_rating': rating},
     ),
   );
+
+  @override
+  Future<void> clearPause(String userId) =>
+      _guard(() => _c.rpc('clear_pause', params: {'p_user': userId}));
 
   @override
   Future<void> setQuick(String userId, bool on) =>

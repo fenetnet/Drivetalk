@@ -296,6 +296,7 @@ class RealSnapshot {
     this.askable,
     this.quickMine = const {},
     this.quickTheirs = const {},
+    this.pauses = const {},
   });
 
   /// Free friends I can really ask now (D-107). null = unknown (an older
@@ -306,6 +307,10 @@ class RealSnapshot {
   /// group), and friends who turned it on for me.
   final Set<String> quickMine;
   final Set<String> quickTheirs;
+
+  /// My pauses after a call (D-108/D-113): friend id → until, and whether
+  /// I chose it (else the automatic 3 days).
+  final Map<String, ({DateTime until, bool chosen})> pauses;
 
   /// Both sides turned it on: the call can start by itself.
   bool quickBoth(String id) =>
@@ -398,6 +403,7 @@ class RealSnapshot {
     askable: askable,
     quickMine: quickMine,
     quickTheirs: quickTheirs,
+    pauses: pauses,
   );
 
   /// Same snapshot with downloaded photos filled in (by user id).

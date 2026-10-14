@@ -2240,4 +2240,43 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get quickTheyWantChip => 'רוצה חיבור מהיר';
+
+  @override
+  String pauseTitle(String when) {
+    return 'הצעות מושהות $when';
+  }
+
+  @override
+  String pauseBody(String name) {
+    return 'אפשר תמיד ללחוץ על $name ולשאול בעצמך.';
+  }
+
+  @override
+  String get pauseQuickNote => 'חיבור מהיר עובד גם בזמן ההשהיה.';
+
+  @override
+  String get pauseCancel => 'לבטל';
+
+  @override
+  String pauseChip(String when) {
+    return 'מושהה $when';
+  }
+
+  @override
+  String pauseUntilTime(String time) {
+    return 'עד $time';
+  }
+
+  @override
+  String get pauseUntilTomorrow => 'עד מחר';
+
+  @override
+  String pauseUntilDay(String day) {
+    return 'עד יום $day';
+  }
+
+  @override
+  String pauseUntilDate(String date) {
+    return 'עד $date';
+  }
 }

@@ -211,6 +211,13 @@ class RealPeopleScreen extends ConsumerWidget {
               }),
             },
             RatingStars(rating: snap.ratingOf(f.id)),
+            // My pause after a call (D-113): easy to keep track of.
+            if (snap.pauses[f.id] case final p? when p.until.isAfter(now))
+              StatusLine(
+                icon: Icons.pause_circle_rounded,
+                text: l.pauseChip(pauseWhen(l, p.until, now)),
+                color: AppColors.inkSoft,
+              ),
             // They turned quick connect on for me; I haven't (D-112).
             if (snap.quickTheirs.contains(f.id) &&
                 !snap.quickMine.contains(f.id))
@@ -362,6 +369,7 @@ class RealPeopleScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               // The easiest way to talk while driving (D-112): up front.
               QuickSwitch(friend: f),
+              PauseTile(friend: f),
               const Divider(),
               RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
               const Divider(),

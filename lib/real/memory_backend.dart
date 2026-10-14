@@ -87,6 +87,19 @@ class MemoryServer {
     snoozes['$y|$x'],
   ].any((u) => u != null && now().isBefore(u));
 
+  /// Pauses someone chose after a call ("from|to"); the rest are automatic.
+  final chosenSnoozes = <String>{};
+
+  /// Quick-connect friends: only a chosen pause stops them (D-113).
+  bool _snoozedForOffers(String x, String y, {required bool quick}) => !quick
+      ? _snoozed(x, y)
+      : ['$x|$y', '$y|$x'].any(
+          (k) =>
+              chosenSnoozes.contains(k) &&
+              snoozes[k] != null &&
+              now().isBefore(snoozes[k]!),
+        );
+
   /// "from|to" → (created, until or null).
   final intents = <String, (DateTime, DateTime?)>{};
 
@@ -342,7 +355,7 @@ class MemoryServer {
             _activeAvail(other) &&
             connected(user, other) &&
             !blockedBetween(user, other) &&
-            !_snoozed(user, other) &&
+            !_snoozedForOffers(user, other, quick: mutualQuick(other)) &&
             !pairPending(user, other) &&
             ratingOf(user, other) > 0 &&
             ratingOf(other, user) > 0)
@@ -529,7 +542,10 @@ class MemoryServer {
     final until = now().add(const Duration(days: 3));
     for (final k in ['${o.a}|${o.b}', '${o.b}|${o.a}']) {
       final cur = snoozes[k];
-      if (cur == null || cur.isBefore(until)) snoozes[k] = until;
+      if (cur == null || cur.isBefore(until)) {
+        snoozes[k] = until;
+        chosenSnoozes.remove(k);
+      }
     }
   }
 
@@ -771,6 +787,15 @@ class MemoryRealBackend implements RealBackend {
       quickTheirs: {
         for (final f in friends)
           if (server._isQuick(f.id, me)) f.id,
+      },
+      pauses: {
+        for (final f in friends)
+          if (server.snoozes['$me|${f.id}'] case final u?
+              when server.now().isBefore(u))
+            f.id: (
+              until: u,
+              chosen: server.chosenSnoozes.contains('$me|${f.id}'),
+            ),
       },
       talks: [
         for (final o
@@ -1151,8 +1176,10 @@ class MemoryRealBackend implements RealBackend {
     if (o.b == me) o.endedB = true;
     if (days == 0) {
       server.snoozes.remove('$me|$other');
+      server.chosenSnoozes.remove('$me|$other');
     } else {
       server.snoozes['$me|$other'] = server.now().add(Duration(days: days));
+      server.chosenSnoozes.add('$me|$other');
     }
     o.updatedAt = server.now();
     server._changed();
@@ -1282,6 +1309,18 @@ class MemoryRealBackend implements RealBackend {
       throw const RealBackendException('not_connected');
     }
     server.ratings['$me|$friendId'] = rating;
+    server._createOffersFor(me);
+    server._changed();
+  }
+
+  @override
+  Future<void> clearPause(String userId) async {
+    final me = _uid;
+    server.snoozes.remove('$me|$userId');
+    server.chosenSnoozes.remove('$me|$userId');
+    if (!server.chosenSnoozes.contains('$userId|$me')) {
+      server.snoozes.remove('$userId|$me');
+    }
     server._createOffersFor(me);
     server._changed();
   }

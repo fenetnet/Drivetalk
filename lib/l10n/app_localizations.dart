@@ -3777,6 +3777,60 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רוצה חיבור מהיר'**
   String get quickTheyWantChip;
+
+  /// Friend card: my pause for this friend
+  ///
+  /// In he, this message translates to:
+  /// **'הצעות מושהות {when}'**
+  String pauseTitle(String when);
+
+  /// pauseBody
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר תמיד ללחוץ על {name} ולשאול בעצמך.'**
+  String pauseBody(String name);
+
+  /// pauseQuickNote
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר עובד גם בזמן ההשהיה.'**
+  String get pauseQuickNote;
+
+  /// pauseCancel
+  ///
+  /// In he, this message translates to:
+  /// **'לבטל'**
+  String get pauseCancel;
+
+  /// Friend list: suggestions paused
+  ///
+  /// In he, this message translates to:
+  /// **'מושהה {when}'**
+  String pauseChip(String when);
+
+  /// pauseUntilTime
+  ///
+  /// In he, this message translates to:
+  /// **'עד {time}'**
+  String pauseUntilTime(String time);
+
+  /// pauseUntilTomorrow
+  ///
+  /// In he, this message translates to:
+  /// **'עד מחר'**
+  String get pauseUntilTomorrow;
+
+  /// pauseUntilDay
+  ///
+  /// In he, this message translates to:
+  /// **'עד יום {day}'**
+  String pauseUntilDay(String day);
+
+  /// pause until a date
+  ///
+  /// In he, this message translates to:
+  /// **'עד {date}'**
+  String pauseUntilDate(String date);
 }
 
 class _AppLocalizationsDelegate

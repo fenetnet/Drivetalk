@@ -425,6 +425,27 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('a friend card shows my pause, and "cancel" removes it', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t);
+    final yoni = me.read(realProvider).snapshot!.friends.single;
+    final myId = friend.read(realProvider).snapshot!.friends.single.id;
+    server.snoozes['$myId|${yoni.id}'] = now.add(const Duration(days: 3));
+    await t.runAsync(() => me.read(realProvider.notifier).refresh());
+    await _show(t, me, PauseTile(friend: yoni));
+    expect(find.text('הצעות מושהות עד יום ה׳'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.tap(find.text('לבטל'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('לבטל'), findsNothing);
+    expect(server.snoozes, isEmpty);
+    await _close(t);
+  });
+
   testWidgets('during a call: to the main screen and back', (t) async {
     final (me, friend) = await twoFriends(t);
     await t.runAsync(() async {

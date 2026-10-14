@@ -1808,10 +1808,11 @@ Future<void> main() async {
   await securityFixes(eve);
   await answerFromNotification();
   await quickPerFriend(eve);
+  await quickAndPauses();
 
   check(
-    await eve.rpc('schema_version') == 37,
-    'the server says its version (37)',
+    await eve.rpc('schema_version') == 38,
+    'the server says its version (38)',
   );
 
   // --- profile photos: private, friends only
@@ -2751,6 +2752,95 @@ Future<void> quickPerFriend(SupabaseClient eve) async {
     'no longer friends → the switch is gone too',
   );
   for (final c in [qa, qb]) {
+    await c.dispose();
+  }
+}
+
+/// D-113: the automatic pause after a call doesn't stop quick connect; my
+/// pause shows on the friend's card and can be cancelled.
+Future<void> quickAndPauses() async {
+  final pa = await newUser('פזית', 'female');
+  final pb = await newUser('פנחס', 'male');
+  await befriend(pa, pb);
+  await free(pa);
+  await free(pb);
+  final first = pendingOffers(await rows(pa, 'match_offers')).single;
+  for (final c in [pa, pb]) {
+    await c.rpc(
+      'answer_offer',
+      params: {'p_offer': first['id'], 'p_accept': true},
+    );
+  }
+  final mine = List<Map<String, dynamic>>.from(await pa.rpc('my_pauses'));
+  check(
+    mine.length == 1 &&
+        mine.single['user_id'] == uid(pb) &&
+        mine.single['chosen'] == false,
+    'after a call: my automatic pause shows (3 days)',
+  );
+  for (final c in [pa, pb]) {
+    await c.rpc('end_call', params: {'p_offer': first['id']});
+    await c.rpc('clear_availability');
+  }
+  await dbExec(
+    "update match_offers set accepted_at = accepted_at - interval '1 hour', "
+    "created_at = created_at - interval '1 hour' where id = '${first['id']}'",
+  );
+  await pa.rpc('set_quick', params: {'p_user': uid(pb), 'p_on': true});
+  await pb.rpc('set_quick', params: {'p_user': uid(pa), 'p_on': true});
+  await free(pa);
+  await free(pb);
+  final quick = (await rows(
+    pa,
+    'match_offers',
+  )).where((o) => o['quick'] == true).toList();
+  check(quick.length == 1, 'quick connect works during the automatic pause');
+  for (final c in [pa, pb]) {
+    await c.rpc('clear_availability');
+  }
+  // A pause I chose ("in a week") stops it.
+  await pa.rpc(
+    'after_call',
+    params: {'p_offer': first['id'], 'p_days': 7, 'p_talked': true},
+  );
+  check(
+    List<Map<String, dynamic>>.from(
+          await pa.rpc('my_pauses'),
+        ).single['chosen'] ==
+        true,
+    '"in a week" is my choice',
+  );
+  await dbExec(
+    "delete from match_offers where quick and user_a in "
+    "('${uid(pa)}', '${uid(pb)}')",
+  );
+  await free(pa);
+  await free(pb);
+  check(
+    (await rows(
+      pa,
+      'match_offers',
+    )).where((o) => o['status'] == 'pending' || o['quick'] == true).isEmpty,
+    'a pause I chose stops quick connect too',
+  );
+  // "Cancel" on the card (nobody free now, so no new call starts at once).
+  for (final c in [pa, pb]) {
+    await c.rpc('clear_availability');
+  }
+  await pa.rpc('clear_pause', params: {'p_user': uid(pb)});
+  check(
+    List.from(await pa.rpc('my_pauses')).isEmpty &&
+        await dbCount(
+              "select count(*) from pair_snoozes where from_user in "
+              "('${uid(pa)}', '${uid(pb)}')",
+            ) ==
+            0,
+    '"cancel the pause" clears mine and the automatic one on their side',
+  );
+  for (final c in [pa, pb]) {
+    await c.rpc('clear_availability');
+  }
+  for (final c in [pa, pb]) {
     await c.dispose();
   }
 }

@@ -100,6 +100,9 @@ abstract class RealBackend {
   /// Quick connect with one friend (D-112).
   Future<void> setQuick(String userId, bool on);
 
+  /// Cancel my pause for a friend (and the automatic one on their side).
+  Future<void> clearPause(String userId);
+
   /// Hide my status from friends (and theirs from me).
   Future<void> setHideStatus(bool hide);
 

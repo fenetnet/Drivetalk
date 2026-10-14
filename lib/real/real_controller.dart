@@ -488,7 +488,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 37;
+const kRequiredSchema = 38;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -2463,6 +2463,12 @@ class RealController extends Notifier<RealState> {
   /// How much I want to talk with this friend: 0 (never offer) – 5 (first).
   Future<void> setRating(RealProfile friend, int rating) async {
     await _run(() => _backend.setRating(friend.id, rating.clamp(0, 5)));
+    await refresh();
+  }
+
+  /// "Cancel the pause" on a friend's card (D-113).
+  Future<void> clearPause(RealProfile friend) async {
+    await _run(() => _backend.clearPause(friend.id));
     await refresh();
   }
 

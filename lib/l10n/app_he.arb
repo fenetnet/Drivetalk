@@ -1415,5 +1415,71 @@
   "quickTheyWantChip": "רוצה חיבור מהיר",
   "@quickTheyWantChip": {
     "description": "Friend list: this friend turned quick connect on for me"
+  },
+  "pauseTitle": "הצעות מושהות {when}",
+  "@pauseTitle": {
+    "description": "Friend card: my pause for this friend",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseBody": "אפשר תמיד ללחוץ על {name} ולשאול בעצמך.",
+  "@pauseBody": {
+    "description": "pauseBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseQuickNote": "חיבור מהיר עובד גם בזמן ההשהיה.",
+  "@pauseQuickNote": {
+    "description": "pauseQuickNote"
+  },
+  "pauseCancel": "לבטל",
+  "@pauseCancel": {
+    "description": "pauseCancel"
+  },
+  "pauseChip": "מושהה {when}",
+  "@pauseChip": {
+    "description": "Friend list: suggestions paused",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilTime": "עד {time}",
+  "@pauseUntilTime": {
+    "description": "pauseUntilTime",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilTomorrow": "עד מחר",
+  "@pauseUntilTomorrow": {
+    "description": "pauseUntilTomorrow"
+  },
+  "pauseUntilDay": "עד יום {day}",
+  "@pauseUntilDay": {
+    "description": "pauseUntilDay",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilDate": "עד {date}",
+  "@pauseUntilDate": {
+    "description": "pause until a date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

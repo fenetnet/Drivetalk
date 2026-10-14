@@ -663,6 +663,62 @@ void main() {
     expect(waitingOffer(me.s, now), isNotNull, reason: 'the third "yes"');
   });
 
+  test('after a call: quick connect still works; my pause shows and can be '
+      'cancelled', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+    // A regular call → 3 automatic quiet days for the pair.
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    await me.c.respond(currentOffer(me.s, now)!, accept: true);
+    await yoni.c.refresh();
+    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+    await pump();
+    await me.c.refresh();
+    me.c.finishCall();
+    me.c.skipFeedback();
+    yoni.c.finishCall();
+    yoni.c.skipFeedback();
+    final yoniP = me.s.snapshot!.friends.single;
+    var p = me.s.snapshot!.pauses[yoniP.id];
+    expect(p?.chosen, isFalse, reason: 'the automatic 3 days');
+    // Quick connect on both sides: the automatic pause doesn't stop it.
+    await me.c.setQuick(yoniP, true);
+    await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+    now = now.add(const Duration(hours: 2));
+    await me.c.startAvailability(AvailabilityMode.driving, 30);
+    await yoni.c.startAvailability(AvailabilityMode.driving, 30);
+    await me.c.refresh();
+    await pump(20);
+    expect(me.s.call?.quick, isTrue, reason: 'quick connect despite the pause');
+    me.c.finishCall();
+    me.c.skipFeedback();
+    // "Cancel" on the card removes my pause (and the automatic one there).
+    await me.c.refresh();
+    expect(me.s.snapshot!.pauses, contains(yoniP.id));
+    await me.c.clearPause(yoniP);
+    expect(me.s.snapshot!.pauses, isEmpty);
+    expect(server.snoozes, isEmpty);
+  });
+
+  test('a pause I chose ("in a week") stops quick connect too', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+    final yoniP = me.s.snapshot!.friends.single;
+    await me.c.setQuick(yoniP, true);
+    await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+    server.snoozes['${me.backend.userId}|${yoniP.id}'] = now.add(
+      const Duration(days: 7),
+    );
+    server.chosenSnoozes.add('${me.backend.userId}|${yoniP.id}');
+    await me.c.startAvailability(AvailabilityMode.driving, 30);
+    await yoni.c.startAvailability(AvailabilityMode.driving, 30);
+    await me.c.refresh();
+    await pump(20);
+    expect(me.s.call, isNull);
+    expect(currentOffer(me.s, now), isNull);
+    expect(me.s.snapshot!.pauses[yoniP.id]?.chosen, isTrue);
+  });
+
   test('quick connect per friend: both turn it on → no question', () async {
     await connect(myPhone: '0521111111', yoniPhone: '0501234567');
     final yoniP = me.s.snapshot!.friends.single;
@@ -1518,7 +1574,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 37)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 38)'));
     });
 
     test(
