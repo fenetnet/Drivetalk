@@ -375,35 +375,47 @@ class RealSnapshot {
 
   RealAvailability? get mine => availability[me.id];
 
+  /// The same snapshot with other people in it — every other field kept
+  /// (one place, so a new field can't be dropped by a copy).
+  RealSnapshot _withPeople({
+    required RealProfile me,
+    required List<RealProfile> friends,
+  }) => RealSnapshot(
+    me: me,
+    friends: friends,
+    availability: availability,
+    offers: offers,
+    fetchedAt: fetchedAt,
+    circles: circles,
+    lastTalk: lastTalk,
+    talks: talks,
+    intents: intents,
+    ratings: ratings,
+    hidden: hidden,
+    inactiveDays: inactiveDays,
+    othersModes: othersModes,
+    status: status,
+    askable: askable,
+    quickMine: quickMine,
+    quickTheirs: quickTheirs,
+  );
+
   /// Same snapshot with downloaded photos filled in (by user id).
   RealSnapshot withPhotos(Map<String, Uint8List> photos) {
     RealProfile fill(RealProfile p) =>
         p.photoVersion > 0 && photos[p.id] != null
         ? p.withPhoto(photos[p.id])
         : p;
-    return RealSnapshot(
+    return _withPeople(
       me: fill(me),
       friends: [for (final f in friends) fill(f)],
-      availability: availability,
-      offers: offers,
-      fetchedAt: fetchedAt,
-      circles: circles,
-      lastTalk: lastTalk,
-      talks: talks,
-      intents: intents,
-      ratings: ratings,
-      hidden: hidden,
-      inactiveDays: inactiveDays,
-      othersModes: othersModes,
-      status: status,
-      askable: askable,
     );
   }
 
   /// Friends shown by the names saved in MY contacts (id → name).
   RealSnapshot withLocalNames(Map<String, String> names) {
     if (names.isEmpty) return this;
-    return RealSnapshot(
+    return _withPeople(
       me: me,
       friends: [
         for (final f in friends)
@@ -412,19 +424,6 @@ class RealSnapshot {
           else
             f,
       ]..sort((a, b) => a.name.compareTo(b.name)),
-      availability: availability,
-      offers: offers,
-      fetchedAt: fetchedAt,
-      circles: circles,
-      lastTalk: lastTalk,
-      talks: talks,
-      intents: intents,
-      ratings: ratings,
-      hidden: hidden,
-      inactiveDays: inactiveDays,
-      othersModes: othersModes,
-      status: status,
-      askable: askable,
     );
   }
 

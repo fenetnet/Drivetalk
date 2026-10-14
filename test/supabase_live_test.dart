@@ -79,6 +79,23 @@ void main() {
     await m.refresh();
     expect(me.read(realProvider).snapshot!.friends.single.name, 'יוני');
 
+    // Quick connect per friend (D-112): through the real server.
+    await m.setQuick(me.read(realProvider).snapshot!.friends.single, true);
+    expect(me.read(realProvider).lastError, isNull);
+    expect(me.read(realProvider).snapshot!.quickMine, hasLength(1));
+    await y.refresh();
+    expect(y.quickAsk?.name, 'נתנאל');
+    await y.setQuick(y.quickAsk!, true);
+    expect(
+      yoni
+          .read(realProvider)
+          .snapshot!
+          .quickBoth(me.read(realProvider).snapshot!.me.id),
+      isTrue,
+    );
+    await m.setQuick(me.read(realProvider).snapshot!.friends.single, false);
+    await y.setQuick(yoni.read(realProvider).snapshot!.friends.single, false);
+
     await m.startAvailability(AvailabilityMode.driving, 30);
     await y.startAvailability(AvailabilityMode.walking, 30);
     await m.refresh();

@@ -28,13 +28,3 @@ jobs:
           v=$(curl -fsS --retry 3 -X POST "$SUPABASE_URL/rest/v1/rpc/schema_version" \
             -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" -d '{}')
           echo "Server is awake (version $v)."
-          # Diagnostic (temporary): do the newest functions answer? Writes nothing.
-          for fn in quick_status set_quick device_calls device_answer; do
-            body='{}'
-            [ "$fn" = set_quick ] && body='{"p_user":"00000000-0000-0000-0000-000000000000","p_on":false}'
-            [ "$fn" = device_calls ] && body='{"p_token":"x"}'
-            [ "$fn" = device_answer ] && body='{"p_token":"x","p_offer":"00000000-0000-0000-0000-000000000000"}'
-            r=$(curl -sS -X POST "$SUPABASE_URL/rest/v1/rpc/$fn" -H "apikey: $SUPABASE_ANON_KEY" \
-              -H "Content-Type: application/json" -d "$body" -w " [HTTP %{http_code}]")
-            echo "$fn → $r"
-          done
