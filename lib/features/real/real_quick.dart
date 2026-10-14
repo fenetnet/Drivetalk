@@ -19,7 +19,8 @@ class QuickSwitch extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final snap = s.snapshot;
     final mine = snap?.quickMine.contains(friend.id) ?? false;
-    final both = snap?.quickBoth(friend.id) ?? false;
+    final theirs = snap?.quickTheirs.contains(friend.id) ?? false;
+    final both = mine && theirs;
     return SwitchListTile(
       secondary: const Icon(Icons.bolt_rounded, color: AppColors.terracotta),
       title: Text(
@@ -31,6 +32,8 @@ class QuickSwitch extends ConsumerWidget {
             ? l.quickBothBody
             : mine
             ? l.quickWaitingBody(friend.name)
+            : theirs
+            ? l.quickTheyWantBody(friend.name)
             : l.quickOffBody,
       ),
       value: mine,

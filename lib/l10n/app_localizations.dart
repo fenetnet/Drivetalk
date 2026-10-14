@@ -3765,6 +3765,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חיבור מהיר עם…'**
   String get quickPickTitle;
+
+  /// Switch subtitle: the friend turned it on, I did not
+  ///
+  /// In he, this message translates to:
+  /// **'{name} כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?'**
+  String quickTheyWantBody(String name);
+
+  /// Friend list: this friend turned quick connect on for me
+  ///
+  /// In he, this message translates to:
+  /// **'רוצה חיבור מהיר'**
+  String get quickTheyWantChip;
 }
 
 class _AppLocalizationsDelegate

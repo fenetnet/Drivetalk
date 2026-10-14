@@ -17,6 +17,7 @@ import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
 import 'package:drivetalk/real/real_controller.dart';
+import 'package:drivetalk/real/update_checker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,8 +36,13 @@ ProviderContainer _phone(
   MemoryServer server, {
   FakeDrivingDetector? driving,
   FakeContactsReader? contacts,
+  int? latestBuild,
 }) => ProviderContainer(
   overrides: [
+    if (latestBuild != null) ...[
+      appBuildProvider.overrideWithValue(10),
+      updateCheckerProvider.overrideWithValue(FakeUpdateChecker(latestBuild)),
+    ],
     realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
     realClockProvider.overrideWithValue(server.now),
     localStoreProvider.overrideWithValue(MemoryLocalStore()),
@@ -94,8 +100,9 @@ void main() {
   Future<(ProviderContainer, ProviderContainer)> twoFriends(
     WidgetTester t, {
     FakeDrivingDetector? driving,
+    int? latestBuild,
   }) async {
-    final me = _phone(server, driving: driving);
+    final me = _phone(server, driving: driving, latestBuild: latestBuild);
     final friend = _phone(server);
     _open.addAll([me, friend]);
     await t.runAsync(() async {
@@ -390,6 +397,30 @@ void main() {
       find.text('מופעל אצלך. יעבוד כשזה יופעל גם אצל יונתן־אלכסנדר.'),
       findsOneWidget,
     );
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('a quick-connect request shows even with "update available"', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t, latestBuild: 999);
+    await t.runAsync(() async {
+      await friend
+          .read(realProvider.notifier)
+          .setQuick(friend.read(realProvider).snapshot!.friends.single, true);
+      final c = me.read(realProvider.notifier);
+      await c.checkForUpdate(force: true);
+      await c.refresh();
+    });
+    expect(me.read(realProvider).newBuild, 999);
+    await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(
+      find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });

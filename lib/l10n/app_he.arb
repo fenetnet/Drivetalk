@@ -1402,5 +1402,18 @@
   "quickPickTitle": "חיבור מהיר עם…",
   "@quickPickTitle": {
     "description": "quickPickTitle"
+  },
+  "quickTheyWantBody": "{name} כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?",
+  "@quickTheyWantBody": {
+    "description": "Switch subtitle: the friend turned it on, I did not",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickTheyWantChip": "רוצה חיבור מהיר",
+  "@quickTheyWantChip": {
+    "description": "Friend list: this friend turned quick connect on for me"
   }
 }

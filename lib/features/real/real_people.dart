@@ -211,6 +211,15 @@ class RealPeopleScreen extends ConsumerWidget {
               }),
             },
             RatingStars(rating: snap.ratingOf(f.id)),
+            // They turned quick connect on for me; I haven't (D-112).
+            if (snap.quickTheirs.contains(f.id) &&
+                !snap.quickMine.contains(f.id))
+              StatusLine(
+                icon: Icons.bolt_rounded,
+                text: l.quickTheyWantChip,
+                color: AppColors.terracotta,
+                bold: true,
+              ),
           ],
         ),
         trailing: const Icon(Icons.more_vert_rounded),

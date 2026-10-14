@@ -293,6 +293,12 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
+                // A friend turned quick connect on for me (D-112): its
+                // own place, never hidden behind another card.
+                if (c.quickAsk case final f?) ...[
+                  const SizedBox(height: 16),
+                  QuickAskCard(friend: f),
+                ],
                 // At most ONE small card at a time (the most useful one).
                 if (_tipCard(s, c, now, snap) case final tip?) ...[
                   const SizedBox(height: 16),
@@ -332,8 +338,6 @@ Widget? _tipCard(
   // "Still free?" after a question I didn't answer — only here, in the app.
   if (myActiveAvailability(s, now)?.missed ?? false) return const _MissedCard();
   if (s.newBuild != null) return const _UpdateCard();
-  // A friend turned quick connect on for me (D-112).
-  if (c.quickAsk case final f?) return QuickAskCard(friend: f);
   if (s.driving.enabled && (snap?.status.autoMissed ?? 0) >= 2) {
     return const _AutoMissedCard();
   }

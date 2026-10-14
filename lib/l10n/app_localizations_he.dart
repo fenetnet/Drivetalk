@@ -2232,4 +2232,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get quickPickTitle => 'חיבור מהיר עם…';
+
+  @override
+  String quickTheyWantBody(String name) {
+    return '$name כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?';
+  }
+
+  @override
+  String get quickTheyWantChip => 'רוצה חיבור מהיר';
 }
