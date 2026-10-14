@@ -17,7 +17,8 @@ jobs:
     steps:
       - name: Ask the server its version
         env:
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          # Same default as lib/real/backend_config.dart (public address).
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || 'https://isjgrdiiawhyxzvzdkva.supabase.co' }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
