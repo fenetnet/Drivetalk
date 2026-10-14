@@ -1180,5 +1180,151 @@
         "type": "String"
       }
     }
+  },
+  "bgVoiceOffer": "ל{name} יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "@bgVoiceOffer": {
+    "description": "Spoken in the background (no voice answer possible there)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bgVoiceOfferAnon": "חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "@bgVoiceOfferAnon": {
+    "description": "Spoken in the background, names off"
+  },
+  "bgVoiceDirect": "{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "@bgVoiceDirect": {
+    "description": "Spoken in the background when a friend tapped me",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bgVoiceDirectAnon": "חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "@bgVoiceDirectAnon": {
+    "description": "Same, names off"
+  },
+  "notifPublicTalk": "מישהו פנוי לדבר עכשיו",
+  "@notifPublicTalk": {
+    "description": "Locked screen: an offer, without the name"
+  },
+  "answeredTheyCall": "שיחה מ{name} בדרך. הטלפון יצלצל.",
+  "@answeredTheyCall": {
+    "description": "After \"Talk\" from the notification: they call me",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredYouCall": "גם {name} רוצה לדבר. לחצו כאן כדי להתקשר.",
+  "@answeredYouCall": {
+    "description": "After \"Talk\": I have to dial (tap opens the app)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredWaiting": "מחכים לתשובה מ{name}.",
+  "@answeredWaiting": {
+    "description": "After \"Talk\": the other side has not answered yet",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredMissed": "לא הסתדר הפעם. נציע שוב בהזדמנות אחרת.",
+  "@answeredMissed": {
+    "description": "After \"Talk\": too late / did not work out"
+  },
+  "voiceYouCall": "גם {name} רוצה לדבר. לחצו על ההתראה כדי להתקשר.",
+  "@voiceYouCall": {
+    "description": "Spoken: I have to dial",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceYouCallAnon": "גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.",
+  "@voiceYouCallAnon": {
+    "description": "Spoken: I have to dial, names off"
+  },
+  "permsTitle": "כדי שזה יעבוד גם בנסיעה",
+  "@permsTitle": {
+    "description": "Permissions step title"
+  },
+  "permsBody": "כמה אישורים מהטלפון, פעם אחת עכשיו, כדי שלא יקפצו שאלות באמצע נסיעה.",
+  "@permsBody": {
+    "description": "Permissions step body"
+  },
+  "permsAllowAll": "לאשר הכל",
+  "@permsAllowAll": {
+    "description": "Ask for all the permissions one after the other"
+  },
+  "permsAllowOne": "לאשר",
+  "@permsAllowOne": {
+    "description": "Ask for one permission"
+  },
+  "permsDone": "מאושר",
+  "@permsDone": {
+    "description": "A permission that is already given"
+  },
+  "permsNotifTitle": "התראות",
+  "@permsNotifTitle": {
+    "description": ""
+  },
+  "permsNotifBody": "כדי לדעת כשחבר פנוי, גם כשהאפליקציה סגורה.",
+  "@permsNotifBody": {
+    "description": ""
+  },
+  "permsCallTitle": "שיחות טלפון",
+  "@permsCallTitle": {
+    "description": ""
+  },
+  "permsCallBody": "כדי שהשיחה תצא מיד כששניכם אומרים כן.",
+  "@permsCallBody": {
+    "description": ""
+  },
+  "permsMicTitle": "מיקרופון",
+  "@permsMicTitle": {
+    "description": ""
+  },
+  "permsMicBody": "כדי לענות \"כן\" או \"לא\" בקול בנהיגה. שום דבר לא מוקלט.",
+  "@permsMicBody": {
+    "description": ""
+  },
+  "permsBgTitle": "עבודה ברקע",
+  "@permsBgTitle": {
+    "description": ""
+  },
+  "permsBgBody": "כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).",
+  "@permsBgBody": {
+    "description": ""
+  },
+  "permsAutoTitle": "זיהוי נסיעה אוטומטי (רשות)",
+  "@permsAutoTitle": {
+    "description": ""
+  },
+  "permsAutoBody": "כשהטלפון ברכב, נסמן שיש לך זמן. בלי GPS. אפשר לכבות בכל רגע.",
+  "@permsAutoBody": {
+    "description": ""
+  },
+  "permsSettings": "הרשאות",
+  "@permsSettings": {
+    "description": "Settings entry for the permissions screen"
+  },
+  "permsSettingsBody": "התראות, שיחות, מיקרופון, עבודה ברקע",
+  "@permsSettingsBody": {
+    "description": "Settings entry subtitle"
+  },
+  "answeredRetry": "לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.",
+  "@answeredRetry": {
+    "description": "After \"Talk\": the answer did not go through; tap to answer in the app"
   }
 }

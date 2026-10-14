@@ -15,6 +15,7 @@ import '../settings/routines_screen.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
 import 'real_home.dart';
+import 'real_permissions.dart';
 import 'real_stats.dart';
 
 class RealSettingsScreen extends ConsumerWidget {
@@ -135,6 +136,17 @@ class RealSettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: c.openNotificationSettings,
                 ),
+              ListTile(
+                leading: const Icon(Icons.verified_user_rounded),
+                title: Text(l.permsSettings),
+                subtitle: Text(l.permsSettingsBody),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PermissionsScreen(),
+                  ),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.visibility_rounded),
                 title: Text(l.whoSeesTitle),

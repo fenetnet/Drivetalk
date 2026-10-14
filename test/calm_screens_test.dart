@@ -4,6 +4,7 @@ import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
+import 'package:drivetalk/features/real/real_permissions.dart';
 import 'package:drivetalk/features/real/real_root.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
@@ -219,6 +220,40 @@ void main() {
     expect(t.takeException(), isNull);
     await t.tap(find.text('סגירה'));
     await t.pump(const Duration(milliseconds: 300));
+    await _close(t);
+  });
+
+  testWidgets('first steps: the permissions, all at once', (t) async {
+    final detector = FakeDrivingDetector()
+      ..notifications = false
+      ..background = false;
+    final me = _phone(server, driving: detector);
+    _open.add(me);
+    await t.runAsync(() async {
+      await Future<void>.delayed(Duration.zero);
+      await me
+          .read(realProvider.notifier)
+          .signIn('נתנאל', Gender.male, phone: '0521111111');
+    });
+    await _show(t, me, const PermissionsStep());
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('כדי שזה יעבוד גם בנסיעה'), findsOneWidget);
+    expect(find.text('זיהוי נסיעה אוטומטי (רשות)'), findsOneWidget);
+    expect(find.text('לאשר'), findsNWidgets(4));
+    expect(t.takeException(), isNull);
+
+    await t.tap(find.text('לאשר הכל'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump(const Duration(milliseconds: 300));
+    // Phone calls stay "allow" here (this test phone refuses them).
+    expect(find.text('מאושר'), findsNWidgets(3));
+    expect(detector.enabled, isFalse, reason: 'driving detection: a choice');
+    expect(t.takeException(), isNull);
     await _close(t);
   });
 

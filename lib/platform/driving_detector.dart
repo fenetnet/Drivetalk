@@ -315,9 +315,11 @@ class FakeDrivingDetector implements DrivingDetector {
     configured: token != null,
     carName: carName,
     background: background,
+    notifications: notifications,
   );
 
   var background = true;
+  var notifications = true;
   var notificationsOpened = 0;
 
   @override
@@ -379,7 +381,7 @@ class FakeDrivingDetector implements DrivingDetector {
   Future<void> stopAvailable() async => availableUntil = null;
 
   @override
-  Future<bool> requestNotificationPermission() async => true;
+  Future<bool> requestNotificationPermission() async => notifications = true;
 
   List<(String, String)> devices = const [('Car Audio', 'AA:BB')];
   String carName = '';

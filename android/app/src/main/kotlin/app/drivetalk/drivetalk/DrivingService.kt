@@ -213,9 +213,15 @@ class DrivingService : Service() {
         }
     }
 
+    /** Until when to also ask "is a call agreed?" (after a question was shown). */
+    @Volatile private var callsUntil = 0L
+
     private fun pollOffers(ctx: Context) {
         // null = no answer (network): keep what is shown, try again later.
-        val offers = DrivingApi(DrivingStore(ctx)).offers()
+        val api = DrivingApi(DrivingStore(ctx))
+        val offers = api.offers()
+        // Only right after a question: a call agreed with me (D-111).
+        val calls = if (System.currentTimeMillis() < callsUntil) api.calls() else null
         main.post {
             polling = false
             if (offers == null || !running) return@post
@@ -224,12 +230,21 @@ class DrivingService : Service() {
                 // Remembered on the phone: not repeated after a restart.
                 if (store.markShown(o.id)) {
                     DrivingNotifications.showOffer(ctx, o)
-                    val key = when (o.kind) {
-                        "quick" -> "voiceQuick"
-                        "direct" -> "voiceDirect"
-                        else -> "voiceOffer"
+                    // In the background "yes" can't be heard: say how to answer.
+                    val text = when (o.kind) {
+                        "quick" -> store.text("voiceQuick", "{name}")
+                        "direct" -> store.text("bgVoiceDirect", store.text("voiceDirect", "{name}"))
+                        else -> store.text("bgVoiceOffer", store.text("voiceOffer", "{name}"))
                     }
-                    speak(store.text(key, "{name}").replace("{name}", o.name))
+                    speak(text.replace("{name}", o.name))
+                }
+            }
+            if (offers.isNotEmpty()) callsUntil = System.currentTimeMillis() + 3 * 60_000L
+            // On screen, the app shows the call itself.
+            for (c in if (MainActivity.onScreen) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
+                if (store.markShown("call:${c.id}")) {
+                    DrivingNotifications.showCall(ctx, c.id, c.name, c.iCall)
+                    if (c.iCall) speak(store.text("voiceYouCall", "{name}").replace("{name}", c.name))
                 }
             }
             // An offer that's gone (cancelled / answered / timed out): remove it.

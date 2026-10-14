@@ -21,6 +21,9 @@ abstract class VoiceService {
   /// question never pops up in the middle of a drive. True when allowed.
   Future<bool> prepare();
 
+  /// Is the microphone already allowed? (Asks nothing.)
+  Future<bool> micAllowed();
+
   /// Debug / tests: answer the current (or next) listen without a microphone.
   void simulateAnswer(VoiceAnswer answer);
 }
@@ -190,6 +193,15 @@ class DeviceVoiceService implements VoiceService {
   }
 
   @override
+  Future<bool> micAllowed() async {
+    try {
+      return await _stt.hasPermission;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   Future<VoiceAnswer> listenYesNo({
     Duration timeout = const Duration(seconds: 6),
   }) async {
@@ -259,6 +271,9 @@ class SilentVoiceService implements VoiceService {
     prepared++;
     return true;
   }
+
+  @override
+  Future<bool> micAllowed() async => prepared > 0;
 
   @override
   void simulateAnswer(VoiceAnswer answer) {

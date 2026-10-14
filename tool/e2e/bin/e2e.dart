@@ -1806,10 +1806,11 @@ Future<void> main() async {
 
   await calmAndPrivate();
   await securityFixes(eve);
+  await answerFromNotification();
 
   check(
-    await eve.rpc('schema_version') == 35,
-    'the server says its version (35)',
+    await eve.rpc('schema_version') == 36,
+    'the server says its version (36)',
   );
 
   // --- profile photos: private, friends only
@@ -2594,6 +2595,108 @@ Future<void> securityFixes(SupabaseClient eve) async {
     await c.rpc('clear_availability');
   }
   for (final c in [sa, sb, boss2]) {
+    await c.dispose();
+  }
+}
+
+/// D-111: "Talk" straight from the notification (device token): the one
+/// who answered there gets called; a call to dial shows up for the phone.
+Future<void> answerFromNotification() async {
+  final na = await newUser('נועה', 'female');
+  final nb = await newUser('ניר', 'male');
+  await befriend(na, nb);
+  final tokenA = await na.rpc('create_device_token') as String;
+  final tokenB = await nb.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+
+  // Noa says yes in the app, Nir from the notification → Noa dials Nir.
+  await free(na);
+  await free(nb);
+  var offer = pendingOffers(await rows(na, 'match_offers')).single;
+  await na.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  final r = Map<String, dynamic>.from(
+    await bg.rpc(
+          'device_answer',
+          params: {'p_token': tokenB, 'p_offer': offer['id']},
+        )
+        as Map,
+  );
+  check(
+    r['status'] == 'accepted' && r['i_call'] == false,
+    '"Talk" in the notification answers yes — and the other side calls me',
+  );
+  final callsB = List<Map<String, dynamic>>.from(
+    await bg.rpc('device_calls', params: {'p_token': tokenB}),
+  );
+  final callsA = List<Map<String, dynamic>>.from(
+    await bg.rpc('device_calls', params: {'p_token': tokenA}),
+  );
+  check(
+    callsB.length == 1 &&
+        callsB.single['i_call'] == false &&
+        callsA.length == 1 &&
+        callsA.single['i_call'] == true,
+    'each phone knows who dials (Noa dials, Nir waits for the ring)',
+  );
+  check(
+    (await bg.rpc(
+              'device_answer',
+              params: {'p_token': 'x' * 40, 'p_offer': offer['id']},
+            )
+            as Map)['status'] ==
+        'bad_token',
+    'a wrong device token answers nothing',
+  );
+  for (final c in [na, nb]) {
+    await c.rpc('end_call', params: {'p_offer': offer['id']});
+  }
+
+  // Nir answers first from the notification, Noa later in the app →
+  // still Noa dials (Nir can't dial from the background).
+  await dbExec(
+    "delete from pair_snoozes where from_user in ('${uid(na)}', '${uid(nb)}')",
+  );
+  await dbExec(
+    "update match_offers set accepted_at = accepted_at - interval '1 hour', "
+    "updated_at = updated_at - interval '1 hour' where id = '${offer['id']}'",
+  );
+  await skipQuietGap();
+  await na.rpc('nudge_offers');
+  final pend = pendingOffers(await rows(na, 'match_offers'));
+  if (pend.isEmpty) {
+    check(false, 'a second question for the pair (setup)');
+  } else {
+    offer = pend.single;
+    final first = Map<String, dynamic>.from(
+      await bg.rpc(
+            'device_answer',
+            params: {'p_token': tokenB, 'p_offer': offer['id']},
+          )
+          as Map,
+    );
+    final second = Map<String, dynamic>.from(
+      await na.rpc(
+            'answer_offer',
+            params: {'p_offer': offer['id'], 'p_accept': true},
+          )
+          as Map,
+    );
+    check(
+      first['status'] == 'pending' &&
+          second['status'] == 'accepted' &&
+          second['i_call'] == true &&
+          second['phone'] != null,
+      'answered first from the notification → the other one dials me',
+    );
+  }
+  for (final c in [na, nb]) {
+    await c.rpc('clear_availability');
+  }
+  await bg.dispose();
+  for (final c in [na, nb]) {
     await c.dispose();
   }
 }

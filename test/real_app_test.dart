@@ -91,6 +91,10 @@ void main() {
       await pumpFor(t, 100);
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);
+      // All the permissions at once (here: later).
+      expect(find.text('כדי שזה יעבוד גם בנסיעה'), findsOneWidget);
+      await t.tap(find.text('אחר כך'));
+      await pumpFor(t, 300);
       expect(find.text('ככה זה עובד'), findsOneWidget);
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 300);

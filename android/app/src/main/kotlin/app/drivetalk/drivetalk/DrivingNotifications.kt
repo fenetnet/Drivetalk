@@ -22,6 +22,9 @@ object DrivingNotifications {
     private const val ID_PROBLEM = 7002
     private const val ID_OFFER_BASE = 7100
 
+    /** After "Talk": "X is calling you" / "tap to call X" (its own id). */
+    private const val ID_CALL_BASE = 7400
+
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -88,9 +91,16 @@ object DrivingNotifications {
         return PendingIntent.getActivity(context, request, i, flags())
     }
 
-    private fun broadcast(context: Context, action: String, request: Int, offerId: String? = null): PendingIntent {
+    private fun broadcast(
+        context: Context,
+        action: String,
+        request: Int,
+        offerId: String? = null,
+        name: String? = null,
+    ): PendingIntent {
         val i = Intent(context, DrivingReceiver::class.java).setAction(action)
         if (offerId != null) i.putExtra(MainActivity.EXTRA_OFFER, offerId)
+        if (name != null) i.putExtra(DrivingReceiver.EXTRA_NAME, name)
         return PendingIntent.getBroadcast(context, request, i, flags())
     }
 
@@ -151,26 +161,34 @@ object DrivingNotifications {
                     openApp(context, req + 1, offer.id, accept = false),
                 ).build(),
             )
-        } else {
-            b.addAction(
-                Notification.Action.Builder(
-                    null,
-                    store.text("talk", "Talk now"),
-                    openApp(context, req + 1, offer.id, accept = true),
-                ).build(),
-            )
-            b.addAction(
-                Notification.Action.Builder(
-                    null,
-                    store.text("notNow", "Not now"),
-                    broadcast(context, DrivingReceiver.ACTION_DECLINE, req + 2, offer.id),
-                ).build(),
-            )
         }
-        // Lock screen: no name, just "a new suggestion in DriveBond".
+        // "Talk" answers right here (no need to open the app); also on the
+        // locked screen, where the name stays hidden (D-111).
+        val talk = Notification.Action.Builder(
+            null,
+            store.text("talk", "Talk now"),
+            broadcast(context, DrivingReceiver.ACTION_ACCEPT, req + 1, offer.id, offer.name),
+        ).build()
+        val notNow = Notification.Action.Builder(
+            null,
+            store.text("notNow", "Not now"),
+            broadcast(context, DrivingReceiver.ACTION_DECLINE, req + 2, offer.id),
+        ).build()
+        if (!quick) {
+            b.addAction(talk)
+            b.addAction(notNow)
+        }
         val public = builder(context, CHANNEL_TALK)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)
-            .setContentTitle(store.text("publicOffer", "DriveBond"))
+            .setContentTitle(
+                store.text(if (quick) "publicOffer" else "publicOfferTalk", store.text("publicOffer", "DriveBond")),
+            )
+            .apply {
+                if (!quick) {
+                    addAction(talk)
+                    addAction(notNow)
+                }
+            }
             .build()
         b.setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(public)
@@ -203,6 +221,61 @@ object DrivingNotifications {
             .setContentIntent(openApp(context, 3))
             .build()
         context.getSystemService(NotificationManager::class.java).notify(ID_PROBLEM, n)
+    }
+
+    /**
+     * After "Talk" from the notification: what happens now.
+     * accepted + they call → "the call from X is on its way";
+     * accepted + I call → "tap to call X"; pending → "waiting for X";
+     * anything else → "didn't work out this time".
+     */
+    fun showAnswered(context: Context, offerId: String, name: String, status: String?, iCall: Boolean) {
+        val key = when {
+            status == "accepted" && !iCall -> "answeredTheyCall"
+            status == "accepted" -> "answeredYouCall"
+            status == "pending" -> "answeredWaiting"
+            // No answer (network, or an older server): answer in the app.
+            status == null || status == "" || status == "bad_token" -> "answeredRetry"
+            else -> "answeredMissed"
+        }
+        showCallNote(
+            context,
+            offerId,
+            name,
+            key,
+            ring = status == "accepted" && iCall,
+            accept = key == "answeredRetry",
+        )
+    }
+
+    /** From the background check: a call I should dial, or one coming to me. */
+    fun showCall(context: Context, offerId: String, name: String, iCall: Boolean) =
+        showCallNote(context, offerId, name, if (iCall) "answeredYouCall" else "answeredTheyCall", ring = iCall)
+
+    private fun showCallNote(
+        context: Context,
+        offerId: String,
+        name: String,
+        key: String,
+        ring: Boolean,
+        accept: Boolean = false,
+    ) {
+        ensureChannels(context)
+        val store = DrivingStore(context)
+        val req = 300 + (offerId.hashCode() and 0xffff)
+        val b = builder(context, if (ring) CHANNEL_TALK else CHANNEL_OFFERS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text(key, "{name}").replace("{name}", name))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, req, offerId, accept = accept))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) b.setTimeoutAfter(3 * 60_000L)
+        val public = builder(context, CHANNEL_OFFERS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text("publicOffer", "DriveBond"))
+            .build()
+        b.setVisibility(Notification.VISIBILITY_PRIVATE).setPublicVersion(public)
+        context.getSystemService(NotificationManager::class.java)
+            .notify(ID_CALL_BASE + (offerId.hashCode() and 0xff), b.build())
     }
 
     fun cancelOffer(context: Context, offerId: String) {

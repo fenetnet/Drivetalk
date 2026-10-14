@@ -2073,4 +2073,110 @@ class AppLocalizationsHe extends AppLocalizations {
   String callBackToCall(String name) {
     return 'בשיחה עם $name · חזרה למסך השיחה';
   }
+
+  @override
+  String bgVoiceOffer(String name) {
+    return 'ל$name יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.';
+  }
+
+  @override
+  String get bgVoiceOfferAnon =>
+      'חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.';
+
+  @override
+  String bgVoiceDirect(String name) {
+    return '$name רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.';
+  }
+
+  @override
+  String get bgVoiceDirectAnon =>
+      'חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.';
+
+  @override
+  String get notifPublicTalk => 'מישהו פנוי לדבר עכשיו';
+
+  @override
+  String answeredTheyCall(String name) {
+    return 'שיחה מ$name בדרך. הטלפון יצלצל.';
+  }
+
+  @override
+  String answeredYouCall(String name) {
+    return 'גם $name רוצה לדבר. לחצו כאן כדי להתקשר.';
+  }
+
+  @override
+  String answeredWaiting(String name) {
+    return 'מחכים לתשובה מ$name.';
+  }
+
+  @override
+  String get answeredMissed => 'לא הסתדר הפעם. נציע שוב בהזדמנות אחרת.';
+
+  @override
+  String voiceYouCall(String name) {
+    return 'גם $name רוצה לדבר. לחצו על ההתראה כדי להתקשר.';
+  }
+
+  @override
+  String get voiceYouCallAnon =>
+      'גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.';
+
+  @override
+  String get permsTitle => 'כדי שזה יעבוד גם בנסיעה';
+
+  @override
+  String get permsBody =>
+      'כמה אישורים מהטלפון, פעם אחת עכשיו, כדי שלא יקפצו שאלות באמצע נסיעה.';
+
+  @override
+  String get permsAllowAll => 'לאשר הכל';
+
+  @override
+  String get permsAllowOne => 'לאשר';
+
+  @override
+  String get permsDone => 'מאושר';
+
+  @override
+  String get permsNotifTitle => 'התראות';
+
+  @override
+  String get permsNotifBody => 'כדי לדעת כשחבר פנוי, גם כשהאפליקציה סגורה.';
+
+  @override
+  String get permsCallTitle => 'שיחות טלפון';
+
+  @override
+  String get permsCallBody => 'כדי שהשיחה תצא מיד כששניכם אומרים כן.';
+
+  @override
+  String get permsMicTitle => 'מיקרופון';
+
+  @override
+  String get permsMicBody =>
+      'כדי לענות \"כן\" או \"לא\" בקול בנהיגה. שום דבר לא מוקלט.';
+
+  @override
+  String get permsBgTitle => 'עבודה ברקע';
+
+  @override
+  String get permsBgBody =>
+      'כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).';
+
+  @override
+  String get permsAutoTitle => 'זיהוי נסיעה אוטומטי (רשות)';
+
+  @override
+  String get permsAutoBody =>
+      'כשהטלפון ברכב, נסמן שיש לך זמן. בלי GPS. אפשר לכבות בכל רגע.';
+
+  @override
+  String get permsSettings => 'הרשאות';
+
+  @override
+  String get permsSettingsBody => 'התראות, שיחות, מיקרופון, עבודה ברקע';
+
+  @override
+  String get answeredRetry => 'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.';
 }

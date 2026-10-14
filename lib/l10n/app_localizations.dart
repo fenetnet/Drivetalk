@@ -3507,6 +3507,180 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בשיחה עם {name} · חזרה למסך השיחה'**
   String callBackToCall(String name);
+
+  /// Spoken in the background (no voice answer possible there)
+  ///
+  /// In he, this message translates to:
+  /// **'ל{name} יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  String bgVoiceOffer(String name);
+
+  /// Spoken in the background, names off
+  ///
+  /// In he, this message translates to:
+  /// **'חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  String get bgVoiceOfferAnon;
+
+  /// Spoken in the background when a friend tapped me
+  ///
+  /// In he, this message translates to:
+  /// **'{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  String bgVoiceDirect(String name);
+
+  /// Same, names off
+  ///
+  /// In he, this message translates to:
+  /// **'חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  String get bgVoiceDirectAnon;
+
+  /// Locked screen: an offer, without the name
+  ///
+  /// In he, this message translates to:
+  /// **'מישהו פנוי לדבר עכשיו'**
+  String get notifPublicTalk;
+
+  /// After "Talk" from the notification: they call me
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה מ{name} בדרך. הטלפון יצלצל.'**
+  String answeredTheyCall(String name);
+
+  /// After "Talk": I have to dial (tap opens the app)
+  ///
+  /// In he, this message translates to:
+  /// **'גם {name} רוצה לדבר. לחצו כאן כדי להתקשר.'**
+  String answeredYouCall(String name);
+
+  /// After "Talk": the other side has not answered yet
+  ///
+  /// In he, this message translates to:
+  /// **'מחכים לתשובה מ{name}.'**
+  String answeredWaiting(String name);
+
+  /// After "Talk": too late / did not work out
+  ///
+  /// In he, this message translates to:
+  /// **'לא הסתדר הפעם. נציע שוב בהזדמנות אחרת.'**
+  String get answeredMissed;
+
+  /// Spoken: I have to dial
+  ///
+  /// In he, this message translates to:
+  /// **'גם {name} רוצה לדבר. לחצו על ההתראה כדי להתקשר.'**
+  String voiceYouCall(String name);
+
+  /// Spoken: I have to dial, names off
+  ///
+  /// In he, this message translates to:
+  /// **'גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.'**
+  String get voiceYouCallAnon;
+
+  /// Permissions step title
+  ///
+  /// In he, this message translates to:
+  /// **'כדי שזה יעבוד גם בנסיעה'**
+  String get permsTitle;
+
+  /// Permissions step body
+  ///
+  /// In he, this message translates to:
+  /// **'כמה אישורים מהטלפון, פעם אחת עכשיו, כדי שלא יקפצו שאלות באמצע נסיעה.'**
+  String get permsBody;
+
+  /// Ask for all the permissions one after the other
+  ///
+  /// In he, this message translates to:
+  /// **'לאשר הכל'**
+  String get permsAllowAll;
+
+  /// Ask for one permission
+  ///
+  /// In he, this message translates to:
+  /// **'לאשר'**
+  String get permsAllowOne;
+
+  /// A permission that is already given
+  ///
+  /// In he, this message translates to:
+  /// **'מאושר'**
+  String get permsDone;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'התראות'**
+  String get permsNotifTitle;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'כדי לדעת כשחבר פנוי, גם כשהאפליקציה סגורה.'**
+  String get permsNotifBody;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'שיחות טלפון'**
+  String get permsCallTitle;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'כדי שהשיחה תצא מיד כששניכם אומרים כן.'**
+  String get permsCallBody;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'מיקרופון'**
+  String get permsMicTitle;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'כדי לענות \"כן\" או \"לא\" בקול בנהיגה. שום דבר לא מוקלט.'**
+  String get permsMicBody;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'עבודה ברקע'**
+  String get permsBgTitle;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).'**
+  String get permsBgBody;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'זיהוי נסיעה אוטומטי (רשות)'**
+  String get permsAutoTitle;
+
+  ///
+  ///
+  /// In he, this message translates to:
+  /// **'כשהטלפון ברכב, נסמן שיש לך זמן. בלי GPS. אפשר לכבות בכל רגע.'**
+  String get permsAutoBody;
+
+  /// Settings entry for the permissions screen
+  ///
+  /// In he, this message translates to:
+  /// **'הרשאות'**
+  String get permsSettings;
+
+  /// Settings entry subtitle
+  ///
+  /// In he, this message translates to:
+  /// **'התראות, שיחות, מיקרופון, עבודה ברקע'**
+  String get permsSettingsBody;
+
+  /// After "Talk": the answer did not go through; tap to answer in the app
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.'**
+  String get answeredRetry;
 }
 
 class _AppLocalizationsDelegate

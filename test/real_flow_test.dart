@@ -238,11 +238,30 @@ void main() {
     me.c.firstRunNext(); // result → routine
     expect(me.s.firstRun, FirstRunStep.routine);
     await me.c.firstRunRoutines(morning: 7 * 60 + 30);
+    expect(me.s.firstRun, FirstRunStep.permissions, reason: 'then permissions');
+    me.c.firstRunNext();
     expect(me.s.firstRun, FirstRunStep.magic);
     final r = me.s.routines.single;
     expect(r.minuteOfDay, 7 * 60 + 30);
     expect(r.weekdays, {7, 1, 2, 3, 4});
     expect(me.driving.routinesJson, contains('"hour":7,"minute":30'));
+  });
+
+  test('first steps: all the permissions at once ("allow all")', () async {
+    await connect();
+    me.driving.notifications = false;
+    me.driving.background = false;
+    var p = await me.c.phonePermissions();
+    expect(
+      [p.notifications, p.calls, p.mic, p.background, p.autoDriving],
+      [false, false, false, false, false],
+    );
+    await me.c.askAllPermissions();
+    p = await me.c.phonePermissions();
+    expect(p.notifications && p.mic && p.background, isTrue);
+    expect(me.dialer.asked, 1, reason: 'phone calls asked too');
+    expect(p.autoDriving, isFalse, reason: 'driving detection stays a choice');
+    expect(me.driving.enabled, isFalse);
   });
 
   test('battery saving: asked once, only after using "I\'m free"', () async {
@@ -1460,7 +1479,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 34)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 36)'));
     });
 
     test(

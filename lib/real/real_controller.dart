@@ -83,7 +83,36 @@ enum CallRole {
 }
 
 /// After joining: find people from contacts → result → how it works.
-enum FirstRunStep { photo, contacts, result, routine, magic }
+enum FirstRunStep { photo, contacts, result, routine, permissions, magic }
+
+/// The phone permissions asked for at the start (and in Settings).
+enum PhonePermission { notifications, calls, mic, background }
+
+class PhonePermissions {
+  const PhonePermissions({
+    required this.supported,
+    required this.notifications,
+    required this.calls,
+    required this.mic,
+    required this.background,
+    required this.autoDriving,
+  });
+
+  /// Android (background notifications etc.); elsewhere only calls + mic.
+  final bool supported;
+  final bool notifications;
+  final bool calls;
+  final bool mic;
+  final bool background;
+  final bool autoDriving;
+
+  bool has(PhonePermission p) => switch (p) {
+    PhonePermission.notifications => !supported || notifications,
+    PhonePermission.calls => calls,
+    PhonePermission.mic => mic,
+    PhonePermission.background => !supported || background,
+  };
+}
 
 enum CallStage {
   none,
@@ -459,7 +488,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 34;
+const kRequiredSchema = 36;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -904,7 +933,8 @@ class RealController extends Notifier<RealState> {
     FirstRunStep.photo => FirstRunStep.contacts,
     FirstRunStep.contacts => FirstRunStep.result,
     FirstRunStep.result => FirstRunStep.routine,
-    FirstRunStep.routine => FirstRunStep.magic,
+    FirstRunStep.routine => FirstRunStep.permissions,
+    FirstRunStep.permissions => FirstRunStep.magic,
     _ => null,
   });
 
@@ -974,6 +1004,45 @@ class RealController extends Notifier<RealState> {
   Future<void> _loadDirectCall() async {
     final ok = await ref.read(phoneDialerProvider).canCallDirectly();
     if (ref.mounted) state = state.copyWith(directCall: ok);
+  }
+
+  /// What the phone already allows (asks nothing).
+  Future<PhonePermissions> phonePermissions() async {
+    await _loadDriving();
+    final mic = await ref.read(voiceServiceProvider).micAllowed();
+    final d = state.driving;
+    return PhonePermissions(
+      supported: d.supported,
+      notifications: d.notifications,
+      calls: state.directCall == true,
+      mic: mic,
+      background: d.background,
+      autoDriving: d.enabled,
+    );
+  }
+
+  /// One permission now (a calm moment, never in the middle of a drive).
+  Future<void> askPermission(PhonePermission p) async {
+    final detector = ref.read(drivingDetectorProvider);
+    switch (p) {
+      case PhonePermission.notifications:
+        await detector.requestNotificationPermission();
+      case PhonePermission.calls:
+        await askDirectCall();
+      case PhonePermission.mic:
+        await ref.read(voiceServiceProvider).prepare();
+      case PhonePermission.background:
+        await allowBackground();
+    }
+    await _loadDriving();
+  }
+
+  /// "Allow all": the ones still missing, one after the other.
+  Future<void> askAllPermissions() async {
+    final now = await phonePermissions();
+    for (final p in PhonePermission.values) {
+      if (!now.has(p)) await askPermission(p);
+    }
   }
 
   /// Ask for direct calls now (a calm moment), so later a call starts at once.
@@ -1113,6 +1182,22 @@ class RealController extends Notifier<RealState> {
     'routineTitle': _l.realRoutineNotifTitle,
     'routineBody': _l.realRoutineNotifBody,
     'manualBody': _l.realNotifManualBody,
+    // Background: "yes" can't be heard there — say how to answer (D-111).
+    'bgVoiceOffer': state.prefs.speakNames
+        ? _l.bgVoiceOffer('{name}')
+        : _l.bgVoiceOfferAnon,
+    'bgVoiceDirect': state.prefs.speakNames
+        ? _l.bgVoiceDirect('{name}')
+        : _l.bgVoiceDirectAnon,
+    'publicOfferTalk': _l.notifPublicTalk,
+    'answeredTheyCall': _l.answeredTheyCall('{name}'),
+    'answeredYouCall': _l.answeredYouCall('{name}'),
+    'answeredWaiting': _l.answeredWaiting('{name}'),
+    'answeredMissed': _l.answeredMissed,
+    'answeredRetry': _l.answeredRetry,
+    'voiceYouCall': state.prefs.speakNames
+        ? _l.voiceYouCall('{name}')
+        : _l.voiceYouCallAnon,
   };
 
   /// Background notifications need this phone's device token. Created once.

@@ -71,6 +71,39 @@ class DrivingApi(private val store: DrivingStore) {
     fun decline(offerId: String): String? =
         rpc("auto_decline", JSONObject().put("p_offer", offerId))?.trim('"')
 
+    /** "Talk" from the notification: status ("accepted", "pending", …) and who dials. */
+    data class Answer(val status: String, val iCall: Boolean)
+
+    fun answer(offerId: String): Answer? {
+        val text = rpc("device_answer", JSONObject().put("p_offer", offerId)) ?: return null
+        return try {
+            val o = JSONObject(text)
+            Answer(o.optString("status", ""), o.optBoolean("i_call", false))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /** A call agreed in the last 2 minutes: do I dial (iCall), or do they? */
+    data class Call(val id: String, val name: String, val iCall: Boolean)
+
+    fun calls(): List<Call>? {
+        val text = rpc("device_calls", JSONObject()) ?: return null
+        return try {
+            val arr = JSONArray(text)
+            (0 until arr.length()).map {
+                val o = arr.getJSONObject(it)
+                Call(
+                    o.getString("offer_id"),
+                    store.nameFor(o.optString("other_id", ""), o.optString("other_name", "")),
+                    o.optBoolean("i_call", false),
+                )
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun offers(): List<Offer>? {
         val text = rpc("auto_offers", JSONObject()) ?: return null
         return try {

@@ -6,6 +6,7 @@ import '../../real/real_controller.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import 'real_common.dart';
+import 'real_permissions.dart';
 import 'real_people.dart';
 
 /// Right after joining: get to at least one person DriveTalk can work with,
@@ -151,6 +152,7 @@ class RealFirstRunScreen extends ConsumerWidget {
         ],
       ),
       FirstRunStep.routine => const _RoutineStep(),
+      FirstRunStep.permissions => const PermissionsStep(),
       _ => MomentLayout(
         style: MomentStyle.green,
         top: Column(

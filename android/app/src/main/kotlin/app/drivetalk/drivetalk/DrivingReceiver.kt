@@ -11,7 +11,8 @@ import java.util.concurrent.Executors
 /**
  * - Trip started / ended (from Android's activity recognition: the phone's
  *   motion sensors, no GPS) → start / end [DrivingService].
- * - "Stop" and "Not now" from the notifications.
+ * - "Stop", "Talk" and "Not now" from the notifications ("Talk" answers
+ *   right there — no need to open the app).
  */
 class DrivingReceiver : BroadcastReceiver() {
     companion object {
@@ -19,6 +20,8 @@ class DrivingReceiver : BroadcastReceiver() {
         const val ACTION_STOP = "app.drivetalk.driving.STOP"
         const val ACTION_DECLINE = "app.drivetalk.driving.DECLINE"
         const val ACTION_CANCEL_CALL = "app.drivetalk.driving.CANCEL_CALL"
+        const val ACTION_ACCEPT = "app.drivetalk.driving.ACCEPT"
+        const val EXTRA_NAME = "app.drivetalk.name"
         private val io = Executors.newSingleThreadExecutor()
 
         /** Shared by real detections and the developer "simulate" buttons. */
@@ -58,6 +61,23 @@ class DrivingReceiver : BroadcastReceiver() {
                 io.execute {
                     try {
                         DrivingApi(store).cancelCall(offer)
+                    } finally {
+                        pending.finish()
+                    }
+                }
+            }
+            ACTION_ACCEPT -> {
+                val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return
+                val name = intent.getStringExtra(EXTRA_NAME) ?: ""
+                DrivingNotifications.cancelOffer(context, offer)
+                val pending = goAsync()
+                val store = DrivingStore(context)
+                io.execute {
+                    try {
+                        val r = DrivingApi(store).answer(offer)
+                        // Told once (the service won't repeat "X is calling you").
+                        store.markShown("call:$offer")
+                        DrivingNotifications.showAnswered(context, offer, name, r?.status, r?.iCall ?: false)
                     } finally {
                         pending.finish()
                     }
