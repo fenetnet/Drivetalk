@@ -653,6 +653,7 @@ class RealController extends Notifier<RealState> {
   void _onTick() {
     if (state.phase != RealPhase.ready) return;
     _tick++;
+    if (_foreground) unawaited(checkForUpdate());
     final now = _now();
     final mine = state.snapshot?.mine;
     // My time just ran out: refresh once for it (the server removes the
@@ -845,14 +846,17 @@ class RealController extends Notifier<RealState> {
 
   DateTime? _lastUpdateCheck;
 
-  /// Is a newer version published? (At start, and on return after 3 hours.)
+  /// Is a newer version published? At start, on return and while the app
+  /// is open — every 30 minutes until one is found (Google Play often
+  /// learns about a new version a while after the app started).
   Future<void> checkForUpdate({bool force = false}) async {
     final mine = ref.read(appBuildProvider);
     if (mine == null) return;
-    final now = DateTime.now();
+    if (!force && state.newBuild != null) return;
+    final now = _now();
     if (!force &&
         _lastUpdateCheck != null &&
-        now.difference(_lastUpdateCheck!) < const Duration(hours: 3)) {
+        now.difference(_lastUpdateCheck!) < const Duration(minutes: 30)) {
       return;
     }
     _lastUpdateCheck = now;

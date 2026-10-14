@@ -1381,6 +1381,21 @@ void main() {
     expect(me.s.newBuild, 11);
   });
 
+  test('a version published later is found without tapping', () async {
+    await connect();
+    me.updates.build = 10;
+    await me.c.checkForUpdate();
+    expect(me.s.newBuild, isNull);
+    // Google Play learns about it later.
+    me.updates.build = 11;
+    now = now.add(const Duration(minutes: 5));
+    await me.c.checkForUpdate();
+    expect(me.s.newBuild, isNull, reason: 'not every few seconds');
+    now = now.add(const Duration(minutes: 30));
+    await me.c.checkForUpdate();
+    expect(me.s.newBuild, 11, reason: 'checked again within half an hour');
+  });
+
   group('stage 5', () {
     test('an older server is said clearly', () async {
       me.backend.schema = 12;
