@@ -52,6 +52,9 @@ class MemoryServer {
   /// real server's database).
   String ownerCode = 'test-owner-code';
 
+  /// Owner-code tries per account (the last hour's count).
+  final ownerClaims = <String, List<DateTime>>{};
+
   /// Connect a pair (any way) — clears a past removal.
   void connect(String x, String y) {
     connections.add(_pair(x, y));
@@ -1486,6 +1489,12 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   Future<bool> claimOwner(String code) async {
+    // Like the server: 5 tries an hour per account (D-110).
+    final since = server.now().subtract(const Duration(hours: 1));
+    final tries = server.ownerClaims.putIfAbsent(_uid, () => [])
+      ..removeWhere((t) => t.isBefore(since));
+    if (tries.length >= 5) throw const RealBackendException('rate_limited');
+    tries.add(server.now());
     final ok = code.trim() == server.ownerCode;
     if (ok) server.owners.add(_uid);
     return ok;

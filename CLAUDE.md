@@ -96,7 +96,11 @@ lib/
   debug/          real_preview.dart (web preview with sample friends)
   l10n/           app_he.arb (template) + generated localizations
 supabase/migrations/          the whole server schema (RLS, functions, realtime)
-                              — matching rules/limits live in SQL there
+                              — matching rules/limits live in SQL there.
+                              Policy helper checks live in schema `private`
+                              (D-110): a NEW policy calls private.<helper>;
+                              functions keep calling public.<helper> (internal
+                              copies). Never grant a helper to authenticated.
 invite_site/                  static invitation page (published to gh-pages)
 tool/e2e/                     backend end-to-end check against a local Supabase
 test/             two-phone flow tests (in-memory server), screen tests,
@@ -138,6 +142,8 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 - Develop on the assigned feature branch; merge to `main` only after checks pass
   and with owner approval.
 - Clear commit messages. Never commit secrets, `.env`, keystores, or `google-services.json` with real keys.
+- Only `main` and `claude/social-voice-app-mnrxc1` publish (Play, server,
+  site — D-110). A new working branch must be added to the three workflows.
 
 ## Work phases
 

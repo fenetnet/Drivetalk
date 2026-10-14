@@ -12,6 +12,9 @@
   (function () {
     var p = location.pathname, i = p.indexOf('/i/');
     var base = i >= 0 ? p.slice(0, i) : p.replace(/\/[^/]*$/, '');
+    // Only plain folders of this site (a link like //other.site/i/… must
+    // never load files from another site).
+    if (!/^(\/[A-Za-z0-9._~-]+)*$/.test(base)) base = '';
     document.getElementById('css').href = base + '/style.css';
     window.DT_BASE = base;
   })();

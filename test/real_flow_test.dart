@@ -1371,6 +1371,22 @@ void main() {
     },
   );
 
+  test(
+    'owner code: too many tries says so, then the right one waits',
+    () async {
+      await connect();
+      for (var i = 0; i < 5; i++) {
+        expect(await me.c.unlockAdmin('wrong'), isFalse);
+      }
+      expect(me.s.lastError, isNull, reason: 'a wrong code is just "no"');
+      expect(await me.c.unlockAdmin('test-owner-code'), isFalse);
+      expect(me.s.lastError, 'rate_limited', reason: '"too many tries"');
+      expect(me.s.admin, isFalse);
+      now = now.add(const Duration(minutes: 61));
+      expect(await me.c.unlockAdmin('test-owner-code'), isTrue);
+    },
+  );
+
   test('a newer version is announced (and only a newer one)', () async {
     await connect();
     me.updates.build = 10;

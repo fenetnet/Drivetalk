@@ -738,13 +738,10 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
-  Future<bool> claimOwner(String code) async {
-    try {
-      return await _c.rpc('claim_owner', params: {'p_code': code}) == true;
-    } catch (_) {
-      return false;
-    }
-  }
+  // Too many tries says so (rate_limited) — not "wrong code" (D-110).
+  Future<bool> claimOwner(String code) => _guard(
+    () async => await _c.rpc('claim_owner', params: {'p_code': code}) == true,
+  );
 
   @override
   Future<List<OwnerNote>> ownerFeedback() => _guard(() async {

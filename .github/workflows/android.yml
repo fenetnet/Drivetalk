@@ -4,7 +4,7 @@ name: Android prototype
 
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main, "claude/social-voice-app-mnrxc1"]
     # Server-only / docs-only changes don't need a new app build.
     paths-ignore:
       - "supabase/**"
@@ -19,10 +19,10 @@ on:
 permissions:
   contents: write # to publish the APK as a simple download link
 
-# A newer push replaces an older build still running (both would publish
+# A newer push (any branch) replaces an older build still running (both would publish
 # the same download link at once).
 concurrency:
-  group: android-${{ github.ref }}
+  group: android
   cancel-in-progress: true
 
 jobs:

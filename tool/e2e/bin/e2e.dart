@@ -1589,10 +1589,12 @@ Future<void> main() async {
     )).where((o) => o['status'] == 'pending').isEmpty,
     'and nobody is asked (an offer would tell him I am free)',
   );
-  check(
-    await boss.rpc('sees_availability', params: {'p_owner': uid(ho)}) == false,
-    'asking "do I see her?" says no — like the list',
-  );
+  try {
+    await boss.rpc('sees_availability', params: {'p_owner': uid(ho)});
+    check(false, '"do I see her?" can\'t be asked directly (D-110)');
+  } on PostgrestException {
+    check(true, '"do I see her?" can\'t be asked directly (D-110)');
+  }
   try {
     await boss.rpc(
       'can_see',
@@ -1803,10 +1805,11 @@ Future<void> main() async {
   }
 
   await calmAndPrivate();
+  await securityFixes(eve);
 
   check(
-    await eve.rpc('schema_version') == 34,
-    'the server says its version (34)',
+    await eve.rpc('schema_version') == 35,
+    'the server says its version (35)',
   );
 
   // --- profile photos: private, friends only
@@ -2357,6 +2360,240 @@ Future<void> calmAndPrivate() async {
     tal,
     bg,
   ]) {
+    await c.dispose();
+  }
+}
+
+/// D-110: the server can't be asked about other people; numbers only for
+/// friends; flood limits; the owner can't be locked out; nightly cleanup.
+Future<void> securityFixes(SupabaseClient eve) async {
+  final sa = await newUser('סהר', 'female');
+  final sb = await newUser('שי', 'male');
+  await befriend(sa, sb);
+  await free(sb);
+
+  // --- helper checks: only the privacy rules use them
+  final asks = <String, Map<String, dynamic>>{
+    'sees_availability': {'p_owner': uid(sb)},
+    'are_connected': {'x': uid(sa), 'y': uid(sb)},
+    'is_blocked_between': {'x': uid(eve), 'y': uid(sb)},
+    'awaits_approval': {'p_owner': uid(sa), 'p_viewer': uid(sb)},
+    'in_audience': {'p_circle': uid(sb), 'viewer': uid(sa)},
+    'is_anonymous': {'p_user': uid(sb)},
+    'hides_call': {'p_user': uid(sb)},
+    'hides_status': {'p_user': uid(sb)},
+    'replaced_account': {'p_user': uid(sb)},
+    'replaced_for': {'p_viewer': uid(sa), 'p_user': uid(sb)},
+    'can_see_avatar': {'p_name': '${uid(sb)}.jpg'},
+  };
+  var refused = 0;
+  for (final e in asks.entries) {
+    try {
+      await eve.rpc(e.key, params: e.value);
+      stdout.writeln('      (answered: ${e.key})');
+    } on PostgrestException {
+      refused++;
+    }
+  }
+  check(
+    refused == asks.length,
+    "nobody can ask the server's helper checks about others "
+    '($refused/${asks.length} refused)',
+  );
+  check(
+    (await rows(sa, 'availability')).any((a) => a['user_id'] == uid(sb)),
+    'the privacy rules still work: a friend sees me free',
+  );
+  check(
+    (await rows(eve, 'availability')).every((a) => a['user_id'] != uid(sb)),
+    '… and a stranger still does not',
+  );
+  check(
+    (await rows(sa, 'profiles')).any((p) => p['id'] == uid(sb)),
+    '… and friends still see each other',
+  );
+
+  // --- a number only while still friends
+  await free(sa);
+  final offer = pendingOffers(await rows(sa, 'match_offers')).single;
+  await sa.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  await sb.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  for (final c in [sa, sb]) {
+    await c.rpc('seen_call', params: {'p_offer': offer['id']});
+  }
+  // Whoever calls gets the number (both shared one).
+  var caller = sa;
+  var other = sb;
+  var before = <String, dynamic>{};
+  for (var i = 0; i < 12 && before['state'] != 'ready'; i++) {
+    before = Map<String, dynamic>.from(
+      await sa.rpc('start_call', params: {'p_offer': offer['id']}) as Map,
+    );
+    if (before['state'] != 'ready') {
+      await Future<void>.delayed(const Duration(seconds: 1));
+    }
+  }
+  if (before['i_call'] != true) {
+    caller = sb;
+    other = sa;
+    before = Map<String, dynamic>.from(
+      await sb.rpc('start_call', params: {'p_offer': offer['id']}) as Map,
+    );
+  }
+  await other.from('connections').delete().neq('user_a', uid(eve));
+  final after = Map<String, dynamic>.from(
+    await caller.rpc('start_call', params: {'p_offer': offer['id']}) as Map,
+  );
+  final details = List<Map<String, dynamic>>.from(
+    await caller.rpc('call_details', params: {'p_offer': offer['id']}),
+  ).single;
+  check(
+    before['phone'] != null &&
+        after['phone'] == null &&
+        details['other_phone'] == null,
+    'removed as a friend → their number is no longer given',
+  );
+  await befriend(sa, sb);
+
+  // --- reports: once per person and reason a day, up to 20 a day
+  for (var i = 0; i < 3; i++) {
+    await sa.from('reports').insert({'reported': uid(eve), 'reason': 'spam'});
+  }
+  check(
+    await dbCount(
+          "select count(*) from reports where reporter = '${uid(sa)}'",
+        ) ==
+        1,
+    'the same report three times is kept once',
+  );
+  await dbExec(
+    "set session_replication_role = replica; "
+    "insert into reports (reporter, reported, reason, created_at) "
+    "select '${uid(sa)}', '${uid(sb)}', 'other', now() - interval '1 hour' "
+    "from generate_series(1, 19)",
+  );
+  await sa.from('reports').insert({
+    'reported': uid(eve),
+    'reason': 'harassment',
+  });
+  check(
+    await dbCount(
+          "select count(*) from reports where reporter = '${uid(sa)}'",
+        ) ==
+        20,
+    'up to 20 reports a day from one person',
+  );
+
+  // --- brand-new accounts share one hourly cap (feedback)
+  await dbExec(
+    "insert into feedback_notes (user_id, body) "
+    "select '${uid(sb)}', 'x' from generate_series(1, 30)",
+  );
+  try {
+    await sa.rpc('send_feedback', params: {'p_body': 'hello'});
+    check(false, 'a flood from new accounts stops more feedback from new ones');
+  } on PostgrestException catch (e) {
+    check(
+      e.message.contains('rate_limited'),
+      'a flood from new accounts stops more feedback from new ones',
+    );
+  }
+  await dbExec(
+    "update profiles set created_at = now() - interval '2 days' "
+    "where id = '${uid(sa)}'",
+  );
+  await sa.rpc('send_feedback', params: {'p_body': 'hello'});
+  check(
+    await dbCount(
+          "select count(*) from feedback_notes where user_id = '${uid(sa)}'",
+        ) ==
+        1,
+    '… but not from people who joined earlier',
+  );
+  await dbExec("delete from feedback_notes where user_id = '${uid(sb)}'");
+
+  // --- owner code: others' wrong guesses can't lock the owner out
+  await dbExec(
+    "insert into owner_claims (user_id, at) "
+    "select '${uid(sb)}', now() from generate_series(1, 150)",
+  );
+  final boss2 = await newUser('בעלים', 'male');
+  check(
+    await boss2.rpc('claim_owner', params: {'p_code': 'test-owner-code'}) ==
+        true,
+    "150 wrong guesses by others don't lock the owner out",
+  );
+  await dbExec("delete from app_owners where user_id = '${uid(boss2)}'");
+  for (var i = 0; i < 4; i++) {
+    await sa.rpc('claim_owner', params: {'p_code': 'wrong'});
+  }
+  try {
+    await sa.rpc('claim_owner', params: {'p_code': 'wrong'});
+    await sa.rpc('claim_owner', params: {'p_code': 'test-owner-code'});
+    check(false, 'after 5 tries in an hour: "too many tries"');
+  } on PostgrestException catch (e) {
+    check(
+      e.message.contains('rate_limited'),
+      'after 5 tries in an hour: "too many tries"',
+    );
+  }
+  check(
+    await dbCount(
+          "select count(*) from app_owners where user_id = '${uid(sa)}'",
+        ) ==
+        0,
+    '… and the right code then still waits',
+  );
+
+  // --- nightly cleanup
+  await dbExec(
+    "update match_offers set created_at = now() - interval '100 days' "
+    "where id = '${offer['id']}'",
+  );
+  final lo = uid(sa).compareTo(uid(sb)) < 0 ? uid(sa) : uid(sb);
+  final hi = lo == uid(sa) ? uid(sb) : uid(sa);
+  await dbExec(
+    "insert into match_offers (user_a, user_b, expires_at, status, created_at) "
+    "values ('$lo', '$hi', now() - interval '120 days', 'expired', "
+    "now() - interval '120 days'); "
+    "insert into app_events (user_id, name, created_at) "
+    "values ('${uid(sa)}', 'old_event', now() - interval '100 days'); "
+    'select public.nightly_cleanup();',
+  );
+  check(
+    await dbCount(
+              "select count(*) from match_offers where user_a = '$lo' "
+              "and user_b = '$hi' and created_at < now() - interval '90 days'",
+            ) ==
+            1 &&
+        await dbCount(
+              "select count(*) from match_offers where id = '${offer['id']}'",
+            ) ==
+            1,
+    'nightly cleanup: old offers go, the last talk of a pair stays',
+  );
+  check(
+    await dbCount("select count(*) from app_events where name = 'old_event'") ==
+        0,
+    'nightly cleanup: activity older than 90 days goes',
+  );
+  check(
+    await dbCount(
+          "select count(*) from cron.job where jobname = 'drivetalk-nightly-cleanup'",
+        ) ==
+        1,
+    'the cleanup runs every night',
+  );
+  for (final c in [sa, sb]) {
+    await c.rpc('clear_availability');
+  }
+  for (final c in [sa, sb, boss2]) {
     await c.dispose();
   }
 }
