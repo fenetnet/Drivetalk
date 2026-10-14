@@ -5,6 +5,7 @@ import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
+import 'package:drivetalk/features/real/real_people.dart';
 import 'package:drivetalk/features/real/real_permissions.dart';
 import 'package:drivetalk/features/real/real_quick.dart';
 import 'package:drivetalk/features/real/real_root.dart';
@@ -362,6 +363,36 @@ void main() {
       await _close(t);
     },
   );
+
+  testWidgets('quick connect from the friend card: the switch stays on', (
+    t,
+  ) async {
+    final (me, _) = await twoFriends(t);
+    await _show(t, me, const RealPeopleScreen());
+    await t.scrollUntilVisible(
+      find.text('יונתן־אלכסנדר'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await t.tap(find.text('יונתן־אלכסנדר'));
+    await t.pumpAndSettle();
+    final sw = find.byType(Switch).first;
+    expect(t.widget<Switch>(sw).value, isFalse);
+    await t.tap(sw);
+    await t.pumpAndSettle();
+    await t.tap(find.text('להפעיל'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await t.pumpAndSettle();
+    expect(t.widget<Switch>(find.byType(Switch).first).value, isTrue);
+    expect(
+      find.text('מופעל אצלך. יעבוד כשזה יופעל גם אצל יונתן־אלכסנדר.'),
+      findsOneWidget,
+    );
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
 
   testWidgets('during a call: to the main screen and back', (t) async {
     final (me, friend) = await twoFriends(t);
