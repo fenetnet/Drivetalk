@@ -65,6 +65,9 @@ class MemoryServer {
   /// [x] disconnects from [y] (remove, block) — remembered, with who did it.
   void disconnect(String x, String y) {
     pendingFor.remove(_pair(x, y));
+    quickPicks
+      ..remove('$x|$y')
+      ..remove('$y|$x');
     if (connections.remove(_pair(x, y))) {
       removed.add(_pair(x, y));
       removedBy[_pair(x, y)] = x;
@@ -224,9 +227,14 @@ class MemoryServer {
   /// Circles: id → (owner, circle).
   final circles = <String, (String, RealCircle)>{};
 
-  bool _isQuick(String x, String y) => circles.values.any(
-    (c) => c.$1 == x && c.$2.quick && c.$2.memberIds.contains(y),
-  );
+  bool _isQuick(String x, String y) =>
+      quickPicks.contains('$x|$y') ||
+      circles.values.any(
+        (c) => c.$1 == x && c.$2.quick && c.$2.memberIds.contains(y),
+      );
+
+  /// Quick connect per friend: "owner|member" (D-112).
+  final quickPicks = <String>{};
 
   /// "Everyone else" rule per user (null / missing = always).
   final othersModes = <String, Set<AvailabilityMode>?>{};
@@ -756,6 +764,14 @@ class MemoryRealBackend implements RealBackend {
         for (final c in server.circles.values)
           if (c.$1 == me) c.$2,
       ],
+      quickMine: {
+        for (final f in friends)
+          if (server._isQuick(me, f.id)) f.id,
+      },
+      quickTheirs: {
+        for (final f in friends)
+          if (server._isQuick(f.id, me)) f.id,
+      },
       talks: [
         for (final o
             in server.offers.values.toList()
@@ -1267,6 +1283,21 @@ class MemoryRealBackend implements RealBackend {
     }
     server.ratings['$me|$friendId'] = rating;
     server._createOffersFor(me);
+    server._changed();
+  }
+
+  @override
+  Future<void> setQuick(String userId, bool on) async {
+    final me = _uid;
+    if (on) {
+      if (!server.connected(me, userId) || server.blockedBetween(me, userId)) {
+        throw const RealBackendException('not_found');
+      }
+      server.quickPicks.add('$me|$userId');
+      server._createOffersFor(me);
+    } else {
+      server.quickPicks.remove('$me|$userId');
+    }
     server._changed();
   }
 

@@ -649,6 +649,45 @@ void main() {
     expect(waitingOffer(me.s, now), isNotNull);
   });
 
+  test('driving: no answer → asked again, 3 times in all', () async {
+    await connect();
+    await me.c.startAvailability(AvailabilityMode.driving, 30);
+    me.voice
+      ..simulateAnswer(VoiceAnswer.none)
+      ..simulateAnswer(VoiceAnswer.none)
+      ..simulateAnswer(VoiceAnswer.yes);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    await pump(50);
+    expect(me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?').length, 3);
+    expect(waitingOffer(me.s, now), isNotNull, reason: 'the third "yes"');
+  });
+
+  test('quick connect per friend: both turn it on → no question', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+    final yoniP = me.s.snapshot!.friends.single;
+    await me.c.setQuick(yoniP, true);
+    expect(me.s.snapshot!.quickMine, {yoniP.id});
+    expect(me.s.snapshot!.quickBoth(yoniP.id), isFalse);
+    // Yoni sees, once, "Netanel wants quick connect with you".
+    await yoni.c.refresh();
+    final ask = yoni.c.quickAsk;
+    expect(ask?.id, me.backend.userId);
+    await yoni.c.setQuick(ask!, true);
+    expect(yoni.c.quickAsk, isNull);
+    expect(yoni.s.snapshot!.quickBoth(me.backend.userId!), isTrue);
+    // Both free: no question — the call starts (5 seconds to cancel).
+    await me.c.startAvailability(AvailabilityMode.driving, 30);
+    await yoni.c.startAvailability(AvailabilityMode.driving, 30);
+    await me.c.refresh();
+    await pump(20);
+    expect(currentOffer(me.s, now), isNull);
+    expect(me.s.call?.quick, isTrue);
+    // Removing the friend removes the switch too.
+    await me.c.unmatch(yoniP);
+    expect(server.quickPicks, isEmpty);
+  });
+
   test('block removes the friend and hides me from them', () async {
     await connect();
     await me.c.block(me.s.snapshot!.friends.single);
@@ -1479,7 +1518,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 36)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 37)'));
     });
 
     test(

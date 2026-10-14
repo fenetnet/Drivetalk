@@ -488,7 +488,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 36;
+const kRequiredSchema = 37;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1819,37 +1819,47 @@ class RealController extends Notifier<RealState> {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
     final direct = offer.askedBy(p.id);
-    await voice.speak(
-      state.prefs.speakNames
-          ? direct
-                ? _l.voiceDirect(p.name)
-                : _l.realVoiceOffer(p.name, _genderKey(p.gender))
-          : direct
-          ? _l.voiceDirectAnon
-          : _l.realVoiceOfferAnon,
-    );
-    if (seq != _voiceSeq || !ref.mounted) return;
-    state = state.copyWith(listening: true);
-    final answer = await voice.listenYesNo();
-    if (seq != _voiceSeq || !ref.mounted) return;
-    state = state.copyWith(listening: false);
-    if (currentOffer(state, _now())?.id != offer.id) return;
-    switch (answer) {
-      case VoiceAnswer.yes:
-        await respond(offer, accept: true);
-      case VoiceAnswer.no:
-        await respond(offer, accept: false);
-      case VoiceAnswer.permissionDenied:
-        // Said once; after that the buttons simply do the job.
-        if (_store.getString(_micTipKey) == null) {
-          _store.setString(_micTipKey, 'shown');
-          _notify(RealNoticeKind.micDenied);
-        }
-      case VoiceAnswer.none:
-      case VoiceAnswer.unavailable:
-        break; // the big buttons are always there
+    final question = state.prefs.speakNames
+        ? direct
+              ? _l.voiceDirect(p.name)
+              : _l.realVoiceOffer(p.name, _genderKey(p.gender))
+        : direct
+        ? _l.voiceDirectAnon
+        : _l.realVoiceOfferAnon;
+    // No answer: asked again right away, 3 times in all (D-112).
+    for (var i = 0; i < _askTimes; i++) {
+      await voice.speak(question);
+      if (seq != _voiceSeq || !ref.mounted) return;
+      state = state.copyWith(listening: true);
+      final answer = await voice.listenYesNo(timeout: _askListen);
+      if (seq != _voiceSeq || !ref.mounted) return;
+      state = state.copyWith(listening: false);
+      if (currentOffer(state, _now())?.id != offer.id) return;
+      switch (answer) {
+        case VoiceAnswer.yes:
+          await respond(offer, accept: true);
+          return;
+        case VoiceAnswer.no:
+          await respond(offer, accept: false);
+          return;
+        case VoiceAnswer.permissionDenied:
+          // Said once; after that the buttons simply do the job.
+          if (_store.getString(_micTipKey) == null) {
+            _store.setString(_micTipKey, 'shown');
+            _notify(RealNoticeKind.micDenied);
+          }
+          return;
+        case VoiceAnswer.unavailable:
+          return; // the big buttons are always there
+        case VoiceAnswer.none:
+          break; // nothing heard: ask again
+      }
     }
   }
+
+  /// The question, up to 3 times; about 3 seconds to answer each time.
+  static const _askTimes = 3;
+  static const _askListen = Duration(seconds: 4);
 
   void _speak(String text) {
     _voiceSeq++;
@@ -2454,6 +2464,66 @@ class RealController extends Notifier<RealState> {
   Future<void> setRating(RealProfile friend, int rating) async {
     await _run(() => _backend.setRating(friend.id, rating.clamp(0, 5)));
     await refresh();
+  }
+
+  /// Quick connect with one friend (D-112).
+  Future<void> setQuick(RealProfile friend, bool on) async {
+    await _run(() => _backend.setQuick(friend.id, on));
+    _seenQuickAsk(friend.id);
+    await refresh();
+  }
+
+  static const _quickAsksKey = 'real.quickAsksSeen.v1';
+  static const _quickIntroKey = 'real.quickIntro.v1';
+
+  Set<String> get _quickAsksSeen {
+    final raw = _store.getString(_quickAsksKey);
+    if (raw == null) return {};
+    try {
+      return (jsonDecode(raw) as List).cast<String>().toSet();
+    } catch (_) {
+      return {};
+    }
+  }
+
+  void _seenQuickAsk(String id) {
+    final seen = _quickAsksSeen..add(id);
+    _store.setString(_quickAsksKey, jsonEncode(seen.toList()));
+  }
+
+  /// A friend turned quick connect on for me (and I haven't): asked once,
+  /// only here in the app.
+  RealProfile? get quickAsk {
+    final snap = state.snapshot;
+    if (snap == null) return null;
+    final seen = _quickAsksSeen;
+    for (final f in snap.friends) {
+      if (snap.quickTheirs.contains(f.id) &&
+          !snap.quickMine.contains(f.id) &&
+          !seen.contains(f.id)) {
+        return f;
+      }
+    }
+    return null;
+  }
+
+  void dismissQuickAsk(RealProfile f) {
+    _seenQuickAsk(f.id);
+    state = state.copyWith();
+  }
+
+  /// Once: "quick connect" exists (when I have friends and use none).
+  bool get showQuickIntro {
+    final snap = state.snapshot;
+    return snap != null &&
+        snap.friends.isNotEmpty &&
+        snap.quickMine.isEmpty &&
+        _store.getString(_quickIntroKey) == null;
+  }
+
+  void dismissQuickIntro() {
+    _store.setString(_quickIntroKey, 'seen');
+    state = state.copyWith();
   }
 
   static const _keepInactiveKey = 'real.keepInactive.v1';

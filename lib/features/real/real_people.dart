@@ -14,6 +14,7 @@ import '../common/widgets.dart';
 import '../match/safety_actions.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
+import 'real_quick.dart';
 
 /// Create an invitation and open the phone's share sheet (WhatsApp, SMS…).
 /// Falls back to copying when sharing isn't available.
@@ -166,9 +167,24 @@ class RealPeopleScreen extends ConsumerWidget {
               (snap!.availability[f.id]?.isActiveAt(now) ?? false) &&
               !(snap.availability[f.id]?.inCallAt(now) ?? false),
         ),
-        title: Text(
-          f.name,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(
+                f.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (snap.quickBoth(f.id))
+              const Padding(
+                padding: EdgeInsetsDirectional.only(start: 4),
+                child: Icon(
+                  Icons.bolt_rounded,
+                  size: 18,
+                  color: AppColors.terracotta,
+                ),
+              ),
+          ],
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,6 +351,9 @@ class RealPeopleScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               Text(f.name, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
+              // The easiest way to talk while driving (D-112): up front.
+              QuickSwitch(friend: f),
+              const Divider(),
               RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
               const Divider(),
               FriendCirclesPicker(friend: f),

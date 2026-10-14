@@ -1807,10 +1807,11 @@ Future<void> main() async {
   await calmAndPrivate();
   await securityFixes(eve);
   await answerFromNotification();
+  await quickPerFriend(eve);
 
   check(
-    await eve.rpc('schema_version') == 36,
-    'the server says its version (36)',
+    await eve.rpc('schema_version') == 37,
+    'the server says its version (37)',
   );
 
   // --- profile photos: private, friends only
@@ -2697,6 +2698,59 @@ Future<void> answerFromNotification() async {
   }
   await bg.dispose();
   for (final c in [na, nb]) {
+    await c.dispose();
+  }
+}
+
+/// D-112: quick connect per friend — one switch each; both on → the call
+/// starts by itself (5 seconds to cancel), without a question.
+Future<void> quickPerFriend(SupabaseClient eve) async {
+  final qa = await newUser('קרן', 'female');
+  final qb = await newUser('קובי', 'male');
+  await befriend(qa, qb);
+  await qa.rpc('set_quick', params: {'p_user': uid(qb), 'p_on': true});
+  final seen = List<Map<String, dynamic>>.from(await qb.rpc('quick_status'));
+  check(
+    seen.length == 1 &&
+        seen.single['user_id'] == uid(qa) &&
+        seen.single['mine'] == false &&
+        seen.single['theirs'] == true,
+    'a friend sees "X wants quick connect with you"',
+  );
+  try {
+    await eve.rpc('set_quick', params: {'p_user': uid(qb), 'p_on': true});
+    check(false, "quick connect only with a friend");
+  } on PostgrestException {
+    check(true, "quick connect only with a friend");
+  }
+  check(
+    List.from(await eve.rpc('quick_status')).isEmpty,
+    'a stranger sees nothing',
+  );
+  await qb.rpc('set_quick', params: {'p_user': uid(qa), 'p_on': true});
+  await free(qa);
+  await free(qb);
+  final quick = (await rows(
+    qa,
+    'match_offers',
+  )).where((o) => o['quick'] == true).toList();
+  check(
+    quick.length == 1 && quick.single['status'] == 'accepted',
+    'both turned it on → no question: the call starts (5 seconds to cancel)',
+  );
+  for (final c in [qa, qb]) {
+    await c.rpc('clear_availability');
+  }
+  await qb.from('connections').delete().neq('user_a', uid(eve));
+  check(
+    await dbCount(
+          "select count(*) from quick_picks where owner in "
+          "('${uid(qa)}', '${uid(qb)}')",
+        ) ==
+        0,
+    'no longer friends → the switch is gone too',
+  );
+  for (final c in [qa, qb]) {
     await c.dispose();
   }
 }

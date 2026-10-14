@@ -5,6 +5,7 @@ import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
 import 'package:drivetalk/features/real/real_permissions.dart';
+import 'package:drivetalk/features/real/real_quick.dart';
 import 'package:drivetalk/features/real/real_root.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
@@ -254,6 +255,52 @@ void main() {
     expect(find.text('מאושר'), findsNWidgets(3));
     expect(detector.enabled, isFalse, reason: 'driving detection: a choice');
     expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('quick connect: the switch, the ask card and the intro', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final f = friend.read(realProvider.notifier);
+      await f.setQuick(
+        friend.read(realProvider).snapshot!.friends.single,
+        true,
+      );
+      await me.read(realProvider.notifier).refresh();
+    });
+    final c = me.read(realProvider.notifier);
+    final yoni = me.read(realProvider).snapshot!.friends.single;
+    expect(c.quickAsk?.id, yoni.id);
+    await _show(
+      t,
+      me,
+      SingleChildScrollView(
+        child: Column(
+          children: [
+            QuickAskCard(friend: yoni),
+            const QuickIntroCard(),
+            QuickSwitch(friend: yoni),
+          ],
+        ),
+      ),
+    );
+    expect(find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'), findsOneWidget);
+    expect(find.text('חדש: חיבור מהיר'), findsOneWidget);
+    expect(find.text('חיבור מהיר'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.ensureVisible(find.byType(Switch));
+    await t.tap(find.byType(Switch));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('חיבור מהיר עם יונתן־אלכסנדר?'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.tap(find.text('להפעיל'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump(const Duration(milliseconds: 300));
+    expect(me.read(realProvider).snapshot!.quickBoth(yoni.id), isTrue);
     await _close(t);
   });
 

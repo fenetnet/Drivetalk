@@ -36,6 +36,9 @@ class DrivingService : Service() {
         private const val MAX_MS = 3 * 60 * 60 * 1000L
         /** "In a call" lasts 3 minutes on the server: renew every 2. */
         private const val PHONE_RENEW_MS = 2 * 60 * 1000L
+        /** No answer: the question again 3 seconds later, 3 times in all (D-112). */
+        private const val ASK_TIMES = 3
+        private const val ASK_GAP_MS = 3_000L
 
         /** Spoken like directions: other sound is lowered, not stopped. */
         private val VOICE_ATTRS: AudioAttributes = AudioAttributes.Builder()
@@ -171,7 +174,10 @@ class DrivingService : Service() {
                 tts?.setAudioAttributes(VOICE_ATTRS)
                 tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {}
-                    override fun onDone(utteranceId: String?) = releaseFocus()
+                    override fun onDone(utteranceId: String?) {
+                        releaseFocus()
+                        main.post { askAgain(utteranceId) }
+                    }
                     @Deprecated("Deprecated in Java")
                     override fun onError(utteranceId: String?) = releaseFocus()
                 })
@@ -236,7 +242,13 @@ class DrivingService : Service() {
                         "direct" -> store.text("bgVoiceDirect", store.text("voiceDirect", "{name}"))
                         else -> store.text("bgVoiceOffer", store.text("voiceOffer", "{name}"))
                     }
-                    speak(text.replace("{name}", o.name))
+                    val said = text.replace("{name}", o.name)
+                    if (o.kind == "quick") {
+                        speak(said)
+                    } else {
+                        askTexts[o.id] = said
+                        speak(said, "ask|${o.id}|1")
+                    }
                 }
             }
             if (offers.isNotEmpty()) callsUntil = System.currentTimeMillis() + 3 * 60_000L
@@ -276,12 +288,33 @@ class DrivingService : Service() {
         }
     }
 
-    private fun speak(text: String) {
+    private fun speak(text: String, utteranceId: String = "offer") {
         // On screen, the app asks by voice itself — never twice.
         if (MainActivity.onScreen) return
         if (!ttsReady) return
         requestFocus()
-        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "offer")
+        tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+    }
+
+    /** What was asked, per offer (to ask again word for word). */
+    private val askTexts = mutableMapOf<String, String>()
+
+    /** Not answered yet: ask again 3 seconds later, up to 3 times in all. */
+    private fun askAgain(utteranceId: String?) {
+        val parts = utteranceId?.split("|") ?: return
+        if (parts.size != 3 || parts[0] != "ask") return
+        val offerId = parts[1]
+        val n = parts[2].toIntOrNull() ?: return
+        if (n >= ASK_TIMES) return
+        main.postDelayed({
+            val text = askTexts[offerId]
+            if (text != null && running && !phoneBusy &&
+                quickShown.contains(offerId) &&
+                !DrivingReceiver.answered.contains(offerId)
+            ) {
+                speak(text, "ask|$offerId|${n + 1}")
+            }
+        }, ASK_GAP_MS)
     }
 
     private var focus: AudioFocusRequest? = null

@@ -13,6 +13,7 @@ import '../availability/pick_mode_screen.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import 'real_common.dart';
+import 'real_quick.dart';
 import 'real_people.dart';
 
 /// "Driving / walking / break / free" tapped on Home: straight to "for how
@@ -330,6 +331,8 @@ Widget? _tipCard(
   // "Still free?" after a question I didn't answer — only here, in the app.
   if (myActiveAvailability(s, now)?.missed ?? false) return const _MissedCard();
   if (s.newBuild != null) return const _UpdateCard();
+  // A friend turned quick connect on for me (D-112).
+  if (c.quickAsk case final f?) return QuickAskCard(friend: f);
   if (s.driving.enabled && (snap?.status.autoMissed ?? 0) >= 2) {
     return const _AutoMissedCard();
   }
@@ -337,6 +340,7 @@ Widget? _tipCard(
   if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
   if (c.newFriend case final f?) return _NewFriendCard(friend: f);
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  if (c.showQuickIntro) return const QuickIntroCard();
   if (c.showAddNumber) return const _AddNumberCard();
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);

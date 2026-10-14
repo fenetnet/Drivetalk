@@ -2179,4 +2179,57 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get answeredRetry => 'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.';
+
+  @override
+  String get quickTitle => 'חיבור מהיר';
+
+  @override
+  String get quickOffBody => 'כששניכם פנויים, השיחה יוצאת לבד. 5 שניות לבטל.';
+
+  @override
+  String quickWaitingBody(String name) {
+    return 'מופעל אצלך. יעבוד כשזה יופעל גם אצל $name.';
+  }
+
+  @override
+  String get quickBothBody =>
+      'פעיל אצל שניכם. כששניכם פנויים, השיחה יוצאת לבד.';
+
+  @override
+  String quickConfirmTitle(String name) {
+    return 'חיבור מהיר עם $name?';
+  }
+
+  @override
+  String quickConfirmBody(String name) {
+    return 'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של $name תופיע הצעה להפעיל גם.';
+  }
+
+  @override
+  String get quickTurnOn => 'להפעיל';
+
+  @override
+  String quickAskTitle(String name) {
+    return '$name רוצה חיבור מהיר איתך';
+  }
+
+  @override
+  String get quickAskBody =>
+      'כששניכם פנויים, השיחה תצא לבד, בלי לשאול. לשניכם יש 5 שניות לבטל.';
+
+  @override
+  String get quickAskYes => 'להפעיל גם';
+
+  @override
+  String get quickIntroTitle => 'חדש: חיבור מהיר';
+
+  @override
+  String get quickIntroBody =>
+      'לחברים הכי קרובים: כששניכם פנויים, השיחה יוצאת לבד, בלי לשאול. 5 שניות לבטל.';
+
+  @override
+  String get quickIntroPick => 'לבחור חברים';
+
+  @override
+  String get quickPickTitle => 'חיבור מהיר עם…';
 }

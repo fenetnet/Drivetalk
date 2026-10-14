@@ -97,6 +97,9 @@ abstract class RealBackend {
   /// How much I want to talk with a friend, 0 (never offer) – 5 (first).
   Future<void> setRating(String friendId, int rating);
 
+  /// Quick connect with one friend (D-112).
+  Future<void> setQuick(String userId, bool on);
+
   /// Hide my status from friends (and theirs from me).
   Future<void> setHideStatus(bool hide);
 

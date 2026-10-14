@@ -1326,5 +1326,81 @@
   "answeredRetry": "לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.",
   "@answeredRetry": {
     "description": "After \"Talk\": the answer did not go through; tap to answer in the app"
+  },
+  "quickTitle": "חיבור מהיר",
+  "@quickTitle": {
+    "description": "Quick connect switch title"
+  },
+  "quickOffBody": "כששניכם פנויים, השיחה יוצאת לבד. 5 שניות לבטל.",
+  "@quickOffBody": {
+    "description": "quickOffBody"
+  },
+  "quickWaitingBody": "מופעל אצלך. יעבוד כשזה יופעל גם אצל {name}.",
+  "@quickWaitingBody": {
+    "description": "quickWaitingBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickBothBody": "פעיל אצל שניכם. כששניכם פנויים, השיחה יוצאת לבד.",
+  "@quickBothBody": {
+    "description": "quickBothBody"
+  },
+  "quickConfirmTitle": "חיבור מהיר עם {name}?",
+  "@quickConfirmTitle": {
+    "description": "quickConfirmTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickConfirmBody": "כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.",
+  "@quickConfirmBody": {
+    "description": "quickConfirmBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickTurnOn": "להפעיל",
+  "@quickTurnOn": {
+    "description": "quickTurnOn"
+  },
+  "quickAskTitle": "{name} רוצה חיבור מהיר איתך",
+  "@quickAskTitle": {
+    "description": "quickAskTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickAskBody": "כששניכם פנויים, השיחה תצא לבד, בלי לשאול. לשניכם יש 5 שניות לבטל.",
+  "@quickAskBody": {
+    "description": "quickAskBody"
+  },
+  "quickAskYes": "להפעיל גם",
+  "@quickAskYes": {
+    "description": "quickAskYes"
+  },
+  "quickIntroTitle": "חדש: חיבור מהיר",
+  "@quickIntroTitle": {
+    "description": "quickIntroTitle"
+  },
+  "quickIntroBody": "לחברים הכי קרובים: כששניכם פנויים, השיחה יוצאת לבד, בלי לשאול. 5 שניות לבטל.",
+  "@quickIntroBody": {
+    "description": "quickIntroBody"
+  },
+  "quickIntroPick": "לבחור חברים",
+  "@quickIntroPick": {
+    "description": "quickIntroPick"
+  },
+  "quickPickTitle": "חיבור מהיר עם…",
+  "@quickPickTitle": {
+    "description": "quickPickTitle"
   }
 }

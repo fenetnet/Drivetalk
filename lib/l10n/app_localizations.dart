@@ -3681,6 +3681,90 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.'**
   String get answeredRetry;
+
+  /// Quick connect switch title
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר'**
+  String get quickTitle;
+
+  /// quickOffBody
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים, השיחה יוצאת לבד. 5 שניות לבטל.'**
+  String get quickOffBody;
+
+  /// quickWaitingBody
+  ///
+  /// In he, this message translates to:
+  /// **'מופעל אצלך. יעבוד כשזה יופעל גם אצל {name}.'**
+  String quickWaitingBody(String name);
+
+  /// quickBothBody
+  ///
+  /// In he, this message translates to:
+  /// **'פעיל אצל שניכם. כששניכם פנויים, השיחה יוצאת לבד.'**
+  String get quickBothBody;
+
+  /// quickConfirmTitle
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר עם {name}?'**
+  String quickConfirmTitle(String name);
+
+  /// quickConfirmBody
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.'**
+  String quickConfirmBody(String name);
+
+  /// quickTurnOn
+  ///
+  /// In he, this message translates to:
+  /// **'להפעיל'**
+  String get quickTurnOn;
+
+  /// quickAskTitle
+  ///
+  /// In he, this message translates to:
+  /// **'{name} רוצה חיבור מהיר איתך'**
+  String quickAskTitle(String name);
+
+  /// quickAskBody
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים, השיחה תצא לבד, בלי לשאול. לשניכם יש 5 שניות לבטל.'**
+  String get quickAskBody;
+
+  /// quickAskYes
+  ///
+  /// In he, this message translates to:
+  /// **'להפעיל גם'**
+  String get quickAskYes;
+
+  /// quickIntroTitle
+  ///
+  /// In he, this message translates to:
+  /// **'חדש: חיבור מהיר'**
+  String get quickIntroTitle;
+
+  /// quickIntroBody
+  ///
+  /// In he, this message translates to:
+  /// **'לחברים הכי קרובים: כששניכם פנויים, השיחה יוצאת לבד, בלי לשאול. 5 שניות לבטל.'**
+  String get quickIntroBody;
+
+  /// quickIntroPick
+  ///
+  /// In he, this message translates to:
+  /// **'לבחור חברים'**
+  String get quickIntroPick;
+
+  /// quickPickTitle
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור מהיר עם…'**
+  String get quickPickTitle;
 }
 
 class _AppLocalizationsDelegate

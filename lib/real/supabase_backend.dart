@@ -212,6 +212,13 @@ class SupabaseRealBackend implements RealBackend {
             (r) => [Map<String, dynamic>.from(r as Map)],
             onError: (Object _) => <Map<String, dynamic>>[],
           ),
+      // Quick connect per friend (optional on an older server).
+      _c
+          .rpc('quick_status')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            onError: (Object _) => <Map<String, dynamic>>[],
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -283,6 +290,14 @@ class SupabaseRealBackend implements RealBackend {
       hidden: results[8].firstOrNull?['hide_status'] == true,
       othersModes: modesFromKeys(results[9].firstOrNull?['show_modes']),
       status: _myStatus(results[11].firstOrNull),
+      quickMine: {
+        for (final r in results[12])
+          if (r['mine'] == true) r['user_id'] as String,
+      },
+      quickTheirs: {
+        for (final r in results[12])
+          if (r['theirs'] == true) r['user_id'] as String,
+      },
       askable: results[10].firstOrNull?['old'] == true
           ? null
           : {for (final r in results[10]) r['id'] as String},
@@ -632,6 +647,10 @@ class SupabaseRealBackend implements RealBackend {
       params: {'p_friend': friendId, 'p_rating': rating},
     ),
   );
+
+  @override
+  Future<void> setQuick(String userId, bool on) =>
+      _guard(() => _c.rpc('set_quick', params: {'p_user': userId, 'p_on': on}));
 
   @override
   Future<void> setHideStatus(bool hide) =>

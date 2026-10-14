@@ -294,11 +294,22 @@ class RealSnapshot {
     this.othersModes,
     this.status = const MyStatus(),
     this.askable,
+    this.quickMine = const {},
+    this.quickTheirs = const {},
   });
 
   /// Free friends I can really ask now (D-107). null = unknown (an older
   /// server): nobody is filtered out.
   final Set<String>? askable;
+
+  /// Quick connect (D-112): friends I turned it on for (also via a quick
+  /// group), and friends who turned it on for me.
+  final Set<String> quickMine;
+  final Set<String> quickTheirs;
+
+  /// Both sides turned it on: the call can start by itself.
+  bool quickBoth(String id) =>
+      quickMine.contains(id) && quickTheirs.contains(id);
 
   /// My private settings and counts (see [MyStatus]).
   final MyStatus status;
