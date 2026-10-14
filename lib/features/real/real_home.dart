@@ -23,7 +23,10 @@ Future<void> openRealDuration(
   WidgetRef ref,
   AvailabilityMode mode,
 ) async {
+  // Read everything now: the screen behind may change (a trip starts, a
+  // question arrives) while the picker is open, and its `ref` goes with it.
   final c = ref.read(realProvider.notifier);
+  final circles = ref.read(realProvider).snapshot?.circles ?? const [];
   if (c.needsPermissionIntro) {
     final l = context.l10n;
     final go = await showDialog<bool>(
@@ -46,7 +49,6 @@ Future<void> openRealDuration(
     if (go != true) return;
     c.markPermissionIntroShown();
   }
-  final circles = ref.read(realProvider).snapshot?.circles ?? const [];
   // A message at the bottom would fly between the two pages: clear it.
   messengerKey.currentState?.removeCurrentSnackBar();
   await navigatorKey.currentState?.push(
@@ -54,9 +56,8 @@ Future<void> openRealDuration(
       builder: (_) => PickDurationScreen(
         mode: mode,
         realCircles: [for (final c in circles) (c.id, c.name)],
-        onStart: (mode, minutes, circleId) => ref
-            .read(realProvider.notifier)
-            .startAvailability(mode, minutes, circleId: circleId),
+        onStart: (mode, minutes, circleId) =>
+            c.startAvailability(mode, minutes, circleId: circleId),
       ),
     ),
   );

@@ -1,5 +1,6 @@
 // The new cards and screens (D-103…D-106) on a small phone with large
 // text: shown, nothing cut off, nothing overflowing.
+import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_home.dart';
@@ -303,6 +304,64 @@ void main() {
     expect(me.read(realProvider).snapshot!.quickBoth(yoni.id), isTrue);
     await _close(t);
   });
+
+  testWidgets(
+    'picking minutes after the screen behind changed does not crash',
+    (t) async {
+      final me = _phone(server, driving: FakeDrivingDetector(supported: false));
+      _open.add(me);
+      await t.runAsync(() async {
+        await Future<void>.delayed(Duration.zero);
+        await me
+            .read(realProvider.notifier)
+            .signIn('נתנאל', Gender.male, phone: '0521111111');
+      });
+      final showButton = ValueNotifier(true);
+      await t.pumpWidget(
+        UncontrolledProviderScope(
+          container: me,
+          child: MaterialApp(
+            navigatorKey: navigatorKey,
+            locale: const Locale('he'),
+            supportedLocales: const [Locale('he')],
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: Scaffold(
+              body: ValueListenableBuilder<bool>(
+                valueListenable: showButton,
+                builder: (_, show, _) => show
+                    ? Consumer(
+                        builder: (context, ref, _) => TextButton(
+                          onPressed: () => openRealDuration(
+                            context,
+                            ref,
+                            AvailabilityMode.driving,
+                          ),
+                          child: const Text('go'),
+                        ),
+                      )
+                    : const Text('another screen'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await t.tap(find.text('go'));
+      await t.pumpAndSettle();
+      // A trip starts / a question arrives: the screen behind changes.
+      showButton.value = false;
+      await t.pump();
+      await t.ensureVisible(find.text('30 דק׳'));
+      await t.tap(find.text('30 דק׳'));
+      expect(t.takeException(), isNull);
+      await t.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        await me.read(realProvider.notifier).refresh();
+      });
+      await t.pump();
+      expect(me.read(realProvider).snapshot?.mine, isNotNull);
+      await _close(t);
+    },
+  );
 
   testWidgets('during a call: to the main screen and back', (t) async {
     final (me, friend) = await twoFriends(t);
