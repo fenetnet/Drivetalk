@@ -360,6 +360,48 @@ void main() {
   });
 
   test(
+    'a call I missed in the app still asks "when to suggest X again?"',
+    () async {
+      await connect(myPhone: '', yoniPhone: '050-123-4567');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      // My app is closed; Yoni says yes and we talk (e.g. from the
+      // notification). I open the app half an hour later.
+      me.dispose();
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      now = now.add(const Duration(minutes: 30));
+      ProviderContainer open() => ProviderContainer(
+        overrides: [
+          realBackendProvider.overrideWithValue(me.backend),
+          localStoreProvider.overrideWithValue(me.store),
+          realClockProvider.overrideWithValue(clock),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          phoneDialerProvider.overrideWithValue(me.dialer),
+        ],
+      );
+      var again = open();
+      again.read(realProvider);
+      await pump();
+      await again.read(realProvider.notifier).refresh();
+      expect(me.dialer.dialed, isEmpty, reason: 'too late to dial now');
+      expect(again.read(realProvider).callStage, CallStage.feedback);
+      expect(again.read(realProvider).call?.other.name, 'יוני');
+      await again.read(realProvider.notifier).afterCall(7);
+      again.dispose();
+      // Asked once: not again after another start.
+      again = open();
+      again.read(realProvider);
+      await pump();
+      await again.read(realProvider.notifier).refresh();
+      expect(again.read(realProvider).callStage, CallStage.none);
+      again.dispose();
+    },
+  );
+
+  test(
     'both free → both asked → both yes → I call Yoni on the phone',
     () async {
       await connect(myPhone: '', yoniPhone: '050-123-4567');

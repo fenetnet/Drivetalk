@@ -1532,8 +1532,22 @@ class RealController extends Notifier<RealState> {
           // dial from the background — handled when the app is opened.
           if (!_foreground && fresh) break;
           _markHandled(o.id);
-          if (fresh && other != null && _callIdle(state)) {
+          if (other == null || !_callIdle(state)) break;
+          if (fresh) {
             unawaited(_beginCall(o, other));
+          } else if (now.difference(o.updatedAt) < const Duration(hours: 12)) {
+            // The call happened while the app was closed (e.g. answered
+            // from the notification): still ask "when to suggest X again?".
+            state = state.copyWith(
+              callStage: CallStage.feedback,
+              call: RealCall(
+                offerId: o.id,
+                other: other,
+                role: CallRole.inApp,
+                startedAt: o.updatedAt,
+                quick: o.quick,
+              ),
+            );
           }
         case OfferStatus.declined when o.laterFrom != null && o.laterFrom != me:
           _markHandled(o.id);
