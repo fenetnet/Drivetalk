@@ -2365,7 +2365,7 @@ abstract class AppLocalizations {
   /// No description provided for @realLaterButton.
   ///
   /// In he, this message translates to:
-  /// **'אולי אחר כך'**
+  /// **'עכשיו לא, אבל אשמח בהמשך'**
   String get realLaterButton;
 
   /// No description provided for @realLaterNote.

@@ -1399,7 +1399,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.';
 
   @override
-  String get realLaterButton => 'אולי אחר כך';
+  String get realLaterButton => 'עכשיו לא, אבל אשמח בהמשך';
 
   @override
   String realLaterNote(String name) {
