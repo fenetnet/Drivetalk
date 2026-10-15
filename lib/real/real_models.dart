@@ -181,6 +181,9 @@ class RealOffer {
     this.sharedUntil,
     this.lastTalk,
     this.direct = false,
+    this.acceptedAt,
+    this.endedA = false,
+    this.endedB = false,
   });
   final String id;
   final String userA;
@@ -216,6 +219,14 @@ class RealOffer {
 
   /// Someone tapped the other one (not the app's suggestion).
   final bool direct;
+
+  /// When both said yes (null = not yet / older server).
+  final DateTime? acceptedAt;
+
+  /// Each side's call is over (after-call answered / gave up).
+  final bool endedA;
+  final bool endedB;
+  bool get callOver => endedA || endedB;
 
   String otherId(String me) => me == userA ? userB : userA;
 

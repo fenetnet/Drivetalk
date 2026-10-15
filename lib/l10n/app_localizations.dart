@@ -136,12 +136,6 @@ abstract class AppLocalizations {
   /// **'לעצור זמינות'**
   String get stopAvailability;
 
-  /// No description provided for @pickModeTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'מה המצב?'**
-  String get pickModeTitle;
-
   /// No description provided for @modeDriving.
   ///
   /// In he, this message translates to:
@@ -405,12 +399,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לדלג'**
   String get skip;
-
-  /// No description provided for @driverSearching.
-  ///
-  /// In he, this message translates to:
-  /// **'מחפשים...'**
-  String get driverSearching;
 
   /// No description provided for @driverStop.
   ///
@@ -739,7 +727,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotConfiguredTitle.
   ///
   /// In he, this message translates to:
-  /// **'הבדיקה עם חבר עוד לא מחוברת'**
+  /// **'DriveBond עוד לא מחוברת לשרת'**
   String get realNotConfiguredTitle;
 
   /// No description provided for @realNotConfiguredBody.
@@ -831,18 +819,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נעדכן ברגע שמישהו מתאים יתפנה.'**
   String get realNobodyFreeYet;
-
-  /// No description provided for @homeIntentsTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'אשמח לדבר'**
-  String get homeIntentsTitle;
-
-  /// No description provided for @homeIntentsBody.
-  ///
-  /// In he, this message translates to:
-  /// **'כשתהיו פנויים יחד — נציע אותם קודם.'**
-  String get homeIntentsBody;
 
   /// No description provided for @realNoFriendsTitle.
   ///
@@ -1282,84 +1258,6 @@ abstract class AppLocalizations {
   /// **'כולם'**
   String get routineEveryone;
 
-  /// No description provided for @outcomeQuestion.
-  ///
-  /// In he, this message translates to:
-  /// **'איך היה?'**
-  String get outcomeQuestion;
-
-  /// No description provided for @outcomeGood.
-  ///
-  /// In he, this message translates to:
-  /// **'היה טוב'**
-  String get outcomeGood;
-
-  /// No description provided for @outcomeNotSoon.
-  ///
-  /// In he, this message translates to:
-  /// **'לא להציע בקרוב'**
-  String get outcomeNotSoon;
-
-  /// No description provided for @outcomeNoTalk.
-  ///
-  /// In he, this message translates to:
-  /// **'לא דיברנו בפועל'**
-  String get outcomeNoTalk;
-
-  /// No description provided for @intentTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'אשמח לדבר'**
-  String get intentTitle;
-
-  /// No description provided for @intentExplain.
-  ///
-  /// In he, this message translates to:
-  /// **'{gender, select, female{{name} לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.} male{{name} לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.} other{שום הודעה לא נשלחת ל{name}. כששניכם תהיו פנויים — נציע את {name} קודם.}}'**
-  String intentExplain(String name, String gender);
-
-  /// No description provided for @intentToday.
-  ///
-  /// In he, this message translates to:
-  /// **'היום'**
-  String get intentToday;
-
-  /// No description provided for @intentWeek.
-  ///
-  /// In he, this message translates to:
-  /// **'השבוע'**
-  String get intentWeek;
-
-  /// No description provided for @intentAlways.
-  ///
-  /// In he, this message translates to:
-  /// **'עד שאבטל'**
-  String get intentAlways;
-
-  /// No description provided for @intentRemove.
-  ///
-  /// In he, this message translates to:
-  /// **'להסיר'**
-  String get intentRemove;
-
-  /// No description provided for @intentBadgeToday.
-  ///
-  /// In he, this message translates to:
-  /// **'אשמח לדבר · היום'**
-  String get intentBadgeToday;
-
-  /// No description provided for @intentBadgeWeek.
-  ///
-  /// In he, this message translates to:
-  /// **'אשמח לדבר · השבוע'**
-  String get intentBadgeWeek;
-
-  /// No description provided for @intentBadgeAlways.
-  ///
-  /// In he, this message translates to:
-  /// **'אשמח לדבר'**
-  String get intentBadgeAlways;
-
   /// No description provided for @realCallingNow.
   ///
   /// In he, this message translates to:
@@ -1399,7 +1297,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNoNumbersBody.
   ///
   /// In he, this message translates to:
-  /// **'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".'**
+  /// **'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי לשיחה רגילה\".'**
   String get realNoNumbersBody;
 
   /// No description provided for @realDialFailedTitle.
@@ -1465,7 +1363,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteProblemOwn.
   ///
   /// In he, this message translates to:
-  /// **'זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.'**
+  /// **'זו הזמנה ששלחת בעצמך 🙂 אפשר לשלוח אותה לחבר.'**
   String get realInviteProblemOwn;
 
   /// No description provided for @realInviteProblemNotFound.
@@ -1501,7 +1399,7 @@ abstract class AppLocalizations {
   /// No description provided for @realErrorSchema.
   ///
   /// In he, this message translates to:
-  /// **'השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).'**
+  /// **'השרת עוד לא מוכן. נסו שוב מאוחר יותר.'**
   String get realErrorSchema;
 
   /// No description provided for @realErrorInvalidPhone.
@@ -1555,7 +1453,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTestIntro.
   ///
   /// In he, this message translates to:
-  /// **'כאן רואים שהכל עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.'**
+  /// **'כאן רואים שהכול עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.'**
   String get realTestIntro;
 
   /// No description provided for @realTestSteps.
@@ -1957,31 +1855,31 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.'**
+  /// **'כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.'**
   String get realCirclesIntro;
 
   /// No description provided for @circleSeesAll.
   ///
   /// In he, this message translates to:
-  /// **'רואים שאתם פנויים: בכל מצב'**
+  /// **'רואים שיש לך זמן: בכל מצב'**
   String get circleSeesAll;
 
   /// No description provided for @circleSeesSome.
   ///
   /// In he, this message translates to:
-  /// **'רואים שאתם פנויים: {modes}'**
+  /// **'רואים שיש לך זמן: {modes}'**
   String circleSeesSome(String modes);
 
   /// No description provided for @circleSeesNone.
   ///
   /// In he, this message translates to:
-  /// **'הזמינות שלכם מוסתרת מהקבוצה'**
+  /// **'מוסתר מהקבוצה שיש לך זמן'**
   String get circleSeesNone;
 
   /// No description provided for @circleRuleQuestion.
   ///
   /// In he, this message translates to:
-  /// **'מתי חברי הקבוצה יוכלו לראות שאתם פנויים?'**
+  /// **'מתי חברי הקבוצה יוכלו לראות שיש לך זמן?'**
   String get circleRuleQuestion;
 
   /// No description provided for @modeInDriving.
@@ -2089,7 +1987,7 @@ abstract class AppLocalizations {
   /// No description provided for @whoSeesBody.
   ///
   /// In he, this message translates to:
-  /// **'כשמסמנים שיש זמן לשיחה, החברים רואים את זה ויכולים לקבל הצעה לדבר איתך. כאן קובעים, לכל קבוצה, אם היא תראה את זה: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.'**
+  /// **'כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.'**
   String get whoSeesBody;
 
   /// No description provided for @whoSeesTwo.
@@ -2103,18 +2001,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כל השאר'**
   String get whoSeesOthers;
-
-  /// No description provided for @whoSeesOthersBody.
-  ///
-  /// In he, this message translates to:
-  /// **'חברים שלא נמצאים באף קבוצה'**
-  String get whoSeesOthersBody;
-
-  /// No description provided for @whoSeesPeople.
-  ///
-  /// In he, this message translates to:
-  /// **'אנשים בקבוצה'**
-  String get whoSeesPeople;
 
   /// No description provided for @showAlways.
   ///
@@ -2155,7 +2041,7 @@ abstract class AppLocalizations {
   /// No description provided for @friendCirclesBody.
   ///
   /// In he, this message translates to:
-  /// **'הקבוצה קובעת אם הוא רואה שאפשר לדבר איתך.'**
+  /// **'הקבוצה קובעת אם רואים שאפשר לדבר איתך.'**
   String get friendCirclesBody;
 
   /// No description provided for @hiddenUnhide.
@@ -2470,18 +2356,6 @@ abstract class AppLocalizations {
   /// **'להוסיף לאנשים שלי?'**
   String get newContactBody;
 
-  /// No description provided for @hideStatusTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'להסתיר מתי יש לי זמן'**
-  String get hideStatusTitle;
-
-  /// No description provided for @hideStatusBody.
-  ///
-  /// In he, this message translates to:
-  /// **'החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.'**
-  String get hideStatusBody;
-
   /// No description provided for @hiddenNote.
   ///
   /// In he, this message translates to:
@@ -2527,7 +2401,7 @@ abstract class AppLocalizations {
   /// No description provided for @addNumberBody.
   ///
   /// In he, this message translates to:
-  /// **'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אלייך. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".'**
+  /// **'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אליך בשיחה רגילה. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".'**
   String get addNumberBody;
 
   /// No description provided for @addNumberGo.
@@ -2575,7 +2449,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunRoutineBody.
   ///
   /// In he, this message translates to:
-  /// **'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. השעה ניתנת לשינוי בעיפרון. אפשר לשנות בכל רגע גם בהגדרות ← השגרה שלי.'**
+  /// **'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.'**
   String get firstRunRoutineBody;
 
   /// No description provided for @firstRunRoutineMorning.
@@ -2710,24 +2584,6 @@ abstract class AppLocalizations {
   /// **'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.'**
   String get statsNote;
 
-  /// No description provided for @notificationsTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'התראות'**
-  String get notificationsTitle;
-
-  /// No description provided for @notificationsOnBody.
-  ///
-  /// In he, this message translates to:
-  /// **'דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.'**
-  String get notificationsOnBody;
-
-  /// No description provided for @notificationsOffBody.
-  ///
-  /// In he, this message translates to:
-  /// **'כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.'**
-  String get notificationsOffBody;
-
   /// No description provided for @statsReports.
   ///
   /// In he, this message translates to:
@@ -2739,30 +2595,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}'**
   String realInviteStore(String url);
-
-  /// No description provided for @inactiveTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'{name}: בלי כניסה ל-DriveBond כבר שבוע'**
-  String inactiveTitle(String name);
-
-  /// No description provided for @inactiveBody.
-  ///
-  /// In he, this message translates to:
-  /// **'אולי האפליקציה הוסרה. להסיר מהרשימה שלך?'**
-  String get inactiveBody;
-
-  /// No description provided for @inactiveRemove.
-  ///
-  /// In he, this message translates to:
-  /// **'להסיר מהרשימה'**
-  String get inactiveRemove;
-
-  /// No description provided for @inactiveKeep.
-  ///
-  /// In he, this message translates to:
-  /// **'להשאיר'**
-  String get inactiveKeep;
 
   /// No description provided for @inactiveDays.
   ///
@@ -3277,7 +3109,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHideInCallHint.
   ///
   /// In he, this message translates to:
-  /// **'בזמן שיחה החברים פשוט לא יראו שיש לך זמן.'**
+  /// **'בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.'**
   String get settingsHideInCallHint;
 
   /// No description provided for @settingsQuietHours.
@@ -3379,7 +3211,7 @@ abstract class AppLocalizations {
   /// No description provided for @freeNotNowBody.
   ///
   /// In he, this message translates to:
-  /// **'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.'**
+  /// **'ממש עכשיו אי אפשר להציע שיחה (למשל בתחילת נסיעה, או כשכבר שאלתם הפעם). כשזה יתאפשר, זה יופיע כרגיל.'**
   String get freeNotNowBody;
 
   /// No description provided for @freeNotNowMine.
@@ -3529,7 +3361,7 @@ abstract class AppLocalizations {
   /// Ask for all the permissions one after the other
   ///
   /// In he, this message translates to:
-  /// **'לאשר הכל'**
+  /// **'לאשר הכול'**
   String get permsAllowAll;
 
   /// Ask for one permission
@@ -3589,13 +3421,13 @@ abstract class AppLocalizations {
   ///
   ///
   /// In he, this message translates to:
-  /// **'כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).'**
+  /// **'כדי שחיסכון הסוללה לא יעצור את ההתראות באמצע נסיעה.'**
   String get permsBgBody;
 
   ///
   ///
   /// In he, this message translates to:
-  /// **'זיהוי נסיעה אוטומטי (רשות)'**
+  /// **'זמינות אוטומטית בנסיעה (רשות)'**
   String get permsAutoTitle;
 
   ///
@@ -3655,7 +3487,7 @@ abstract class AppLocalizations {
   /// quickConfirmBody
   ///
   /// In he, this message translates to:
-  /// **'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.'**
+  /// **'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. יש 5 שניות לבטל: אם אחד מכם מבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.'**
   String quickConfirmBody(String name);
 
   /// quickTurnOn
@@ -3709,7 +3541,7 @@ abstract class AppLocalizations {
   /// Switch subtitle: the friend turned it on, I did not
   ///
   /// In he, this message translates to:
-  /// **'{name} כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?'**
+  /// **'אצל {name} חיבור מהיר איתך כבר פועל. להפעיל גם?'**
   String quickTheyWantBody(String name);
 
   /// Friend list: this friend turned quick connect on for me
@@ -3783,6 +3615,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הגדרות ההתראות בטלפון'**
   String get permsPhoneNotif;
+
+  /// No description provided for @realCirclesNone.
+  ///
+  /// In he, this message translates to:
+  /// **'משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן'**
+  String get realCirclesNone;
 }
 
 class _AppLocalizationsDelegate

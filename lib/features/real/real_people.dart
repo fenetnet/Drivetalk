@@ -250,10 +250,21 @@ class RealPeopleScreen extends ConsumerWidget {
               icon: const Icon(Icons.share_rounded),
               label: Text(l.realInviteFriend),
             ),
+            // An invitation without a link (only a code): enter it here.
+            Center(
+              child: TextButton(
+                onPressed: () => openInviteCodeSheet(context, ref),
+                child: Text(l.realHaveCode),
+              ),
+            ),
 
             const SizedBox(height: 12),
             const _ContactsCard(),
             const SizedBox(height: 12),
+            if (friends.isNotEmpty) ...[
+              const RealCirclesEntry(),
+              const SizedBox(height: 12),
+            ],
             if (friends.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24),
@@ -272,7 +283,6 @@ class RealPeopleScreen extends ConsumerWidget {
                 subtitle: Text(l.peopleAsleepBody),
                 children: [for (final f in asleep) friendCard(f)],
               ),
-            if (friends.isNotEmpty) const RealCirclesSection(),
             const SizedBox(height: 8),
             Center(
               child: TextButton.icon(

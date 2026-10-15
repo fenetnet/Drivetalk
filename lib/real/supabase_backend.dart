@@ -1112,6 +1112,9 @@ class SupabaseRealBackend implements RealBackend {
     sharedUntil: _maybeTime(r['shared_until']),
     lastTalk: _maybeTime(r['last_talk']),
     direct: r['direct'] == true,
+    acceptedAt: _maybeTime(r['accepted_at']),
+    endedA: r['ended_a'] == true,
+    endedB: r['ended_b'] == true,
   );
 
   static MyStatus _myStatus(Map<String, dynamic>? r) => r == null

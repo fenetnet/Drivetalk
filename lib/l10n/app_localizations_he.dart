@@ -40,9 +40,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get stopAvailability => 'לעצור זמינות';
 
   @override
-  String get pickModeTitle => 'מה המצב?';
-
-  @override
   String get modeDriving => 'נסיעה';
 
   @override
@@ -203,9 +200,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get skip => 'לדלג';
-
-  @override
-  String get driverSearching => 'מחפשים...';
 
   @override
   String get driverStop => 'לעצור';
@@ -389,7 +383,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get daySat => 'ש׳';
 
   @override
-  String get realNotConfiguredTitle => 'הבדיקה עם חבר עוד לא מחוברת';
+  String get realNotConfiguredTitle => 'DriveBond עוד לא מחוברת לשרת';
 
   @override
   String get realNotConfiguredBody =>
@@ -447,12 +441,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNobodyFreeYet => 'נעדכן ברגע שמישהו מתאים יתפנה.';
-
-  @override
-  String get homeIntentsTitle => 'אשמח לדבר';
-
-  @override
-  String get homeIntentsBody => 'כשתהיו פנויים יחד — נציע אותם קודם.';
 
   @override
   String get realNoFriendsTitle => 'עוד אין פה חברים';
@@ -732,55 +720,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get routineEveryone => 'כולם';
 
   @override
-  String get outcomeQuestion => 'איך היה?';
-
-  @override
-  String get outcomeGood => 'היה טוב';
-
-  @override
-  String get outcomeNotSoon => 'לא להציע בקרוב';
-
-  @override
-  String get outcomeNoTalk => 'לא דיברנו בפועל';
-
-  @override
-  String get intentTitle => 'אשמח לדבר';
-
-  @override
-  String intentExplain(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female':
-          '$name לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.',
-      'male':
-          '$name לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.',
-      'other':
-          'שום הודעה לא נשלחת ל$name. כששניכם תהיו פנויים — נציע את $name קודם.',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get intentToday => 'היום';
-
-  @override
-  String get intentWeek => 'השבוע';
-
-  @override
-  String get intentAlways => 'עד שאבטל';
-
-  @override
-  String get intentRemove => 'להסיר';
-
-  @override
-  String get intentBadgeToday => 'אשמח לדבר · היום';
-
-  @override
-  String get intentBadgeWeek => 'אשמח לדבר · השבוע';
-
-  @override
-  String get intentBadgeAlways => 'אשמח לדבר';
-
-  @override
   String realCallingNow(String name) {
     return 'מתקשרים ל$name…';
   }
@@ -809,7 +748,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNoNumbersBody =>
-      'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".';
+      'לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי לשיחה רגילה\".';
 
   @override
   String get realDialFailedTitle => 'לא הצלחנו לפתוח את החייגן';
@@ -854,7 +793,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realInviteProblemExpired => 'פג תוקף ההזמנה. בקשו הזמנה חדשה.';
 
   @override
-  String get realInviteProblemOwn => 'זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.';
+  String get realInviteProblemOwn =>
+      'זו הזמנה ששלחת בעצמך 🙂 אפשר לשלוח אותה לחבר.';
 
   @override
   String get realInviteProblemNotFound =>
@@ -878,7 +818,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).';
 
   @override
-  String get realErrorSchema => 'השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).';
+  String get realErrorSchema => 'השרת עוד לא מוכן. נסו שוב מאוחר יותר.';
 
   @override
   String get realErrorInvalidPhone => 'מספר הטלפון לא נראה תקין';
@@ -910,7 +850,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realTestIntro =>
-      'כאן רואים שהכל עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.';
+      'כאן רואים שהכול עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.';
 
   @override
   String get realTestSteps =>
@@ -1133,21 +1073,21 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCirclesIntro =>
-      'בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.';
+      'כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.';
 
   @override
-  String get circleSeesAll => 'רואים שאתם פנויים: בכל מצב';
+  String get circleSeesAll => 'רואים שיש לך זמן: בכל מצב';
 
   @override
   String circleSeesSome(String modes) {
-    return 'רואים שאתם פנויים: $modes';
+    return 'רואים שיש לך זמן: $modes';
   }
 
   @override
-  String get circleSeesNone => 'הזמינות שלכם מוסתרת מהקבוצה';
+  String get circleSeesNone => 'מוסתר מהקבוצה שיש לך זמן';
 
   @override
-  String get circleRuleQuestion => 'מתי חברי הקבוצה יוכלו לראות שאתם פנויים?';
+  String get circleRuleQuestion => 'מתי חברי הקבוצה יוכלו לראות שיש לך זמן?';
 
   @override
   String get modeInDriving => 'בנסיעה';
@@ -1212,19 +1152,13 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get whoSeesBody =>
-      'כשמסמנים שיש זמן לשיחה, החברים רואים את זה ויכולים לקבל הצעה לדבר איתך. כאן קובעים, לכל קבוצה, אם היא תראה את זה: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.';
+      'כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.';
 
   @override
   String get whoSeesTwo => 'מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.';
 
   @override
   String get whoSeesOthers => 'כל השאר';
-
-  @override
-  String get whoSeesOthersBody => 'חברים שלא נמצאים באף קבוצה';
-
-  @override
-  String get whoSeesPeople => 'אנשים בקבוצה';
 
   @override
   String get showAlways => 'תמיד';
@@ -1249,7 +1183,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get friendCirclesTitle => 'קבוצות';
 
   @override
-  String get friendCirclesBody => 'הקבוצה קובעת אם הוא רואה שאפשר לדבר איתך.';
+  String get friendCirclesBody => 'הקבוצה קובעת אם רואים שאפשר לדבר איתך.';
 
   @override
   String get hiddenUnhide => 'לבטל את ההסתרה';
@@ -1461,13 +1395,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get newContactBody => 'להוסיף לאנשים שלי?';
 
   @override
-  String get hideStatusTitle => 'להסתיר מתי יש לי זמן';
-
-  @override
-  String get hideStatusBody =>
-      'החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.';
-
-  @override
   String get hiddenNote =>
       'המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.';
 
@@ -1494,7 +1421,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get addNumberBody =>
-      'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אלייך. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".';
+      'בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אליך בשיחה רגילה. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".';
 
   @override
   String get addNumberGo => 'להוסיף מספר';
@@ -1522,7 +1449,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunRoutineBody =>
-      'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. השעה ניתנת לשינוי בעיפרון. אפשר לשנות בכל רגע גם בהגדרות ← השגרה שלי.';
+      'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.';
 
   @override
   String firstRunRoutineMorning(String time) {
@@ -1597,37 +1524,12 @@ class AppLocalizationsHe extends AppLocalizations {
       'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.';
 
   @override
-  String get notificationsTitle => 'התראות';
-
-  @override
-  String get notificationsOnBody =>
-      'דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.';
-
-  @override
-  String get notificationsOffBody =>
-      'כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.';
-
-  @override
   String get statsReports => 'דיווחים';
 
   @override
   String realInviteStore(String url) {
     return 'בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: $url';
   }
-
-  @override
-  String inactiveTitle(String name) {
-    return '$name: בלי כניסה ל-DriveBond כבר שבוע';
-  }
-
-  @override
-  String get inactiveBody => 'אולי האפליקציה הוסרה. להסיר מהרשימה שלך?';
-
-  @override
-  String get inactiveRemove => 'להסיר מהרשימה';
-
-  @override
-  String get inactiveKeep => 'להשאיר';
 
   @override
   String inactiveDays(int days) {
@@ -1939,7 +1841,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get settingsHideInCallHint =>
-      'בזמן שיחה החברים פשוט לא יראו שיש לך זמן.';
+      'בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.';
 
   @override
   String get settingsQuietHours => 'שעות שקטות';
@@ -1996,7 +1898,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get freeNotNowBody =>
-      'יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.';
+      'ממש עכשיו אי אפשר להציע שיחה (למשל בתחילת נסיעה, או כשכבר שאלתם הפעם). כשזה יתאפשר, זה יופיע כרגיל.';
 
   @override
   String freeNotNowMine(String name) {
@@ -2096,7 +1998,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'כמה אישורים מהטלפון, פעם אחת עכשיו, כדי שלא יקפצו שאלות באמצע נסיעה.';
 
   @override
-  String get permsAllowAll => 'לאשר הכל';
+  String get permsAllowAll => 'לאשר הכול';
 
   @override
   String get permsAllowOne => 'לאשר';
@@ -2128,10 +2030,10 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get permsBgBody =>
-      'כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).';
+      'כדי שחיסכון הסוללה לא יעצור את ההתראות באמצע נסיעה.';
 
   @override
-  String get permsAutoTitle => 'זיהוי נסיעה אוטומטי (רשות)';
+  String get permsAutoTitle => 'זמינות אוטומטית בנסיעה (רשות)';
 
   @override
   String get permsAutoBody =>
@@ -2168,7 +2070,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String quickConfirmBody(String name) {
-    return 'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של $name תופיע הצעה להפעיל גם.';
+    return 'כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. יש 5 שניות לבטל: אם אחד מכם מבטל, השיחה לא יוצאת.\n\nבאפליקציה של $name תופיע הצעה להפעיל גם.';
   }
 
   @override
@@ -2201,7 +2103,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String quickTheyWantBody(String name) {
-    return '$name כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?';
+    return 'אצל $name חיבור מהיר איתך כבר פועל. להפעיל גם?';
   }
 
   @override
@@ -2251,4 +2153,8 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get permsPhoneNotif => 'הגדרות ההתראות בטלפון';
+
+  @override
+  String get realCirclesNone =>
+      'משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן';
 }

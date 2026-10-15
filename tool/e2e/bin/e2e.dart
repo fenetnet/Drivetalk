@@ -1811,8 +1811,8 @@ Future<void> main() async {
   await quickAndPauses();
 
   check(
-    await eve.rpc('schema_version') == 38,
-    'the server says its version (38)',
+    await eve.rpc('schema_version') == 39,
+    'the server says its version (39)',
   );
 
   // --- profile photos: private, friends only
@@ -1951,6 +1951,22 @@ Future<void> calmAndPrivate() async {
   check(
     !(await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
     'hide "in a call": in a call I simply look not free',
+  );
+  // Both ways (D-114): whoever hides doesn't see others in a call either.
+  await ana.rpc('set_settings', params: {'p_hide_in_call': false});
+  check(
+    (await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'in a call, not hiding: friends see me',
+  );
+  await ben.rpc('set_settings', params: {'p_hide_in_call': true});
+  check(
+    !(await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'hiding in a call is mutual: I don\'t see friends who are in a call',
+  );
+  await ben.rpc('set_settings', params: {'p_hide_in_call': false});
+  check(
+    (await rows(ben, 'availability')).any((a) => a['user_id'] == uid(ana)),
+    'hiding in a call is mutual: turned off → I see them again',
   );
   await bg.rpc('device_phone_call', params: {'p_token': token, 'p_on': false});
   await ana.rpc('clear_availability');
@@ -2795,6 +2811,23 @@ Future<void> quickAndPauses() async {
     'match_offers',
   )).where((o) => o['quick'] == true).toList();
   check(quick.length == 1, 'quick connect works during the automatic pause');
+  // The quick call happened (its 5 seconds are over) …
+  await dbExec(
+    "update match_offers set not_before = now() - interval '1 hour', "
+    "accepted_at = accepted_at - interval '1 hour' "
+    "where id = '${quick.single['id']}'",
+  );
+  for (final c in [pa, pb]) {
+    await c.rpc('clear_availability');
+  }
+  // … later that day (quick connect: once a day): the automatic pause
+  // still stops a regular question.
+  await free(pa);
+  await free(pb);
+  check(
+    pendingOffers(await rows(pa, 'match_offers')).isEmpty,
+    'the automatic pause still stops a regular question (quick friends)',
+  );
   for (final c in [pa, pb]) {
     await c.rpc('clear_availability');
   }
@@ -2840,7 +2873,35 @@ Future<void> quickAndPauses() async {
   for (final c in [pa, pb]) {
     await c.rpc('clear_availability');
   }
-  for (final c in [pa, pb]) {
+  // "Any time" after a call: no hidden pause left on either side.
+  final pc = await newUser('צביה', 'female');
+  final pd = await newUser('צדוק', 'male');
+  await befriend(pc, pd);
+  await free(pc);
+  await free(pd);
+  final talk = pendingOffers(await rows(pc, 'match_offers')).single;
+  for (final c in [pc, pd]) {
+    await c.rpc(
+      'answer_offer',
+      params: {'p_offer': talk['id'], 'p_accept': true},
+    );
+  }
+  await pc.rpc(
+    'after_call',
+    params: {'p_offer': talk['id'], 'p_days': 0, 'p_talked': true},
+  );
+  check(
+    await dbCount(
+          "select count(*) from pair_snoozes where from_user in "
+          "('${uid(pc)}', '${uid(pd)}')",
+        ) ==
+        0,
+    '"any time" clears mine and the automatic pause on their side',
+  );
+  for (final c in [pa, pb, pc, pd]) {
+    await c.rpc('clear_availability');
+  }
+  for (final c in [pa, pb, pc, pd]) {
     await c.dispose();
   }
 }

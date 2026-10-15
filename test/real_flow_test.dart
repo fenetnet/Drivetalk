@@ -421,6 +421,44 @@ void main() {
   );
 
   test(
+    'a call that already ended is not started again when I open the app',
+    () async {
+      await connect(myPhone: '', yoniPhone: '050-123-4567');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      me.dispose();
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      // A short talk; Yoni answers "when again?" (that touches the offer).
+      now = now.add(const Duration(minutes: 3));
+      yoni.c.finishCall();
+      await yoni.c.afterCall(0);
+      now = now.add(const Duration(minutes: 1));
+      final again = ProviderContainer(
+        overrides: [
+          realBackendProvider.overrideWithValue(me.backend),
+          localStoreProvider.overrideWithValue(me.store),
+          realClockProvider.overrideWithValue(clock),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          phoneDialerProvider.overrideWithValue(me.dialer),
+        ],
+      );
+      again.read(realProvider);
+      await pump();
+      await again.read(realProvider.notifier).refresh();
+      expect(me.dialer.dialed, isEmpty);
+      expect(
+        again.read(realProvider).callStage,
+        CallStage.feedback,
+        reason: 'not "waiting for Yoni\'s call" for a call that is over',
+      );
+      again.dispose();
+    },
+  );
+
+  test(
     'both free → both asked → both yes → I call Yoni on the phone',
     () async {
       await connect(myPhone: '', yoniPhone: '050-123-4567');
@@ -693,6 +731,17 @@ void main() {
     expect(me.s.call?.quick, isTrue, reason: 'quick connect despite the pause');
     me.c.finishCall();
     me.c.skipFeedback();
+    yoni.c.finishCall();
+    yoni.c.skipFeedback();
+    // Later that day (quick connect: once a day): no regular question
+    // either — the automatic pause still holds for those.
+    now = now.add(const Duration(hours: 1));
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    await pump(20);
+    expect(currentOffer(me.s, now), isNull);
+    expect(me.s.call, isNull);
     // "Cancel" on the card removes my pause (and the automatic one there).
     await me.c.refresh();
     expect(me.s.snapshot!.pauses, contains(yoniP.id));
@@ -700,6 +749,28 @@ void main() {
     expect(me.s.snapshot!.pauses, isEmpty);
     expect(server.snoozes, isEmpty);
   });
+
+  test(
+    '"any time" after a call: no hidden pause left on either side',
+    () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await pump();
+      await me.c.refresh();
+      me.c.finishCall();
+      await me.c.afterCall(0);
+      expect(server.snoozes, isEmpty, reason: 'mine and their automatic one');
+      // A pause Yoni chose stays (it's Yoni's).
+      yoni.c.finishCall();
+      await yoni.c.afterCall(7);
+      expect(server.snoozes.length, 1);
+    },
+  );
 
   test('a pause I chose ("in a week") stops quick connect too', () async {
     await connect(myPhone: '0521111111', yoniPhone: '0501234567');
@@ -1574,7 +1645,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 38)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 39)'));
     });
 
     test(
@@ -2066,6 +2137,25 @@ void main() {
       expect(freeFriends(yoni.s, now), isEmpty);
       expect(busyFriends(yoni.s, now), isEmpty, reason: 'not "in a call"');
     });
+
+    test(
+      'hide "in a call" is mutual: I don\'t see friends in a call',
+      () async {
+        await connect();
+        await yoni.c.setHideInCall(true);
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        server.phoneCall(me.backend.userId!, true);
+        await yoni.c.refresh();
+        expect(
+          busyFriends(yoni.s, now),
+          isEmpty,
+          reason: 'I hide → I see none',
+        );
+        await yoni.c.setHideInCall(false);
+        await yoni.c.refresh();
+        expect(busyFriends(yoni.s, now), hasLength(1));
+      },
+    );
 
     test(
       'added from contacts by someone I have not saved → I decide',

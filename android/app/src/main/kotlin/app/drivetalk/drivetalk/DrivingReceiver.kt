@@ -80,8 +80,10 @@ class DrivingReceiver : BroadcastReceiver() {
                 io.execute {
                     try {
                         val r = DrivingApi(store).answer(offer)
-                        // Told once (the service won't repeat "X is calling you").
-                        store.markShown("call:$offer")
+                        // Agreed now: told once here (the service won't repeat
+                        // "X is calling you"). Still waiting for the other
+                        // side: the service tells when they say yes.
+                        if (r?.status == "accepted") store.markShown("call:$offer")
                         DrivingNotifications.showAnswered(context, offer, name, r?.status, r?.iCall ?: false)
                     } finally {
                         pending.finish()

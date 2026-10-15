@@ -253,7 +253,11 @@ class DrivingService : Service() {
             }
             if (offers.isNotEmpty()) callsUntil = System.currentTimeMillis() + 3 * 60_000L
             // On screen, the app shows the call itself.
-            for (c in if (MainActivity.onScreen) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
+            // In a call right now: the call is already happening.
+            val inCall = (getSystemService(AUDIO_SERVICE) as? AudioManager)?.mode.let {
+                it == AudioManager.MODE_IN_CALL || it == AudioManager.MODE_IN_COMMUNICATION
+            }
+            for (c in if (MainActivity.onScreen || inCall) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
                 if (store.markShown("call:${c.id}")) {
                     DrivingNotifications.showCall(ctx, c.id, c.name, c.iCall)
                     if (c.iCall) speak(store.text("voiceYouCall", "{name}").replace("{name}", c.name))

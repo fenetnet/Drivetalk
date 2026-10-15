@@ -175,7 +175,10 @@ class MemoryServer {
         !hidden.contains(owner) &&
         !hidden.contains(viewer) &&
         !awaitsApproval(owner, viewer) &&
-        !(hideInCall.contains(owner) && busy != null && now().isBefore(busy));
+        // Hiding in a call works both ways (D-114).
+        !((hideInCall.contains(owner) || hideInCall.contains(viewer)) &&
+            busy != null &&
+            now().isBefore(busy));
   }
 
   /// Why [me] can't ask [user] right now ('ok' = can; like ask_check).
@@ -430,6 +433,8 @@ class MemoryServer {
           ) &&
           !quickInWindow(user, mine.startedAt) &&
           !quickInWindow(other, theirs.startedAt);
+      // The automatic pause lets only quick connect through (D-113).
+      if (!quick && _snoozed(user, other)) continue;
       final id = _newId('offer');
       var until = mine.expiresAt.isBefore(theirs.expiresAt)
           ? mine.expiresAt
@@ -528,10 +533,14 @@ class MemoryServer {
     o
       ..status = OfferStatus.cancelled
       ..updatedAt = now();
-    // Cancelled before it began: no pause.
-    snoozes
-      ..remove('${o.a}|${o.b}')
-      ..remove('${o.b}|${o.a}');
+    // Cancelled before it began: no pause (a longer one stays, as on the
+    // server).
+    final limit = (o.acceptedAt ?? now()).add(
+      const Duration(days: 3, minutes: 1),
+    );
+    for (final k in ['${o.a}|${o.b}', '${o.b}|${o.a}']) {
+      if (snoozes[k] case final u? when !u.isAfter(limit)) snoozes.remove(k);
+    }
     _changed();
     return true;
   }
@@ -684,6 +693,9 @@ class _Offer {
     sharedUntil: sharedUntil,
     lastTalk: lastTalk,
     direct: direct,
+    acceptedAt: acceptedAt,
+    endedA: endedA,
+    endedB: endedB,
   );
 }
 
@@ -1177,6 +1189,10 @@ class MemoryRealBackend implements RealBackend {
     if (days == 0) {
       server.snoozes.remove('$me|$other');
       server.chosenSnoozes.remove('$me|$other');
+      // "Any time": the automatic pause on their side goes too.
+      if (!server.chosenSnoozes.contains('$other|$me')) {
+        server.snoozes.remove('$other|$me');
+      }
     } else {
       server.snoozes['$me|$other'] = server.now().add(Duration(days: days));
       server.chosenSnoozes.add('$me|$other');

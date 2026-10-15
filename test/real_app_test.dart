@@ -228,7 +228,7 @@ void main() {
       ),
     );
     await t.pump();
-    expect(find.text('הבדיקה עם חבר עוד לא מחוברת'), findsOneWidget);
+    expect(find.text('DriveBond עוד לא מחוברת לשרת'), findsOneWidget);
     await t.pumpWidget(const SizedBox());
   });
 }

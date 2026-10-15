@@ -84,15 +84,15 @@ void main() {
     await t.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.text('בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.'),
+      find.text('כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.'),
       findsOneWidget,
     );
-    expect(find.textContaining('רואים שאתם פנויים: בכל מצב'), findsOneWidget);
+    expect(find.textContaining('רואים שיש לך זמן: בכל מצב'), findsOneWidget);
     expect(
-      find.textContaining('רואים שאתם פנויים: בנסיעה, בהליכה'),
+      find.textContaining('רואים שיש לך זמן: בנסיעה, בהליכה'),
       findsOneWidget,
     );
-    expect(find.textContaining('הזמינות שלכם מוסתרת מהקבוצה'), findsOneWidget);
+    expect(find.textContaining('מוסתר מהקבוצה שיש לך זמן'), findsOneWidget);
     // Wraps instead of cutting: no overflow, no "…".
     expect(t.takeException(), isNull);
     for (final e in find.byType(Text).evaluate()) {
@@ -104,7 +104,7 @@ void main() {
     await t.tap(find.text('משפחה'));
     await t.pump(const Duration(milliseconds: 500));
     expect(
-      find.text('מתי חברי הקבוצה יוכלו לראות שאתם פנויים?'),
+      find.text('מתי חברי הקבוצה יוכלו לראות שיש לך זמן?'),
       findsOneWidget,
     );
     expect(t.takeException(), isNull);

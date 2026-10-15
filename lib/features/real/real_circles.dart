@@ -9,7 +9,57 @@ import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 
-/// "Circles" block in My people: private groups, optional quick connect.
+/// My people → "Groups": one row that opens the groups on their own screen
+/// (not one more long block at the bottom of the list).
+class RealCirclesEntry extends ConsumerWidget {
+  const RealCirclesEntry({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final circles = ref.watch(
+      realProvider.select((s) => s.snapshot?.circles ?? const <RealCircle>[]),
+    );
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: const Icon(
+          Icons.group_work_rounded,
+          color: AppColors.sageDark,
+        ),
+        title: Text(
+          l.realCirclesTitle,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          circles.isEmpty
+              ? l.realCirclesNone
+              : circles.map((c) => c.name).join(' · '),
+          maxLines: 2,
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const RealCirclesScreen()),
+        ),
+      ),
+    );
+  }
+}
+
+class RealCirclesScreen extends StatelessWidget {
+  const RealCirclesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(context.l10n.realCirclesTitle)),
+    body: const SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: RealCirclesSection(),
+    ),
+  );
+}
+
+/// The groups: private, each with who sees me and optional quick connect.
 class RealCirclesSection extends ConsumerWidget {
   const RealCirclesSection({super.key});
 
@@ -22,13 +72,6 @@ class RealCirclesSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SizedBox(height: 24),
-        Text(
-          l.realCirclesTitle,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 4),
         Text(
           l.realCirclesIntro,
           style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),

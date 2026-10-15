@@ -21,7 +21,6 @@
     }
   },
   "stopAvailability": "לעצור זמינות",
-  "pickModeTitle": "מה המצב?",
   "modeDriving": "נסיעה",
   "modeWalking": "הליכה",
   "modeBreak": "הפסקה",
@@ -104,7 +103,6 @@
   "yes": "כן",
   "no": "לא",
   "skip": "לדלג",
-  "driverSearching": "מחפשים...",
   "driverStop": "לעצור",
   "driverSafety": "בנהיגה: רק דיבורית ומתקן לרכב",
   "personUnmatchConfirm": "להסיר את {name} מהרשימה? אפשר להחזיר בכל רגע ב\"אנשים שהסרתי\".",
@@ -197,7 +195,7 @@
   "dayThu": "ה׳",
   "dayFri": "ו׳",
   "daySat": "ש׳",
-  "realNotConfiguredTitle": "הבדיקה עם חבר עוד לא מחוברת",
+  "realNotConfiguredTitle": "DriveBond עוד לא מחוברת לשרת",
   "realNotConfiguredBody": "בגרסה הזו השרת עוד לא הוגדר. צריך להתקין גרסה מעודכנת.",
   "realStarting": "מתחברים…",
   "realWelcomeTitle": "בדיקה עם חבר",
@@ -220,8 +218,6 @@
   "realNobodyFree": "כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.",
   "realFreeHint": "רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.",
   "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
-  "homeIntentsTitle": "אשמח לדבר",
-  "homeIntentsBody": "כשתהיו פנויים יחד — נציע אותם קודם.",
   "realNoFriendsTitle": "עוד אין פה חברים",
   "realNoFriendsBody": "הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.",
   "realInviteFriend": "להזמין חבר",
@@ -383,29 +379,6 @@
   "routineNameWalk": "הליכת ערב",
   "routineNameBreak": "הפסקת צהריים",
   "routineEveryone": "כולם",
-  "outcomeQuestion": "איך היה?",
-  "outcomeGood": "היה טוב",
-  "outcomeNotSoon": "לא להציע בקרוב",
-  "outcomeNoTalk": "לא דיברנו בפועל",
-  "intentTitle": "אשמח לדבר",
-  "intentExplain": "{gender, select, female{{name} לא תקבל שום הודעה. כששניכם תהיו פנויים — היא תוצע לך קודם.} male{{name} לא יקבל שום הודעה. כששניכם תהיו פנויים — הוא יוצע לך קודם.} other{שום הודעה לא נשלחת ל{name}. כששניכם תהיו פנויים — נציע את {name} קודם.}}",
-  "@intentExplain": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "gender": {
-        "type": "String"
-      }
-    }
-  },
-  "intentToday": "היום",
-  "intentWeek": "השבוע",
-  "intentAlways": "עד שאבטל",
-  "intentRemove": "להסיר",
-  "intentBadgeToday": "אשמח לדבר · היום",
-  "intentBadgeWeek": "אשמח לדבר · השבוע",
-  "intentBadgeAlways": "אשמח לדבר",
   "realCallingNow": "מתקשרים ל{name}…",
   "@realCallingNow": {
     "placeholders": {
@@ -429,7 +402,7 @@
   "realTheyCallBody": "אם השיחה לא מגיעה תוך דקה — לחצו למטה.",
   "realTheyDidNotCall": "לא הגיעה שיחה",
   "realNoNumbersTitle": "אי אפשר להתקשר הפעם",
-  "realNoNumbersBody": "לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי\".",
+  "realNoNumbersBody": "לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי לשיחה רגילה\".",
   "realDialFailedTitle": "לא הצלחנו לפתוח את החייגן",
   "realDialFailedBody": "אפשר להתקשר ל{name} ידנית.",
   "@realDialFailedBody": {
@@ -464,7 +437,7 @@
   "realInviteLoading": "בודקים את ההזמנה…",
   "realInviteProblemUsed": "ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.",
   "realInviteProblemExpired": "פג תוקף ההזמנה. בקשו הזמנה חדשה.",
-  "realInviteProblemOwn": "זו הזמנה ששלחת בעצמך 🙂 שלחו אותה לחבר.",
+  "realInviteProblemOwn": "זו הזמנה ששלחת בעצמך 🙂 אפשר לשלוח אותה לחבר.",
   "realInviteProblemNotFound": "לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.",
   "realInviteAlready": "{name} כבר ברשימת האנשים שלך.",
   "@realInviteAlready": {
@@ -484,7 +457,7 @@
     }
   },
   "realErrorAnonymousDisabled": "בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).",
-  "realErrorSchema": "השרת עוד לא הוכן (צריך להריץ את קובץ ההגדרה).",
+  "realErrorSchema": "השרת עוד לא מוכן. נסו שוב מאוחר יותר.",
   "realErrorInvalidPhone": "מספר הטלפון לא נראה תקין",
   "realErrorInvalidName": "השם צריך להיות באורך 1–40 תווים",
   "realErrorRateLimited": "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
@@ -500,7 +473,7 @@
     }
   },
   "realNotFree": "אין זמינות כרגע",
-  "realTestIntro": "כאן רואים שהכל עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.",
+  "realTestIntro": "כאן רואים שהכול עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.",
   "realTestSteps": "1. להזמין חבר\n2. שניכם: בוחרים מה עושים עכשיו (למשל \"סתם זמן פנוי\")\n3. שניכם: \"לדבר עכשיו\"",
   "realStatusServer": "שרת",
   "realStatusAccount": "חשבון",
@@ -605,9 +578,9 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "קבוצות",
-  "realCirclesIntro": "בחרו מי מהחברים יראה שאתם פנויים, ובאילו מצבים.",
-  "circleSeesAll": "רואים שאתם פנויים: בכל מצב",
-  "circleSeesSome": "רואים שאתם פנויים: {modes}",
+  "realCirclesIntro": "כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.",
+  "circleSeesAll": "רואים שיש לך זמן: בכל מצב",
+  "circleSeesSome": "רואים שיש לך זמן: {modes}",
   "@circleSeesSome": {
     "placeholders": {
       "modes": {
@@ -615,8 +588,8 @@
       }
     }
   },
-  "circleSeesNone": "הזמינות שלכם מוסתרת מהקבוצה",
-  "circleRuleQuestion": "מתי חברי הקבוצה יוכלו לראות שאתם פנויים?",
+  "circleSeesNone": "מוסתר מהקבוצה שיש לך זמן",
+  "circleRuleQuestion": "מתי חברי הקבוצה יוכלו לראות שיש לך זמן?",
   "modeInDriving": "בנסיעה",
   "modeInWalking": "בהליכה",
   "modeInBreak": "בהפסקה",
@@ -641,11 +614,9 @@
   "circleWork": "עבודה",
   "whoSeesTitle": "מי רואה שאפשר לדבר איתי",
   "whoSeesSubtitle": "משפחה, חברים, עבודה: לכל קבוצה בנפרד",
-  "whoSeesBody": "כשמסמנים שיש זמן לשיחה, החברים רואים את זה ויכולים לקבל הצעה לדבר איתך. כאן קובעים, לכל קבוצה, אם היא תראה את זה: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.",
+  "whoSeesBody": "כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.",
   "whoSeesTwo": "מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.",
   "whoSeesOthers": "כל השאר",
-  "whoSeesOthersBody": "חברים שלא נמצאים באף קבוצה",
-  "whoSeesPeople": "אנשים בקבוצה",
   "showAlways": "תמיד",
   "showNever": "אף פעם",
   "showOnly": "רק כש…",
@@ -666,7 +637,7 @@
     }
   },
   "friendCirclesTitle": "קבוצות",
-  "friendCirclesBody": "הקבוצה קובעת אם הוא רואה שאפשר לדבר איתך.",
+  "friendCirclesBody": "הקבוצה קובעת אם רואים שאפשר לדבר איתך.",
   "hiddenUnhide": "לבטל את ההסתרה",
   "homeWhatNow": "בוחרים מה עושים עכשיו, ונמצא חבר שגם פנוי לדבר",
   "permIntroTitle": "רגע לפני",
@@ -795,8 +766,6 @@
     }
   },
   "newContactBody": "להוסיף לאנשים שלי?",
-  "hideStatusTitle": "להסתיר מתי יש לי זמן",
-  "hideStatusBody": "החברים לא יראו מתי יש לך זמן, וגם לך לא יוצג מי פנוי. הצעות לדבר ממשיכות כרגיל.",
   "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.",
   "realLaterButton": "אולי אחר כך",
   "realLaterNote": "מ{name}: עכשיו לא מתאים, אולי אחר כך.",
@@ -811,7 +780,7 @@
   "backgroundBody": "כך נוכל להודיע לך ברגע שחבר מתפנה, ולזהות נסיעה, גם כשהאפליקציה סגורה. ברקע היא עובדת רק כשסימנת שיש לך זמן או בזמן נסיעה.",
   "backgroundAllow": "להפעיל",
   "addNumberTitle": "שחברים ימצאו אותך",
-  "addNumberBody": "בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אלייך. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".",
+  "addNumberBody": "בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אליך בשיחה רגילה. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".",
   "addNumberGo": "להוסיף מספר",
   "newFriendTitle": "חדש ברשימה שלך: {name}",
   "@newFriendTitle": {
@@ -826,7 +795,7 @@
   "newFriendOk": "מעולה",
   "notNowShort": "לא עכשיו",
   "firstRunRoutineTitle": "מתי בדרך כלל יש לך זמן בדרך?",
-  "firstRunRoutineBody": "בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. השעה ניתנת לשינוי בעיפרון. אפשר לשנות בכל רגע גם בהגדרות ← השגרה שלי.",
+  "firstRunRoutineBody": "בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.",
   "firstRunRoutineMorning": "בוקר · {time} · בדרך לעבודה",
   "firstRunRoutineEvening": "ערב · {time} · בדרך הביתה",
   "firstRunRoutineNone": "לא קבוע",
@@ -849,9 +818,6 @@
   "statsDialMs": "כמה מהר מתחיל החיוג",
   "statsSeconds": "שנ׳",
   "statsNote": "רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.",
-  "notificationsTitle": "התראות",
-  "notificationsOnBody": "דלוקות: מקבלים הודעה כשלחבר יש זמן ואפשר לדבר. לחיצה לשינוי בהגדרות הטלפון.",
-  "notificationsOffBody": "כבויות: בלי התראות, הצעות לדבר מגיעות רק כשהאפליקציה פתוחה. לחיצה להדלקה.",
   "statsReports": "דיווחים",
   "realInviteStore": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}",
   "@realInviteStore": {
@@ -861,17 +827,6 @@
       }
     }
   },
-  "inactiveTitle": "{name}: בלי כניסה ל-DriveBond כבר שבוע",
-  "@inactiveTitle": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "inactiveBody": "אולי האפליקציה הוסרה. להסיר מהרשימה שלך?",
-  "inactiveRemove": "להסיר מהרשימה",
-  "inactiveKeep": "להשאיר",
   "inactiveDays": "בלי כניסה כבר {days} ימים",
   "@inactiveDays": {
     "placeholders": {
@@ -1079,7 +1034,7 @@
   "settingsAnonymous": "להופיע בלי שם כשיש לי זמן",
   "settingsAnonymousHint": "החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.",
   "settingsHideInCall": "להסתיר כשאני בשיחה",
-  "settingsHideInCallHint": "בזמן שיחה החברים פשוט לא יראו שיש לך זמן.",
+  "settingsHideInCallHint": "בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.",
   "settingsQuietHours": "שעות שקטות",
   "settingsQuietOff": "בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.",
   "settingsQuietOn": "בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
@@ -1113,7 +1068,7 @@
       }
     }
   },
-  "freeNotNowBody": "יש זמן, אבל ממש עכשיו אי אפשר להציע שיחה. אולי זו תחילת נסיעה, יש הצעה אחרת באמצע, או שכבר ניסיתם הפעם. כשזה יתאפשר, זה יופיע כרגיל.",
+  "freeNotNowBody": "ממש עכשיו אי אפשר להציע שיחה (למשל בתחילת נסיעה, או כשכבר שאלתם הפעם). כשזה יתאפשר, זה יופיע כרגיל.",
   "freeNotNowMine": "זה בגלל שעוד לא אישרת את {name} ברשימה שלך. אחרי האישור אפשר לדבר מיד.",
   "@freeNotNowMine": {
     "placeholders": {
@@ -1244,7 +1199,7 @@
   "@permsBody": {
     "description": "Permissions step body"
   },
-  "permsAllowAll": "לאשר הכל",
+  "permsAllowAll": "לאשר הכול",
   "@permsAllowAll": {
     "description": "Ask for all the permissions one after the other"
   },
@@ -1284,11 +1239,11 @@
   "@permsBgTitle": {
     "description": ""
   },
-  "permsBgBody": "כדי שההתראות לא ייעצרו באמצע נסיעה (חיסכון בסוללה).",
+  "permsBgBody": "כדי שחיסכון הסוללה לא יעצור את ההתראות באמצע נסיעה.",
   "@permsBgBody": {
     "description": ""
   },
-  "permsAutoTitle": "זיהוי נסיעה אוטומטי (רשות)",
+  "permsAutoTitle": "זמינות אוטומטית בנסיעה (רשות)",
   "@permsAutoTitle": {
     "description": ""
   },
@@ -1338,7 +1293,7 @@
       }
     }
   },
-  "quickConfirmBody": "כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. לשניכם יש 5 שניות לבטל, ומי שמבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.",
+  "quickConfirmBody": "כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. יש 5 שניות לבטל: אם אחד מכם מבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.",
   "@quickConfirmBody": {
     "description": "quickConfirmBody",
     "placeholders": {
@@ -1384,7 +1339,7 @@
   "@quickPickTitle": {
     "description": "quickPickTitle"
   },
-  "quickTheyWantBody": "{name} כבר הפעיל/ה חיבור מהיר איתך. להפעיל גם?",
+  "quickTheyWantBody": "אצל {name} חיבור מהיר איתך כבר פועל. להפעיל גם?",
   "@quickTheyWantBody": {
     "description": "Switch subtitle: the friend turned it on, I did not",
     "placeholders": {
@@ -1464,5 +1419,6 @@
     }
   },
   "settingsPrivacyInfo": "מה נשמר עליי",
-  "permsPhoneNotif": "הגדרות ההתראות בטלפון"
+  "permsPhoneNotif": "הגדרות ההתראות בטלפון",
+  "realCirclesNone": "משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן"
 }

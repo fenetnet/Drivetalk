@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 38;
+const kRequiredSchema = 39;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1577,18 +1577,30 @@ class RealController extends Notifier<RealState> {
       }
       final mine = state.localAnswers[o.id] ?? o.myAnswer(me);
       final other = snap.friend(o.otherId(me));
+      // A just-agreed call (not one that already ended — e.g. the other
+      // side answered "when to suggest again?", which also touches it).
+      final agreedAt = o.acceptedAt ?? o.updatedAt;
       final fresh =
-          now.difference(o.updatedAt).abs() < const Duration(minutes: 5);
+          now.difference(o.updatedAt).abs() < const Duration(minutes: 5) &&
+          now.difference(agreedAt).abs() < const Duration(minutes: 5) &&
+          !o.callOver;
       switch (o.status) {
         case OfferStatus.accepted:
           // Behind another app (the notification is up): the phone can't
           // dial from the background — handled when the app is opened.
           if (!_foreground && fresh) break;
+          if (other != null && !_callIdle(state)) {
+            // Busy with another call / question: this one waits its turn
+            // (its own call is, of course, already handled).
+            if (state.call?.offerId == o.id) _markHandled(o.id);
+            break;
+          }
           _markHandled(o.id);
-          if (other == null || !_callIdle(state)) break;
+          // My side of it is already over (I answered "when again?").
+          if (other == null || (me == o.userA ? o.endedA : o.endedB)) break;
           if (fresh) {
             unawaited(_beginCall(o, other));
-          } else if (now.difference(o.updatedAt) < const Duration(hours: 12)) {
+          } else if (now.difference(agreedAt) < const Duration(hours: 12)) {
             // The call happened while the app was closed (e.g. answered
             // from the notification): still ask "when to suggest X again?".
             state = state.copyWith(
@@ -1597,7 +1609,7 @@ class RealController extends Notifier<RealState> {
                 offerId: o.id,
                 other: other,
                 role: CallRole.inApp,
-                startedAt: o.updatedAt,
+                startedAt: agreedAt,
                 quick: o.quick,
               ),
             );
@@ -1886,6 +1898,10 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(call: call, callStage: CallStage.connecting);
     // Only my own dialing is measured ("both said yes" → dialing).
     if (role != CallRole.iCall) _bothYesAt = null;
+    // The background service shouldn't also say "tap to call" about it.
+    if (role != CallRole.inApp) {
+      unawaited(ref.read(drivingDetectorProvider).callHandled(call.offerId));
+    }
     switch (role) {
       case CallRole.iCall:
         unawaited(_dial());

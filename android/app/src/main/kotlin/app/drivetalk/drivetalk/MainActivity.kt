@@ -281,6 +281,11 @@ class MainActivity : FlutterActivity() {
                     DrivingNotifications.ensureChannels(this)
                     result.success(true)
                 }
+                // The app started this call itself: no "tap to call" later.
+                "callHandled" -> {
+                    call.argument<String>("offer")?.let { store.markShown("call:$it") }
+                    result.success(true)
+                }
                 "simulate" -> {
                     DrivingReceiver.onVehicle(this, call.argument<Boolean>("enter") == true)
                     result.success(true)

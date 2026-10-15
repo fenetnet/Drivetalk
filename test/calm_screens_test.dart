@@ -252,11 +252,11 @@ void main() {
     );
     await t.pump(const Duration(milliseconds: 300));
     expect(find.text('כדי שזה יעבוד גם בנסיעה'), findsOneWidget);
-    expect(find.text('זיהוי נסיעה אוטומטי (רשות)'), findsOneWidget);
+    expect(find.text('זמינות אוטומטית בנסיעה (רשות)'), findsOneWidget);
     expect(find.text('לאשר'), findsNWidgets(4));
     expect(t.takeException(), isNull);
 
-    await t.tap(find.text('לאשר הכל'));
+    await t.tap(find.text('לאשר הכול'));
     await t.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
@@ -284,7 +284,7 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await t.pump(const Duration(milliseconds: 500));
-    expect(find.text('זיהוי נסיעה אוטומטי (רשות)'), findsNothing);
+    expect(find.text('זמינות אוטומטית בנסיעה (רשות)'), findsNothing);
     await t.scrollUntilVisible(
       find.text('הגדרות ההתראות בטלפון'),
       200,
@@ -408,6 +408,9 @@ void main() {
       200,
       scrollable: find.byType(Scrollable).first,
     );
+    // A bit more, so the whole card is on screen (not under the edge).
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
+    await t.pumpAndSettle();
     await t.tap(find.text('יונתן־אלכסנדר'));
     await t.pumpAndSettle();
     final sw = find.byType(Switch).first;

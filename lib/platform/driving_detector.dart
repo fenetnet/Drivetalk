@@ -94,6 +94,10 @@ abstract class DrivingDetector {
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
 
+  /// The app started this call itself: the background service shouldn't
+  /// also say "tap to call X" about it.
+  Future<void> callHandled(String offerId);
+
   /// Developer tools: pretend a trip started / ended.
   Future<void> simulate({required bool enter});
   Future<LaunchAction?> takeLaunchAction();
@@ -263,6 +267,10 @@ class AndroidDrivingDetector implements DrivingDetector {
   }
 
   @override
+  Future<void> callHandled(String offerId) =>
+      _call('callHandled', {'offer': offerId});
+
+  @override
   Future<void> simulate({required bool enter}) async {
     try {
       await _channel.invokeMethod<void>('simulate', {'enter': enter});
@@ -352,6 +360,11 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> updateTexts(Map<String, String> texts) async {}
+
+  final handledCalls = <String>[];
+
+  @override
+  Future<void> callHandled(String offerId) async => handledCalls.add(offerId);
 
   @override
   Future<void> configure({

@@ -41,6 +41,8 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
   }
 
   Future<void> reload() async {
+    // The screen may be gone by now (e.g. "later" while the phone asked).
+    if (!mounted) return;
     final p = await ref.read(realProvider.notifier).phonePermissions();
     if (!mounted) return;
     setState(() => _now = p);
@@ -53,8 +55,10 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
     try {
       await body();
     } finally {
-      if (mounted) setState(() => _asking = false);
-      await reload();
+      if (mounted) {
+        setState(() => _asking = false);
+        await reload();
+      }
     }
   }
 
