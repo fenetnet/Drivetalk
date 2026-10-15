@@ -660,25 +660,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realClearContacts => 'למחוק מידע שסונכרן מאנשי הקשר';
 
   @override
-  String get realVoiceOfferAnon => 'חבר פנוי עכשיו. לדבר?';
-
-  @override
-  String get realVoiceQuickAnon => 'מתחברים לחבר. אפשר לבטל בכפתור.';
-
-  @override
-  String get realVoiceCallingAnon => 'מתקשרים.';
-
-  @override
-  String get realVoiceTheyCallAnon => 'מתקשרים אליך עכשיו.';
-
-  @override
-  String get settingsSpeakNames => 'להקריא שמות';
-
-  @override
-  String get settingsSpeakNamesBody =>
-      'הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).';
-
-  @override
   String get realDeleteAccount => 'למחוק את החשבון והמידע שלי';
 
   @override
@@ -2064,9 +2045,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get voiceDirectAnon => 'חבר רוצה לדבר איתך. לענות?';
-
-  @override
   String get callToMain => 'למסך הראשי';
 
   @override
@@ -2080,17 +2058,9 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get bgVoiceOfferAnon =>
-      'חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.';
-
-  @override
   String bgVoiceDirect(String name) {
     return '$name רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.';
   }
-
-  @override
-  String get bgVoiceDirectAnon =>
-      'חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.';
 
   @override
   String get notifPublicTalk => 'מישהו פנוי לדבר עכשיו';
@@ -2117,10 +2087,6 @@ class AppLocalizationsHe extends AppLocalizations {
   String voiceYouCall(String name) {
     return 'גם $name רוצה לדבר. לחצו על ההתראה כדי להתקשר.';
   }
-
-  @override
-  String get voiceYouCallAnon =>
-      'גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.';
 
   @override
   String get permsTitle => 'כדי שזה יעבוד גם בנסיעה';
@@ -2279,4 +2245,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String pauseUntilDate(String date) {
     return 'עד $date';
   }
+
+  @override
+  String get settingsPrivacyInfo => 'מה נשמר עליי';
+
+  @override
+  String get permsPhoneNotif => 'הגדרות ההתראות בטלפון';
 }

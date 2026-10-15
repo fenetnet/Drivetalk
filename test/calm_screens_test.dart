@@ -9,6 +9,7 @@ import 'package:drivetalk/features/real/real_people.dart';
 import 'package:drivetalk/features/real/real_permissions.dart';
 import 'package:drivetalk/features/real/real_quick.dart';
 import 'package:drivetalk/features/real/real_root.dart';
+import 'package:drivetalk/features/real/real_settings.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
@@ -263,6 +264,32 @@ void main() {
     // Phone calls stay "allow" here (this test phone refuses them).
     expect(find.text('מאושר'), findsNWidgets(3));
     expect(detector.enabled, isFalse, reason: 'driving detection: a choice');
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('settings: clear groups, no "read names" switch', (t) async {
+    final (me, _) = await twoFriends(t);
+    await _show(t, me, const RealSettingsScreen());
+    expect(find.text('להקריא שמות'), findsNothing);
+    // Privacy things together; the policy row isn't titled like the group.
+    await t.scrollUntilVisible(find.text('מה נשמר עליי'), 200);
+    expect(find.text('פרטיות'), findsOneWidget);
+    await t.scrollUntilVisible(find.text('הרשאות'), 200);
+    expect(t.takeException(), isNull);
+
+    // Permissions from Settings: the driving switch lives in "Driving".
+    await t.tap(find.text('הרשאות'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump(const Duration(milliseconds: 500));
+    expect(find.text('זיהוי נסיעה אוטומטי (רשות)'), findsNothing);
+    await t.scrollUntilVisible(
+      find.text('הגדרות ההתראות בטלפון'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
     expect(t.takeException(), isNull);
     await _close(t);
   });

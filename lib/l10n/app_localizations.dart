@@ -1162,42 +1162,6 @@ abstract class AppLocalizations {
   /// **'למחוק מידע שסונכרן מאנשי הקשר'**
   String get realClearContacts;
 
-  /// No description provided for @realVoiceOfferAnon.
-  ///
-  /// In he, this message translates to:
-  /// **'חבר פנוי עכשיו. לדבר?'**
-  String get realVoiceOfferAnon;
-
-  /// No description provided for @realVoiceQuickAnon.
-  ///
-  /// In he, this message translates to:
-  /// **'מתחברים לחבר. אפשר לבטל בכפתור.'**
-  String get realVoiceQuickAnon;
-
-  /// No description provided for @realVoiceCallingAnon.
-  ///
-  /// In he, this message translates to:
-  /// **'מתקשרים.'**
-  String get realVoiceCallingAnon;
-
-  /// No description provided for @realVoiceTheyCallAnon.
-  ///
-  /// In he, this message translates to:
-  /// **'מתקשרים אליך עכשיו.'**
-  String get realVoiceTheyCallAnon;
-
-  /// No description provided for @settingsSpeakNames.
-  ///
-  /// In he, this message translates to:
-  /// **'להקריא שמות'**
-  String get settingsSpeakNames;
-
-  /// No description provided for @settingsSpeakNamesBody.
-  ///
-  /// In he, this message translates to:
-  /// **'הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).'**
-  String get settingsSpeakNamesBody;
-
   /// No description provided for @realDeleteAccount.
   ///
   /// In he, this message translates to:
@@ -3490,12 +3454,6 @@ abstract class AppLocalizations {
   /// **'{name} רוצה לדבר איתך. לענות?'**
   String voiceDirect(String name);
 
-  /// No description provided for @voiceDirectAnon.
-  ///
-  /// In he, this message translates to:
-  /// **'חבר רוצה לדבר איתך. לענות?'**
-  String get voiceDirectAnon;
-
   /// On the call screen: leave it for the main screen during the call
   ///
   /// In he, this message translates to:
@@ -3514,23 +3472,11 @@ abstract class AppLocalizations {
   /// **'ל{name} יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.'**
   String bgVoiceOffer(String name);
 
-  /// Spoken in the background, names off
-  ///
-  /// In he, this message translates to:
-  /// **'חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.'**
-  String get bgVoiceOfferAnon;
-
   /// Spoken in the background when a friend tapped me
   ///
   /// In he, this message translates to:
   /// **'{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.'**
   String bgVoiceDirect(String name);
-
-  /// Same, names off
-  ///
-  /// In he, this message translates to:
-  /// **'חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.'**
-  String get bgVoiceDirectAnon;
 
   /// Locked screen: an offer, without the name
   ///
@@ -3567,12 +3513,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'גם {name} רוצה לדבר. לחצו על ההתראה כדי להתקשר.'**
   String voiceYouCall(String name);
-
-  /// Spoken: I have to dial, names off
-  ///
-  /// In he, this message translates to:
-  /// **'גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.'**
-  String get voiceYouCallAnon;
 
   /// Permissions step title
   ///
@@ -3831,6 +3771,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'עד {date}'**
   String pauseUntilDate(String date);
+
+  /// No description provided for @settingsPrivacyInfo.
+  ///
+  /// In he, this message translates to:
+  /// **'מה נשמר עליי'**
+  String get settingsPrivacyInfo;
+
+  /// No description provided for @permsPhoneNotif.
+  ///
+  /// In he, this message translates to:
+  /// **'הגדרות ההתראות בטלפון'**
+  String get permsPhoneNotif;
 }
 
 class _AppLocalizationsDelegate

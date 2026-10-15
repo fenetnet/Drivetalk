@@ -111,42 +111,21 @@ class RealSettingsScreen extends ConsumerWidget {
                 value: s.prefs.voice,
                 onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
               ),
-              if (s.prefs.voice)
-                SwitchListTile(
-                  secondary: const Icon(Icons.badge_outlined),
-                  title: Text(l.settingsSpeakNames),
-                  subtitle: Text(l.settingsSpeakNamesBody),
-                  value: s.prefs.speakNames,
-                  onChanged: (v) => c.setPrefs(s.prefs.copyWith(speakNames: v)),
+              if (s.driving.supported)
+                ListTile(
+                  leading: const Icon(Icons.bedtime_rounded),
+                  title: Text(l.settingsQuietHours),
+                  subtitle: Text(_quietLine(context, s.snapshot?.status)),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: s.snapshot == null || s.busy
+                      ? null
+                      : () => _pickQuietHours(context, ref),
                 ),
             ],
           ),
           SettingsGroup(
-            title: l.settingsGeneral,
+            title: l.settingsPrivacy,
             children: [
-              if (s.driving.supported)
-                ListTile(
-                  leading: const Icon(Icons.notifications_rounded),
-                  title: Text(l.notificationsTitle),
-                  subtitle: Text(
-                    s.driving.notifications
-                        ? l.notificationsOnBody
-                        : l.notificationsOffBody,
-                  ),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: c.openNotificationSettings,
-                ),
-              ListTile(
-                leading: const Icon(Icons.verified_user_rounded),
-                title: Text(l.permsSettings),
-                subtitle: Text(l.permsSettingsBody),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const PermissionsScreen(),
-                  ),
-                ),
-              ),
               ListTile(
                 leading: const Icon(Icons.visibility_rounded),
                 title: Text(l.whoSeesTitle),
@@ -176,16 +155,44 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : c.setHideInCall,
               ),
-              if (s.driving.supported)
-                ListTile(
-                  leading: const Icon(Icons.bedtime_rounded),
-                  title: Text(l.settingsQuietHours),
-                  subtitle: Text(_quietLine(context, s.snapshot?.status)),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: s.snapshot == null || s.busy
-                      ? null
-                      : () => _pickQuietHours(context, ref),
+              ListTile(
+                leading: const Icon(Icons.block_rounded),
+                title: Text(l.realBlockedTitle),
+                subtitle: Text(l.realBlockedBody),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  showDragHandle: true,
+                  builder: (_) => const _BlockedSheet(),
                 ),
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.verified_user_rounded,
+                  color: AppColors.sageDark,
+                ),
+                title: Text(l.settingsPrivacyInfo),
+                subtitle: Text(l.settingsPrivacyBody),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _privacySheet(context, ref),
+              ),
+            ],
+          ),
+          SettingsGroup(
+            title: l.settingsGeneral,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.app_settings_alt_rounded),
+                title: Text(l.permsSettings),
+                subtitle: Text(l.permsSettingsBody),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PermissionsScreen(),
+                  ),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.system_update_rounded),
                 title: Text(l.updateCheck),
@@ -216,28 +223,6 @@ class RealSettingsScreen extends ConsumerWidget {
                 title: Text(l.feedbackTitle),
                 subtitle: Text(l.feedbackBody),
                 onTap: () => _sendFeedback(context, ref),
-              ),
-              ListTile(
-                leading: const Icon(Icons.block_rounded),
-                title: Text(l.realBlockedTitle),
-                subtitle: Text(l.realBlockedBody),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  showDragHandle: true,
-                  builder: (_) => const _BlockedSheet(),
-                ),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.verified_user_rounded,
-                  color: AppColors.sageDark,
-                ),
-                title: Text(l.settingsPrivacy),
-                subtitle: Text(l.settingsPrivacyBody),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => _privacySheet(context, ref),
               ),
             ],
           ),

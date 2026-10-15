@@ -1627,15 +1627,13 @@ void main() {
       },
     );
 
-    test('names are not read aloud when turned off', () async {
+    test('the friend\'s name is always read aloud (no setting)', () async {
       await connect();
-      me.c.setPrefs(me.s.prefs.copyWith(speakNames: false));
       await me.c.startAvailability(AvailabilityMode.driving, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
       await pump(10);
-      expect(me.voice.spoken.last, 'חבר פנוי עכשיו. לדבר?');
-      expect(me.voice.spoken.join(), isNot(contains('יוני')));
+      expect(me.voice.spoken.last, contains('יוני'));
     });
 
     test('free at the same time 3 Sundays → a routine is suggested', () async {

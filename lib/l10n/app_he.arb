@@ -356,12 +356,6 @@
     }
   },
   "realClearContacts": "למחוק מידע שסונכרן מאנשי הקשר",
-  "realVoiceOfferAnon": "חבר פנוי עכשיו. לדבר?",
-  "realVoiceQuickAnon": "מתחברים לחבר. אפשר לבטל בכפתור.",
-  "realVoiceCallingAnon": "מתקשרים.",
-  "realVoiceTheyCallAnon": "מתקשרים אליך עכשיו.",
-  "settingsSpeakNames": "להקריא שמות",
-  "settingsSpeakNamesBody": "הטלפון אומר בקול את שם החבר. כבוי: רק \"חבר פנוי\", בלי שם (טוב כשיש עוד אנשים ברכב).",
   "realDeleteAccount": "למחוק את החשבון והמידע שלי",
   "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, קבוצות ותמונה. אי אפשר לבטל.",
   "realDeleteAccountGo": "למחוק",
@@ -1167,7 +1161,6 @@
       }
     }
   },
-  "voiceDirectAnon": "חבר רוצה לדבר איתך. לענות?",
   "callToMain": "למסך הראשי",
   "@callToMain": {
     "description": "On the call screen: leave it for the main screen during the call"
@@ -1190,10 +1183,6 @@
       }
     }
   },
-  "bgVoiceOfferAnon": "חבר פנוי לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.",
-  "@bgVoiceOfferAnon": {
-    "description": "Spoken in the background, names off"
-  },
   "bgVoiceDirect": "{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.",
   "@bgVoiceDirect": {
     "description": "Spoken in the background when a friend tapped me",
@@ -1202,10 +1191,6 @@
         "type": "String"
       }
     }
-  },
-  "bgVoiceDirectAnon": "חבר רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.",
-  "@bgVoiceDirectAnon": {
-    "description": "Same, names off"
   },
   "notifPublicTalk": "מישהו פנוי לדבר עכשיו",
   "@notifPublicTalk": {
@@ -1250,10 +1235,6 @@
         "type": "String"
       }
     }
-  },
-  "voiceYouCallAnon": "גם החבר רוצה לדבר. לחצו על ההתראה כדי להתקשר.",
-  "@voiceYouCallAnon": {
-    "description": "Spoken: I have to dial, names off"
   },
   "permsTitle": "כדי שזה יעבוד גם בנסיעה",
   "@permsTitle": {
@@ -1481,5 +1462,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsPrivacyInfo": "מה נשמר עליי",
+  "permsPhoneNotif": "הגדרות ההתראות בטלפון"
 }

@@ -9,7 +9,10 @@ import 'real_common.dart';
 /// The phone permissions in one place: asked once at the start (first
 /// steps), and again from Settings — never in the middle of a drive.
 class PermissionsList extends ConsumerStatefulWidget {
-  const PermissionsList({super.key, this.onChanged});
+  const PermissionsList({super.key, this.onChanged, this.showAuto = true});
+
+  /// Settings has its own switch for this (in "Driving").
+  final bool showAuto;
 
   /// After every change (e.g. to update an "allow all" button).
   final ValueChanged<PhonePermissions>? onChanged;
@@ -124,7 +127,7 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
             l.permsBgBody,
           ),
         // Opt-in, off by default (it is a choice, not a permission).
-        if (p.supported)
+        if (p.supported && widget.showAuto)
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             secondary: const Icon(
@@ -205,14 +208,14 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
 }
 
 /// Settings → "Permissions".
-class PermissionsScreen extends StatefulWidget {
+class PermissionsScreen extends ConsumerStatefulWidget {
   const PermissionsScreen({super.key});
 
   @override
-  State<PermissionsScreen> createState() => _PermissionsScreenState();
+  ConsumerState<PermissionsScreen> createState() => _PermissionsScreenState();
 }
 
-class _PermissionsScreenState extends State<PermissionsScreen> {
+class _PermissionsScreenState extends ConsumerState<PermissionsScreen> {
   final list = GlobalKey<PermissionsListState>();
 
   @override
@@ -225,7 +228,7 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
         children: [
           Text(l.permsBody, style: const TextStyle(fontSize: 16)),
           const SizedBox(height: 8),
-          PermissionsList(key: list),
+          PermissionsList(key: list, showAuto: false),
           const SizedBox(height: 16),
           FilledButton.icon(
             style: FilledButton.styleFrom(
@@ -235,6 +238,15 @@ class _PermissionsScreenState extends State<PermissionsScreen> {
             icon: const Icon(Icons.check_rounded),
             label: Text(l.permsAllowAll, style: const TextStyle(fontSize: 17)),
           ),
+          // Notification kinds (sounds, lock screen) live in the phone.
+          if (ref.watch(realProvider).driving.supported)
+            TextButton.icon(
+              onPressed: ref
+                  .read(realProvider.notifier)
+                  .openNotificationSettings,
+              icon: const Icon(Icons.notifications_rounded),
+              label: Text(l.permsPhoneNotif),
+            ),
         ],
       ),
     );

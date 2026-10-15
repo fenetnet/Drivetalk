@@ -191,33 +191,17 @@ class RealNotice {
 }
 
 class RealPrefs {
-  const RealPrefs({
-    this.voice = true,
-    this.testTab = true,
-    this.speakNames = true,
-  });
+  const RealPrefs({this.voice = true, this.testTab = true});
   final bool voice;
   final bool testTab;
 
-  /// Read friends' names aloud (off: "a friend is free — talk?").
-  final bool speakNames;
+  RealPrefs copyWith({bool? voice, bool? testTab}) =>
+      RealPrefs(voice: voice ?? this.voice, testTab: testTab ?? this.testTab);
 
-  RealPrefs copyWith({bool? voice, bool? testTab, bool? speakNames}) =>
-      RealPrefs(
-        voice: voice ?? this.voice,
-        testTab: testTab ?? this.testTab,
-        speakNames: speakNames ?? this.speakNames,
-      );
-
-  Map<String, Object?> toJson() => {
-    'voice': voice,
-    'testTab': testTab,
-    'speakNames': speakNames,
-  };
+  Map<String, Object?> toJson() => {'voice': voice, 'testTab': testTab};
   static RealPrefs fromJson(Map<String, Object?> j) => RealPrefs(
     voice: j['voice'] as bool? ?? true,
     testTab: j['testTab'] as bool? ?? true,
-    speakNames: j['speakNames'] as bool? ?? true,
   );
 }
 
@@ -1157,24 +1141,18 @@ class RealController extends Notifier<RealState> {
     'stop': _l.driverStop,
     'offerTitle': _l.realOfferTitle('{name}', 'other'),
     'directTitle': _l.directTitle('{name}'),
-    'voiceDirect': state.prefs.speakNames
-        ? _l.voiceDirect('{name}')
-        : _l.voiceDirectAnon,
+    'voiceDirect': _l.voiceDirect('{name}'),
     'offerBody': _l.realOfferNote,
     'talk': _l.realTalkNow,
     'notNow': _l.realNotNow,
-    'voiceOffer': state.prefs.speakNames
-        ? _l.realVoiceOffer('{name}', 'other')
-        : _l.realVoiceOfferAnon,
+    'voiceOffer': _l.realVoiceOffer('{name}', 'other'),
     'quickTitle': _l.realQuickConnecting('{name}'),
     'quickBody': _l.realQuickConnectingBody,
     'cancel': _l.cancel,
     'publicOffer': _l.realNotifPublic,
     'bgFailedTitle': _l.realBgFailedTitle,
     'bgFailedBody': _l.realBgFailedBody,
-    'voiceQuick': state.prefs.speakNames
-        ? _l.realVoiceQuick('{name}')
-        : _l.realVoiceQuickAnon,
+    'voiceQuick': _l.realVoiceQuick('{name}'),
     'manualTitle': _l.realNotifManualTitle,
     'quickOff': _l.realQuickOff,
     'quickOn': _l.realQuickOn,
@@ -1183,21 +1161,15 @@ class RealController extends Notifier<RealState> {
     'routineBody': _l.realRoutineNotifBody,
     'manualBody': _l.realNotifManualBody,
     // Background: "yes" can't be heard there — say how to answer (D-111).
-    'bgVoiceOffer': state.prefs.speakNames
-        ? _l.bgVoiceOffer('{name}')
-        : _l.bgVoiceOfferAnon,
-    'bgVoiceDirect': state.prefs.speakNames
-        ? _l.bgVoiceDirect('{name}')
-        : _l.bgVoiceDirectAnon,
+    'bgVoiceOffer': _l.bgVoiceOffer('{name}'),
+    'bgVoiceDirect': _l.bgVoiceDirect('{name}'),
     'publicOfferTalk': _l.notifPublicTalk,
     'answeredTheyCall': _l.answeredTheyCall('{name}'),
     'answeredYouCall': _l.answeredYouCall('{name}'),
     'answeredWaiting': _l.answeredWaiting('{name}'),
     'answeredMissed': _l.answeredMissed,
     'answeredRetry': _l.answeredRetry,
-    'voiceYouCall': state.prefs.speakNames
-        ? _l.voiceYouCall('{name}')
-        : _l.voiceYouCallAnon,
+    'voiceYouCall': _l.voiceYouCall('{name}'),
   };
 
   /// Background notifications need this phone's device token. Created once.
@@ -1416,13 +1388,9 @@ class RealController extends Notifier<RealState> {
       unawaited(_backend.logEvent(name, ms: ms));
 
   void setPrefs(RealPrefs prefs) {
-    final namesChanged = prefs.speakNames != state.prefs.speakNames;
     final wasVoice = state.prefs.voice;
     state = state.copyWith(prefs: prefs);
     _store.setString(_prefsKey, jsonEncode(prefs.toJson()));
-    if (namesChanged && state.driving.configured) {
-      unawaited(ref.read(drivingDetectorProvider).updateTexts(_nativeTexts()));
-    }
     if (!prefs.voice) _stopVoice();
     if (prefs.voice && !wasVoice) {
       unawaited(ref.read(voiceServiceProvider).prepare());
@@ -1819,13 +1787,9 @@ class RealController extends Notifier<RealState> {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
     final direct = offer.askedBy(p.id);
-    final question = state.prefs.speakNames
-        ? direct
-              ? _l.voiceDirect(p.name)
-              : _l.realVoiceOffer(p.name, _genderKey(p.gender))
-        : direct
-        ? _l.voiceDirectAnon
-        : _l.realVoiceOfferAnon;
+    final question = direct
+        ? _l.voiceDirect(p.name)
+        : _l.realVoiceOffer(p.name, _genderKey(p.gender));
     // No answer: asked again right away, 3 times in all (D-112).
     for (var i = 0; i < _askTimes; i++) {
       await voice.speak(question);
@@ -1926,20 +1890,12 @@ class RealController extends Notifier<RealState> {
       case CallRole.iCall:
         unawaited(_dial());
         if (_driving(_now())) {
-          _speak(
-            state.prefs.speakNames
-                ? _l.realVoiceCalling(other.name)
-                : _l.realVoiceCallingAnon,
-          );
+          _speak(_l.realVoiceCalling(other.name));
         }
       case CallRole.theyCall:
         state = state.copyWith(callStage: CallStage.waitingForTheirCall);
         if (_driving(_now())) {
-          _speak(
-            state.prefs.speakNames
-                ? _l.realVoiceTheyCall(other.name, _genderKey(other.gender))
-                : _l.realVoiceTheyCallAnon,
-          );
+          _speak(_l.realVoiceTheyCall(other.name, _genderKey(other.gender)));
         }
       case CallRole.inApp:
         state = state.copyWith(callStage: CallStage.inApp);
@@ -1960,11 +1916,7 @@ class RealController extends Notifier<RealState> {
         quick: true,
       ),
     );
-    _speak(
-      state.prefs.speakNames
-          ? _l.realVoiceQuick(other.name)
-          : _l.realVoiceQuickAnon,
-    );
+    _speak(_l.realVoiceQuick(other.name));
     try {
       await _backend.seenCall(offer.id);
     } on RealBackendException {
