@@ -135,7 +135,7 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
-                          builder: (_) => const WhoSeesMeScreen(),
+                          builder: (_) => const RealCirclesScreen(),
                         ),
                       ),
               ),

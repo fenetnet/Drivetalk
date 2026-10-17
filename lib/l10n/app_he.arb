@@ -578,7 +578,7 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "קבוצות",
-  "realCirclesIntro": "כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.",
+  "realCirclesIntro": "קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.",
   "circleSeesAll": "רואים שיש לך זמן: בכל מצב",
   "circleSeesSome": "רואים שיש לך זמן: {modes}",
   "@circleSeesSome": {
@@ -589,15 +589,13 @@
     }
   },
   "circleSeesNone": "מוסתר מהקבוצה שיש לך זמן",
-  "circleRuleQuestion": "מתי חברי הקבוצה יוכלו לראות שיש לך זמן?",
+  "circleRuleQuestion": "מתי חברי הקבוצה יראו שיש לך זמן?",
   "modeInDriving": "בנסיעה",
   "modeInWalking": "בהליכה",
   "modeInBreak": "בהפסקה",
   "modeInFree": "בזמן פנוי",
   "realCircleNew": "קבוצה חדשה",
   "realCircleName": "שם הקבוצה (למשל: שכנים)",
-  "realCircleQuick": "חיבור מהיר",
-  "realCircleQuickBody": "אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.",
   "realCircleMembers": "מי בקבוצה",
   "realCircleCount": "{count, plural, =0{עוד אין אנשים} =1{אדם אחד} other{{count} אנשים}}",
   "@realCircleCount": {
@@ -612,26 +610,17 @@
   "circleFamily": "משפחה",
   "circleFriends": "חברים",
   "circleWork": "עבודה",
-  "whoSeesTitle": "מי רואה שאפשר לדבר איתי",
-  "whoSeesSubtitle": "משפחה, חברים, עבודה: לכל קבוצה בנפרד",
-  "whoSeesBody": "כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.",
+  "whoSeesTitle": "מי רואה שיש לי זמן",
+  "whoSeesSubtitle": "קבוצות: מי רואה, ומתי",
   "whoSeesTwo": "מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.",
-  "whoSeesOthers": "כל השאר",
+  "whoSeesOthers": "כל השאר (חברים שלא בשום קבוצה)",
   "showAlways": "תמיד",
   "showNever": "אף פעם",
-  "showOnly": "רק כש…",
+  "showOnly": "רק במצבים שמסומנים:",
   "showOnlyModes": "רק: {modes}",
   "@showOnlyModes": {
     "placeholders": {
       "modes": {
-        "type": "String"
-      }
-    }
-  },
-  "showRuleTitle": "{name}: מתי הם רואים שאפשר לדבר איתך?",
-  "@showRuleTitle": {
-    "placeholders": {
-      "name": {
         "type": "String"
       }
     }
@@ -1430,5 +1419,6 @@
       }
     }
   },
-  "routineAskYes": "כן, יש לי זמן"
+  "routineAskYes": "כן, יש לי זמן",
+  "othersRuleTitle": "חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?"
 }

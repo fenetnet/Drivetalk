@@ -84,15 +84,18 @@ void main() {
     await t.pump(const Duration(milliseconds: 300));
 
     expect(
-      find.text('כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.'),
+      find.textContaining('לכל קבוצה בוחרים מתי היא רואה שיש לך זמן'),
       findsOneWidget,
     );
-    expect(find.textContaining('רואים שיש לך זמן: בכל מצב'), findsOneWidget);
+    // A group and "everyone else" (the default: always).
+    expect(find.textContaining('רואים שיש לך זמן: בכל מצב'), findsNWidgets(2));
     expect(
       find.textContaining('רואים שיש לך זמן: בנסיעה, בהליכה'),
       findsOneWidget,
     );
     expect(find.textContaining('מוסתר מהקבוצה שיש לך זמן'), findsOneWidget);
+    // Friends in no group have their own rule, in the same place.
+    expect(find.textContaining('כל השאר'), findsOneWidget);
     // Wraps instead of cutting: no overflow, no "…".
     expect(t.takeException(), isNull);
     for (final e in find.byType(Text).evaluate()) {
@@ -103,10 +106,12 @@ void main() {
     // The group editor asks the question above the choices.
     await t.tap(find.text('משפחה'));
     await t.pump(const Duration(milliseconds: 500));
-    expect(
-      find.text('מתי חברי הקבוצה יוכלו לראות שיש לך זמן?'),
-      findsOneWidget,
-    );
+    expect(find.text('מתי חברי הקבוצה יראו שיש לך זמן?'), findsOneWidget);
+    // Quick connect is per person only (D-116): not in a group.
+    expect(find.text('חיבור מהיר'), findsNothing);
+    // The third choice is a whole sentence, not "רק כש…".
+    expect(find.text('רק במצבים שמסומנים:'), findsOneWidget);
+    expect(find.textContaining('…'), findsNothing);
     expect(t.takeException(), isNull);
   });
 }

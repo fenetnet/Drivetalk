@@ -1076,60 +1076,37 @@ void main() {
       }
     });
 
-    test(
-      'quick-connect circles on both sides → connected without asking',
-      () async {
-        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-        final yoniId = yoni.backend.userId!;
-        final meId = me.backend.userId!;
-        await me.c.saveCircle(
-          RealCircle(id: '', name: 'קרובים', quick: true, memberIds: {yoniId}),
-        );
-        await yoni.c.saveCircle(
-          RealCircle(id: '', name: 'משפחה', quick: true, memberIds: {meId}),
-        );
-        await me.c.startAvailability(AvailabilityMode.driving, 30);
-        await yoni.c.startAvailability(AvailabilityMode.free, 30);
-        await me.c.refresh();
-        await yoni.c.refresh();
-        await pump(50);
-        expect(currentOffer(me.s, now), isNull, reason: 'no question');
-        expect(me.s.callStage, CallStage.connecting);
-        expect(me.s.call?.quick, isTrue);
-        expect(me.voice.spoken.last, contains('יוני'));
-        // Nobody dials during the 5 seconds (server rule).
-        await pump(700);
-        expect(me.s.callStage, CallStage.connecting);
-        expect([...me.dialer.dialed, ...yoni.dialer.dialed], isEmpty);
-        now = now.add(const Duration(seconds: 6));
-        await pump(700);
-        // Exactly one side dials.
-        expect(
-          {me.s.call?.role, yoni.s.call?.role},
-          {CallRole.iCall, CallRole.theyCall},
-        );
-        expect(me.dialer.dialed.length + yoni.dialer.dialed.length, 1);
-      },
-    );
+    test('quick connect on both sides → connected without asking', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await yoni.c.refresh();
+      await pump(50);
+      expect(currentOffer(me.s, now), isNull, reason: 'no question');
+      expect(me.s.callStage, CallStage.connecting);
+      expect(me.s.call?.quick, isTrue);
+      expect(me.voice.spoken.last, contains('יוני'));
+      // Nobody dials during the 5 seconds (server rule).
+      await pump(700);
+      expect(me.s.callStage, CallStage.connecting);
+      expect([...me.dialer.dialed, ...yoni.dialer.dialed], isEmpty);
+      now = now.add(const Duration(seconds: 6));
+      await pump(700);
+      // Exactly one side dials.
+      expect(
+        {me.s.call?.role, yoni.s.call?.role},
+        {CallRole.iCall, CallRole.theyCall},
+      );
+      expect(me.dialer.dialed.length + yoni.dialer.dialed.length, 1);
+    });
 
     test('quick connect: either side can cancel in the 5 seconds', () async {
       await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-      await me.c.saveCircle(
-        RealCircle(
-          id: '',
-          name: 'קרובים',
-          quick: true,
-          memberIds: {yoni.backend.userId!},
-        ),
-      );
-      await yoni.c.saveCircle(
-        RealCircle(
-          id: '',
-          name: 'משפחה',
-          quick: true,
-          memberIds: {me.backend.userId!},
-        ),
-      );
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
       await me.c.startAvailability(AvailabilityMode.driving, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
@@ -1149,22 +1126,8 @@ void main() {
 
     test('quick connect: a cancel after the 5 seconds says so', () async {
       await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-      await me.c.saveCircle(
-        RealCircle(
-          id: '',
-          name: 'קרובים',
-          quick: true,
-          memberIds: {yoni.backend.userId!},
-        ),
-      );
-      await yoni.c.saveCircle(
-        RealCircle(
-          id: '',
-          name: 'משפחה',
-          quick: true,
-          memberIds: {me.backend.userId!},
-        ),
-      );
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
       await me.c.startAvailability(AvailabilityMode.driving, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
@@ -1199,16 +1162,9 @@ void main() {
       expect(o.a == yoni.backend.userId ? o.endedA : o.endedB, isTrue);
     });
 
-    test('one-sided quick circle is just a normal question', () async {
+    test('one-sided quick connect is just a normal question', () async {
       await connect();
-      await me.c.saveCircle(
-        RealCircle(
-          id: '',
-          name: 'קרובים',
-          quick: true,
-          memberIds: {yoni.backend.userId!},
-        ),
-      );
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
       await me.c.startAvailability(AvailabilityMode.free, 30);
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
@@ -1645,7 +1601,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 40)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 41)'));
     });
 
     test(

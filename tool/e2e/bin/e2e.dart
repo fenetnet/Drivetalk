@@ -807,7 +807,7 @@ Future<void> main() async {
   await ron.rpc('accept_invitation', params: {'p_token': inv3['token']});
   final family = await me
       .from('circles')
-      .insert({'name': 'משפחה', 'quick': true})
+      .insert({'name': 'משפחה'})
       .select()
       .single();
   await me.from('circle_members').insert({
@@ -847,7 +847,7 @@ Future<void> main() async {
     )).where((o) => o['status'] == 'pending').isEmpty,
     'and gets no offer',
   );
-  // Mom (in my quick "family") also put me in her quick circle → mutual.
+  // Mom and I turn quick connect on for each other → mutual.
   final mom = await newUser('אמא', 'female');
   final invMom = List<Map<String, dynamic>>.from(
     await me.rpc('create_invitation'),
@@ -857,15 +857,9 @@ Future<void> main() async {
     'circle_id': family['id'],
     'member': uid(mom),
   });
-  final moms = await mom
-      .from('circles')
-      .insert({'name': 'קרובים', 'quick': true})
-      .select()
-      .single();
-  await mom.from('circle_members').insert({
-    'circle_id': moms['id'],
-    'member': uid(me),
-  });
+  // Quick connect is per person (D-116): both turn it on for each other.
+  await me.rpc('set_quick', params: {'p_user': uid(mom), 'p_on': true});
+  await mom.rpc('set_quick', params: {'p_user': uid(me), 'p_on': true});
   await mom.rpc(
     'set_availability',
     params: {'p_mode': 'free', 'p_minutes': 30},
@@ -876,7 +870,7 @@ Future<void> main() async {
   )).where((o) => o['quick'] == true).toList();
   check(
     quickOffer.length == 1 && quickOffer.single['status'] == 'accepted',
-    'both in each other\'s quick circle → connected at once (no question)',
+    'both turned quick connect on for each other → connected at once (no question)',
   );
   final qid = quickOffer.single['id'] as String;
   final qEarly = List<Map<String, dynamic>>.from(
@@ -939,15 +933,8 @@ Future<void> main() async {
     'circle_id': family['id'],
     'member': uid(shira),
   });
-  final shiras = await shira
-      .from('circles')
-      .insert({'name': 'קרובים', 'quick': true})
-      .select()
-      .single();
-  await shira.from('circle_members').insert({
-    'circle_id': shiras['id'],
-    'member': uid(me),
-  });
+  await me.rpc('set_quick', params: {'p_user': uid(shira), 'p_on': true});
+  await shira.rpc('set_quick', params: {'p_user': uid(me), 'p_on': true});
   await mom.rpc('clear_availability');
   await shira.from('phone_numbers').upsert({
     'user_id': uid(shira),
@@ -1819,8 +1806,8 @@ Future<void> main() async {
   await reviewFixes2();
 
   check(
-    await eve.rpc('schema_version') == 40,
-    'the server says its version (40)',
+    await eve.rpc('schema_version') == 41,
+    'the server says its version (41)',
   );
 
   // --- profile photos: private, friends only
@@ -3109,6 +3096,29 @@ Future<void> reviewFixes2() async {
         ) ==
         1,
     'a tap remembers who asked (only my own taps count for my limit)',
+  );
+  // 8. Quick connect is per person only (D-116): a "quick" group (from an
+  //    older app) turns into the per-person switch for its members.
+  final grp2 = await ra
+      .from('circles')
+      .insert({'name': 'קרובים'})
+      .select()
+      .single();
+  await ra.from('circle_members').insert({
+    'circle_id': grp2['id'],
+    'member': uid(rb),
+  });
+  await ra.from('circles').update({'quick': true}).eq('id', grp2['id']);
+  final st = List<Map<String, dynamic>>.from(await ra.rpc('quick_status'));
+  check(
+    st.length == 1 &&
+        st.single['user_id'] == uid(rb) &&
+        st.single['mine'] == true &&
+        await dbCount(
+              "select count(*) from circles where id = '${grp2['id']}' and quick",
+            ) ==
+            0,
+    'a "quick group" becomes quick connect for each person in it (D-116)',
   );
   for (final c in [ra, rb, rc]) {
     await c.rpc('clear_availability');

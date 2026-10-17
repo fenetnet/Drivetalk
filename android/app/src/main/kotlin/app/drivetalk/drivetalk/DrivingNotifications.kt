@@ -230,6 +230,8 @@ object DrivingNotifications {
      * anything else → "didn't work out this time".
      */
     fun showAnswered(context: Context, offerId: String, name: String, status: String?, iCall: Boolean) {
+        // Already agreed before this tap (e.g. in the app): nothing new to say.
+        if (status == "handled") return
         val key = when {
             status == "accepted" && !iCall -> "answeredTheyCall"
             status == "accepted" -> "answeredYouCall"

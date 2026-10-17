@@ -129,7 +129,7 @@ void main() {
     final yoniId = me.read(realProvider).snapshot!.friends.single.id;
     expect(
       await m.saveCircle(
-        RealCircle(id: '', name: 'קרובים', quick: true, memberIds: {yoniId}),
+        RealCircle(id: '', name: 'קרובים', memberIds: {yoniId}),
       ),
       isTrue,
     );
@@ -144,7 +144,8 @@ void main() {
         me.read(realProvider).snapshot!.circles.firstWhere((c) => c.name == n);
     final circle = named('קרובים');
     expect(circle.memberIds, {yoniId});
-    expect(circle.quick, isTrue);
+    // Groups aren't "quick" (D-116): quick connect is per person.
+    expect(circle.quick, isFalse);
     await m.saveCircle(circle.copyWith(name: 'שכנים', memberIds: {}));
     expect(named('שכנים').memberIds, isEmpty);
     await m.deleteCircle(named('שכנים'));

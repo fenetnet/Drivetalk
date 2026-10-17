@@ -303,11 +303,8 @@ class MemoryServer {
   /// Circles: id → (owner, circle).
   final circles = <String, (String, RealCircle)>{};
 
-  bool _isQuick(String x, String y) =>
-      quickPicks.contains('$x|$y') ||
-      circles.values.any(
-        (c) => c.$1 == x && c.$2.quick && c.$2.memberIds.contains(y),
-      );
+  /// Quick connect is per person only (D-116).
+  bool _isQuick(String x, String y) => quickPicks.contains('$x|$y');
 
   /// Quick connect per friend: "owner|member" (D-112).
   final quickPicks = <String>{};
@@ -1540,10 +1537,16 @@ class MemoryRealBackend implements RealBackend {
       throw const RealBackendException('not_allowed');
     }
     final id = circle.id.isEmpty ? server._newId('circle') : circle.id;
+    // Like the server (D-116): a group isn't "quick" — an older app's
+    // "quick group" turns into the per-person switch for its members.
+    if (circle.quick) {
+      for (final m in circle.memberIds) {
+        server.quickPicks.add('$me|$m');
+      }
+    }
     final saved = RealCircle(
       id: id,
       name: name,
-      quick: circle.quick,
       memberIds: {...circle.memberIds},
       showModes: circle.showModes,
     );

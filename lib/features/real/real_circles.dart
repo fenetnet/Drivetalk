@@ -59,7 +59,8 @@ class RealCirclesScreen extends StatelessWidget {
   );
 }
 
-/// The groups: private, each with who sees me and optional quick connect.
+/// The groups: private, each says who sees that I'm free — and when.
+/// (Quick connect is per person, on each friend's card — D-116.)
 class RealCirclesSection extends ConsumerWidget {
   const RealCirclesSection({super.key});
 
@@ -67,37 +68,77 @@ class RealCirclesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final snap = ref.watch(realProvider.select((s) => s.snapshot));
+    final c = ref.read(realProvider.notifier);
     final circles = snap?.circles ?? const <RealCircle>[];
     final friends = snap?.friends ?? const <RealProfile>[];
+    final others = ShowRule(snap?.othersModes);
+    final inNone = [
+      for (final f in friends)
+        if (!circles.any((x) => x.memberIds.contains(f.id))) f,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
           l.realCirclesIntro,
-          style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+          style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
         ),
-        const SizedBox(height: 10),
-        for (final c in circles)
+        const SizedBox(height: 12),
+        for (final circle in circles)
           Card(
+            clipBehavior: Clip.antiAlias,
             margin: const EdgeInsets.only(bottom: 10),
             child: ListTile(
-              leading: Icon(
-                c.quick ? Icons.bolt_rounded : Icons.group_work_rounded,
-                color: c.quick ? AppColors.terracotta : AppColors.sageDark,
+              leading: const Icon(
+                Icons.group_work_rounded,
+                color: AppColors.sageDark,
               ),
               title: Text(
-                c.name,
+                circle.name,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                '${[l.realCircleCount(c.memberIds.length), if (c.quick) l.realCircleQuick].join(' · ')}'
-                '\n${circleRuleLine(l, ShowRule(c.showModes))}',
+                '${l.realCircleCount(circle.memberIds.length)}'
+                '\n${circleRuleLine(l, ShowRule(circle.showModes))}',
               ),
               isThreeLine: true,
               trailing: const Icon(Icons.edit_rounded),
-              onTap: () => openCircleEditor(context, c),
+              onTap: () => openCircleEditor(context, circle),
             ),
           ),
+        // Friends in no group: one rule for all of them.
+        Card(
+          clipBehavior: Clip.antiAlias,
+          margin: const EdgeInsets.only(bottom: 10),
+          child: ListTile(
+            leading: const Icon(
+              Icons.people_outline_rounded,
+              color: AppColors.inkSoft,
+            ),
+            title: Text(
+              l.whoSeesOthers,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(
+              '${l.realCircleCount(inNone.length)}'
+              '\n${circleRuleLine(l, others)}',
+            ),
+            isThreeLine: true,
+            trailing: const Icon(Icons.edit_rounded),
+            onTap: snap == null
+                ? null
+                : () async {
+                    final r = await pickShowRule(
+                      context,
+                      title: l.othersRuleTitle,
+                      initial: others,
+                    );
+                    if (r != null) await c.setOthersRule(r);
+                  },
+          ),
+        ),
+        Text(l.whoSeesTwo, style: const TextStyle(color: AppColors.inkSoft)),
+        const SizedBox(height: 12),
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
           onPressed: friends.isEmpty
@@ -131,9 +172,9 @@ class _CircleEditor extends ConsumerStatefulWidget {
 
 class _CircleEditorState extends ConsumerState<_CircleEditor> {
   late final _name = TextEditingController(text: widget.circle?.name ?? '');
-  late bool _quick = widget.circle?.quick ?? false;
   late final Set<String> _members = {...?widget.circle?.memberIds};
   late ShowRule _rule = ShowRule(widget.circle?.showModes);
+  var _deleting = false;
 
   Future<void> _save() async {
     final c = ref.read(realProvider.notifier);
@@ -141,7 +182,6 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
       RealCircle(
         id: widget.circle?.id ?? '',
         name: _name.text,
-        quick: _quick,
         memberIds: _members,
         showModes: _rule.modes,
       ),
@@ -179,17 +219,6 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
               ),
               onChanged: (_) => setState(() {}),
             ),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              secondary: const Icon(
-                Icons.bolt_rounded,
-                color: AppColors.terracotta,
-              ),
-              title: Text(l.realCircleQuick),
-              subtitle: Text(l.realCircleQuickBody),
-              value: _quick,
-              onChanged: (v) => setState(() => _quick = v),
-            ),
             const SizedBox(height: 8),
             Text(
               l.circleRuleQuestion,
@@ -221,12 +250,18 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
             ),
             if (widget.circle != null)
               TextButton(
-                onPressed: () async {
-                  await ref
-                      .read(realProvider.notifier)
-                      .deleteCircle(widget.circle!);
-                  if (context.mounted) Navigator.of(context).pop();
-                },
+                onPressed: busy || _deleting
+                    ? null
+                    : () async {
+                        setState(() => _deleting = true);
+                        final c = ref.read(realProvider.notifier);
+                        final route = ModalRoute.of(context);
+                        await c.deleteCircle(widget.circle!);
+                        // Once, and only this sheet (not the screen behind).
+                        if (context.mounted && (route?.isCurrent ?? false)) {
+                          Navigator.of(context).pop();
+                        }
+                      },
                 child: Text(
                   l.realCircleDelete,
                   style: const TextStyle(color: AppColors.danger),
@@ -390,101 +425,6 @@ class _RuleSheetState extends State<_RuleSheet> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Settings → "Who sees that I'm free": every circle and "everyone else".
-class WhoSeesMeScreen extends ConsumerWidget {
-  const WhoSeesMeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final snap = ref.watch(realProvider.select((s) => s.snapshot));
-    final c = ref.read(realProvider.notifier);
-    final circles = snap?.circles ?? const <RealCircle>[];
-    final others = ShowRule(snap?.othersModes);
-    final friends = snap?.friends ?? const <RealProfile>[];
-    final inNone = [
-      for (final f in friends)
-        if (!circles.any((x) => x.memberIds.contains(f.id))) f,
-    ];
-    return Scaffold(
-      appBar: AppBar(title: Text(l.whoSeesTitle)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        children: [
-          Text(l.whoSeesBody, style: const TextStyle(color: AppColors.inkSoft)),
-          const SizedBox(height: 12),
-          for (final circle in circles)
-            Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ListTile(
-                leading: const Icon(
-                  Icons.group_work_rounded,
-                  color: AppColors.sageDark,
-                ),
-                title: Text(
-                  circle.name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-                subtitle: Text(
-                  '${showRuleLabel(l, ShowRule(circle.showModes))}'
-                  ' · ${l.realCircleCount(circle.memberIds.length)}',
-                ),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () async {
-                  final r = await pickShowRule(
-                    context,
-                    title: l.showRuleTitle(circle.name),
-                    initial: ShowRule(circle.showModes),
-                  );
-                  if (r != null) await c.setCircleRule(circle, r);
-                },
-              ),
-            ),
-          Card(
-            margin: const EdgeInsets.only(bottom: 10),
-            child: ListTile(
-              leading: const Icon(
-                Icons.people_outline_rounded,
-                color: AppColors.inkSoft,
-              ),
-              title: Text(
-                l.whoSeesOthers,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-              subtitle: Text(
-                '${showRuleLabel(l, others)}'
-                ' · ${l.realCircleCount(inNone.length)}',
-              ),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () async {
-                final r = await pickShowRule(
-                  context,
-                  title: l.showRuleTitle(l.whoSeesOthers),
-                  initial: others,
-                );
-                if (r != null) await c.setOthersRule(r);
-              },
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(l.whoSeesTwo, style: const TextStyle(color: AppColors.inkSoft)),
-          const SizedBox(height: 16),
-          OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
-            onPressed: friends.isEmpty
-                ? null
-                : () => openCircleEditor(context, null),
-            icon: const Icon(Icons.add_rounded),
-            label: Text(
-              friends.isEmpty ? l.realCircleNoFriends : l.realCircleNew,
-            ),
-          ),
-        ],
       ),
     );
   }

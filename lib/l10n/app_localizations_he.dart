@@ -1073,7 +1073,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCirclesIntro =>
-      'כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.';
+      'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.';
 
   @override
   String get circleSeesAll => 'רואים שיש לך זמן: בכל מצב';
@@ -1087,7 +1087,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get circleSeesNone => 'מוסתר מהקבוצה שיש לך זמן';
 
   @override
-  String get circleRuleQuestion => 'מתי חברי הקבוצה יוכלו לראות שיש לך זמן?';
+  String get circleRuleQuestion => 'מתי חברי הקבוצה יראו שיש לך זמן?';
 
   @override
   String get modeInDriving => 'בנסיעה';
@@ -1106,13 +1106,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCircleName => 'שם הקבוצה (למשל: שכנים)';
-
-  @override
-  String get realCircleQuick => 'חיבור מהיר';
-
-  @override
-  String get realCircleQuickBody =>
-      'אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.';
 
   @override
   String get realCircleMembers => 'מי בקבוצה';
@@ -1145,20 +1138,16 @@ class AppLocalizationsHe extends AppLocalizations {
   String get circleWork => 'עבודה';
 
   @override
-  String get whoSeesTitle => 'מי רואה שאפשר לדבר איתי';
+  String get whoSeesTitle => 'מי רואה שיש לי זמן';
 
   @override
-  String get whoSeesSubtitle => 'משפחה, חברים, עבודה: לכל קבוצה בנפרד';
-
-  @override
-  String get whoSeesBody =>
-      'כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.';
+  String get whoSeesSubtitle => 'קבוצות: מי רואה, ומתי';
 
   @override
   String get whoSeesTwo => 'מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.';
 
   @override
-  String get whoSeesOthers => 'כל השאר';
+  String get whoSeesOthers => 'כל השאר (חברים שלא בשום קבוצה)';
 
   @override
   String get showAlways => 'תמיד';
@@ -1167,16 +1156,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get showNever => 'אף פעם';
 
   @override
-  String get showOnly => 'רק כש…';
+  String get showOnly => 'רק במצבים שמסומנים:';
 
   @override
   String showOnlyModes(String modes) {
     return 'רק: $modes';
-  }
-
-  @override
-  String showRuleTitle(String name) {
-    return '$name: מתי הם רואים שאפשר לדבר איתך?';
   }
 
   @override
@@ -2168,4 +2152,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get routineAskYes => 'כן, יש לי זמן';
+
+  @override
+  String get othersRuleTitle => 'חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?';
 }

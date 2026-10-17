@@ -1855,7 +1855,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'כאן בוחרים מי מהחברים יראה שיש לך זמן, ובאילו מצבים.'**
+  /// **'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.'**
   String get realCirclesIntro;
 
   /// No description provided for @circleSeesAll.
@@ -1879,7 +1879,7 @@ abstract class AppLocalizations {
   /// No description provided for @circleRuleQuestion.
   ///
   /// In he, this message translates to:
-  /// **'מתי חברי הקבוצה יוכלו לראות שיש לך זמן?'**
+  /// **'מתי חברי הקבוצה יראו שיש לך זמן?'**
   String get circleRuleQuestion;
 
   /// No description provided for @modeInDriving.
@@ -1917,18 +1917,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'שם הקבוצה (למשל: שכנים)'**
   String get realCircleName;
-
-  /// No description provided for @realCircleQuick.
-  ///
-  /// In he, this message translates to:
-  /// **'חיבור מהיר'**
-  String get realCircleQuick;
-
-  /// No description provided for @realCircleQuickBody.
-  ///
-  /// In he, this message translates to:
-  /// **'אם גם הם שמו אותך בחיבור מהיר — מתחברים מיד, עם 5 שניות לביטול.'**
-  String get realCircleQuickBody;
 
   /// No description provided for @realCircleMembers.
   ///
@@ -1975,20 +1963,14 @@ abstract class AppLocalizations {
   /// No description provided for @whoSeesTitle.
   ///
   /// In he, this message translates to:
-  /// **'מי רואה שאפשר לדבר איתי'**
+  /// **'מי רואה שיש לי זמן'**
   String get whoSeesTitle;
 
   /// No description provided for @whoSeesSubtitle.
   ///
   /// In he, this message translates to:
-  /// **'משפחה, חברים, עבודה: לכל קבוצה בנפרד'**
+  /// **'קבוצות: מי רואה, ומתי'**
   String get whoSeesSubtitle;
-
-  /// No description provided for @whoSeesBody.
-  ///
-  /// In he, this message translates to:
-  /// **'כאן קובעים לכל קבוצה מתי היא רואה שיש לך זמן: תמיד, אף פעם, או רק בנסיעה / בהפסקה וכו׳.\n\nמי שלא רואה — גם לא מקבל הצעה, ולא יודע שהסתרת. מבחינתו פשוט אין לך זמן עכשיו.'**
-  String get whoSeesBody;
 
   /// No description provided for @whoSeesTwo.
   ///
@@ -1999,7 +1981,7 @@ abstract class AppLocalizations {
   /// No description provided for @whoSeesOthers.
   ///
   /// In he, this message translates to:
-  /// **'כל השאר'**
+  /// **'כל השאר (חברים שלא בשום קבוצה)'**
   String get whoSeesOthers;
 
   /// No description provided for @showAlways.
@@ -2017,7 +1999,7 @@ abstract class AppLocalizations {
   /// No description provided for @showOnly.
   ///
   /// In he, this message translates to:
-  /// **'רק כש…'**
+  /// **'רק במצבים שמסומנים:'**
   String get showOnly;
 
   /// No description provided for @showOnlyModes.
@@ -2025,12 +2007,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רק: {modes}'**
   String showOnlyModes(String modes);
-
-  /// No description provided for @showRuleTitle.
-  ///
-  /// In he, this message translates to:
-  /// **'{name}: מתי הם רואים שאפשר לדבר איתך?'**
-  String showRuleTitle(String name);
 
   /// No description provided for @friendCirclesTitle.
   ///
@@ -3639,6 +3615,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כן, יש לי זמן'**
   String get routineAskYes;
+
+  /// No description provided for @othersRuleTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?'**
+  String get othersRuleTitle;
 }
 
 class _AppLocalizationsDelegate

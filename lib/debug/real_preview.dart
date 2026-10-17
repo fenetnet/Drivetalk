@@ -57,7 +57,7 @@ Future<void> main() async {
     await me.setRating(omer.userId!, 3);
     await me.setRating(shira.userId!, 2);
     await me.saveCircle(
-      RealCircle(id: '', name: 'משפחה', quick: true, memberIds: {mom.userId!}),
+      RealCircle(id: '', name: 'משפחה', memberIds: {mom.userId!}),
     );
     await me.saveCircle(
       RealCircle(id: '', name: 'חברים מהצבא', memberIds: {yoni.userId!}),
