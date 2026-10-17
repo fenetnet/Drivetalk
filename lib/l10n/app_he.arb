@@ -1420,5 +1420,15 @@
   },
   "settingsPrivacyInfo": "מה נשמר עליי",
   "permsPhoneNotif": "הגדרות ההתראות בטלפון",
-  "realCirclesNone": "משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן"
+  "realCirclesNone": "משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן",
+  "routineAskTitle": "השגרה שלך: יש לך זמן עכשיו?",
+  "routineAskBody": "בלחיצה על \"כן\" נסמן שיש לך זמן ל-{minutes} דק׳.",
+  "@routineAskBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "routineAskYes": "כן, יש לי זמן"
 }

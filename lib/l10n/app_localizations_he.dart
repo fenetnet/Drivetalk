@@ -2157,4 +2157,15 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get realCirclesNone =>
       'משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן';
+
+  @override
+  String get routineAskTitle => 'השגרה שלך: יש לך זמן עכשיו?';
+
+  @override
+  String routineAskBody(String minutes) {
+    return 'בלחיצה על \"כן\" נסמן שיש לך זמן ל-$minutes דק׳.';
+  }
+
+  @override
+  String get routineAskYes => 'כן, יש לי זמן';
 }

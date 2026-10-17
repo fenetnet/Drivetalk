@@ -1645,7 +1645,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 39)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 40)'));
     });
 
     test(
@@ -2249,5 +2249,252 @@ void main() {
         expect(server.crashes.single['build'], '10');
       },
     );
+  });
+
+  group('full review fixes (D-115)', () {
+    ProviderContainer reopen(Phone p) {
+      final c = ProviderContainer(
+        overrides: [
+          realBackendProvider.overrideWithValue(p.backend),
+          localStoreProvider.overrideWithValue(p.store),
+          realClockProvider.overrideWithValue(clock),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          phoneDialerProvider.overrideWithValue(p.dialer),
+          drivingDetectorProvider.overrideWithValue(p.driving),
+        ],
+      );
+      c.read(realProvider);
+      return c;
+    }
+
+    test('a call start that fails once is tried again (not lost)', () async {
+      // I have no number, Yoni has: I'm the one who dials.
+      await connect(myPhone: '', yoniPhone: '050-123-4567');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      me.backend.failStartCalls = 1;
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.dialer.dialed, isEmpty, reason: 'the network blinked');
+      await me.c.refresh();
+      await pump(20);
+      expect(me.dialer.dialed, ['0501234567'], reason: 'tried again');
+      expect(
+        me.driving.handledCalls,
+        isNotEmpty,
+        reason: 'dialing worked → no "tap to call" from the background',
+      );
+    });
+
+    test(
+      'opening the app while the friend is calling: "X is calling you"',
+      () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        await me.c.respond(currentOffer(me.s, now)!, accept: true);
+        me.dispose();
+        await yoni.c.refresh();
+        await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+        now = now.add(const Duration(minutes: 1));
+        final again = reopen(me);
+        await pump(20);
+        await again.read(realProvider.notifier).refresh();
+        await pump(20);
+        expect(
+          again.read(realProvider).callStage,
+          CallStage.waitingForTheirCall,
+          reason: 'not "neither of you has a number"',
+        );
+        again.dispose();
+      },
+    );
+
+    test('a dial Android blocked: the background may still say so', () async {
+      await connect(myPhone: '', yoniPhone: '050-123-4567');
+      me.dialer.result = DialResult.failed;
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.dialer.dialed, isNotEmpty);
+      expect(me.driving.handledCalls, isEmpty);
+      expect(me.s.callStage, CallStage.inApp);
+    });
+
+    test('a quick connect nobody started in time never dials later', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+      final meId = me.backend.userId!;
+      final yoniId = yoni.backend.userId!;
+      // Both phones in the background: nobody opens the app in time.
+      me.dispose();
+      yoni.dispose();
+      await yoni.backend.setAvailability(AvailabilityMode.driving, 30);
+      await me.backend.setAvailability(AvailabilityMode.driving, 30);
+      final o = server.offers.values.single;
+      expect(o.quick, isTrue);
+      server
+        ..markSeen(o.id, meId)
+        ..markSeen(o.id, yoniId);
+      now = now.add(const Duration(minutes: 3));
+      final again = reopen(me);
+      await pump(20);
+      await again.read(realProvider.notifier).refresh();
+      await pump(20);
+      expect(me.dialer.dialed, isEmpty);
+      expect(again.read(realProvider).callStage, CallStage.none);
+      expect(server.offers[o.id]!.status, OfferStatus.cancelled);
+      expect(server.offers[o.id]!.talked, isNull, reason: 'not a talk');
+      again.dispose();
+    });
+
+    test('the voice question waits while the app is behind another', () async {
+      await connect();
+      me.c.debugLifecycle(AppLifecycleState.paused);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.voice.spoken, isNot(contains('ליוני יש זמן. לדבר?')));
+      expect(me.s.listening, isFalse, reason: 'no hidden microphone');
+    });
+
+    test(
+      'back in the app: a stopped background watcher starts again',
+      () async {
+        await connect();
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        await pump(20);
+        expect(me.driving.startAvailableCalls, 1);
+        // Android stopped the watcher while I'm still free.
+        me.driving.watching = false;
+        me.c.debugLifecycle(AppLifecycleState.resumed);
+        await pump(50);
+        expect(me.driving.startAvailableCalls, 2);
+        // Running: nothing to do.
+        me.c.debugLifecycle(AppLifecycleState.resumed);
+        await pump(50);
+        expect(me.driving.startAvailableCalls, 2);
+      },
+    );
+
+    test('"for the whole trip" tells the phone to end with the trip', () async {
+      await connect();
+      await me.c.startAvailability(
+        AvailabilityMode.driving,
+        180,
+        untilTripEnds: true,
+      );
+      await pump(20);
+      expect(me.driving.endWithTrip, isTrue);
+      await me.c.stopAvailability();
+      await me.c.startAvailability(AvailabilityMode.driving, 60);
+      await pump(20);
+      expect(me.driving.endWithTrip, isFalse);
+    });
+
+    test(
+      'deleting a group: its routines go to everyone, free time ends',
+      () async {
+        await connect();
+        final yoniId = yoni.backend.userId!;
+        await me.c.saveCircle(
+          RealCircle(id: '', name: 'מילואים', memberIds: {yoniId}),
+        );
+        final circle = me.s.snapshot!.circles.firstWhere(
+          (c) => c.name == 'מילואים',
+        );
+        await me.c.saveRoutines([
+          Routine(
+            id: 'r1',
+            weekdays: {1, 2, 3},
+            minuteOfDay: 8 * 60,
+            durationMinutes: 30,
+            mode: AvailabilityMode.driving,
+            circleId: circle.id,
+          ),
+        ]);
+        await me.c.startAvailability(
+          AvailabilityMode.free,
+          30,
+          circleId: circle.id,
+        );
+        await pump(20);
+        expect(me.driving.availableUntil, isNotNull);
+        await me.c.deleteCircle(circle);
+        expect(me.s.routines.single.circleId, isNull);
+        expect(me.driving.routinesJson, contains('"circle":""'));
+        expect(me.driving.availableUntil, isNull, reason: 'watcher stopped');
+        expect(myActiveAvailability(me.s, now), isNull);
+      },
+    );
+
+    test('signing out leaves nothing of the account on the phone', () async {
+      await connect();
+      for (final k in [
+        'real.quickAsksSeen.v1',
+        'real.quickIntro.v1',
+        'real.presetCircles.v1',
+        'real.routines.v1',
+        'real.knownFriends.v1',
+      ]) {
+        await me.store.setString(k, 'x');
+      }
+      await me.c.signOut();
+      for (final k in me.store.values.keys) {
+        expect(k, 'real.prefs.v1', reason: 'only the phone settings stay');
+      }
+      expect(me.driving.token, isNull);
+    });
+
+    test('removing a friend ends our open question', () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      final offer = currentOffer(me.s, now)!;
+      await me.c.unmatch(me.s.snapshot!.friends.single);
+      expect(server.offers[offer.id]!.status, OfferStatus.cancelled);
+    });
+
+    test("an old link doesn't bring back a friend who removed me", () async {
+      await connect();
+      final old = await me.backend.createInvitation();
+      now = now.add(const Duration(minutes: 1));
+      await me.c.unmatch(me.s.snapshot!.friends.single);
+      expect(
+        await yoni.backend.acceptInvitation(old.token),
+        AcceptResult.expired,
+      );
+      now = now.add(const Duration(minutes: 1));
+      final fresh = await me.backend.createInvitation();
+      expect(
+        await yoni.backend.acceptInvitation(fresh.token),
+        AcceptResult.accepted,
+        reason: 'a new invitation does',
+      );
+    });
+
+    test("a friend who can't see I'm free can't be tapped (D-107)", () async {
+      await connect();
+      await me.c.setOthersRule(ShowRule.never);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      expect(
+        server.askCheck(me.backend.userId!, yoni.backend.userId!, meFree: true),
+        'not_free',
+      );
+    });
   });
 }

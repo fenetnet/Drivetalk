@@ -62,6 +62,9 @@ class MemoryServer {
     removedBy.remove(_pair(x, y));
   }
 
+  /// When each removed pair was removed.
+  final removedAt = <String, DateTime>{};
+
   /// [x] disconnects from [y] (remove, block) — remembered, with who did it.
   void disconnect(String x, String y) {
     pendingFor.remove(_pair(x, y));
@@ -71,6 +74,57 @@ class MemoryServer {
     if (connections.remove(_pair(x, y))) {
       removed.add(_pair(x, y));
       removedBy[_pair(x, y)] = x;
+      removedAt[_pair(x, y)] = now();
+      // Like the server: out of each other's groups, open questions end.
+      for (final e in circles.entries.toList()) {
+        final (owner, c) = e.value;
+        final other = owner == x ? y : (owner == y ? x : null);
+        if (other == null || !c.memberIds.contains(other)) continue;
+        circles[e.key] = (
+          owner,
+          RealCircle(
+            id: c.id,
+            name: c.name,
+            quick: c.quick,
+            memberIds: {...c.memberIds}..remove(other),
+            showModes: c.showModes,
+          ),
+        );
+      }
+      final pair = _pair(x, y).split('|');
+      _endOpen((o) => o.a == pair[0] && o.b == pair[1]);
+    }
+  }
+
+  /// A quick connect that ends before it began: no pause, not a talk
+  /// (like mark_app_call).
+  void _undoQuick(_Offer o) {
+    o.talked = null;
+    final limit = (o.acceptedAt ?? now()).add(
+      const Duration(days: 3, minutes: 1),
+    );
+    for (final k in ['${o.a}|${o.b}', '${o.b}|${o.a}']) {
+      if (snoozes[k] case final u? when !u.isAfter(limit)) snoozes.remove(k);
+    }
+  }
+
+  /// Open questions — and quick connects that haven't started — end
+  /// (when availability ends, when friends part).
+  void _endOpen(bool Function(_Offer o) which) {
+    for (final o in offers.values) {
+      if (!which(o)) continue;
+      if (o.status == OfferStatus.pending) {
+        o
+          ..status = OfferStatus.cancelled
+          ..updatedAt = now();
+      } else if (o.status == OfferStatus.accepted &&
+          o.quick &&
+          o.caller == null) {
+        o
+          ..status = OfferStatus.cancelled
+          ..updatedAt = now();
+        _undoQuick(o);
+      }
     }
   }
 
@@ -198,6 +252,12 @@ class MemoryServer {
         ratingOf(user, me) == 0) {
       return 'not_free';
     }
+    // And they must be allowed to see that I'm free (D-107).
+    if (mine != null &&
+        t.isBefore(mine.expiresAt) &&
+        (!inAudience(mine.circleId, user) || !canSee(user, me, mine.mode))) {
+      return 'not_free';
+    }
     if (phones[me] == null && phones[user] == null) return 'no_number';
     if (!canBeAsked(user) || _askedEnough(user, theirs.startedAt)) {
       return 'busy';
@@ -297,13 +357,19 @@ class MemoryServer {
   }
 
   /// What friends see: in a call until then (null = not in a call).
+  /// Like the server: a quick connect nobody saw counts 2 minutes; once
+  /// both saw it, 20 minutes from then.
   DateTime? busyUntil(String u) {
     DateTime? until = _onPhone(u) ? phoneUntil[u] : null;
     for (final o in offers.values) {
       if (o.status == OfferStatus.accepted &&
           o.acceptedAt != null &&
           ((o.a == u && !o.endedA) || (o.b == u && !o.endedB))) {
-        final end = o.acceptedAt!.add(const Duration(minutes: 20));
+        final end = o.quick && o.notBefore == null
+            ? o.acceptedAt!.add(const Duration(minutes: 2))
+            : (o.quick ? o.notBefore! : o.acceptedAt!).add(
+                const Duration(minutes: 20),
+              );
         if (end.isAfter(now()) && (until == null || end.isAfter(until))) {
           until = end;
         }
@@ -312,13 +378,22 @@ class MemoryServer {
     return until;
   }
 
-  /// In a call: agreed, not finished, not older than 20 minutes.
+  /// In a call: agreed, not finished, not older than 20 minutes — and not
+  /// a quick connect nobody saw (2 minutes) or nobody started (2 minutes
+  /// after its countdown). Like the server's in_call.
   bool _inCall(String u, [String? except]) => offers.values.any(
     (o) =>
         o.status == OfferStatus.accepted &&
         o.id != except &&
         o.acceptedAt != null &&
         now().difference(o.acceptedAt!) < const Duration(minutes: 20) &&
+        !(o.quick &&
+            o.notBefore == null &&
+            now().difference(o.acceptedAt!) > const Duration(minutes: 2)) &&
+        !(o.quick &&
+            o.caller == null &&
+            o.notBefore != null &&
+            now().difference(o.notBefore!) > const Duration(minutes: 2)) &&
         ((o.a == u && !o.endedA) || (o.b == u && !o.endedB)),
   );
 
@@ -534,13 +609,8 @@ class MemoryServer {
       ..status = OfferStatus.cancelled
       ..updatedAt = now();
     // Cancelled before it began: no pause (a longer one stays, as on the
-    // server).
-    final limit = (o.acceptedAt ?? now()).add(
-      const Duration(days: 3, minutes: 1),
-    );
-    for (final k in ['${o.a}|${o.b}', '${o.b}|${o.a}']) {
-      if (snoozes[k] case final u? when !u.isAfter(limit)) snoozes.remove(k);
-    }
+    // server), and not a talk.
+    _undoQuick(o);
     _changed();
     return true;
   }
@@ -600,13 +670,7 @@ class MemoryServer {
     if (me == null) return 'bad_token';
     if (!autoSet.remove(me)) return 'nothing';
     availability.remove(me);
-    for (final o in offers.values) {
-      if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
-        o
-          ..status = OfferStatus.cancelled
-          ..updatedAt = now();
-      }
-    }
+    _endOpen((o) => o.a == me || o.b == me);
     _changed();
     return 'stopped';
   }
@@ -616,7 +680,12 @@ class MemoryServer {
 
   /// Like the server's scheduled job.
   void expireStale() {
-    availability.removeWhere((_, a) => !now().isBefore(a.expiresAt));
+    final gone = {
+      for (final e in availability.entries)
+        if (!now().isBefore(e.value.expiresAt)) e.key,
+    };
+    availability.removeWhere((u, _) => gone.contains(u));
+    _endOpen((o) => gone.contains(o.a) || gone.contains(o.b));
     for (final o in offers.values) {
       if (o.status == OfferStatus.pending && !now().isBefore(o.expiresAt)) {
         o
@@ -636,10 +705,11 @@ class MemoryServer {
 }
 
 class _Invitation {
-  _Invitation(this.token, this.inviter, this.expiresAt);
+  _Invitation(this.token, this.inviter, this.expiresAt, this.createdAt);
   final String token;
   final String inviter;
   final DateTime expiresAt;
+  final DateTime createdAt;
   String? acceptedBy;
 }
 
@@ -889,6 +959,7 @@ class MemoryRealBackend implements RealBackend {
       token,
       me,
       server.now().add(const Duration(days: 7)),
+      server.now(),
     );
     server.invitations[token] = inv;
     return CreatedInvitation(token, inv.expiresAt);
@@ -936,6 +1007,12 @@ class MemoryRealBackend implements RealBackend {
     if (inv.acceptedBy != null) return AcceptResult.used;
     if (!server.now().isBefore(inv.expiresAt)) return AcceptResult.expired;
     if (server.blockedBetween(me, inv.inviter)) return AcceptResult.notFound;
+    // They removed me after making this link: it doesn't bring me back.
+    final pair = MemoryServer._pair(me, inv.inviter);
+    if (server.removedBy[pair] == inv.inviter &&
+        (server.removedAt[pair]?.isAfter(inv.createdAt) ?? false)) {
+      return AcceptResult.expired;
+    }
     server.connect(me, inv.inviter);
     inv.acceptedBy = me;
     server._createOffersFor(me);
@@ -974,13 +1051,7 @@ class MemoryRealBackend implements RealBackend {
     final me = _uid;
     server.availability.remove(me);
     server.phoneUntil.remove(me);
-    for (final o in server.offers.values) {
-      if (o.status == OfferStatus.pending && (o.a == me || o.b == me)) {
-        o
-          ..status = OfferStatus.cancelled
-          ..updatedAt = server.now();
-      }
-    }
+    server._endOpen((o) => o.a == me || o.b == me);
     server._changed();
   }
 
@@ -1114,10 +1185,17 @@ class MemoryRealBackend implements RealBackend {
     return server.cancelCallFor(offerId, _uid);
   }
 
+  /// Tests: the next [failStartCalls] call starts fail like a network error.
+  int failStartCalls = 0;
+
   @override
   Future<CallStart> startCall(String offerId) async {
     final me = _uid;
     if (offline) throw const RealBackendException('offline');
+    if (failStartCalls > 0) {
+      failStartCalls--;
+      throw const RealBackendException('offline');
+    }
     final o = server.offers[offerId];
     if (o == null || (o.a != me && o.b != me)) {
       return const CallStart(CallStartState.gone);
@@ -1125,7 +1203,9 @@ class MemoryRealBackend implements RealBackend {
     if (o.status == OfferStatus.cancelled) {
       return const CallStart(CallStartState.cancelled);
     }
-    if (o.status != OfferStatus.accepted || server.blockedBetween(o.a, o.b)) {
+    if (o.status != OfferStatus.accepted ||
+        server.blockedBetween(o.a, o.b) ||
+        !server.connected(o.a, o.b)) {
       return const CallStart(CallStartState.gone);
     }
     if (o.notBefore == null) server.markSeen(o.id, me);
@@ -1136,9 +1216,25 @@ class MemoryRealBackend implements RealBackend {
           : o.notBefore!.difference(now).inMilliseconds.clamp(100, 60000);
       return CallStart(CallStartState.wait, waitMs: wait);
     }
-    if (o.caller == null) {
+    // Nobody started it while its countdown was fresh: it just ends.
+    if (o.quick &&
+        o.caller == null &&
+        now.difference(o.notBefore!) > const Duration(minutes: 2)) {
       o
-        ..caller = me
+        ..status = OfferStatus.cancelled
+        ..updatedAt = now;
+      server._undoQuick(o);
+      server._changed();
+      return const CallStart(CallStartState.gone);
+    }
+    if (o.caller == null) {
+      // Like the server: the caller needs the other's number — if only I
+      // shared one, they call me.
+      final other = o.a == me ? o.b : o.a;
+      o
+        ..caller = server.phones[other] == null && server.phones[me] != null
+            ? other
+            : me
         ..updatedAt = now;
       server._changed();
     }
@@ -1461,18 +1557,13 @@ class MemoryRealBackend implements RealBackend {
     final me = _uid;
     if (server.circles[circleId]?.$1 == me) {
       server.circles.remove(circleId);
-      for (final e in server.availability.entries.toList()) {
-        if (e.value.circleId == circleId) {
-          final a = e.value;
-          server.availability[e.key] = RealAvailability(
-            userId: a.userId,
-            mode: a.mode,
-            startedAt: a.startedAt,
-            expiresAt: a.expiresAt,
-            auto: a.auto,
-          );
-        }
-      }
+      // Like the server: free time only for that group ends with it.
+      final gone = {
+        for (final e in server.availability.entries)
+          if (e.value.circleId == circleId) e.key,
+      };
+      server.availability.removeWhere((u, _) => gone.contains(u));
+      server._endOpen((o) => gone.contains(o.a) || gone.contains(o.b));
       server._changed();
     }
   }

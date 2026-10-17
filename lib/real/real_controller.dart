@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 39;
+const kRequiredSchema = 40;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -625,13 +625,7 @@ class RealController extends Notifier<RealState> {
     try {
       _lifecycle = AppLifecycleListener(
         onResume: _onResume,
-        onStateChange: (s) {
-          _foreground =
-              s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
-          // Behind another app or locked: no hidden question and no open
-          // microphone — the notification takes over there (D-111).
-          if (!_foreground && _voiceAsking && ref.mounted) _stopVoice();
-        },
+        onStateChange: _onLifecycle,
       );
       unawaited(checkForUpdate());
     } catch (_) {
@@ -747,6 +741,21 @@ class RealController extends Notifier<RealState> {
   void _dropLocalAnswer(String id) {
     if (!state.localAnswers.containsKey(id)) return;
     state = state.copyWith(localAnswers: {...state.localAnswers}..remove(id));
+  }
+
+  void _onLifecycle(AppLifecycleState s) {
+    _foreground =
+        s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
+    // Behind another app or locked: no hidden question and no open
+    // microphone — the notification takes over there (D-111).
+    if (!_foreground && _voiceAsking && ref.mounted) _stopVoice();
+  }
+
+  /// Tests: the app goes behind another app / comes back.
+  @visibleForTesting
+  void debugLifecycle(AppLifecycleState s) {
+    _onLifecycle(s);
+    if (s == AppLifecycleState.resumed) _onResume();
   }
 
   void _onResume() {
@@ -1167,6 +1176,10 @@ class RealController extends Notifier<RealState> {
     'tileLabel': 'DriveBond',
     'routineTitle': _l.realRoutineNotifTitle,
     'routineBody': _l.realRoutineNotifBody,
+    // The routine asks first when Android won't start the watcher by itself.
+    'routineAskTitle': _l.routineAskTitle,
+    'routineAskBody': _l.routineAskBody('{minutes}'),
+    'routineAskYes': _l.routineAskYes,
     'manualBody': _l.realNotifManualBody,
     // Background: "yes" can't be heard there — say how to answer (D-111).
     'bgVoiceOffer': _l.bgVoiceOffer('{name}'),

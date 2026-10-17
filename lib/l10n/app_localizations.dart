@@ -3621,6 +3621,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן'**
   String get realCirclesNone;
+
+  /// No description provided for @routineAskTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השגרה שלך: יש לך זמן עכשיו?'**
+  String get routineAskTitle;
+
+  /// No description provided for @routineAskBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בלחיצה על \"כן\" נסמן שיש לך זמן ל-{minutes} דק׳.'**
+  String routineAskBody(String minutes);
+
+  /// No description provided for @routineAskYes.
+  ///
+  /// In he, this message translates to:
+  /// **'כן, יש לי זמן'**
+  String get routineAskYes;
 }
 
 class _AppLocalizationsDelegate

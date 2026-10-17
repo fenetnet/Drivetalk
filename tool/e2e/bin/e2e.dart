@@ -26,6 +26,13 @@ Future<int> dbCount(String sql) async {
   return int.parse((r.stdout as String).trim());
 }
 
+/// One value from the local test database (e.g. an id it just made).
+Future<String> dbScalar(String sql) async {
+  final r = await Process.run('psql', [dbUrl, '-tAqc', sql]);
+  if (r.exitCode != 0) throw StateError('psql: ${r.stderr}');
+  return (r.stdout as String).trim().split('\n').first.trim();
+}
+
 /// Run SQL on the local test database (sets up rare situations).
 Future<void> dbExec(String sql) async {
   final r = await Process.run('psql', [
@@ -1809,10 +1816,11 @@ Future<void> main() async {
   await answerFromNotification();
   await quickPerFriend(eve);
   await quickAndPauses();
+  await reviewFixes2();
 
   check(
-    await eve.rpc('schema_version') == 39,
-    'the server says its version (39)',
+    await eve.rpc('schema_version') == 40,
+    'the server says its version (40)',
   );
 
   // --- profile photos: private, friends only
@@ -2904,4 +2912,207 @@ Future<void> quickAndPauses() async {
   for (final c in [pa, pb, pc, pd]) {
     await c.dispose();
   }
+}
+
+/// D-115: fixes from the full review.
+Future<void> reviewFixes2() async {
+  final ra = await newUser('רעות', 'female');
+  final rb = await newUser('רפאל', 'male');
+  await befriend(ra, rb);
+  await ra.from('phone_numbers').upsert({
+    'user_id': uid(ra),
+    'phone': '+972501112233',
+  });
+  await rb.from('phone_numbers').upsert({
+    'user_id': uid(rb),
+    'phone': '+972501112244',
+  });
+
+  // 1. The number's fingerprint can't be set by hand.
+  await ra
+      .from('phone_numbers')
+      .update({'phone_hash': 'f' * 64})
+      .eq('user_id', uid(ra));
+  check(
+    await dbCount(
+          "select count(*) from phone_numbers where user_id = '${uid(ra)}' "
+          "and phone_hash = encode(extensions.digest(public.e164(phone), 'sha256'), 'hex')",
+        ) ==
+        1,
+    "a phone's fingerprint always matches its number (can't pose as someone)",
+  );
+
+  // 2. A late "Talk" on the notification changes nothing.
+  final tokenB = await rb.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  await free(ra);
+  await free(rb);
+  final offer = pendingOffers(await rows(ra, 'match_offers')).single;
+  for (final c in [ra, rb]) {
+    await c.rpc(
+      'answer_offer',
+      params: {'p_offer': offer['id'], 'p_accept': true},
+    );
+  }
+  final callerBefore = (await rows(
+    ra,
+    'match_offers',
+  )).firstWhere((o) => o['id'] == offer['id'])['caller'];
+  final late = Map<String, dynamic>.from(
+    await bg.rpc(
+          'device_answer',
+          params: {'p_token': tokenB, 'p_offer': offer['id']},
+        )
+        as Map,
+  );
+  final callerAfter = (await rows(
+    ra,
+    'match_offers',
+  )).firstWhere((o) => o['id'] == offer['id'])['caller'];
+  check(
+    late['status'] == 'handled' && callerAfter == callerBefore,
+    'a late "Talk" on an agreed call keeps who dials (no double calls)',
+  );
+  for (final c in [ra, rb]) {
+    await c.rpc('end_call', params: {'p_offer': offer['id']});
+    await c.rpc('clear_availability');
+  }
+  await dbExec(
+    "delete from pair_snoozes where from_user in ('${uid(ra)}', '${uid(rb)}')",
+  );
+
+  // 3. Tapping a friend who can't see that I'm free: not listed, not asked.
+  await ra.from('others_visibility').upsert({
+    'user_id': uid(ra),
+    'show_modes': <String>[],
+  });
+  await skipQuietGap();
+  await free(ra);
+  await free(rb);
+  final askable = List.from(await ra.rpc('askable_friends'));
+  final asked = await ra.rpc('ask_friend', params: {'p_user': uid(rb)});
+  check(
+    askable.isEmpty && asked == 'not_free',
+    "a friend who can't see I'm free isn't listed or asked (D-107)",
+  );
+  await ra.from('others_visibility').delete().eq('user_id', uid(ra));
+  for (final c in [ra, rb]) {
+    await c.rpc('clear_availability');
+  }
+
+  // 4. Removing a friend ends our open question; an old link doesn't
+  //    bring them back (a new one does).
+  final rc = await newUser('רונית', 'female');
+  final oldLink = List<Map<String, dynamic>>.from(
+    await rc.rpc('create_invitation'),
+  ).single;
+  await befriend(rc, rb);
+  await skipQuietGap();
+  await free(rc);
+  await free(rb);
+  final open = pendingOffers(
+    await rows(rc, 'match_offers'),
+  ).where((o) => o['user_a'] == uid(rb) || o['user_b'] == uid(rb)).toList();
+  await rc
+      .from('connections')
+      .delete()
+      .or('user_a.eq.${uid(rb)},user_b.eq.${uid(rb)}');
+  check(
+    open.length == 1 &&
+        await dbCount(
+              "select count(*) from match_offers where id = '${open.single['id']}' "
+              "and status = 'cancelled'",
+            ) ==
+            1,
+    'removing a friend ends our open question',
+  );
+  check(
+    await rb.rpc('accept_invitation', params: {'p_token': oldLink['token']}) ==
+        'expired',
+    "an old unused link doesn't bring back someone who removed me (D-090)",
+  );
+  final newLink = List<Map<String, dynamic>>.from(
+    await rc.rpc('create_invitation'),
+  ).single;
+  check(
+    await rb.rpc('accept_invitation', params: {'p_token': newLink['token']}) ==
+        'accepted',
+    '...a new link from them does',
+  );
+  for (final c in [rc, rb]) {
+    await c.rpc('clear_availability');
+  }
+
+  // 5. A quick connect nobody started in time never dials later.
+  final quick = await dbScalar(
+    "insert into match_offers (user_a, user_b, expires_at, status, a_response, "
+    "b_response, quick, accepted_at, not_before) values "
+    "(least('${uid(ra)}'::uuid, '${uid(rb)}'::uuid), "
+    "greatest('${uid(ra)}'::uuid, '${uid(rb)}'::uuid), now() + interval '20 minutes', "
+    "'accepted', 'accept', 'accept', true, now() - interval '4 minutes', "
+    "now() - interval '3 minutes') returning id",
+  );
+  final late2 = Map<String, dynamic>.from(
+    await ra.rpc('start_call', params: {'p_offer': quick}) as Map,
+  );
+  check(
+    late2['state'] == 'gone' &&
+        await dbCount(
+              "select count(*) from match_offers where id = '$quick' "
+              "and status = 'cancelled' and talked is null",
+            ) ==
+            1,
+    'a quick connect nobody started in time ends instead of dialing (D-026)',
+  );
+  await dbExec(
+    "delete from pair_snoozes where from_user in ('${uid(ra)}', '${uid(rb)}')",
+  );
+
+  // 6. An automatic trip is never limited to an earlier window's group.
+  final grp = await rb
+      .from('circles')
+      .insert({'name': 'משפחה'})
+      .select()
+      .single();
+  await rb.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 15, 'p_circle': grp['id']},
+  );
+  await dbExec(
+    "update availability set expires_at = now() - interval '1 second', "
+    "started_at = now() - interval '20 minutes' where user_id = '${uid(rb)}'",
+  );
+  await bg.rpc('auto_start', params: {'p_token': tokenB});
+  check(
+    await dbCount(
+          "select count(*) from availability where user_id = '${uid(rb)}' "
+          "and source = 'auto' and circle_id is null",
+        ) ==
+        1,
+    'an automatic trip is for everyone (not an earlier group)',
+  );
+  await bg.rpc('auto_stop', params: {'p_token': tokenB});
+
+  // 7. Who tapped is remembered (friends tapping me don't use my limit).
+  await skipQuietGap();
+  await free(ra);
+  await free(rb);
+  await dbExec(
+    "update match_offers set status = 'cancelled' where status = 'pending' "
+    "and '${uid(rb)}' in (user_a, user_b)",
+  );
+  await ra.rpc('ask_friend', params: {'p_user': uid(rb)});
+  check(
+    await dbCount(
+          "select count(*) from match_offers where direct and status = 'pending' "
+          "and asked_by = '${uid(ra)}'",
+        ) ==
+        1,
+    'a tap remembers who asked (only my own taps count for my limit)',
+  );
+  for (final c in [ra, rb, rc]) {
+    await c.rpc('clear_availability');
+    await c.dispose();
+  }
+  await bg.dispose();
 }
