@@ -1,0 +1,1469 @@
+{
+  "@@locale": "he",
+  "tabHome": "בית",
+  "tabSettings": "הגדרות",
+  "onbNameLabel": "איך קוראים לך?",
+  "homeGreetingNoName": "שלום",
+  "homeImFreeNow": "{gender, select, female{יש לך כמה דקות לשיחה?} male{יש לך כמה דקות לשיחה?} other{יש לך כמה דקות לשיחה?}}",
+  "@homeImFreeNow": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "timeLeftMinutes": "עוד {minutes} דק׳",
+  "@timeLeftMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "stopAvailability": "לעצור זמינות",
+  "modeDriving": "נסיעה",
+  "modeWalking": "הליכה",
+  "modeBreak": "הפסקה",
+  "modeFree": "סתם זמן פנוי",
+  "pickDurationTitle": "לכמה זמן?",
+  "minutesShort": "{minutes} דק׳",
+  "@minutesShort": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUntilTripEnds": "לכל הנסיעה",
+  "durationTripNote": "נשאר עד {hours} שעות, או עד שלוחצים \"לעצור\".",
+  "@durationTripNote": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "tierFamiliar": "מוכר",
+  "tierReconnect": "לחדש קשר",
+  "tierWiden": "להרחיב מעגל",
+  "tierSurprise": "הפתע אותי",
+  "tierFamiliarDesc": "חברים קרובים, משפחה ואנשים שכבר בקשר איתך",
+  "tierReconnectDesc": "אנשים שמכירים, אבל לא דיברתם כאן הרבה זמן",
+  "tierWidenDesc": "מכרים, קולגות וחברים של חברים",
+  "tierSurpriseDesc": "הפתעה מבוקרת: חבר של חבר או קבוצה משותפת — תמיד עם הסבר",
+  "next": "הבא",
+  "notToday": "לא היום",
+  "doNotSuggest": "לא להציע בתקופה הקרובה",
+  "more": "עוד",
+  "block": "חסימה",
+  "report": "דיווח",
+  "unmatch": "הסרה מהרשימה",
+  "relFamily": "משפחה",
+  "relCloseFriend": "חבר/ה קרוב/ה",
+  "relFriend": "חבר/ה",
+  "relChildhoodFriend": "חבר/ת ילדות",
+  "relColleague": "קולגה",
+  "relFormerColleague": "קולגה לשעבר",
+  "relAcquaintance": "מכר/ה",
+  "relFriendOfFriend": "חבר/ה של חברים",
+  "relSharedGroup": "מקבוצה משותפת",
+  "relUnclassified": "קשר",
+  "relNone": "ללא סיווג",
+  "durationDays": "{count, plural, =1{יום} =2{יומיים} other{{count} ימים}}",
+  "@durationDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationMonths": "{count, plural, =1{חודש} =2{חודשיים} other{{count} חודשים}}",
+  "@durationMonths": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "durationYearPlus": "יותר משנה",
+  "listAnd": " ו",
+  "cancel": "ביטול",
+  "noticeBlocked": "{gender, select, female{{name} ברשימת החסומים} male{{name} ברשימת החסומים} other{{name} ברשימת החסומים}}",
+  "@noticeBlocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "noticeReported": "תודה, הדיווח התקבל",
+  "yes": "כן",
+  "no": "לא",
+  "skip": "לדלג",
+  "driverStop": "לעצור",
+  "driverSafety": "בנהיגה: רק דיבורית ומתקן לרכב",
+  "personUnmatchConfirm": "להסיר את {name} מהרשימה? אפשר להחזיר בכל רגע ב\"אנשים שהסרתי\".",
+  "@personUnmatchConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "personBlockConfirm": "לחסום את {name}? לא תוצעו זה לזה ולא תוכלו לדבר.",
+  "@personBlockConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirm": "אישור",
+  "reportTitle": "דיווח על {name}",
+  "@reportTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportInappropriate": "התנהגות לא הולמת",
+  "reportHarassment": "הטרדה",
+  "reportSpam": "ספאם או התחזות",
+  "reportUnderage": "נראה מתחת לגיל 18",
+  "reportOther": "אחר",
+  "reportAlsoBlock": "גם לחסום",
+  "reportSend": "שליחת דיווח",
+  "settingsDriving": "נסיעה",
+  "enable": "להפעיל",
+  "settingsPrivacy": "פרטיות",
+  "unblock": "לבטל חסימה",
+  "featCloseness": "קרבה",
+  "featDormancy": "זמן מאז שיחה",
+  "featAvailableNow": "יש זמן עכשיו",
+  "featOverlap": "חפיפת זמן",
+  "featSharedInterests": "תחומי עניין",
+  "featSharedGroup": "קבוצה משותפת",
+  "featMutualFriends": "חברים משותפים",
+  "featRecentlySuggested": "הוצע לאחרונה",
+  "featFeedback": "פידבק קודם",
+  "routineDue": "זה הזמן הרגיל שלך ל{mode}. לסמן זמן פנוי ל-{minutes} דק׳?",
+  "@routineDue": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "routineStart": "כן",
+  "availableTo": "עם מי מתאים לדבר עכשיו?",
+  "routineAvailableTo": "עם מי מתאים לדבר בזמן הזה?",
+  "availableToEveryone": "כרגיל",
+  "driverListening": "מקשיבים… אפשר לומר \"כן\" או \"לא\"",
+  "callWeAreDone": "סיימנו",
+  "noticeMicDenied": "אין הרשאת מיקרופון — עונים בכפתורים. אפשר לאשר בהגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
+  "photoFromGallery": "מהגלריה",
+  "photoFromCamera": "צילום",
+  "photoRemove": "הסרה",
+  "settingsVoiceReadout": "הקראה בקול בנסיעה",
+  "settingsVoiceReadoutBody": "בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.",
+  "routinesTitle": "השגרה שלי",
+  "routinesCount": "{count, plural, =0{עוד לא הוגדרו זמנים קבועים} =1{זמן קבוע אחד} other{{count} זמנים קבועים}}",
+  "@routinesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "routinesEmpty": "עוד אין זמנים קבועים",
+  "routineAdd": "הוספת זמן קבוע",
+  "routineDelete": "מחיקת השגרה",
+  "routineDeleteConfirm": "למחוק את השגרה הזו?",
+  "routineDeleteGo": "למחוק",
+  "save": "שמירה",
+  "daySun": "א׳",
+  "dayMon": "ב׳",
+  "dayTue": "ג׳",
+  "dayWed": "ד׳",
+  "dayThu": "ה׳",
+  "dayFri": "ו׳",
+  "daySat": "ש׳",
+  "realNotConfiguredTitle": "DriveBond עוד לא מחוברת לשרת",
+  "realNotConfiguredBody": "בגרסה הזו השרת עוד לא הוגדר. צריך להתקין גרסה מעודכנת.",
+  "realStarting": "מתחברים…",
+  "realWelcomeTitle": "בדיקה עם חבר",
+  "realPhoneLabel": "מספר טלפון (לא חובה)",
+  "realPhoneHelp": "חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".",
+  "realJoin": "יאללה",
+  "realInviteWaitingAfterJoin": "יש לך הזמנה — היא תיפתח מיד אחרי הכניסה",
+  "realTabPeople": "האנשים שלי",
+  "realTabTest": "בדיקה",
+  "realMeAvailableTitle": "{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{יש לך זמן לשיחה}}",
+  "@realMeAvailableTitle": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realFreeFriendsTitle": "עכשיו",
+  "realNobodyFree": "כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.",
+  "realFreeHint": "רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.",
+  "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
+  "realNoFriendsTitle": "עוד אין פה חברים",
+  "realNoFriendsBody": "אפשר להזמין חבר — וכששניכם פנויים, נציע לכם לדבר.",
+  "realInviteFriend": "להזמין חבר",
+  "realHaveCode": "יש לי קוד הזמנה",
+  "realCodeHint": "הדביקו כאן את הקישור או הקוד",
+  "realCodeInvalid": "לא מצאנו קוד הזמנה בטקסט הזה",
+  "realOpen": "פתיחה",
+  "realInviteMessage": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond. כששנינו פנויים היא פשוט מציעה לנו לדבר.",
+  "realInviteMessageNoSite": "להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}",
+  "@realInviteMessageNoSite": {
+    "placeholders": {
+      "apkUrl": {
+        "type": "String"
+      },
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteShareSubject": "הזמנה ל-DriveBond",
+  "realInviteCopied": "ההזמנה הועתקה — אפשר להדביק בוואטסאפ",
+  "realOfferTitle": "{gender, select, female{{name} פנויה עכשיו. רוצה לדבר?} male{{name} פנוי עכשיו. רוצה לדבר?} other{ל{name} יש זמן עכשיו. רוצה לדבר?}}",
+  "@realOfferTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realTalkNow": "לדבר עכשיו",
+  "realNotNow": "לא עכשיו",
+  "realOfferNote": "השיחה תתחיל רק אם שניכם אומרים כן",
+  "realWaitingTitle": "מחכים ל{name}…",
+  "@realWaitingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realWaitingBody": "{gender, select, female{ברגע ש{name} תאשר — מתחברים.} male{ברגע ש{name} יאשר — מתחברים.} other{ברגע שתגיע תשובה מ{name} — מתחברים.}}",
+  "@realWaitingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realStopWaiting": "לא לחכות",
+  "realDidNotWorkOut": "לא הסתדר הפעם. נחפש הזדמנות אחרת.",
+  "routinesExplain": "זמנים קבועים שבהם הזמינות נדלקת לבד, למשל הנסיעה לעבודה.",
+  "realBlockedBody": "אנשים שחסמת לא יוצעו לך, והם לא יראו מתי יש לך זמן.",
+  "settingsPrivacyBody": "מה נשמר ומה לא. אפשר גם למחוק מהשרת את מה שסונכרן מאנשי הקשר.",
+  "realNoAnswer": "אין תשובה כרגע. נציע שוב בהזדמנות אחרת.",
+  "realVoiceDidNotWorkOut": "לא הסתדר הפעם.",
+  "realVoiceTheyCall": "{gender, select, female{{name} מתקשרת אליך.} male{{name} מתקשר אליך.} other{שיחה מ{name} מגיעה.}}",
+  "@realVoiceTheyCall": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realQuickConnecting": "מתחברים ל{name}…",
+  "@realQuickConnecting": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realQuickConnectingBody": "חיבור מהיר — אפשר לבטל",
+  "realQuickSeconds": "{seconds, plural, =1{עוד שנייה — אפשר לבטל} other{עוד {seconds} שניות — אפשר לבטל}}",
+  "@realQuickSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "realQuickCancelled": "החיבור בוטל",
+  "realQuickTooLate": "כבר מאוחר לבטל — השיחה מתחילה",
+  "widgetTip": "אפשר לסמן \"יש לי זמן\" בלחיצה אחת, בלי לפתוח את האפליקציה: לחיצה ארוכה על מסך הבית ← ווידג'טים ← DriveBond.",
+  "gotIt": "הבנתי",
+  "realContactsAgain": "חיפוש שוב באנשי הקשר",
+  "settingsGeneral": "כללי",
+  "adminTitle": "ניהול",
+  "adminCode": "קוד",
+  "adminWrong": "קוד שגוי",
+  "adminLock": "לסגור את הניהול",
+  "updateAvailable": "יש גרסה חדשה של DriveBond",
+  "updateNow": "לעדכן",
+  "updateCheck": "בדיקת עדכון",
+  "updateCurrent": "הגרסה שלך:",
+  "updateNone": "יש לך את הגרסה האחרונה",
+  "updateHow": "מורידים, לוחצים על הקובץ ← \"עדכון\". הכול נשמר.",
+  "updateHowStore": "מעדכנים בגוגל פליי. החברים וההגדרות נשמרים.",
+  "realBgFailedTitle": "לא הצלחנו להדליק זמינות ברקע",
+  "realBgFailedBody": "הטלפון חסם את זה. פותחים את DriveBond ובוחרים שוב מה עושים עכשיו.",
+  "routineHint": "נראה שבימי {day} סביב {time} יש לך בדרך כלל זמן. להפעיל זמינות אוטומטית בזמן הזה?",
+  "@routineHint": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "routineHintYes": "להפעיל",
+  "routineHintNo": "לא, תודה",
+  "realStatusServerVersion": "גרסת השרת",
+  "realServerOutdated": "השרת צריך עדכון: בשרת {have}, נדרש {need}",
+  "@realServerOutdated": {
+    "placeholders": {
+      "have": {
+        "type": "int"
+      },
+      "need": {
+        "type": "int"
+      }
+    }
+  },
+  "realClearContacts": "למחוק מידע שסונכרן מאנשי הקשר",
+  "realDeleteAccount": "למחוק את החשבון והמידע שלי",
+  "realDeleteAccountConfirm": "הכול נמחק מהשרת: שם, מספר, חברים, קבוצות ותמונה. אי אפשר לבטל.",
+  "realDeleteAccountGo": "למחוק",
+  "realDeleteAccountDone": "החשבון והמידע נמחקו",
+  "realNotifPublic": "יש הצעה חדשה ב-DriveBond",
+  "firstRunContactsTitle": "נראה מי מהאנשים שלך כבר כאן",
+  "firstRunContactsBody": "רק מספרים, מוצפנים. שמות לא יוצאים מהטלפון.",
+  "firstRunContactsGo": "לחפש באנשי הקשר",
+  "firstRunFound": "{count, plural, =1{מצאנו אדם אחד מאנשי הקשר} other{מצאנו {count} אנשים מאנשי הקשר}}",
+  "@firstRunFound": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "firstRunNoneTitle": "כדי לנסות את DriveBond צריך לפחות חבר אחד",
+  "firstRunNoneBody": "שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.",
+  "firstRunLater": "אחר כך",
+  "firstRunMagicTitle": "ככה זה עובד",
+  "firstRunMagicBody": "כששניכם פנויים, DriveBond מציעה לכם לדבר. לא צריך לתאם מראש.",
+  "firstRunMagicGo": "יאללה",
+  "routineNameToWork": "בדרך לעבודה",
+  "routineNameHome": "בדרך הביתה",
+  "routineNameWalk": "הליכת ערב",
+  "routineNameBreak": "הפסקת צהריים",
+  "routineEveryone": "כולם",
+  "realCallingNow": "מתקשרים ל{name}…",
+  "@realCallingNow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realDialedBody": "כשהשיחה נגמרת, חוזרים לכאן.",
+  "realTheyCallTitle": "{gender, select, female{{name} מתקשרת אליך עכשיו} male{{name} מתקשר אליך עכשיו} other{שיחה מ{name} מגיעה עכשיו}}",
+  "@realTheyCallTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realTheyCallBody": "הטלפון יצלצל עוד רגע. אם השיחה לא מגיעה תוך דקה — \"לא הגיעה שיחה\".",
+  "realTheyDidNotCall": "לא הגיעה שיחה",
+  "realNoNumbersTitle": "אי אפשר להתקשר הפעם",
+  "realNoNumbersBody": "לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי לשיחה רגילה\".",
+  "realDialFailedTitle": "לא הצלחנו לפתוח את החייגן",
+  "realDialFailedBody": "אפשר להתקשר ל{name} ידנית.",
+  "@realDialFailedBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realFeedbackThanks": "תודה!",
+  "realConnected": "מעולה! {name} עכשיו ברשימת האנשים שלך.",
+  "@realConnected": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteTitle": "{gender, select, female{{name} הזמינה אותך} male{{name} הזמין אותך} other{הזמנה מ{name}}}",
+  "@realInviteTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realInviteBody": "כששניכם פנויים — נציע לכם לדבר. רק אם שניכם מסכימים.",
+  "realInviteAccept": "אישור",
+  "realInviteLoading": "בודקים את ההזמנה…",
+  "realInviteProblemUsed": "ההזמנה הזו כבר נוצלה. צריך הזמנה חדשה.",
+  "realInviteProblemExpired": "פג תוקף ההזמנה. צריך הזמנה חדשה.",
+  "realInviteProblemOwn": "זו הזמנה ששלחת בעצמך 🙂 אפשר לשלוח אותה לחבר.",
+  "realInviteProblemNotFound": "לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.",
+  "realInviteAlready": "{name} כבר ברשימת האנשים שלך.",
+  "@realInviteAlready": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realErrorOffline": "אין חיבור לאינטרנט. ננסה שוב לבד.",
+  "realErrorGeneric": "משהו השתבש ({code}). אפשר לנסות שוב.",
+  "@realErrorGeneric": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "realErrorAnonymousDisabled": "בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).",
+  "realErrorSchema": "השרת עוד לא מוכן. אפשר לנסות שוב מאוחר יותר.",
+  "realErrorInvalidPhone": "מספר הטלפון לא נראה תקין",
+  "realErrorInvalidName": "השם צריך להיות באורך 1–40 תווים",
+  "realErrorRateLimited": "יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות.",
+  "realErrorTooManyInvites": "יש כבר הרבה הזמנות פתוחות. אפשר לנסות שוב מחר.",
+  "realSaved": "נשמר",
+  "realDialFailed": "לא הצלחנו לפתוח את החייגן. אפשר להתקשר ידנית.",
+  "realUnmatched": "הקשר עם {name} הוסר",
+  "@realUnmatched": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realNotFree": "אין זמינות כרגע",
+  "realTestIntro": "כאן רואים שהכול עובד. אם משהו לא עובד — \"להעתיק מידע לבדיקה\" ושולחים לי.",
+  "realTestSteps": "1. להזמין חבר\n2. שניכם: בוחרים מה עושים עכשיו (למשל \"סתם זמן פנוי\")\n3. שניכם: \"לדבר עכשיו\"",
+  "realStatusServer": "שרת",
+  "realStatusAccount": "חשבון",
+  "realStatusLive": "עדכון מיידי",
+  "realStatusFriends": "חברים",
+  "realStatusMe": "הזמינות שלי",
+  "realStatusFreeFriends": "חברים פנויים עכשיו",
+  "realStatusLastOffer": "הצעה אחרונה",
+  "realStatusVersion": "גרסה",
+  "realStatusLastError": "שגיאה אחרונה",
+  "realStatusPhone": "מספר לשיחה רגילה",
+  "realOk": "תקין",
+  "realNotConnected": "לא מחובר",
+  "realLiveError": "לא יציב — מתעדכן כל כמה שניות",
+  "realNone": "אין",
+  "realShared": "משותף",
+  "realNotShared": "אין מספר · להוסיף",
+  "realMeNotAvailable": "אין זמינות",
+  "realOfferPending": "מחכה לתשובה",
+  "realOfferAccepted": "שניכם אמרתם כן",
+  "realOfferDeclined": "לא הסתדר",
+  "realOfferExpired": "פג הזמן",
+  "realOfferCancelled": "בוטל",
+  "realCopyDiagnostics": "להעתיק מידע לבדיקה",
+  "realCopied": "הועתק. אפשר להדביק ולשלוח",
+  "realRefresh": "רענון",
+  "realTestModeToggle": "מסך בדיקה (Test Mode)",
+  "realTestModeBody": "מציג את הלשונית \"בדיקה\" עם מצב החיבור",
+  "realMyNumber": "המספר שלי לשיחה רגילה",
+  "realStartOver": "להתחיל מחדש כמשתמש חדש",
+  "realStartOverConfirm": "החברים וההזמנות של המשתמש הנוכחי לא יעברו. להמשיך?",
+  "realDownloadLink": "קישור להורדת האפליקציה",
+  "realShareApp": "שיתוף",
+  "realNameTitle": "השם שלי",
+  "realPhotoTitle": "התמונה שלי",
+  "realPhotoSaved": "התמונה נשמרה",
+  "realPhotoRemoved": "התמונה הוסרה",
+  "realPrivacyNote": "בלי מיקום ובלי הקלטות. בשרת נשמר רק מה שהאפליקציה צריכה: שם, מספר ותמונה (אם הוספת), החברים שלך ומתי יש לך זמן. הפירוט המלא במדיניות הפרטיות.",
+  "realVoiceOffer": "{gender, select, female{{name} פנויה. לדבר?} male{{name} פנוי. לדבר?} other{ל{name} יש זמן. לדבר?}}",
+  "@realVoiceOffer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realVoiceCalling": "מתקשרים ל{name}.",
+  "@realVoiceCalling": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realNotifChannelStatus": "זמינות בנסיעה",
+  "realNotifChannelOffers": "חבר פנוי לשיחה",
+  "realNotifStatusTitle": "DriveBond · זמינות לשיחה בנסיעה",
+  "realNotifStatusBody": "נסיעה טובה! נודיע כשחבר פנוי.",
+  "realAutoDriving": "זמינות אוטומטית בנסיעה",
+  "realAutoDrivingBody": "כשהטלפון מזהה שהוא ברכב, החברים יכולים לקבל הצעה לדבר איתך. נכבה לבד בסוף הנסיעה. בלי GPS ובלי מיקום.",
+  "realAutoDrivingUnsupported": "לא זמין במכשיר הזה",
+  "realAutoDrivingDialogTitle": "זמינות אוטומטית בנסיעה",
+  "realAutoDrivingDialogBody": "הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.",
+  "realAutoDrivingOn": "מעולה. בנסיעה הבאה הזמינות תידלק לבד.",
+  "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
+  "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
+  "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. אפשר לנסות שוב.",
+  "realStatusAutoDriving": "זיהוי נסיעה",
+  "realAutoOn": "פעיל",
+  "realAutoOff": "כבוי",
+  "realInVehicleNow": "ברכב עכשיו",
+  "realSimEnter": "דמה: נכנסתי לרכב",
+  "realSimExit": "דמה: יצאתי מהרכב",
+  "realVoiceQuick": "מתחברים ל{name}. אפשר לבטל בכפתור.",
+  "@realVoiceQuick": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realUnblocked": "החסימה של {name} בוטלה",
+  "@realUnblocked": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realUnblockedBack": "החסימה של {name} בוטלה — {name} שוב ברשימה שלך",
+  "@realUnblockedBack": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realBlockedTitle": "חסומים",
+  "realBlockedEmpty": "לא חסמת אף אחד",
+  "realUnblock": "ביטול חסימה",
+  "realCirclesTitle": "קבוצות",
+  "realCirclesIntro": "קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.",
+  "circleSeesAll": "רואים שיש לך זמן: בכל מצב",
+  "circleSeesSome": "רואים שיש לך זמן: {modes}",
+  "@circleSeesSome": {
+    "placeholders": {
+      "modes": {
+        "type": "String"
+      }
+    }
+  },
+  "circleSeesNone": "מוסתר מהקבוצה שיש לך זמן",
+  "circleRuleQuestion": "מתי חברי הקבוצה יראו שיש לך זמן?",
+  "modeInDriving": "בנסיעה",
+  "modeInWalking": "בהליכה",
+  "modeInBreak": "בהפסקה",
+  "modeInFree": "בזמן פנוי",
+  "realCircleNew": "קבוצה חדשה",
+  "realCircleName": "שם הקבוצה (למשל: שכנים)",
+  "realCircleMembers": "מי בקבוצה",
+  "realCircleCount": "{count, plural, =0{עוד אין אנשים} =1{אדם אחד} other{{count} אנשים}}",
+  "@realCircleCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realCircleDelete": "מחיקת הקבוצה",
+  "realCircleNoFriends": "קודם צריך להזמין חברים",
+  "circleFamily": "משפחה",
+  "circleFriends": "חברים",
+  "circleWork": "עבודה",
+  "whoSeesTitle": "מי רואה שיש לי זמן",
+  "whoSeesSubtitle": "קבוצות: מי רואה, ומתי",
+  "whoSeesTwo": "מי שנמצא בשתי קבוצות רואה רק אם שתיהן מרשות.",
+  "whoSeesOthers": "כל השאר (חברים שלא בשום קבוצה)",
+  "showAlways": "תמיד",
+  "showNever": "אף פעם",
+  "showOnly": "רק במצבים שמסומנים:",
+  "showOnlyModes": "רק: {modes}",
+  "@showOnlyModes": {
+    "placeholders": {
+      "modes": {
+        "type": "String"
+      }
+    }
+  },
+  "friendCirclesTitle": "קבוצות",
+  "friendCirclesBody": "הקבוצה קובעת אם רואים שאפשר לדבר איתך.",
+  "hiddenUnhide": "לבטל את ההסתרה",
+  "homeWhatNow": "בוחרים מה עושים עכשיו, ונמצא חבר שגם פנוי לדבר",
+  "permIntroTitle": "רגע לפני",
+  "permIntroBody": "כדי שהשיחה תתחיל מיד כששניכם אומרים \"כן\", ושנוכל להודיע כשחבר מתפנה, הטלפון ישאל כמה שאלות:\n\n• שיחות טלפון — כדי לחייג בלחיצה אחת.\n• התראות — כדי להודיע גם כשהאפליקציה סגורה.\n• מיקרופון (בנסיעה) — כדי לענות \"כן\" או \"לא\" בקול. שום דבר לא מוקלט.",
+  "permIntroGo": "הבנתי, ממשיכים",
+  "realPhoneRequired": "מספר טלפון (לא חובה)",
+  "realPhoneRequiredHelp": "למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.",
+  "realContactsTitle": "חברים מאנשי הקשר",
+  "realContactsBody": "מוצאים מי מאנשי הקשר כבר כאן, ובוחרים את מי להוסיף. לא צריך את המספר שלך.",
+  "realContactsButton": "חיפוש באנשי הקשר",
+  "realContactsFound": "{names} — עכשיו ברשימה שלך",
+  "@realContactsFound": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "realContactsNone": "עוד אין כאן מאנשי הקשר שלך. אפשר להזמין עם קישור.",
+  "realContactsNoPermission": "בלי הרשאה לאנשי קשר — אפשר להזמין עם קישור.",
+  "realNotifManualTitle": "DriveBond · זמינות לשיחה",
+  "realNotifManualBody": "נודיע כשחבר פנוי — גם כשהאפליקציה סגורה.",
+  "realOfferName": "{gender, select, female{{name} פנויה עכשיו} male{{name} פנוי עכשיו} other{ל{name} יש זמן עכשיו}}",
+  "@realOfferName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realOfferAsk": "רוצה לדבר?",
+  "realOfferAskShort": "{gender, select, female{פנויה. לדבר?} male{פנוי. לדבר?} other{יש זמן. לדבר?}}",
+  "@realOfferAskShort": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "realGreetMorning": "בוקר טוב",
+  "realGreetNoon": "צהריים טובים",
+  "realGreetEvening": "ערב טוב",
+  "realGreetNight": "לילה טוב",
+  "realHomeTitle": "{name}, עם מי\nמדברים היום?",
+  "@realHomeTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "realFreeCount": "יש זמן: {count}",
+  "@realFreeCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "realGroupAccount": "החשבון שלי",
+  "realWelcomeHeadline": "זמן מת?\nשיחה טובה.",
+  "realWelcomeSub": "כששניכם פנויים באותו רגע — נציע לכם לדבר.",
+  "realInviteSimple": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה: {apkUrl}\nעזרה בהתקנה: {guideUrl}",
+  "@realInviteSimple": {
+    "placeholders": {
+      "apkUrl": {
+        "type": "String"
+      },
+      "guideUrl": {
+        "type": "String"
+      }
+    }
+  },
+  "realQuickOff": "יש לי זמן",
+  "realQuickOn": "יש לי זמן · לעצירה",
+  "realCarTitle": "הרכב שלי (בלוטות׳)",
+  "realCarBody": "כשהטלפון מתחבר לבלוטות׳ של הרכב, זה סימן שהנסיעה התחילה. עוזר לזהות נסיעה מהר יותר.",
+  "realCarPick": "בחירת הרכב",
+  "realCarNoDevices": "לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.",
+  "realCarRemove": "בלי רכב",
+  "realWeekTitle": "השבוע שלך",
+  "realWeekTalks": "{talks, plural, =0{עוד אין שיחות השבוע} =1{שיחה אחת} other{{talks} שיחות}}",
+  "@realWeekTalks": {
+    "placeholders": {
+      "talks": {
+        "type": "int"
+      }
+    }
+  },
+  "realWeekFriends": "{friends, plural, =1{עם חבר אחד} other{עם {friends} חברים}}",
+  "@realWeekFriends": {
+    "placeholders": {
+      "friends": {
+        "type": "int"
+      }
+    }
+  },
+  "realRoutinesIntro": "בזמנים האלה הזמינות נדלקת לבד, גם כשהאפליקציה סגורה.",
+  "realRoutineNotifTitle": "DriveBond · השגרה שלך",
+  "realRoutineNotifBody": "הזמינות לשיחה נדלקה. \"לעצור\" בהתראה מבטל.",
+  "done": "סיום",
+  "ratingNever": "לא להציע",
+  "ratingLabel": "דירוג {rating} מתוך 5",
+  "@ratingLabel": {
+    "placeholders": {
+      "rating": {
+        "type": "int"
+      }
+    }
+  },
+  "ratingTitle": "כמה בא לי לדבר?",
+  "ratingHelp": "0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.",
+  "contactsPickTitle": "מאנשי הקשר שלך כבר כאן",
+  "contactsPickBody": "בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.",
+  "contactsAdd": "להוסיף",
+  "contactsNo": "לא",
+  "newContactTitle": "{name} מאנשי הקשר שלך כבר כאן",
+  "@newContactTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newContactBody": "להוסיף לאנשים שלי?",
+  "hiddenNote": "המצב שלך מוסתר, ולכן גם לא רואים כאן מי פנוי. הצעות לדבר ממשיכות.",
+  "realLaterButton": "עכשיו לא, אבל אשמח בהמשך",
+  "realLaterNote": "מ{name}: עכשיו לא מתאים, אולי אחר כך.",
+  "@realLaterNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "backgroundTitle": "לא לפספס אף שיחה",
+  "backgroundBody": "כך נוכל להודיע לך ברגע שחבר מתפנה, ולזהות נסיעה, גם כשהאפליקציה סגורה. ברקע היא עובדת רק כשסימנת שיש לך זמן או בזמן נסיעה.",
+  "backgroundAllow": "להפעיל",
+  "addNumberTitle": "שחברים ימצאו אותך",
+  "addNumberBody": "בלי מספר טלפון חברים לא ימצאו אותך באנשי הקשר, ואי אפשר להתקשר אליך בשיחה רגילה. המספר נמסר לחבר רק אחרי ששניכם אמרתם \"כן\".",
+  "addNumberGo": "להוסיף מספר",
+  "newFriendTitle": "חדש ברשימה שלך: {name}",
+  "@newFriendTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "newFriendBody": "התחברתם — מאנשי הקשר או מהזמנה. מעכשיו תוכלו לקבל הצעה לדבר כששניכם פנויים.",
+  "newFriendGroup": "לבחור קבוצה",
+  "newFriendOk": "מעולה",
+  "notNowShort": "לא עכשיו",
+  "firstRunRoutineTitle": "באילו שעות יש לך בדרך כלל נסיעה?",
+  "firstRunRoutineBody": "מסמנים שעה אחת או יותר. בימים א׳–ה׳, בשעה הזו, נסמן שיש לך זמן — לחצי שעה. את השעה משנים בלחיצה על העיפרון, ואפשר לשנות הכול גם בהגדרות ← השגרה שלי.",
+  "firstRunRoutineMorning": "בוקר · {time} · בדרך לעבודה",
+  "firstRunRoutineEvening": "ערב · {time} · בדרך הביתה",
+  "firstRunRoutineNone": "לא קבוע",
+  "statsTitle": "מספרים",
+  "statsFailed": "לא הצלחנו לטעון. אם זה חוזר, צריך להכניס שוב את קוד הניהול (לחיצה ארוכה על \"בדיקת עדכון\").",
+  "statsWeek": "7 ימים",
+  "statsMonth": "30 ימים",
+  "statsUsers": "אנשים באפליקציה",
+  "statsNewUsers": "הצטרפו",
+  "statsActiveUsers": "נכנסו לאפליקציה",
+  "statsFriendships": "חברויות",
+  "statsFreeTimes": "\"יש לי זמן\"",
+  "statsOffers": "הצעות לדבר",
+  "statsQuick": "חיבורים מהירים",
+  "statsBothYes": "שניהם אמרו כן",
+  "statsTalked": "דיברו בפועל",
+  "statsDeclined": "\"לא עכשיו\"",
+  "statsLater": "\"אחזור אליך\"",
+  "statsNoAnswer": "בלי תשובה",
+  "statsDialMs": "כמה מהר מתחיל החיוג",
+  "statsSeconds": "שנ׳",
+  "statsNote": "רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.",
+  "statsReports": "דיווחים",
+  "realInviteStore": "בא לך שנדבר יותר בלי לקבוע מראש? התקנתי DriveBond — כששנינו פנויים היא מציעה לנו לדבר.\nלהורדה מ-Google Play: {url}",
+  "@realInviteStore": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "inactiveDays": "בלי כניסה כבר {days} ימים",
+  "@inactiveDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "inactiveMonth": "בלי כניסה יותר מחודש",
+  "feedbackTitle": "שליחת משוב",
+  "feedbackBody": "משהו לא עובד? רעיון? זה מגיע ישר אלינו.",
+  "feedbackHint": "מה כדאי לשפר?",
+  "feedbackSend": "לשלוח",
+  "statsFeedback": "משובים",
+  "statsReportsTitle": "דיווחים אחרונים",
+  "statsFeedbackTitle": "משובים אחרונים",
+  "statsNotesEmpty": "עוד אין כאן כלום",
+  "statsNotesFailed": "אין גישה. צריך להכניס שוב את קוד הניהול: הגדרות ← לחיצה ארוכה על \"בדיקת עדכון\".",
+  "@firstRunRoutineMorning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@firstRunRoutineEvening": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "firstRunRoutineChangeTime": "לשנות שעה",
+  "inCall": "בשיחה",
+  "@inCall": {
+    "description": "A friend who is free but on a call right now"
+  },
+  "close": "סגירה",
+  "firstRunPhotoTitle": "תמונה, כדי שיזהו אותך",
+  "firstRunPhotoBody": "רשות. רק החברים שלך רואים אותה.",
+  "firstRunPhotoGo": "לבחור תמונה",
+  "firstRunPhotoLater": "אפשר להוסיף או להחליף בכל זמן: הגדרות ← לחיצה על השם שלך ← \"התמונה שלי\".",
+  "peopleAsleepTitle": "לא פתחו את האפליקציה חודש ({count})",
+  "@peopleAsleepTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "peopleAsleepBody": "חוזרים לרשימה לבד כשהם פותחים שוב.",
+  "removedTitle": "אנשים שהסרתי",
+  "removedBody": "אפשר להחזיר — וחוזרים להיות חברים מיד.",
+  "removedEmpty": "לא הסרת אף אחד.",
+  "removedRestore": "להחזיר",
+  "statsUsersHint": "כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)",
+  "statsNewUsersHint": "נרשמו לראשונה בתקופה הזו",
+  "statsActiveUsersHint": "פתחו אותה לפחות פעם אחת בתקופה",
+  "statsFriendshipsHint": "כמה זוגות חברים מחוברים באפליקציה (בסך הכול)",
+  "statsFreeTimesHint": "כמה פעמים מישהו סימן שהוא פנוי",
+  "statsOffersHint": "כמה פעמים הצענו לשני חברים פנויים לדבר",
+  "statsQuickHint": "שיחות שהתחילו בלי לשאול (שני הצדדים הסכימו מראש)",
+  "statsBothYesHint": "הצעות שהפכו לשיחה",
+  "statsTalkedHint": "לפי מה שענו אחרי השיחה",
+  "statsDeclinedHint": "אחד הצדדים סירב להצעה",
+  "statsLaterHint": "מתוך ה\"לא עכשיו\"",
+  "statsNoAnswerHint": "אף אחד לא ענה בזמן",
+  "statsReportsHint": "דיווחים על משתמשים. לחיצה לפרטים",
+  "statsFeedbackHint": "הודעות שנשלחו אליך מתוך האפליקציה. לחיצה לפרטים",
+  "statsCrashes": "קריסות",
+  "statsCrashesHint": "תקלות שהאפליקציה דיווחה עליהן לבד. לחיצה לפרטים",
+  "statsDialMsHint": "מה\"כן\" השני ועד שהטלפון מחייג (בדרך כלל)",
+  "statsCrashesTitle": "קריסות אחרונות",
+  "askTitle": "לדבר עם {name} עכשיו?",
+  "@askTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askBody": "נשאל אם מתאים עכשיו. אם כן, מתחילים לדבר.",
+  "askBodyNotFree": "נסמן שגם לך יש זמן (30 דקות), ונשאל אם מתאים עכשיו.",
+  "askYes": "כן, לשאול",
+  "askNotFree": "נראה של{name} כבר אין זמן כרגע.",
+  "@askNotFree": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askBusy": "ל{name} לא מתאים ממש עכשיו. נציע כשיתאים.",
+  "@askBusy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNotNow": "כבר שאלנו את {name} הפעם. נחכה לפעם הבאה.",
+  "@askNotNow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "askNoNumber": "אי אפשר להתקשר: לאף אחד מכם אין מספר טלפון באפליקציה.",
+  "askMeNotFree": "קודם צריך לסמן שיש לך זמן.",
+  "askFailed": "לא הצלחנו לשאול עכשיו. אפשר לנסות שוב.",
+  "friendKept": "{name} ברשימה שלך",
+  "@friendKept": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "hiddenFreeLine": "{count, plural, =1{ועוד חבר אחד פנוי, בלי שם} other{ועוד {count} חברים פנויים, בלי שם}}",
+  "@hiddenFreeLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "anonymousSeeNote": "בחרת להופיע בלי שם, ולכן גם כאן רואים רק כמה פנויים.",
+  "missedTitle": "לא ענית, אז הפסקנו להציע אותך.",
+  "missedBody": "בינתיים החברים לא רואים שיש לך זמן. עדיין יש לך זמן?",
+  "missedYes": "כן, יש לי זמן",
+  "missedNo": "לא עכשיו",
+  "autoMissedTitle": "בנסיעות האחרונות לא ענית.",
+  "autoMissedBody": "להשאיר את הזיהוי האוטומטי של נסיעות?",
+  "autoMissedKeep": "להשאיר",
+  "autoMissedOff": "לכבות",
+  "graceTitle": "כמה דקות להתארגן",
+  "graceBody": "אחר כך נציע שיחה, אם מישהו פנוי.",
+  "graceReady": "אפשר כבר עכשיו",
+  "graceNotThisTrip": "לא בנסיעה הזו",
+  "extendButton": "להאריך",
+  "extendTitle": "להאריך בעוד…",
+  "extendBy": "+{minutes} דק׳",
+  "@extendBy": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationUntilTime": "עד שעה…",
+  "durationUntilTimeCapped": "אפשר עד 3 שעות, אז סימנו עד {time}.",
+  "@durationUntilTimeCapped": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingTitle": "הצטרפת לרשימה של {name}",
+  "@pendingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingBody": "המספר של {name} לא שמור אצלך, ולכן {name} עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?",
+  "@pendingBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingKeep": "להשאיר",
+  "pendingRemove": "להסיר",
+  "offerShared": "שניכם פנויים עוד כ-{minutes} דק׳",
+  "@offerShared": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "offerLastTalkToday": "כבר דיברתם היום",
+  "offerLastTalkDays": "{days, plural, =1{דיברתם אתמול} other{דיברתם לפני {days} ימים}}",
+  "@offerLastTalkDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "offerLastTalkDate": "לא דיברתם מאז {date}",
+  "@offerLastTalkDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "offerFirstTalk": "זו תהיה השיחה הראשונה שלכם כאן",
+  "waitOther": "לדבר עם מישהו אחר",
+  "settingsAnonymous": "להופיע בלי שם כשיש לי זמן",
+  "settingsAnonymousHint": "החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.",
+  "settingsHideInCall": "להסתיר כשאני בשיחה",
+  "settingsHideInCallHint": "בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.",
+  "settingsQuietHours": "שעות שקטות",
+  "settingsQuietOff": "בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.",
+  "settingsQuietOn": "בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
+  "@settingsQuietOn": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "quietPickFrom": "מאיזו שעה?",
+  "quietPickTo": "עד איזו שעה?",
+  "quietClear": "לבטל שעות שקטות",
+  "quietSet": "לבחור שעות",
+  "realNotifChannelTalk": "הצעות לדבר",
+  "driverFreeTitle": "מי פנוי עכשיו",
+  "driverFreeHint": "לוחצים על חבר, ונשאל אותו.",
+  "driverNobody": "עוד אין חבר פנוי",
+  "driverNobodyBody": "כשמישהו יתפנה, נציע לכם לדבר.",
+  "driverNormalView": "למסך הרגיל",
+  "driverBack": "חזרה למסך הנהיגה",
+  "freeNotNow": "לא כרגע",
+  "freeNotNowTitle": "אי אפשר לפנות ל{name} כרגע",
+  "@freeNotNowTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "freeNotNowBody": "ממש עכשיו אי אפשר להציע שיחה (למשל בתחילת נסיעה, או כשכבר שאלתם הפעם). כשזה יתאפשר, זה יופיע כרגיל.",
+  "freeNotNowMine": "זה בגלל שעוד לא אישרת את {name} ברשימה שלך. אחרי האישור אפשר לדבר מיד.",
+  "@freeNotNowMine": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterCallTitle": "מתי להציע לך שוב את {name}?",
+  "@afterCallTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterCallNote": "בינתיים אפשר תמיד ללחוץ על {name} ולשאול בעצמך.",
+  "@afterCallNote": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "afterCallAny": "בכל זמן",
+  "afterCallTomorrow": "מחר",
+  "afterCall3": "בעוד 3 ימים",
+  "afterCallWeek": "בעוד שבוע",
+  "afterCallNoTalk": "לא הצלחנו לדבר",
+  "directTitle": "{name} רוצה לדבר איתך",
+  "@directTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "directAsk": "מתאים לך עכשיו?",
+  "directAskShort": "רוצה לדבר איתך. לענות?",
+  "voiceDirect": "{name} רוצה לדבר איתך. לענות?",
+  "@voiceDirect": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "callToMain": "למסך הראשי",
+  "@callToMain": {
+    "description": "On the call screen: leave it for the main screen during the call"
+  },
+  "callBackToCall": "בשיחה עם {name} · חזרה למסך השיחה",
+  "@callBackToCall": {
+    "description": "Banner on the main screen during a call",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bgVoiceOffer": "ל{name} יש זמן לדבר. אם מתאים — \"לדבר\" בהתראה.",
+  "@bgVoiceOffer": {
+    "description": "Spoken in the background (no voice answer possible there)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bgVoiceDirect": "{name} רוצה לדבר איתך. אם מתאים — \"לדבר\" בהתראה.",
+  "@bgVoiceDirect": {
+    "description": "Spoken in the background when a friend tapped me",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notifPublicTalk": "מישהו פנוי לדבר עכשיו",
+  "@notifPublicTalk": {
+    "description": "Locked screen: an offer, without the name"
+  },
+  "answeredTheyCall": "שיחה מ{name} בדרך. הטלפון יצלצל.",
+  "@answeredTheyCall": {
+    "description": "After \"Talk\" from the notification: they call me",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredYouCall": "גם {name} רוצה לדבר. לחיצה כאן — ומתקשרים.",
+  "@answeredYouCall": {
+    "description": "After \"Talk\": I have to dial (tap opens the app)",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredWaiting": "מחכים לתשובה מ{name}.",
+  "@answeredWaiting": {
+    "description": "After \"Talk\": the other side has not answered yet",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "answeredMissed": "לא הסתדר הפעם. נציע שוב בהזדמנות אחרת.",
+  "@answeredMissed": {
+    "description": "After \"Talk\": too late / did not work out"
+  },
+  "voiceYouCall": "גם {name} רוצה לדבר. לחיצה על ההתראה — ומתקשרים.",
+  "@voiceYouCall": {
+    "description": "Spoken: I have to dial",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "permsTitle": "כדי שזה יעבוד גם בנסיעה",
+  "@permsTitle": {
+    "description": "Permissions step title"
+  },
+  "permsBody": "כמה אישורים מהטלפון, פעם אחת עכשיו, כדי שלא יקפצו שאלות באמצע נסיעה.",
+  "@permsBody": {
+    "description": "Permissions step body"
+  },
+  "permsAllowAll": "לאשר הכול",
+  "@permsAllowAll": {
+    "description": "Ask for all the permissions one after the other"
+  },
+  "permsAllowOne": "לאשר",
+  "@permsAllowOne": {
+    "description": "Ask for one permission"
+  },
+  "permsDone": "מאושר",
+  "@permsDone": {
+    "description": "A permission that is already given"
+  },
+  "permsNotifTitle": "התראות",
+  "@permsNotifTitle": {
+    "description": ""
+  },
+  "permsNotifBody": "כדי לדעת כשחבר פנוי, גם כשהאפליקציה סגורה.",
+  "@permsNotifBody": {
+    "description": ""
+  },
+  "permsCallTitle": "שיחות טלפון",
+  "@permsCallTitle": {
+    "description": ""
+  },
+  "permsCallBody": "כדי שהשיחה תצא מיד כששניכם אומרים כן.",
+  "@permsCallBody": {
+    "description": ""
+  },
+  "permsMicTitle": "מיקרופון",
+  "@permsMicTitle": {
+    "description": ""
+  },
+  "permsMicBody": "כדי לענות \"כן\" או \"לא\" בקול בנהיגה. שום דבר לא מוקלט.",
+  "@permsMicBody": {
+    "description": ""
+  },
+  "permsBgTitle": "עבודה ברקע",
+  "@permsBgTitle": {
+    "description": ""
+  },
+  "permsBgBody": "כדי שחיסכון הסוללה לא יעצור את ההתראות באמצע נסיעה.",
+  "@permsBgBody": {
+    "description": ""
+  },
+  "permsAutoTitle": "זמינות אוטומטית בנסיעה (רשות)",
+  "@permsAutoTitle": {
+    "description": ""
+  },
+  "permsAutoBody": "כשהטלפון ברכב, נסמן שיש לך זמן. בלי GPS. אפשר לכבות בכל רגע.",
+  "@permsAutoBody": {
+    "description": ""
+  },
+  "permsSettings": "הרשאות",
+  "@permsSettings": {
+    "description": "Settings entry for the permissions screen"
+  },
+  "permsSettingsBody": "התראות, שיחות, מיקרופון, עבודה ברקע",
+  "@permsSettingsBody": {
+    "description": "Settings entry subtitle"
+  },
+  "answeredRetry": "לא הצלחנו לענות מכאן. לחיצה כאן — עונים באפליקציה.",
+  "@answeredRetry": {
+    "description": "After \"Talk\": the answer did not go through; tap to answer in the app"
+  },
+  "quickTitle": "חיבור מהיר",
+  "@quickTitle": {
+    "description": "Quick connect switch title"
+  },
+  "quickOffBody": "כששניכם פנויים, השיחה יוצאת לבד. 5 שניות לבטל.",
+  "@quickOffBody": {
+    "description": "quickOffBody"
+  },
+  "quickWaitingBody": "מופעל אצלך. יעבוד כשזה יופעל גם אצל {name}.",
+  "@quickWaitingBody": {
+    "description": "quickWaitingBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickBothBody": "פעיל אצל שניכם. כששניכם פנויים, השיחה יוצאת לבד.",
+  "@quickBothBody": {
+    "description": "quickBothBody"
+  },
+  "quickConfirmTitle": "חיבור מהיר עם {name}?",
+  "@quickConfirmTitle": {
+    "description": "quickConfirmTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickConfirmBody": "כששניכם פנויים, השיחה יוצאת לבד, בלי שאלה. יש 5 שניות לבטל: אם אחד מכם מבטל, השיחה לא יוצאת.\n\nבאפליקציה של {name} תופיע הצעה להפעיל גם.",
+  "@quickConfirmBody": {
+    "description": "quickConfirmBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickTurnOn": "להפעיל",
+  "@quickTurnOn": {
+    "description": "quickTurnOn"
+  },
+  "quickAskTitle": "{name} רוצה חיבור מהיר איתך",
+  "@quickAskTitle": {
+    "description": "quickAskTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickAskBody": "כששניכם פנויים, השיחה תצא לבד, בלי לשאול. לשניכם יש 5 שניות לבטל.",
+  "@quickAskBody": {
+    "description": "quickAskBody"
+  },
+  "quickAskYes": "להפעיל גם",
+  "@quickAskYes": {
+    "description": "quickAskYes"
+  },
+  "quickIntroTitle": "חדש: חיבור מהיר",
+  "@quickIntroTitle": {
+    "description": "quickIntroTitle"
+  },
+  "quickIntroBody": "לחברים הכי קרובים: כששניכם פנויים, השיחה יוצאת לבד, בלי לשאול. 5 שניות לבטל.",
+  "@quickIntroBody": {
+    "description": "quickIntroBody"
+  },
+  "quickIntroPick": "לבחור חברים",
+  "@quickIntroPick": {
+    "description": "quickIntroPick"
+  },
+  "quickPickTitle": "חיבור מהיר עם…",
+  "@quickPickTitle": {
+    "description": "quickPickTitle"
+  },
+  "quickTheyWantBody": "אצל {name} חיבור מהיר איתך כבר פועל. להפעיל גם?",
+  "@quickTheyWantBody": {
+    "description": "Switch subtitle: the friend turned it on, I did not",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "quickTheyWantChip": "רוצה חיבור מהיר",
+  "@quickTheyWantChip": {
+    "description": "Friend list: this friend turned quick connect on for me"
+  },
+  "pauseTitle": "הצעות מושהות {when}",
+  "@pauseTitle": {
+    "description": "Friend card: my pause for this friend",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseBody": "אפשר תמיד ללחוץ על {name} ולשאול בעצמך.",
+  "@pauseBody": {
+    "description": "pauseBody",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseQuickNote": "חיבור מהיר עובד גם בזמן ההשהיה.",
+  "@pauseQuickNote": {
+    "description": "pauseQuickNote"
+  },
+  "pauseCancel": "לבטל",
+  "@pauseCancel": {
+    "description": "pauseCancel"
+  },
+  "pauseChip": "מושהה {when}",
+  "@pauseChip": {
+    "description": "Friend list: suggestions paused",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilTime": "עד {time}",
+  "@pauseUntilTime": {
+    "description": "pauseUntilTime",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilTomorrow": "עד מחר",
+  "@pauseUntilTomorrow": {
+    "description": "pauseUntilTomorrow"
+  },
+  "pauseUntilDay": "עד יום {day}",
+  "@pauseUntilDay": {
+    "description": "pauseUntilDay",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "pauseUntilDate": "עד {date}",
+  "@pauseUntilDate": {
+    "description": "pause until a date",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsPrivacyInfo": "מה נשמר עליי",
+  "permsPhoneNotif": "הגדרות ההתראות בטלפון",
+  "realCirclesNone": "משפחה, עבודה, חברים קרובים: מי רואה שיש לך זמן",
+  "routineAskTitle": "השגרה שלך: יש לך זמן עכשיו?",
+  "routineAskBody": "בלחיצה על \"כן\" נסמן שיש לך זמן ל-{minutes} דק׳.",
+  "@routineAskBody": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "routineAskYes": "כן, יש לי זמן",
+  "othersRuleTitle": "חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?",
+  "pasteCode": "הדבקה",
+  "realCallEnded": "השיחה הסתיימה",
+  "realTapOrWait": "אפשר ללחוץ על חבר פנוי, או לחכות שנציע.",
+  "driverMyTimeLeft": "הזמן הפנוי שלך: עוד {minutes} דק׳",
+  "@driverMyTimeLeft": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "durationTripNoteDetected": "נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי {hours} שעות).",
+  "@durationTripNoteDetected": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "afterCallHope": "מקווים שהשיחה הייתה טובה 🙂",
+  "@afterCallHope": {
+    "description": "After a call, above \"when to suggest X again?\""
+  },
+  "afterCallWrite": "יש משוב או תובנה? אפשר לכתוב לנו, ונשפר",
+  "@afterCallWrite": {
+    "description": "After a call: opens the feedback note"
+  },
+  "realWaitingLeft": "{seconds, plural, =1{עוד שנייה} other{עוד {seconds} שניות}}",
+  "@realWaitingLeft": {
+    "description": "Waiting screen countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "addFriend": "הוספת חבר",
+  "@addFriend": {
+    "description": "My people: one button for every way to add a friend"
+  },
+  "addFriendInviteBody": "שולחים קישור בוואטסאפ או בהודעה",
+  "@addFriendInviteBody": {},
+  "addFriendCodeBody": "קיבלת הזמנה בלי קישור? מכניסים כאן את הקוד",
+  "@addFriendCodeBody": {},
+  "addFriendContactsBody": "רואים מי מאנשי הקשר כבר כאן, ובוחרים",
+  "@addFriendContactsBody": {}
+}
