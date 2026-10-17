@@ -703,4 +703,28 @@ void main() {
     await t.pump(const Duration(milliseconds: 300));
     await _close(t);
   });
+
+  testWidgets('one "add a friend" button with all the ways', (t) async {
+    final (me, _) = await twoFriends(t);
+    await _show(t, me, const RealPeopleScreen());
+    await t.tap(find.text('הוספת חבר'));
+    for (var i = 0; i < 3; i++) {
+      await t.pump(const Duration(milliseconds: 400));
+    }
+    expect(find.text('חיפוש באנשי הקשר'), findsOneWidget);
+    expect(find.text('להזמין חבר'), findsOneWidget);
+    expect(find.text('יש לי קוד הזמנה'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.ensureVisible(find.text('יש לי קוד הזמנה'));
+    await t.pump();
+    await t.tap(find.text('יש לי קוד הזמנה'));
+    for (var i = 0; i < 3; i++) {
+      await t.pump(const Duration(milliseconds: 400));
+    }
+    // The code sheet opened (its title), the menu closed.
+    expect(find.text('חיפוש באנשי הקשר'), findsNothing);
+    expect(find.text('יש לי קוד הזמנה'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
 }

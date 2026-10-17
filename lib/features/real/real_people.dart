@@ -247,22 +247,16 @@ class RealPeopleScreen extends ConsumerWidget {
               style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 16),
+            // One way in: contacts, an invitation, or a code I got.
             FilledButton.icon(
-              onPressed: () => shareInvite(context, ref),
-              icon: const Icon(Icons.share_rounded),
-              label: Text(l.realInviteFriend),
-            ),
-            // An invitation without a link (only a code): enter it here.
-            Center(
-              child: TextButton(
-                onPressed: () => openInviteCodeSheet(context, ref),
-                child: Text(l.realHaveCode),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(56),
               ),
+              onPressed: () => _addFriend(context, ref),
+              icon: const Icon(Icons.person_add_rounded),
+              label: Text(l.addFriend, style: const TextStyle(fontSize: 18)),
             ),
-
-            const SizedBox(height: 12),
-            const _ContactsCard(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             if (friends.isNotEmpty) ...[
               const RealCirclesEntry(),
               const SizedBox(height: 12),
@@ -466,69 +460,70 @@ class RealPeopleScreen extends ConsumerWidget {
   }
 }
 
-class _ContactsCard extends ConsumerWidget {
-  const _ContactsCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final busy = ref.watch(realProvider.select((s) => s.busy));
-    final c = ref.read(realProvider.notifier);
-    // Searched before: just a small button, so the people come first.
-    if (c.contactsSynced && ref.watch(realProvider).snapshot != null) {
-      return Align(
-        alignment: AlignmentDirectional.centerStart,
-        child: TextButton.icon(
-          onPressed: busy ? null : () => openContactPicker(context, ref),
-          icon: const Icon(Icons.refresh_rounded, color: AppColors.sageDark),
-          label: Text(
-            l.realContactsAgain,
-            style: const TextStyle(color: AppColors.sageDark),
-          ),
-        ),
-      );
-    }
-    return Card(
-      color: const Color(0xFFDCEBE3),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+/// "Add a friend": from my contacts, send an invitation, or a code I got.
+Future<void> _addFriend(BuildContext context, WidgetRef ref) {
+  final l = context.l10n;
+  Widget option(
+    BuildContext d,
+    IconData icon,
+    String title,
+    String body,
+    void Function() go,
+  ) => ListTile(
+    contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+    leading: CircleAvatar(
+      backgroundColor: const Color(0xFFDCEBE3),
+      child: Icon(icon, color: AppColors.sageDark),
+    ),
+    title: Text(
+      title,
+      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+    ),
+    subtitle: Text(body),
+    onTap: () {
+      Navigator.pop(d);
+      go();
+    },
+  );
+  return showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (d) => SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Row(
-              children: [
-                const Icon(Icons.contacts_rounded, color: AppColors.sageDark),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    l.realContactsTitle,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
+            Text(l.addFriend, style: Theme.of(d).textTheme.titleLarge),
+            const SizedBox(height: 8),
+            option(
+              d,
+              Icons.contacts_rounded,
+              l.realContactsButton,
+              l.addFriendContactsBody,
+              () => openContactPicker(context, ref),
             ),
-            const SizedBox(height: 6),
-            Text(
-              l.realContactsBody,
-              style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+            option(
+              d,
+              Icons.share_rounded,
+              l.realInviteFriend,
+              l.addFriendInviteBody,
+              () => shareInvite(context, ref),
             ),
-            const SizedBox(height: 10),
-            FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.sageDark,
-              ),
-              onPressed: busy ? null : () => openContactPicker(context, ref),
-              icon: const Icon(Icons.search_rounded),
-              label: Text(l.realContactsButton),
+            option(
+              d,
+              Icons.key_rounded,
+              l.realHaveCode,
+              l.addFriendCodeBody,
+              () => openInviteCodeSheet(context, ref),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// 0–5 as small stars (0 = "not offered").

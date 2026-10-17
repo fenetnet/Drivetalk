@@ -3663,6 +3663,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{seconds, plural, =1{עוד שנייה} other{עוד {seconds} שניות}}'**
   String realWaitingLeft(int seconds);
+
+  /// My people: one button for every way to add a friend
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת חבר'**
+  String get addFriend;
+
+  /// No description provided for @addFriendInviteBody.
+  ///
+  /// In he, this message translates to:
+  /// **'שולחים קישור בוואטסאפ או בהודעה'**
+  String get addFriendInviteBody;
+
+  /// No description provided for @addFriendCodeBody.
+  ///
+  /// In he, this message translates to:
+  /// **'קיבלת הזמנה בלי קישור? מכניסים כאן את הקוד'**
+  String get addFriendCodeBody;
+
+  /// No description provided for @addFriendContactsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רואים מי מאנשי הקשר כבר כאן, ובוחרים'**
+  String get addFriendContactsBody;
 }
 
 class _AppLocalizationsDelegate

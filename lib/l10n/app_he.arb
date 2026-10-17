@@ -1455,5 +1455,15 @@
         "type": "int"
       }
     }
-  }
+  },
+  "addFriend": "הוספת חבר",
+  "@addFriend": {
+    "description": "My people: one button for every way to add a friend"
+  },
+  "addFriendInviteBody": "שולחים קישור בוואטסאפ או בהודעה",
+  "@addFriendInviteBody": {},
+  "addFriendCodeBody": "קיבלת הזמנה בלי קישור? מכניסים כאן את הקוד",
+  "@addFriendCodeBody": {},
+  "addFriendContactsBody": "רואים מי מאנשי הקשר כבר כאן, ובוחרים",
+  "@addFriendContactsBody": {}
 }

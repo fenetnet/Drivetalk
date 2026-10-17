@@ -2191,4 +2191,16 @@ class AppLocalizationsHe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get addFriend => 'הוספת חבר';
+
+  @override
+  String get addFriendInviteBody => 'שולחים קישור בוואטסאפ או בהודעה';
+
+  @override
+  String get addFriendCodeBody => 'קיבלת הזמנה בלי קישור? מכניסים כאן את הקוד';
+
+  @override
+  String get addFriendContactsBody => 'רואים מי מאנשי הקשר כבר כאן, ובוחרים';
 }
