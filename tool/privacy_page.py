@@ -15,7 +15,8 @@ def inline(t: str) -> str:
     t = re.sub(r'\*\*(.+?)\*\*', r'<b>\1</b>', t)
     t = re.sub(r'`(.+?)`', r'<code>\1</code>', t)
     t = re.sub(r'(?<![\w/])_(.+?)_(?!\w)', r'<i>\1</i>', t)
-    t = re.sub(r'([\w.+-]+@[\w-]+\.[\w.]+)', r'<a href="mailto:\1">\1</a>', t)
+    # An address never takes the sentence's closing dot with it.
+    t = re.sub(r'([\w.+-]+@[\w-]+(?:\.[\w-]+)+)', r'<a href="mailto:\1">\1</a>', t)
     t = re.sub(r'(https://[^\s<]+)', r'<a href="\1">\1</a>', t)
     return t
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../domain/models.dart';
@@ -103,8 +104,9 @@ class SupabaseRealBackend implements RealBackend {
           .then<List<Map<String, dynamic>>>(
             (r) => r,
             // Older server (before photos).
-            onError: (Object _) =>
-                _c.from('profiles').select('id, display_name, gender'),
+            onError: _ifOlder(
+              () => _c.from('profiles').select('id, display_name, gender'),
+            ),
           ),
       _c
           .from('availability')
@@ -115,12 +117,14 @@ class SupabaseRealBackend implements RealBackend {
           .then<List<Map<String, dynamic>>>(
             (r) => r,
             // Older server (before D-104).
-            onError: (Object _) => _c
-                .from('availability')
-                .select(
-                  'user_id, mode, started_at, expires_at, circle_id, source, '
-                  'call_until, phone_until',
-                ),
+            onError: _ifOlder(
+              () => _c
+                  .from('availability')
+                  .select(
+                    'user_id, mode, started_at, expires_at, circle_id, source, '
+                    'call_until, phone_until',
+                  ),
+            ),
           ),
       _c
           .from('match_offers')
@@ -139,12 +143,14 @@ class SupabaseRealBackend implements RealBackend {
           .then<List<Map<String, dynamic>>>(
             (r) => r,
             // Older server (no "talked" yet): both said yes.
-            onError: (Object _) => _c
-                .from('match_offers')
-                .select('user_a, user_b, updated_at')
-                .eq('status', 'accepted')
-                .order('updated_at', ascending: false)
-                .limit(300),
+            onError: _ifOlder(
+              () => _c
+                  .from('match_offers')
+                  .select('user_a, user_b, updated_at')
+                  .eq('status', 'accepted')
+                  .order('updated_at', ascending: false)
+                  .limit(300),
+            ),
           ),
       // "I'd like to talk" (mine only); optional on an older server.
       _c
@@ -152,7 +158,7 @@ class SupabaseRealBackend implements RealBackend {
           .select('to_user, expires_at')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // Circles are optional: an older server without them still works.
       _c
@@ -160,7 +166,7 @@ class SupabaseRealBackend implements RealBackend {
           .select('id, name, quick, show_modes, circle_members(member)')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // My ratings (optional on an older server).
       _c
@@ -168,14 +174,14 @@ class SupabaseRealBackend implements RealBackend {
           .select('friend, rating')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // Friends' days since last seen (optional on an older server).
       _c
           .rpc('friends_activity')
           .then<List<Map<String, dynamic>>>(
             (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // Do I hide my status? (optional on an older server)
       _c
@@ -184,7 +190,7 @@ class SupabaseRealBackend implements RealBackend {
           .eq('id', me)
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // "Everyone else": who sees that I'm free (mine only).
       _c
@@ -192,7 +198,7 @@ class SupabaseRealBackend implements RealBackend {
           .select('show_modes')
           .then<List<Map<String, dynamic>>>(
             (r) => r,
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // Free friends I can really ask (optional on an older server).
       _c
@@ -201,30 +207,32 @@ class SupabaseRealBackend implements RealBackend {
             (r) => [
               for (final x in r as List) {'id': '$x'},
             ],
-            onError: (Object _) => [
-              {'old': true},
-            ],
+            onError: _ifOlder(
+              () => [
+                {'old': true},
+              ],
+            ),
           ),
       // My private settings and counts (optional on an older server).
       _c
           .rpc('my_status')
           .then<List<Map<String, dynamic>>>(
             (r) => [Map<String, dynamic>.from(r as Map)],
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // Quick connect per friend (optional on an older server).
       _c
           .rpc('quick_status')
           .then<List<Map<String, dynamic>>>(
             (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
       // My pauses after calls (optional on an older server).
       _c
           .rpc('my_pauses')
           .then<List<Map<String, dynamic>>>(
             (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: (Object _) => <Map<String, dynamic>>[],
+            onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
     ]);
     final profiles = [
@@ -563,6 +571,29 @@ class SupabaseRealBackend implements RealBackend {
   static bool _missingFunction(PostgrestException e) =>
       e.code == 'PGRST202' ||
       e.message.toLowerCase().contains('could not find the function');
+
+  /// The server doesn't have it yet (a table, column, link or function from
+  /// a later update).
+  @visibleForTesting
+  static bool isOlderServer(Object e) =>
+      e is PostgrestException &&
+      (_missingFunction(e) ||
+          const {
+            '42703', // column
+            '42P01', // table
+            '42883', // function
+            'PGRST200', // link between tables
+            'PGRST204', // column
+            'PGRST205', // table
+          }.contains(e.code));
+
+  /// The snapshot does without a part only on an older server. Any other
+  /// error (no network, a hiccup) fails the whole refresh, so the screen
+  /// keeps what it had: no photos lost, no switches flipping for a moment.
+  static FutureOr<List<Map<String, dynamic>>> Function(Object, StackTrace)
+  _ifOlder(FutureOr<List<Map<String, dynamic>>> Function() fallback) =>
+      (e, st) =>
+          isOlderServer(e) ? fallback() : Error.throwWithStackTrace(e, st);
 
   @override
   Future<void> afterCall(
