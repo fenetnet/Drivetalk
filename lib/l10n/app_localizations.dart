@@ -3621,6 +3621,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?'**
   String get othersRuleTitle;
+
+  /// No description provided for @pasteCode.
+  ///
+  /// In he, this message translates to:
+  /// **'הדבקה'**
+  String get pasteCode;
 }
 
 class _AppLocalizationsDelegate

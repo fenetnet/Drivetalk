@@ -310,7 +310,6 @@ Future<void> _pickPhoto(
   WidgetRef ref,
   bool hasPhoto,
 ) async {
-  if (await editMyPhoto(context, ref, hasPhoto: hasPhoto)) {
-    ref.read(realProvider.notifier).firstRunNext();
-  }
+  final c = ref.read(realProvider.notifier);
+  if (await editMyPhoto(context, ref, hasPhoto: hasPhoto)) c.firstRunNext();
 }

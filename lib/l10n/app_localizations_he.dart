@@ -2155,4 +2155,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get othersRuleTitle => 'חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?';
+
+  @override
+  String get pasteCode => 'הדבקה';
 }

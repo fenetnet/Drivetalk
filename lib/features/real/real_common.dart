@@ -262,7 +262,13 @@ class PrimaryPill extends StatelessWidget {
               Icon(icon, size: big ? 40 : 28),
               const SizedBox(width: 12),
             ],
-            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+            // Never "…": a long label gets smaller instead (small phones).
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label, maxLines: 1),
+              ),
+            ),
           ],
         ),
       ),
@@ -741,6 +747,8 @@ class StatusLine extends StatelessWidget {
 
 /// "My number": add, change or remove it (shared only after both say yes).
 Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
+  // Read before the dialog: the card that opened it may be gone after.
+  final c = ref.read(realProvider.notifier);
   final l = context.l10n;
   final phone = TextEditingController(
     text: ref.read(realProvider).myPhone ?? '',
@@ -771,7 +779,5 @@ Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
       ],
     ),
   );
-  if (ok ?? false) {
-    await ref.read(realProvider.notifier).setMyPhone(phone.text);
-  }
+  if (ok ?? false) await c.setMyPhone(phone.text);
 }

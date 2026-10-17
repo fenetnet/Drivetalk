@@ -209,6 +209,7 @@ class RealSettingsScreen extends ConsumerWidget {
                   if (BackendConfig.store) return openAppUpdate();
                   final c = ref.read(realProvider.notifier);
                   await c.checkForUpdate(force: true);
+                  if (!context.mounted) return;
                   if (ref.read(realProvider).newBuild != null) {
                     await openAppUpdate();
                   } else {
@@ -523,6 +524,7 @@ class RealSettingsScreen extends ConsumerWidget {
 
   Future<void> _editName(BuildContext context, WidgetRef ref) async {
     final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
     final me = ref.read(realProvider).snapshot!.me;
     final name = TextEditingController(text: me.name);
     final gender = me.gender;
@@ -555,7 +557,7 @@ class RealSettingsScreen extends ConsumerWidget {
       ),
     );
     if ((ok ?? false) && name.text.trim().isNotEmpty) {
-      await ref.read(realProvider.notifier).updateProfile(name.text, gender);
+      await c.updateProfile(name.text, gender);
     }
   }
 }
@@ -577,6 +579,7 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
     final list = await ref.read(realProvider.notifier).blockedPeople();
     if (mounted) setState(() => _people = list);
   }
@@ -613,7 +616,7 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
                   trailing: TextButton(
                     onPressed: () async {
                       await ref.read(realProvider.notifier).unblock(p);
-                      await _load();
+                      if (mounted) await _load();
                     },
                     child: Text(l.realUnblock),
                   ),
@@ -628,6 +631,8 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
 /// "Send feedback": a short note to the owner (no names or numbers added).
 Future<void> _sendFeedback(BuildContext context, WidgetRef ref) async {
   final l = context.l10n;
+  // Read before the dialog: the screen may be gone when it closes.
+  final c = ref.read(realProvider.notifier);
   final text = TextEditingController();
   final send = await showDialog<bool>(
     context: context,
@@ -653,9 +658,7 @@ Future<void> _sendFeedback(BuildContext context, WidgetRef ref) async {
       ],
     ),
   );
-  if (send ?? false) {
-    await ref.read(realProvider.notifier).sendFeedback(text.text);
-  }
+  if (send ?? false) await c.sendFeedback(text.text);
   text.dispose();
 }
 

@@ -394,7 +394,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                         decoration: InputDecoration(
                           labelText: l.realPhoneRequired,
                           helperText: l.realPhoneRequiredHelp,
-                          helperMaxLines: 6,
+                          helperMaxLines: 10,
                           // Say why "let's go" is grey (e.g. a typo).
                           errorText:
                               _phone.text.trim().isNotEmpty &&

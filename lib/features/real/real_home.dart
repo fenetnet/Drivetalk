@@ -517,23 +517,27 @@ class _FreeNowCard extends ConsumerWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            StatusLine(
-                              icon: inCall
-                                  ? Icons.call_rounded
-                                  : modeIcon(a.mode),
-                              // The picture says how (car, coffee…); the text
-                              // just how long.
-                              text: inCall
-                                  ? l.inCall
-                                  : faded
-                                  ? l.freeNotNow
-                                  : timeLeftLabel(l, a, now),
-                              color: inCall
-                                  ? AppColors.coralDeep
-                                  : AppColors.inkSoft,
-                              bold: inCall,
-                              size: 12,
-                              center: true,
+                            // Smaller rather than cut ("עוד 60 דק׳").
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: StatusLine(
+                                icon: inCall
+                                    ? Icons.call_rounded
+                                    : modeIcon(a.mode),
+                                // The picture says how (car, coffee…); the text
+                                // just how long.
+                                text: inCall
+                                    ? l.inCall
+                                    : faded
+                                    ? l.freeNotNow
+                                    : timeLeftLabel(l, a, now),
+                                color: inCall
+                                    ? AppColors.coralDeep
+                                    : AppColors.inkSoft,
+                                bold: inCall,
+                                size: 12,
+                                center: true,
+                              ),
                             ),
                           ],
                         ),
@@ -674,6 +678,8 @@ class _MyStatus extends ConsumerWidget {
 
 Future<void> _extend(BuildContext context, WidgetRef ref) async {
   final l = context.l10n;
+  // Read before the sheet: this card may be gone when it closes.
+  final c = ref.read(realProvider.notifier);
   final minutes = await showModalBottomSheet<int>(
     context: context,
     showDragHandle: true,
@@ -696,9 +702,14 @@ Future<void> _extend(BuildContext context, WidgetRef ref) async {
                     child: FilledButton.tonal(
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(56),
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
                       ),
                       onPressed: () => Navigator.pop(d, m),
-                      child: Text(l.extendBy(m)),
+                      // One line, smaller if needed (never "+1\n0").
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(l.extendBy(m), maxLines: 1),
+                      ),
                     ),
                   ),
                   if (m != 60) const SizedBox(width: 8),
@@ -710,9 +721,7 @@ Future<void> _extend(BuildContext context, WidgetRef ref) async {
       ),
     ),
   );
-  if (minutes != null) {
-    await ref.read(realProvider.notifier).extendAvailability(minutes);
-  }
+  if (minutes != null) await c.extendAvailability(minutes);
 }
 
 /// Free friends I can ask, people I haven't talked with in a while first.
@@ -740,6 +749,8 @@ Future<void> askFreeFriend(
   RealProfile friend,
 ) async {
   final l = context.l10n;
+  // Read before the dialog: the card that opened it may be gone after.
+  final c = ref.read(realProvider.notifier);
   final meFree =
       myActiveAvailability(ref.read(realProvider), ref.read(realNowProvider)) !=
       null;
@@ -761,7 +772,6 @@ Future<void> askFreeFriend(
     ),
   );
   if (go != true) return;
-  final c = ref.read(realProvider.notifier);
   if (!meFree && !await c.startAvailability(AvailabilityMode.free, 30)) {
     return;
   }

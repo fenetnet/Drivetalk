@@ -120,6 +120,7 @@ class _CodeSheetState extends ConsumerState<_CodeSheet> {
               errorText: _error,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
+                tooltip: l.pasteCode,
                 icon: const Icon(Icons.content_paste_rounded),
                 onPressed: () async {
                   final data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -158,6 +159,7 @@ class RealPeopleScreen extends ConsumerWidget {
         if (isAsleep(f)) f,
     ];
     Widget friendCard(RealProfile f) => Card(
+      clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         leading: RealAvatar(
@@ -368,43 +370,62 @@ class RealPeopleScreen extends ConsumerWidget {
       // Tall enough for everything; scrolls on small screens so "report"
       // at the bottom is always reachable.
       isScrollControlled: true,
-      builder: (sheet) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              PersonAvatar(person: person, size: 64),
-              const SizedBox(height: 8),
-              Text(f.name, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
-              // The easiest way to talk while driving (D-112): up front.
-              QuickSwitch(friend: f),
-              PauseTile(friend: f),
-              const Divider(),
-              RatingPicker(friend: f, onDone: () => Navigator.pop(sheet)),
-              const Divider(),
-              FriendCirclesPicker(friend: f),
-              const Divider(),
-              ListTile(
-                leading: const Icon(Icons.person_remove_rounded),
-                title: Text(l.unmatch),
-                onTap: () => Navigator.pop(sheet, 'unmatch'),
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.block_rounded,
-                  color: AppColors.danger,
+      builder: (sheet) => Consumer(
+        // They removed or blocked me meanwhile: the card closes (nothing
+        // here would work any more).
+        builder: (sheet, ref, child) {
+          final here = ref.watch(
+            realProvider.select((s) => s.snapshot?.friend(f.id) != null),
+          );
+          if (!here) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final route = ModalRoute.of(sheet);
+              if (sheet.mounted && (route?.isCurrent ?? false)) {
+                Navigator.of(sheet).pop();
+              }
+            });
+          }
+          return child!;
+        },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PersonAvatar(person: person, size: 64),
+                const SizedBox(height: 8),
+                Text(f.name, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                // The easiest way to talk while driving (D-112): up front.
+                QuickSwitch(friend: f),
+                PauseTile(friend: f),
+                const Divider(),
+                // Saved in place: the card stays open (like the groups).
+                RatingPicker(friend: f),
+                const Divider(),
+                FriendCirclesPicker(friend: f),
+                const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.person_remove_rounded),
+                  title: Text(l.unmatch),
+                  onTap: () => Navigator.pop(sheet, 'unmatch'),
                 ),
-                title: Text(l.block),
-                onTap: () => Navigator.pop(sheet, 'block'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.flag_rounded),
-                title: Text(l.report),
-                onTap: () => Navigator.pop(sheet, 'report'),
-              ),
-              const SizedBox(height: 8),
-            ],
+                ListTile(
+                  leading: const Icon(
+                    Icons.block_rounded,
+                    color: AppColors.danger,
+                  ),
+                  title: Text(l.block),
+                  onTap: () => Navigator.pop(sheet, 'block'),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.flag_rounded),
+                  title: Text(l.report),
+                  onTap: () => Navigator.pop(sheet, 'report'),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
           ),
         ),
       ),
@@ -543,14 +564,23 @@ class RatingStars extends StatelessWidget {
 
 /// "How much do I want to talk with them?" 0 (never offer) – 5 (first).
 /// Only I see it.
-class RatingPicker extends ConsumerWidget {
+class RatingPicker extends ConsumerStatefulWidget {
   const RatingPicker({super.key, required this.friend, this.onDone});
   final RealProfile friend;
   final VoidCallback? onDone;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RatingPicker> createState() => _RatingPickerState();
+}
+
+class _RatingPickerState extends ConsumerState<RatingPicker> {
+  /// One save at a time (a quick second tap waits for the first).
+  var _saving = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l = context.l10n;
+    final friend = widget.friend;
     final current = ref.watch(realProvider).snapshot?.ratingOf(friend.id) ?? 3;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -571,10 +601,19 @@ class RatingPicker extends ConsumerWidget {
                 ChoiceChip(
                   label: Text('$r'),
                   selected: r == current,
-                  onSelected: (_) async {
-                    await ref.read(realProvider.notifier).setRating(friend, r);
-                    onDone?.call();
-                  },
+                  onSelected: _saving
+                      ? null
+                      : (_) async {
+                          if (r == current) return;
+                          final c = ref.read(realProvider.notifier);
+                          setState(() => _saving = true);
+                          try {
+                            await c.setRating(friend, r);
+                          } finally {
+                            if (mounted) setState(() => _saving = false);
+                          }
+                          if (mounted) widget.onDone?.call();
+                        },
                 ),
             ],
           ),

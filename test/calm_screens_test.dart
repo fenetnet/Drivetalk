@@ -294,6 +294,86 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('asking a friend after the card behind changed does not crash', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      await friend
+          .read(realProvider.notifier)
+          .startAvailability(AvailabilityMode.free, 30);
+      await me.read(realProvider.notifier).refresh();
+    });
+    final yoni = me.read(realProvider).snapshot!.friends.single;
+    expect(server.offers, isEmpty);
+    final showCard = ValueNotifier(true);
+    await t.pumpWidget(
+      UncontrolledProviderScope(
+        container: me,
+        child: MaterialApp(
+          navigatorKey: navigatorKey,
+          locale: const Locale('he'),
+          supportedLocales: const [Locale('he')],
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: showCard,
+              builder: (_, show, _) => show
+                  ? Consumer(
+                      builder: (context, ref, _) => TextButton(
+                        onPressed: () => askFreeFriend(context, ref, yoni),
+                        child: const Text('go'),
+                      ),
+                    )
+                  : const Text('the card moved'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await t.tap(find.text('go'));
+    await t.pumpAndSettle();
+    // The network blinks / a card appears above: this card is rebuilt.
+    showCard.value = false;
+    await t.pump();
+    await t.tap(find.text('כן, לשאול'));
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await t.pump();
+    expect(t.takeException(), isNull);
+    // It went on all the same: I'm free now, and the two of us are asked.
+    expect(server.availability[me.read(realProvider).myId], isNotNull);
+    expect(server.offers, hasLength(1));
+    await _close(t);
+  });
+
+  testWidgets('rating a friend twice fast keeps the app on screen', (t) async {
+    final (me, _) = await twoFriends(t);
+    await _show(t, me, const RealPeopleScreen());
+    await t.scrollUntilVisible(
+      find.text('יונתן־אלכסנדר'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
+    await t.pumpAndSettle();
+    await t.tap(find.text('יונתן־אלכסנדר'));
+    await t.pumpAndSettle();
+    await t.ensureVisible(find.widgetWithText(ChoiceChip, '4'));
+    await t.tap(find.widgetWithText(ChoiceChip, '4'));
+    await t.tap(find.widgetWithText(ChoiceChip, '5'), warnIfMissed: false);
+    await t.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 100)),
+    );
+    await t.pumpAndSettle();
+    expect(t.takeException(), isNull);
+    // The card is still open (saved in place), and the list behind it too.
+    expect(find.widgetWithText(ChoiceChip, '4'), findsOneWidget);
+    expect(find.byType(RealPeopleScreen), findsOneWidget);
+    await _close(t);
+  });
+
   testWidgets('quick connect: the switch, the ask card and the intro', (
     t,
   ) async {
