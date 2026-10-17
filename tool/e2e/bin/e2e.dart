@@ -88,6 +88,10 @@ Future<List<Map<String, dynamic>>> rows(SupabaseClient c, String table) async =>
           .select(
             table == 'profiles'
                 ? 'id, display_name, gender, photo_version, hide_status'
+                // Availability: only what friends may read (D-118).
+                : table == 'availability'
+                ? 'user_id, mode, expires_at, source, call_until, phone_until, '
+                      'missed_at, quiet_until'
                 : '*',
           ),
     );
@@ -688,17 +692,15 @@ Future<void> main() async {
     )).any((a) => a['user_id'] == uid(me) && a['phone_until'] == null),
     'call ended → free again',
   );
-  final tripStart = seen.firstWhere(
-    (a) => a['user_id'] == uid(me),
-  )['started_at'];
+  // (Friends no longer receive the start time, D-118: read it directly.)
+  Future<String> tripStartNow() => dbScalar(
+    "select started_at from availability where user_id = '${uid(me)}'",
+  );
+  final tripStart = await tripStartNow();
   await Future<void>.delayed(const Duration(milliseconds: 1100));
   await background.rpc('auto_start', params: {'p_token': device});
   check(
-    (await rows(
-          yoni,
-          'availability',
-        )).firstWhere((a) => a['user_id'] == uid(me))['started_at'] ==
-        tripStart,
+    await tripStartNow() == tripStart,
     'renewing during the drive keeps the same trip',
   );
   // A new friend (Yoni and I are in the 15-minute pause after his "no").
@@ -1804,9 +1806,10 @@ Future<void> main() async {
   await quickPerFriend(eve);
   await quickAndPauses();
   await reviewFixes2();
+  await hideStartAndGroup();
 
   check(
-    await eve.rpc('schema_version') == 42,
+    await eve.rpc('schema_version') == 43,
     'the server says its version (41)',
   );
 
@@ -3134,4 +3137,45 @@ Future<void> reviewFixes2() async {
     await c.dispose();
   }
   await bg.dispose();
+}
+
+// --- friends don't receive my start time or group (D-118)
+Future<void> hideStartAndGroup() async {
+  final ha = await newUser('הדס', 'female');
+  final hb = await newUser('חן', 'male');
+  await befriend(ha, hb);
+  await free(ha);
+  final visible = List<Map<String, dynamic>>.from(
+    await hb
+        .from('availability')
+        .select('user_id, mode, expires_at, source')
+        .eq('user_id', uid(ha)),
+  );
+  check(visible.length == 1, 'a friend still sees that I\'m free (D-118)');
+  var hidden = false;
+  try {
+    await hb.from('availability').select('started_at').eq('user_id', uid(ha));
+  } on PostgrestException {
+    hidden = true;
+  }
+  var hiddenGroup = false;
+  try {
+    await hb.from('availability').select('circle_id').eq('user_id', uid(ha));
+  } on PostgrestException {
+    hiddenGroup = true;
+  }
+  check(
+    hidden && hiddenGroup,
+    'a friend can\'t read when I started or for which group (D-118)',
+  );
+  final mine = List.from(await ha.rpc('my_availability_details'));
+  check(
+    mine.length == 1 && mine.single['started_at'] != null,
+    'I still get my own start time',
+  );
+  final theirs = List.from(await hb.rpc('my_availability_details'));
+  check(theirs.isEmpty, 'and nobody else\'s');
+  for (final c in [ha, hb]) {
+    await c.rpc('clear_availability');
+  }
 }

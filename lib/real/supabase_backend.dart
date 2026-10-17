@@ -110,8 +110,10 @@ class SupabaseRealBackend implements RealBackend {
           ),
       _c
           .from('availability')
+          // Friends' start time and group aren't sent (D-118); mine come
+          // from my_availability_details below.
           .select(
-            'user_id, mode, started_at, expires_at, circle_id, source, '
+            'user_id, mode, expires_at, source, '
             'call_until, phone_until, missed_at, quiet_until',
           )
           .then<List<Map<String, dynamic>>>(
@@ -234,12 +236,28 @@ class SupabaseRealBackend implements RealBackend {
             (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
             onError: _ifOlder(() => <Map<String, dynamic>>[]),
           ),
+      // When my own free time started and for which group (D-118).
+      _c
+          .rpc('my_availability_details')
+          .then<List<Map<String, dynamic>>>(
+            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+            // Older server: friends' rows still carry them.
+            onError: _ifOlder(
+              () => _c
+                  .from('availability')
+                  .select('started_at, circle_id')
+                  .eq('user_id', me),
+            ),
+          ),
     ]);
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
     ];
     final mine = profiles.where((p) => p.id == me).firstOrNull;
     if (mine == null) throw const RealBackendException('no_profile');
+    final mineExtra = results[14].firstOrNull;
+    final myStart = mineExtra?['started_at'];
+    final myCircle = mineExtra?['circle_id'] as String?;
     return RealSnapshot(
       me: mine,
       friends: [
@@ -251,9 +269,14 @@ class SupabaseRealBackend implements RealBackend {
           r['user_id'] as String: RealAvailability(
             userId: r['user_id'] as String,
             mode: modeFromKey(r['mode'] as String?),
-            startedAt: _time(r['started_at']),
+            // Friends' start isn't sent (D-118): their end stands in.
+            startedAt: _time(
+              (r['user_id'] == me ? myStart : null) ??
+                  r['started_at'] ??
+                  r['expires_at'],
+            ),
             expiresAt: _time(r['expires_at']),
-            circleId: r['circle_id'] as String?,
+            circleId: r['user_id'] == me ? myCircle : null,
             auto: r['source'] == 'auto',
             busyUntil: _later(
               _maybeTime(r['call_until']),
