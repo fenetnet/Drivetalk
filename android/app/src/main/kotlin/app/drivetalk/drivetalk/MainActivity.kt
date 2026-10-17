@@ -181,6 +181,7 @@ class MainActivity : FlutterActivity() {
                         "carName" to store.carName,
                         "background" to backgroundAllowed(),
                         "notifications" to notificationsAllowed(),
+                        "watching" to DrivingService.watching,
                     ),
                 )
                 // Battery saving must not stop the background service.
@@ -225,12 +226,14 @@ class MainActivity : FlutterActivity() {
                     )
                     DrivingNotifications.ensureChannels(this)
                     Routines.schedule(this)
+                    QuickFree.refreshAll(this)
                     result.success(true)
                 }
                 "forget" -> {
                     DrivingDetection.unregister(this)
                     DrivingService.quietEnd(this)
                     store.clear()
+                    QuickFree.refreshAll(this)
                     result.success(true)
                 }
                 "startAvailable" -> {
@@ -238,6 +241,7 @@ class MainActivity : FlutterActivity() {
                         result.success(false)
                     } else {
                         store.availableUntil = (call.argument<Number>("until") ?: 0).toLong()
+                        store.endWithTrip = call.argument<Boolean>("endWithTrip") == true
                         DrivingService.startManual(this)
                         QuickFree.refreshAll(this)
                         result.success(true)
@@ -245,6 +249,7 @@ class MainActivity : FlutterActivity() {
                 }
                 "stopAvailable" -> {
                     store.availableUntil = 0L
+                    store.endWithTrip = false
                     DrivingService.quietEnd(this)
                     QuickFree.refreshAll(this)
                     result.success(true)
@@ -440,9 +445,15 @@ class MainActivity : FlutterActivity() {
             checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
 
     private fun place(number: String, direct: Boolean): String = try {
-        val action = if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL
-        startActivity(Intent(action, Uri.parse("tel:$number")))
-        if (direct) "calling" else "dialer"
+        if (!onScreen) {
+            // Behind another app Android silently drops the call: say so,
+            // so "tap to call" can be shown instead.
+            "failed"
+        } else {
+            val action = if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL
+            startActivity(Intent(action, Uri.parse("tel:$number")))
+            if (direct) "calling" else "dialer"
+        }
     } catch (e: Exception) {
         "failed"
     }

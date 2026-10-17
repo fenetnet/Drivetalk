@@ -625,8 +625,13 @@ class RealController extends Notifier<RealState> {
     try {
       _lifecycle = AppLifecycleListener(
         onResume: _onResume,
-        onStateChange: (s) => _foreground =
-            s == AppLifecycleState.resumed || s == AppLifecycleState.inactive,
+        onStateChange: (s) {
+          _foreground =
+              s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
+          // Behind another app or locked: no hidden question and no open
+          // microphone — the notification takes over there (D-111).
+          if (!_foreground && _voiceAsking && ref.mounted) _stopVoice();
+        },
       );
       unawaited(checkForUpdate());
     } catch (_) {
@@ -686,6 +691,10 @@ class RealController extends Notifier<RealState> {
 
   /// How long I wait for the other side after my "yes" before giving up.
   static const waitLimit = Duration(seconds: 25);
+
+  /// A quick connect whose countdown ended this long ago without a call
+  /// doesn't start any more (same as the server).
+  static const _quickStale = Duration(minutes: 2);
 
   /// Runs every 5 seconds (public for tests).
   @visibleForTesting
@@ -750,9 +759,8 @@ class RealController extends Notifier<RealState> {
       if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
     }
     if (state.myPhone == null) unawaited(_loadPhone());
-    refresh();
+    unawaited(_refreshAndRewatch());
     unawaited(_backend.touchSeen());
-    unawaited(_loadDriving());
     unawaited(_handleLaunchAction());
     // New people from my contacts (at most twice a day).
     unawaited(_maybeSyncContacts());
@@ -1198,13 +1206,35 @@ class RealController extends Notifier<RealState> {
 
   /// While I'm free: a small notification watches for friends, even when
   /// the app is closed (until my availability ends).
-  Future<void> _watchWhileFree() async {
+  Future<void> _watchWhileFree({bool ask = true}) async {
     final mine = myActiveAvailability(state, _now());
     if (mine == null || mine.auto) return;
     final detector = ref.read(drivingDetectorProvider);
     await _ensureDevice();
-    await detector.requestNotificationPermission();
-    await detector.startAvailable(mine.expiresAt);
+    if (ask) await detector.requestNotificationPermission();
+    final tripOnly = _store.getString(_tripOnlyKey);
+    await detector.startAvailable(
+      mine.expiresAt,
+      endWithTrip: tripOnly == mine.startedAt.toIso8601String(),
+    );
+  }
+
+  /// Back in the app: catch up; and if I'm free but the background watcher
+  /// isn't running (Android stopped it), start it again — quietly.
+  Future<void> _refreshAndRewatch() async {
+    await refresh();
+    if (!ref.mounted) return;
+    await _loadDriving();
+    if (!ref.mounted) return;
+    final d = state.driving;
+    final mine = myActiveAvailability(state, _now());
+    if (mine != null &&
+        !mine.auto &&
+        d.configured &&
+        !d.watching &&
+        !d.inVehicle) {
+      await _watchWhileFree(ask: false);
+    }
   }
 
   Future<void> disableAutoDriving() async {
@@ -1325,30 +1355,20 @@ class RealController extends Notifier<RealState> {
   /// Start over as a new user on this phone (the old test account stays
   /// on the server but is no longer used).
   Future<void> signOut() async {
-    await ref.read(drivingDetectorProvider).forget();
     try {
       await _backend.revokeDeviceTokens();
     } on RealBackendException {
       // Signing out anyway.
     }
     await _backend.signOut();
-    _photos.clear();
-    await _photoCache.clear();
+    // A new account starts clean (groups, routines, tips, lists).
+    await _clearLocal();
     if (!ref.mounted) return;
     state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
   }
 
-  /// "Delete my account and my information": on the server (everything,
-  /// photo included) and on this phone. Returns an error code or null.
-  Future<String?> deleteAccount() async {
-    state = state.copyWith(busy: true);
-    try {
-      // The server first: if it fails, nothing on this phone is lost.
-      await _backend.deleteAccount();
-    } on RealBackendException catch (e) {
-      if (ref.mounted) state = state.copyWith(busy: false);
-      return e.code;
-    }
+  /// Everything this phone kept about the account (sign-out / deletion).
+  Future<void> _clearLocal() async {
     final detector = ref.read(drivingDetectorProvider);
     await detector.setRoutines('[]');
     await detector.forget();
@@ -1374,10 +1394,34 @@ class RealController extends Notifier<RealState> {
       _permIntroKey,
       _addNumberKey,
       _knownFriendsKey,
+      _quickAsksKey,
+      _quickIntroKey,
+      _crashesKey,
+      _tripOnlyKey,
     ]) {
       await _store.setString(k, null);
     }
     _handled.clear();
+    _answering.clear();
+    _givingUp.clear();
+    _waitingSince.clear();
+    _pendingChecked.clear();
+    contactMatches = const [];
+    _phoneKnown = false;
+  }
+
+  /// "Delete my account and my information": on the server (everything,
+  /// photo included) and on this phone. Returns an error code or null.
+  Future<String?> deleteAccount() async {
+    state = state.copyWith(busy: true);
+    try {
+      // The server first: if it fails, nothing on this phone is lost.
+      await _backend.deleteAccount();
+    } on RealBackendException catch (e) {
+      if (ref.mounted) state = state.copyWith(busy: false);
+      return e.code;
+    }
+    await _clearLocal();
     if (!ref.mounted) return null;
     state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
     return null;
@@ -1585,6 +1629,15 @@ class RealController extends Notifier<RealState> {
           now.difference(agreedAt).abs() < const Duration(minutes: 5) &&
           !o.callOver;
       switch (o.status) {
+        case OfferStatus.accepted
+            when o.quick &&
+                o.caller == null &&
+                o.notBefore != null &&
+                now.difference(o.notBefore!) > _quickStale:
+          // A quick connect nobody started while its countdown was fresh
+          // never dials out of the blue later (D-026); the server ends it.
+          _markHandled(o.id);
+          unawaited(_quietly(() => _backend.startCall(o.id)));
         case OfferStatus.accepted:
           // Behind another app (the notification is up): the phone can't
           // dial from the background — handled when the app is opened.
@@ -1661,6 +1714,14 @@ class RealController extends Notifier<RealState> {
 
   void _markHandled(String id) {
     _handled.add(id);
+    _saveHandled();
+  }
+
+  void _unmarkHandled(String id) {
+    if (_handled.remove(id)) _saveHandled();
+  }
+
+  void _saveHandled() {
     final list = _handled.toList();
     final keep = list.length > 100 ? list.sublist(list.length - 100) : list;
     _store.setString(_handledKey, jsonEncode(keep));
@@ -1672,6 +1733,7 @@ class RealController extends Notifier<RealState> {
     AvailabilityMode mode,
     int minutes, {
     String? circleId,
+    bool untilTripEnds = false,
   }) async {
     await _maybeAskDirectCall();
     // Answering "yes"/"no" by voice needs the microphone: ask now, while
@@ -1693,9 +1755,21 @@ class RealController extends Notifier<RealState> {
       _logFree(mode);
     }
     await refresh();
-    if (ok && ref.mounted) unawaited(_watchWhileFree());
+    if (!ref.mounted) return ok;
+    if (ok) {
+      // "For the whole trip": the background watcher also ends it when the
+      // detected trip ends. Remembered by this window's start time.
+      final mine = myActiveAvailability(state, _now());
+      await _store.setString(
+        _tripOnlyKey,
+        untilTripEnds && mine != null ? mine.startedAt.toIso8601String() : null,
+      );
+      if (ref.mounted) unawaited(_watchWhileFree());
+    }
     return ok;
   }
+
+  static const _tripOnlyKey = 'real.tripOnly.v1';
 
   Future<void> stopAvailability() async {
     _stopVoice();
@@ -1802,36 +1876,47 @@ class RealController extends Notifier<RealState> {
     final question = direct
         ? _l.voiceDirect(p.name)
         : _l.realVoiceOffer(p.name, _genderKey(p.gender));
-    // No answer: asked again right away, 3 times in all (D-112).
-    for (var i = 0; i < _askTimes; i++) {
-      await voice.speak(question);
-      if (seq != _voiceSeq || !ref.mounted) return;
-      state = state.copyWith(listening: true);
-      final answer = await voice.listenYesNo(timeout: _askListen);
-      if (seq != _voiceSeq || !ref.mounted) return;
-      state = state.copyWith(listening: false);
-      if (currentOffer(state, _now())?.id != offer.id) return;
-      switch (answer) {
-        case VoiceAnswer.yes:
-          await respond(offer, accept: true);
-          return;
-        case VoiceAnswer.no:
-          await respond(offer, accept: false);
-          return;
-        case VoiceAnswer.permissionDenied:
-          // Said once; after that the buttons simply do the job.
-          if (_store.getString(_micTipKey) == null) {
-            _store.setString(_micTipKey, 'shown');
-            _notify(RealNoticeKind.micDenied);
-          }
-          return;
-        case VoiceAnswer.unavailable:
-          return; // the big buttons are always there
-        case VoiceAnswer.none:
-          break; // nothing heard: ask again
+    // No answer: asked again right away, 3 times in all (D-112) — only
+    // while the app is on screen.
+    _askingSeq = seq;
+    try {
+      for (var i = 0; i < _askTimes; i++) {
+        if (!_foreground) return;
+        await voice.speak(question);
+        if (seq != _voiceSeq || !ref.mounted || !_foreground) return;
+        state = state.copyWith(listening: true);
+        final answer = await voice.listenYesNo(timeout: _askListen);
+        if (seq != _voiceSeq || !ref.mounted) return;
+        state = state.copyWith(listening: false);
+        if (currentOffer(state, _now())?.id != offer.id) return;
+        switch (answer) {
+          case VoiceAnswer.yes:
+            await respond(offer, accept: true);
+            return;
+          case VoiceAnswer.no:
+            await respond(offer, accept: false);
+            return;
+          case VoiceAnswer.permissionDenied:
+            // Said once; after that the buttons simply do the job.
+            if (_store.getString(_micTipKey) == null) {
+              _store.setString(_micTipKey, 'shown');
+              _notify(RealNoticeKind.micDenied);
+            }
+            return;
+          case VoiceAnswer.unavailable:
+            return; // the big buttons are always there
+          case VoiceAnswer.none:
+            break; // nothing heard: ask again
+        }
       }
+    } finally {
+      if (_askingSeq == seq) _askingSeq = null;
     }
   }
+
+  /// A question is being asked aloud (and listened for) right now.
+  int? _askingSeq;
+  bool get _voiceAsking => _askingSeq != null;
 
   /// The question, up to 3 times; about 3 seconds to answer each time.
   static const _askTimes = 3;
@@ -1844,6 +1929,7 @@ class RealController extends Notifier<RealState> {
 
   void _stopVoice() {
     _voiceSeq++;
+    _askingSeq = null;
     ref.read(voiceServiceProvider).stop();
     if (state.listening) state = state.copyWith(listening: false);
   }
@@ -1857,6 +1943,12 @@ class RealController extends Notifier<RealState> {
     if (offer.quick && offer.caller == null) {
       await _beginQuick(offer, other);
       return;
+    }
+    // Who calls whom depends on my own number: know it first (right after
+    // the app starts it may still be loading).
+    if (!_phoneKnown) {
+      await _loadPhone();
+      if (!ref.mounted || !_callIdle(state)) return;
     }
     final me = state.myId!;
     if (offer.caller != null && offer.caller != me) {
@@ -1872,6 +1964,8 @@ class RealController extends Notifier<RealState> {
       }
     } on RealBackendException catch (e) {
       _setError(e.code);
+      // Not lost: the next refresh tries again while it's still fresh.
+      _unmarkHandled(offer.id);
     }
   }
 
@@ -1898,8 +1992,9 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(call: call, callStage: CallStage.connecting);
     // Only my own dialing is measured ("both said yes" → dialing).
     if (role != CallRole.iCall) _bothYesAt = null;
-    // The background service shouldn't also say "tap to call" about it.
-    if (role != CallRole.inApp) {
+    // The background service shouldn't also say "X is calling you" about it
+    // (for my own dialing: once the phone really dialed, see [_dial]).
+    if (role == CallRole.theyCall) {
       unawaited(ref.read(drivingDetectorProvider).callHandled(call.offerId));
     }
     switch (role) {
@@ -2029,6 +2124,10 @@ class RealController extends Notifier<RealState> {
           : DateTime.now().difference(since).inMilliseconds,
     );
     if (!ref.mounted) return;
+    if (r == DialResult.calling || r == DialResult.openedDialer) {
+      // Dialing: the background service needn't say "tap to call" too.
+      unawaited(ref.read(drivingDetectorProvider).callHandled(call.offerId));
+    }
     if (r == DialResult.failed || r == DialResult.unsupported) {
       // Couldn't open the phone: fall back to the in-app (simulated) call.
       state = state.copyWith(
@@ -2218,16 +2317,21 @@ class RealController extends Notifier<RealState> {
 
   /// Save routines here and hand them to the phone's alarm.
   Future<void> saveRoutines(List<Routine> list) async {
-    state = state.copyWith(routines: list);
-    await _store.setString(
-      _routinesKey,
-      jsonEncode([for (final r in list) r.toJson()]),
-    );
     await _ensureDevice();
     // A routine is useless if its notifications can't be shown.
     if (list.isNotEmpty) {
       await ref.read(drivingDetectorProvider).requestNotificationPermission();
     }
+    await _storeRoutines(list);
+    _notify(RealNoticeKind.saved);
+  }
+
+  Future<void> _storeRoutines(List<Routine> list) async {
+    state = state.copyWith(routines: list);
+    await _store.setString(
+      _routinesKey,
+      jsonEncode([for (final r in list) r.toJson()]),
+    );
     await ref
         .read(drivingDetectorProvider)
         .setRoutines(
@@ -2245,7 +2349,6 @@ class RealController extends Notifier<RealState> {
               },
           ]),
         );
-    _notify(RealNoticeKind.saved);
   }
 
   /// A routine whose time is now, while I'm not free yet.
@@ -2954,7 +3057,23 @@ class RealController extends Notifier<RealState> {
   }
 
   Future<void> deleteCircle(RealCircle circle) async {
-    await _run(() => _backend.deleteCircle(circle.id));
+    final mine = myActiveAvailability(state, _now());
+    final ok = await _run(() => _backend.deleteCircle(circle.id));
+    if (ok) {
+      // Routines for that group go back to "everyone" (else they'd fail).
+      final routines = state.routines;
+      if (routines.any((r) => r.circleId == circle.id)) {
+        await _storeRoutines([
+          for (final r in routines)
+            r.circleId == circle.id ? r.withoutCircle() : r,
+        ]);
+      }
+      // The server ends free time that was only for that group: the
+      // background watcher stops too.
+      if (mine != null && mine.circleId == circle.id) {
+        await ref.read(drivingDetectorProvider).stopAvailable();
+      }
+    }
     await refresh();
   }
 

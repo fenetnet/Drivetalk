@@ -36,15 +36,16 @@ class DrivingService : Service() {
         private const val MAX_MS = 3 * 60 * 60 * 1000L
         /** "In a call" lasts 3 minutes on the server: renew every 2. */
         private const val PHONE_RENEW_MS = 2 * 60 * 1000L
-        /** No answer: the question again 3 seconds later, 3 times in all (D-112). */
-        private const val ASK_TIMES = 3
-        private const val ASK_GAP_MS = 3_000L
 
         /** Spoken like directions: other sound is lowered, not stopped. */
         private val VOICE_ATTRS: AudioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE)
             .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
             .build()
+
+        /** The service is running in this process (the app re-arms it if not). */
+        @Volatile var watching = false
+            private set
 
         fun start(context: Context) = send(context, ACTION_START)
 
@@ -122,7 +123,13 @@ class DrivingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         DrivingNotifications.ensureChannels(this)
-        if (intent?.action == ACTION_MANUAL) manual = true
+        val store = DrivingStore(this)
+        // The trip ended, but I'm still free (from the app, the widget or a
+        // routine): keep watching until that time, as a manual window.
+        // "For the whole trip" ends here instead.
+        val keepFree = intent?.action == ACTION_END && running &&
+            store.freeNow && !store.endWithTrip
+        if (intent?.action == ACTION_MANUAL || keepFree) manual = true
         if (intent?.action == ACTION_START) manual = false
         lastStartId = startId
         val notification = DrivingNotifications.status(this, manual)
@@ -145,10 +152,21 @@ class DrivingService : Service() {
             return START_NOT_STICKY
         }
         when (intent?.action) {
-            ACTION_END -> if (manual && running) Unit else finish(callServer = true)
+            ACTION_END -> when {
+                store.freeNow && store.endWithTrip -> {
+                    // "For the whole trip": the trip is over, so is my free time.
+                    io.execute {
+                        DrivingApi(store).stopAll()
+                        DrivingEvents.send("quick")
+                    }
+                    store.availableUntil = 0L
+                    finish(callServer = false)
+                }
+                manual && running -> Unit
+                else -> finish(callServer = true)
+            }
             ACTION_QUIET_END -> finish(callServer = false)
             ACTION_STOP_ALL -> {
-                val store = DrivingStore(this)
                 io.execute { DrivingApi(store).stopAll() }
                 finish(callServer = false)
             }
@@ -165,6 +183,7 @@ class DrivingService : Service() {
             return
         }
         running = true
+        watching = true
         startedAt = System.currentTimeMillis()
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -174,10 +193,7 @@ class DrivingService : Service() {
                 tts?.setAudioAttributes(VOICE_ATTRS)
                 tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                     override fun onStart(utteranceId: String?) {}
-                    override fun onDone(utteranceId: String?) {
-                        releaseFocus()
-                        main.post { askAgain(utteranceId) }
-                    }
+                    override fun onDone(utteranceId: String?) = releaseFocus()
                     @Deprecated("Deprecated in Java")
                     override fun onError(utteranceId: String?) = releaseFocus()
                 })
@@ -189,7 +205,11 @@ class DrivingService : Service() {
         if (callStart) {
             io.execute {
                 val r = DrivingApi(store).start()
-                if (r == "bad_token") main.post { finish(callServer = false) }
+                // Quiet hours: the server didn't mark me free, so don't
+                // claim "available while driving" for the whole trip.
+                if (r == "bad_token" || r == "quiet_hours") {
+                    main.post { finish(callServer = false) }
+                }
             }
         }
         main.postDelayed(poll, 3_000)
@@ -242,13 +262,9 @@ class DrivingService : Service() {
                         "direct" -> store.text("bgVoiceDirect", store.text("voiceDirect", "{name}"))
                         else -> store.text("bgVoiceOffer", store.text("voiceOffer", "{name}"))
                     }
-                    val said = text.replace("{name}", o.name)
-                    if (o.kind == "quick") {
-                        speak(said)
-                    } else {
-                        askTexts[o.id] = said
-                        speak(said, "ask|${o.id}|1")
-                    }
+                    // Said once: in the background "yes" can't be heard, so
+                    // repeating it only nags (D-115); the notification stays.
+                    speak(text.replace("{name}", o.name))
                 }
             }
             if (offers.isNotEmpty()) callsUntil = System.currentTimeMillis() + 3 * 60_000L
@@ -257,7 +273,13 @@ class DrivingService : Service() {
             val inCall = (getSystemService(AUDIO_SERVICE) as? AudioManager)?.mode.let {
                 it == AudioManager.MODE_IN_CALL || it == AudioManager.MODE_IN_COMMUNICATION
             }
-            for (c in if (MainActivity.onScreen || inCall) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
+            for (c in if (MainActivity.onScreen) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
+                if (inCall) {
+                    // They're calling me — that's this call: nothing to add,
+                    // not even after it ends. (A call I should make waits.)
+                    if (!c.iCall) store.markShown("call:${c.id}")
+                    continue
+                }
                 if (store.markShown("call:${c.id}")) {
                     DrivingNotifications.showCall(ctx, c.id, c.name, c.iCall)
                     if (c.iCall) speak(store.text("voiceYouCall", "{name}").replace("{name}", c.name))
@@ -300,27 +322,6 @@ class DrivingService : Service() {
         tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
     }
 
-    /** What was asked, per offer (to ask again word for word). */
-    private val askTexts = mutableMapOf<String, String>()
-
-    /** Not answered yet: ask again 3 seconds later, up to 3 times in all. */
-    private fun askAgain(utteranceId: String?) {
-        val parts = utteranceId?.split("|") ?: return
-        if (parts.size != 3 || parts[0] != "ask") return
-        val offerId = parts[1]
-        val n = parts[2].toIntOrNull() ?: return
-        if (n >= ASK_TIMES) return
-        main.postDelayed({
-            val text = askTexts[offerId]
-            if (text != null && running && !phoneBusy &&
-                quickShown.contains(offerId) &&
-                !DrivingReceiver.answered.contains(offerId)
-            ) {
-                speak(text, "ask|$offerId|${n + 1}")
-            }
-        }, ASK_GAP_MS)
-    }
-
     private var focus: AudioFocusRequest? = null
 
     private fun requestFocus() {
@@ -342,6 +343,7 @@ class DrivingService : Service() {
 
     private fun finish(callServer: Boolean) {
         running = false
+        watching = false
         main.removeCallbacks(poll)
         val store = DrivingStore(this)
         // "In a call" doesn't outlive the service.
@@ -357,6 +359,7 @@ class DrivingService : Service() {
         tts?.shutdown()
         tts = null
         if (manual) store.availableUntil = 0L
+        if (!store.freeNow) store.endWithTrip = false
         QuickFree.refreshAll(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -378,6 +381,7 @@ class DrivingService : Service() {
 
     override fun onDestroy() {
         running = false
+        watching = false
         main.removeCallbacks(poll)
         tts?.shutdown()
         io.shutdown()

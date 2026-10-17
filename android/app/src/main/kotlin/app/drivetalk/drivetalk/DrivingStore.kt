@@ -9,6 +9,11 @@ import android.content.SharedPreferences
  * availability, list open offers (names) and say "not now" for its owner.
  */
 class DrivingStore(context: Context) {
+    companion object {
+        /** One "shown" update at a time (notification actions run on other threads). */
+        private val lock = Any()
+    }
+
     private val prefs: SharedPreferences =
         context.getSharedPreferences("drivetalk_driving", Context.MODE_PRIVATE)
 
@@ -24,6 +29,14 @@ class DrivingStore(context: Context) {
     var availableUntil: Long
         get() = prefs.getLong("availableUntil", 0L)
         set(v) = prefs.edit().putLong("availableUntil", v).apply()
+
+    /**
+     * "For the whole trip": the free time ends when the detected trip ends
+     * (not only at its time limit).
+     */
+    var endWithTrip: Boolean
+        get() = prefs.getBoolean("endWithTrip", false)
+        set(v) = prefs.edit().putBoolean("endWithTrip", v).apply()
 
     val configured: Boolean get() = token.isNotEmpty() && url.isNotEmpty()
 
@@ -64,14 +77,14 @@ class DrivingStore(context: Context) {
      * Offers already shown (and read aloud), so a restarted service doesn't
      * show them again. id → when (ms); kept for 3 hours.
      */
-    fun markShown(offerId: String): Boolean {
+    fun markShown(offerId: String): Boolean = synchronized(lock) {
         val now = System.currentTimeMillis()
         val json = try {
             org.json.JSONObject(prefs.getString("shownOffers", "{}") ?: "{}")
         } catch (e: Exception) {
             org.json.JSONObject()
         }
-        if (json.has(offerId)) return false
+        if (json.has(offerId)) return@synchronized false
         val keep = org.json.JSONObject()
         for (k in json.keys()) {
             val t = json.optLong(k)
@@ -79,7 +92,7 @@ class DrivingStore(context: Context) {
         }
         keep.put(offerId, now)
         prefs.edit().putString("shownOffers", keep.toString()).apply()
-        return true
+        true
     }
 
     /** Was this offer shown in a notification here (in the last 3 hours)? */

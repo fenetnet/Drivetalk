@@ -14,7 +14,12 @@ class DrivingStatus {
     this.carName = '',
     this.background = true,
     this.notifications = true,
+    this.watching = true,
   });
+
+  /// The background watcher runs now (Android); the app re-arms it when
+  /// I'm free and it doesn't.
+  final bool watching;
 
   /// Notifications are allowed for DriveTalk (Android).
   final bool notifications;
@@ -69,7 +74,8 @@ abstract class DrivingDetector {
   Future<void> forget();
 
   /// I'm free until [until]: watch for friends in the background.
-  Future<bool> startAvailable(DateTime until);
+  /// [endWithTrip]: "for the whole trip" — it also ends when the trip does.
+  Future<bool> startAvailable(DateTime until, {bool endWithTrip = false});
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
@@ -127,6 +133,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         carName: '${m?['carName'] ?? ''}',
         background: m?['background'] != false,
         notifications: m?['notifications'] != false,
+        watching: m?['watching'] != false,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -188,11 +195,15 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> forget() => _call('forget');
 
   @override
-  Future<bool> startAvailable(DateTime until) async {
+  Future<bool> startAvailable(
+    DateTime until, {
+    bool endWithTrip = false,
+  }) async {
     if (!_android) return false;
     try {
       return await _channel.invokeMethod<bool>('startAvailable', {
             'until': until.millisecondsSinceEpoch,
+            'endWithTrip': endWithTrip,
           }) ??
           false;
     } catch (_) {
@@ -324,8 +335,11 @@ class FakeDrivingDetector implements DrivingDetector {
     carName: carName,
     background: background,
     notifications: notifications,
+    watching: watching,
   );
 
+  /// Like the native watcher: runs while I'm free (tests can stop it).
+  var watching = false;
   var background = true;
   var notifications = true;
   var notificationsOpened = 0;
@@ -381,17 +395,32 @@ class FakeDrivingDetector implements DrivingDetector {
     token = null;
     enabled = false;
     availableUntil = null;
+    watching = false;
   }
 
+  /// The last "for the whole trip" flag passed with [startAvailable].
+  var endWithTrip = false;
+  var startAvailableCalls = 0;
+
   @override
-  Future<bool> startAvailable(DateTime until) async {
+  Future<bool> startAvailable(
+    DateTime until, {
+    bool endWithTrip = false,
+  }) async {
     if (token == null) return false;
+    startAvailableCalls++;
     availableUntil = until;
+    this.endWithTrip = endWithTrip;
+    watching = true;
     return true;
   }
 
   @override
-  Future<void> stopAvailable() async => availableUntil = null;
+  Future<void> stopAvailable() async {
+    availableUntil = null;
+    endWithTrip = false;
+    watching = false;
+  }
 
   @override
   Future<bool> requestNotificationPermission() async => notifications = true;

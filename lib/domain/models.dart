@@ -218,6 +218,16 @@ class Routine {
   final int durationMinutes;
   final AvailabilityMode mode;
 
+  /// The same routine for everyone (its group was deleted).
+  Routine withoutCircle() => Routine(
+    id: id,
+    weekdays: weekdays,
+    minuteOfDay: minuteOfDay,
+    durationMinutes: durationMinutes,
+    mode: mode,
+    name: name,
+  );
+
   /// True if [now] is within [windowMinutes] of this routine's start today.
   bool isDueAt(DateTime now, {int windowMinutes = 15}) {
     if (!weekdays.contains(now.weekday)) return false;

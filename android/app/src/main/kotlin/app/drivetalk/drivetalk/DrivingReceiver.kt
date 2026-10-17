@@ -24,8 +24,6 @@ class DrivingReceiver : BroadcastReceiver() {
         const val EXTRA_NAME = "app.drivetalk.name"
         private val io = Executors.newSingleThreadExecutor()
 
-        /** Offers answered from the notification (the voice stops asking). */
-        val answered: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
 
         /** Shared by real detections and the developer "simulate" buttons. */
         fun onVehicle(context: Context, entered: Boolean) {
@@ -58,7 +56,6 @@ class DrivingReceiver : BroadcastReceiver() {
             }
             ACTION_CANCEL_CALL -> {
                 val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return
-                answered.add(offer)
                 DrivingNotifications.cancelOffer(context, offer)
                 val pending = goAsync()
                 val store = DrivingStore(context)
@@ -72,7 +69,6 @@ class DrivingReceiver : BroadcastReceiver() {
             }
             ACTION_ACCEPT -> {
                 val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return
-                answered.add(offer)
                 val name = intent.getStringExtra(EXTRA_NAME) ?: ""
                 DrivingNotifications.cancelOffer(context, offer)
                 val pending = goAsync()
@@ -92,7 +88,6 @@ class DrivingReceiver : BroadcastReceiver() {
             }
             ACTION_DECLINE -> {
                 val offer = intent.getStringExtra(MainActivity.EXTRA_OFFER) ?: return
-                answered.add(offer)
                 DrivingNotifications.cancelOffer(context, offer)
                 val pending = goAsync()
                 val store = DrivingStore(context)

@@ -28,14 +28,21 @@ object QuickFree {
         val store = DrivingStore(app)
         if (!store.configured) {
             // Not signed in on this phone yet: open the app.
-            app.startActivity(
-                Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-            )
+            try {
+                app.startActivity(
+                    Intent(app, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                )
+            } catch (e: Exception) {
+                // Android may refuse from the background; the widget opens it instead.
+            }
+            refreshAll(app)
+            done?.invoke()
             return
         }
         val wasFree = store.freeNow
         // Show the new state right away; the server call follows.
         store.availableUntil = if (wasFree) 0L else System.currentTimeMillis() + MINUTES * 60_000L
+        store.endWithTrip = false
         refreshAll(app)
         // Refused by Android: "free" was undone (and explained) already.
         val started = if (wasFree) {
@@ -107,8 +114,15 @@ class QuickWidget : AppWidgetProvider() {
             )
             var flags = PendingIntent.FLAG_UPDATE_CURRENT
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) flags = flags or PendingIntent.FLAG_IMMUTABLE
-            val i = Intent(context, QuickWidget::class.java).setAction(ACTION_TOGGLE)
-            v.setOnClickPendingIntent(R.id.widget_root, PendingIntent.getBroadcast(context, 77, i, flags))
+            val tap = if (DrivingStore(context).configured) {
+                val i = Intent(context, QuickWidget::class.java).setAction(ACTION_TOGGLE)
+                PendingIntent.getBroadcast(context, 77, i, flags)
+            } else {
+                // Not signed in on this phone yet: the tap opens the app.
+                val i = Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                PendingIntent.getActivity(context, 78, i, flags)
+            }
+            v.setOnClickPendingIntent(R.id.widget_root, tap)
             return v
         }
     }
