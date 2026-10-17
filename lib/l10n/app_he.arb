@@ -1430,5 +1430,13 @@
         "type": "int"
       }
     }
+  },
+  "durationTripNoteDetected": "נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי {hours} שעות).",
+  "@durationTripNoteDetected": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
   }
 }

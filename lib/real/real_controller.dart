@@ -681,7 +681,25 @@ class RealController extends Notifier<RealState> {
     final every = busy || state.live != LiveStatus.connected ? 2 : 6;
     if (myExpired || _tick % every == 0) refresh();
     checkWaiting();
+    // A call screen left open (the call was taken on the phone and the
+    // screen forgotten): once I'm back in the app 20 minutes after it
+    // started, it moves on to "when again?", so new questions can show
+    // again. Never while the app is behind the phone call itself.
+    final call = state.call;
+    if (call != null &&
+        _foreground &&
+        const {
+          CallStage.waitingForTheirCall,
+          CallStage.dialed,
+        }.contains(state.callStage) &&
+        now.difference(call.startedAt) > const Duration(minutes: 20)) {
+      finishCall();
+    }
   }
+
+  /// Tests: one tick of the 5-second timer.
+  @visibleForTesting
+  void debugTick() => _onTick();
 
   /// How long I wait for the other side after my "yes" before giving up.
   static const waitLimit = Duration(seconds: 25);
@@ -1446,6 +1464,12 @@ class RealController extends Notifier<RealState> {
     return null;
   }
 
+  /// Errors a successful refresh proves are over.
+  static bool _passing(String? code) =>
+      code == 'offline' ||
+      code == 'unknown' ||
+      (code?.startsWith('auth') ?? false);
+
   /// A measurement (never content, numbers or names).
   void _event(String name, {int? ms}) =>
       unawaited(_backend.logEvent(name, ms: ms));
@@ -1502,7 +1526,8 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(
         snapshot: snap,
         localAnswers: answers,
-        lastError: prev.lastError == 'offline' ? null : prev.lastError,
+        // It worked: a network or sign-in hiccup is over.
+        lastError: _passing(prev.lastError) ? null : prev.lastError,
       );
       _react(snap);
       unawaited(_loadPhotos(snap));
@@ -2853,8 +2878,8 @@ class RealController extends Notifier<RealState> {
         await _backend.reportCrash(
           build: '${ref.read(appBuildProvider) ?? ''}',
           kind: '${c['kind']}',
-          message: '${c['message']}',
-          stack: '${c['stack']}',
+          message: _scrub('${c['message']}'),
+          stack: _scrub('${c['stack']}'),
         );
       }
       await _store.setString(_crashesKey, null);
@@ -2867,6 +2892,23 @@ class RealController extends Notifier<RealState> {
 
   static String _short(String s, int max) =>
       s.length <= max ? s : s.substring(0, max);
+
+  /// A crash note never carries ids, numbers or emails (an error's text can
+  /// include the input or a web address): replaced before sending. Also
+  /// covers notes the Android side wrote.
+  @visibleForTesting
+  static String scrubCrashText(String s) => s
+      .replaceAll(
+        RegExp(
+          r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+          r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+        ),
+        '<id>',
+      )
+      .replaceAll(RegExp(r'[\w.+-]+@[\w-]+\.[\w.]+'), '<email>')
+      .replaceAll(RegExp(r'\+?\d[\d\s-]{6,}\d'), '<number>');
+
+  static String _scrub(String s) => scrubCrashText(s);
 
   /// Hide my status from friends (and theirs from me). Offers go on.
   Future<void> setHideStatus(bool hide) async {

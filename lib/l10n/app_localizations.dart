@@ -631,7 +631,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsVoiceReadoutBody.
   ///
   /// In he, this message translates to:
-  /// **'בנסיעה, הטלפון אומר בקול מי פנוי, ואפשר לענות \"כן\" או \"לא\" בלי לגעת במסך.'**
+  /// **'בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.'**
   String get settingsVoiceReadoutBody;
 
   /// No description provided for @routinesTitle.
@@ -1549,7 +1549,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNotShared.
   ///
   /// In he, this message translates to:
-  /// **'לא משותף'**
+  /// **'אין מספר · להוסיף'**
   String get realNotShared;
 
   /// No description provided for @realMeNotAvailable.
@@ -3639,6 +3639,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הזמן הפנוי שלך: עוד {minutes} דק׳'**
   String driverMyTimeLeft(int minutes);
+
+  /// No description provided for @durationTripNoteDetected.
+  ///
+  /// In he, this message translates to:
+  /// **'נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי {hours} שעות).'**
+  String durationTripNoteDetected(int hours);
 }
 
 class _AppLocalizationsDelegate

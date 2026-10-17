@@ -326,7 +326,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get settingsVoiceReadoutBody =>
-      'בנסיעה, הטלפון אומר בקול מי פנוי, ואפשר לענות \"כן\" או \"לא\" בלי לגעת במסך.';
+      'בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.';
 
   @override
   String get routinesTitle => 'השגרה שלי';
@@ -900,7 +900,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realShared => 'משותף';
 
   @override
-  String get realNotShared => 'לא משותף';
+  String get realNotShared => 'אין מספר · להוסיף';
 
   @override
   String get realMeNotAvailable => 'אין זמינות';
@@ -2168,5 +2168,10 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String driverMyTimeLeft(int minutes) {
     return 'הזמן הפנוי שלך: עוד $minutes דק׳';
+  }
+
+  @override
+  String durationTripNoteDetected(int hours) {
+    return 'נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי $hours שעות).';
   }
 }

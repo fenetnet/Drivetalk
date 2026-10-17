@@ -27,6 +27,7 @@ Future<void> openRealDuration(
   // question arrives) while the picker is open, and its `ref` goes with it.
   final c = ref.read(realProvider.notifier);
   final circles = ref.read(realProvider).snapshot?.circles ?? const [];
+  final tripDetection = ref.read(realProvider).driving.enabled;
   if (c.needsPermissionIntro) {
     final l = context.l10n;
     final go = await showDialog<bool>(
@@ -56,8 +57,14 @@ Future<void> openRealDuration(
       builder: (_) => PickDurationScreen(
         mode: mode,
         realCircles: [for (final c in circles) (c.id, c.name)],
-        onStart: (mode, minutes, circleId) =>
-            c.startAvailability(mode, minutes, circleId: circleId),
+        tripDetection: tripDetection,
+        onStart: (mode, minutes, circleId, {untilTripEnds = false}) =>
+            c.startAvailability(
+              mode,
+              minutes,
+              circleId: circleId,
+              untilTripEnds: untilTripEnds,
+            ),
       ),
     ),
   );

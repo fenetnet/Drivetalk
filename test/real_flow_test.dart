@@ -2442,6 +2442,39 @@ void main() {
       );
     });
 
+    test('a crash note never carries ids, numbers or emails', () {
+      final text = RealController.scrubCrashText(
+        'Bad offer 3f2b8c1e-1a2b-4c3d-9e8f-001122334455 for +972 52-111-2233 '
+        'mail a.b@example.com at real_controller.dart:1598:7',
+      );
+      expect(text, isNot(contains('3f2b8c1e')));
+      expect(text, isNot(contains('111')));
+      expect(text, isNot(contains('example.com')));
+      expect(text, contains('real_controller.dart:1598:7'));
+    });
+
+    test('a call screen left open moves on after 20 minutes', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0501234567');
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.s.callStage, CallStage.waitingForTheirCall);
+      now = now.add(const Duration(minutes: 21));
+      // Still on the phone call (the app behind it): nothing changes.
+      me.c.debugLifecycle(AppLifecycleState.paused);
+      me.c.debugTick();
+      expect(me.s.callStage, CallStage.waitingForTheirCall);
+      // Back in the app: on to "when again?".
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      me.c.debugTick();
+      expect(me.s.callStage, CallStage.feedback);
+    });
+
     test("a friend who can't see I'm free can't be tapped (D-107)", () async {
       await connect();
       await me.c.setOthersRule(ShowRule.never);

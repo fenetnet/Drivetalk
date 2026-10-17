@@ -1015,6 +1015,16 @@ class SupabaseRealBackend implements RealBackend {
       throw RealBackendException(_codeFrom(e.message));
     } on AuthException catch (e) {
       final m = e.message.toLowerCase();
+      // No network while the sign-in token renews (e.g. after an hour in a
+      // tunnel): that's simply "offline", not a sign-in problem.
+      if (e is AuthRetryableFetchException ||
+          (e.statusCode == null &&
+              (m.contains('socket') ||
+                  m.contains('clientexception') ||
+                  m.contains('failed host lookup') ||
+                  m.contains('connection')))) {
+        throw const RealBackendException('offline');
+      }
       throw RealBackendException(
         m.contains('anonymous') && m.contains('disabled')
             ? 'anonymous_disabled'

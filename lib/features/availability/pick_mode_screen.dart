@@ -5,11 +5,13 @@ import '../../domain/models.dart';
 import '../common/labels.dart';
 
 /// Starts availability on the server.
+/// [untilTripEnds]: "for the whole trip" (ends with the detected trip).
 typedef StartAvailability = void Function(
   AvailabilityMode mode,
   int minutes,
-  String? circleId,
-);
+  String? circleId, {
+  bool untilTripEnds,
+});
 
 /// For how long? 10/20/30/60, "until…" (a clock) or "until I finish the
 /// drive".
@@ -20,10 +22,15 @@ class PickDurationScreen extends StatefulWidget {
     required this.mode,
     required this.onStart,
     this.realCircles = const [],
+    this.tripDetection = false,
   });
   final AvailabilityMode mode;
   final StartAvailability onStart;
   final List<(String, String)> realCircles;
+
+  /// Automatic trip detection is on: "for the whole trip" really ends
+  /// when the trip does.
+  final bool tripDetection;
 
   @override
   State<PickDurationScreen> createState() => _PickDurationState();
@@ -40,6 +47,7 @@ class _PickDurationState extends State<PickDurationScreen> {
       widget.mode,
       untilTripEnds ? _tripCapMinutes : minutes ?? 30,
       _circleId,
+      untilTripEnds: untilTripEnds,
     );
     Navigator.of(context).popUntil((r) => r.isFirst);
   }
@@ -173,7 +181,9 @@ class _PickDurationState extends State<PickDurationScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  l.durationTripNote(cap ~/ 60),
+                  widget.tripDetection
+                      ? l.durationTripNoteDetected(cap ~/ 60)
+                      : l.durationTripNote(cap ~/ 60),
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: AppColors.inkSoft),
                 ),
