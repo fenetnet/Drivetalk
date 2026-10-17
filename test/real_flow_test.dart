@@ -1601,7 +1601,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 41)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 42)'));
     });
 
     test(
@@ -2475,15 +2475,23 @@ void main() {
       expect(me.s.callStage, CallStage.feedback);
     });
 
-    test("a friend who can't see I'm free can't be tapped (D-107)", () async {
-      await connect();
-      await me.c.setOthersRule(ShowRule.never);
-      await me.c.startAvailability(AvailabilityMode.free, 30);
-      await yoni.c.startAvailability(AvailabilityMode.free, 30);
-      expect(
-        server.askCheck(me.backend.userId!, yoni.backend.userId!, meFree: true),
-        'not_free',
-      );
-    });
+    test(
+      "a friend who can't see I'm free can still be tapped (D-117)",
+      () async {
+        await connect();
+        await me.c.setOthersRule(ShowRule.never);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        expect(askableFriends(me.s, now).map((f) => f.$1.id), [
+          yoni.backend.userId,
+        ]);
+        // Not free myself: tapping marks me free and asks them.
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        expect(
+          await me.c.askFriend(askableFriends(me.s, now).single.$1),
+          isTrue,
+        );
+      },
+    );
   });
 }

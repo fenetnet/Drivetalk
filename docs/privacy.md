@@ -27,7 +27,8 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 - **יומן השיחות** של הטלפון: לא נקרא.
 
 ## אנשי קשר
-אם אישרת, האפליקציה קוראת **רק את מספרי הטלפון** מאנשי הקשר, בלי שמות.
+אם אישרת, האפליקציה קוראת מאנשי הקשר את מספרי הטלפון ואת השמות.
+- **השמות לא יוצאים מהטלפון:** הם משמשים רק כדי להראות לך מי זה (למשל "יוני" ולא רק מספר), ונשמרים רק בטלפון שלך.
 - המספרים מוצפנים בטלפון בהצפנה חד-כיוונית (SHA-256), ורק ההצפנה נשלחת.
 - **ספר הטלפונים לא נשמר:** השרת משווה ומוחק מיד את כל מי שלא משתמש ב-DriveBond. נשמרים רק המספרים (המוצפנים) של אנשי קשר שכבר משתמשים באפליקציה, כדי לדעת מי שמר את מי.
 - **מי מתחבר:** אף אחד לא מתחבר לבד. החיפוש מראה אילו מאנשי הקשר שלך משתמשים ב-DriveBond, ואת/ה בוחר/ת את מי להוסיף. כל אחד יכול להסיר חבר בכל רגע, ומי שהוסר לא יחזור מאנשי הקשר.
@@ -65,7 +66,7 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 - **Crash notes:** if the app crashes, a short technical note (error type, message, code location) and the app version are sent to the app's owner — no names, numbers or content.
 - **"In a call" (yes/no):** while you are available, friends see whether you are currently in a call, so you aren't offered another one. The phone only checks whether a call is in progress (no number, no who, no duration, no permission needed); it clears itself when the call ends (at most 3 minutes after the last update).
 - **Not collected:** no location or GPS, no call recording, no call log.
-- **Contacts (optional):** only phone numbers are read, and they are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.
+- **Contacts (optional):** phone numbers and names are read. Names never leave the phone: they are kept on the device only, to show you who is who. Numbers are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.
 - **Driving detection (optional, off by default):** uses on-device motion sensors or the car's Bluetooth.
 - **Sharing:** data is not sold or shared. It is hosted on Supabase (EU).
 - **Voice:** on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.

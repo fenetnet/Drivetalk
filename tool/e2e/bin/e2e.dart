@@ -1806,7 +1806,7 @@ Future<void> main() async {
   await reviewFixes2();
 
   check(
-    await eve.rpc('schema_version') == 41,
+    await eve.rpc('schema_version') == 42,
     'the server says its version (41)',
   );
 
@@ -2968,7 +2968,8 @@ Future<void> reviewFixes2() async {
     "delete from pair_snoozes where from_user in ('${uid(ra)}', '${uid(rb)}')",
   );
 
-  // 3. Tapping a friend who can't see that I'm free: not listed, not asked.
+  // 3. My own settings never stop me tapping a free friend (D-117):
+  //    even when they can't see that I'm free.
   await ra.from('others_visibility').upsert({
     'user_id': uid(ra),
     'show_modes': <String>[],
@@ -2979,9 +2980,17 @@ Future<void> reviewFixes2() async {
   final askable = List.from(await ra.rpc('askable_friends'));
   final asked = await ra.rpc('ask_friend', params: {'p_user': uid(rb)});
   check(
-    askable.isEmpty && asked == 'not_free',
-    "a friend who can't see I'm free isn't listed or asked (D-107)",
+    askable.contains(uid(rb)) && asked == 'asked',
+    "a friend who can't see I'm free can still be tapped (D-117)",
   );
+  for (final o in await rows(ra, 'match_offers')) {
+    if (o['status'] == 'pending') {
+      await rb.rpc(
+        'answer_offer',
+        params: {'p_offer': o['id'], 'p_accept': false},
+      );
+    }
+  }
   await ra.from('others_visibility').delete().eq('user_id', uid(ra));
   for (final c in [ra, rb]) {
     await c.rpc('clear_availability');

@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 41;
+const kRequiredSchema = 42;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 

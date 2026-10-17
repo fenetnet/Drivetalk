@@ -45,8 +45,9 @@ code { background:#EAF2FA; border-radius:6px; padding:0 4px; }
 <li><b>יומן השיחות</b> של הטלפון: לא נקרא.</li>
 </ul>
 <h2 id="">אנשי קשר</h2>
-<p>אם אישרת, האפליקציה קוראת <b>רק את מספרי הטלפון</b> מאנשי הקשר, בלי שמות.</p>
+<p>אם אישרת, האפליקציה קוראת מאנשי הקשר את מספרי הטלפון ואת השמות.</p>
 <ul>
+<li><b>השמות לא יוצאים מהטלפון:</b> הם משמשים רק כדי להראות לך מי זה (למשל "יוני" ולא רק מספר), ונשמרים רק בטלפון שלך.</li>
 <li>המספרים מוצפנים בטלפון בהצפנה חד-כיוונית (SHA-256), ורק ההצפנה נשלחת.</li>
 <li><b>ספר הטלפונים לא נשמר:</b> השרת משווה ומוחק מיד את כל מי שלא משתמש ב-DriveBond. נשמרים רק המספרים (המוצפנים) של אנשי קשר שכבר משתמשים באפליקציה, כדי לדעת מי שמר את מי.</li>
 <li><b>מי מתחבר:</b> אף אחד לא מתחבר לבד. החיפוש מראה אילו מאנשי הקשר שלך משתמשים ב-DriveBond, ואת/ה בוחר/ת את מי להוסיף. כל אחד יכול להסיר חבר בכל רגע, ומי שהוסר לא יחזור מאנשי הקשר.</li>
@@ -87,7 +88,7 @@ code { background:#EAF2FA; border-radius:6px; padding:0 4px; }
 <li><b>Crash notes:</b> if the app crashes, a short technical note (error type, message, code location) and the app version are sent to the app's owner — no names, numbers or content.</li>
 <li><b>"In a call" (yes/no):</b> while you are available, friends see whether you are currently in a call, so you aren't offered another one. The phone only checks whether a call is in progress (no number, no who, no duration, no permission needed); it clears itself when the call ends (at most 3 minutes after the last update).</li>
 <li><b>Not collected:</b> no location or GPS, no call recording, no call log.</li>
-<li><b>Contacts (optional):</b> only phone numbers are read, and they are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.</li>
+<li><b>Contacts (optional):</b> phone numbers and names are read. Names never leave the phone: they are kept on the device only, to show you who is who. Numbers are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.</li>
 <li><b>Driving detection (optional, off by default):</b> uses on-device motion sensors or the car's Bluetooth.</li>
 <li><b>Sharing:</b> data is not sold or shared. It is hosted on Supabase (EU).</li>
 <li><b>Voice:</b> on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.</li>

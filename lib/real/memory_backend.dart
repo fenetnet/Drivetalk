@@ -252,12 +252,7 @@ class MemoryServer {
         ratingOf(user, me) == 0) {
       return 'not_free';
     }
-    // And they must be allowed to see that I'm free (D-107).
-    if (mine != null &&
-        t.isBefore(mine.expiresAt) &&
-        (!inAudience(mine.circleId, user) || !canSee(user, me, mine.mode))) {
-      return 'not_free';
-    }
+    // My own settings never stop me tapping them (D-117).
     if (phones[me] == null && phones[user] == null) return 'no_number';
     if (!canBeAsked(user) || _askedEnough(user, theirs.startedAt)) {
       return 'busy';
