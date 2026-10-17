@@ -3645,6 +3645,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי {hours} שעות).'**
   String durationTripNoteDetected(int hours);
+
+  /// After a call, above "when to suggest X again?"
+  ///
+  /// In he, this message translates to:
+  /// **'מקווים שהשיחה הייתה טובה 🙂'**
+  String get afterCallHope;
+
+  /// After a call: opens the feedback note
+  ///
+  /// In he, this message translates to:
+  /// **'יש משוב או תובנה? אפשר לכתוב לנו, ונשפר'**
+  String get afterCallWrite;
+
+  /// Waiting screen countdown
+  ///
+  /// In he, this message translates to:
+  /// **'{seconds, plural, =1{עוד שנייה} other{עוד {seconds} שניות}}'**
+  String realWaitingLeft(int seconds);
 }
 
 class _AppLocalizationsDelegate

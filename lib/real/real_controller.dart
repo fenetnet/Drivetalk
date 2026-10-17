@@ -708,6 +708,15 @@ class RealController extends Notifier<RealState> {
   /// doesn't start any more (same as the server).
   static const _quickStale = Duration(minutes: 2);
 
+  /// Seconds left before I stop waiting for [offer] (the waiting screen's
+  /// countdown); null when not known.
+  int? waitSecondsLeft(RealOffer offer, DateTime now) {
+    final since = _waitingSince[offer.id];
+    if (since == null) return null;
+    final left = waitLimit - now.difference(since);
+    return left.isNegative ? 0 : (left.inMilliseconds / 1000).ceil();
+  }
+
   /// Runs every 5 seconds (public for tests).
   @visibleForTesting
   void checkWaiting() {

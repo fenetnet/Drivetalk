@@ -282,6 +282,14 @@ class RealHomeScreen extends ConsumerWidget {
                     icon: Icons.wifi_off_rounded,
                   ),
                 ],
+                // The main buttons first: seen without scrolling.
+                const SizedBox(height: 20),
+                if (mine == null)
+                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
+                else
+                  Center(
+                    child: _MyStatus(mine: mine, now: now, gender: g),
+                  ),
                 const SizedBox(height: 24),
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
@@ -311,13 +319,6 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   tip,
                 ],
-                const SizedBox(height: 28),
-                if (mine == null)
-                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
-                else
-                  Center(
-                    child: _MyStatus(mine: mine, now: now, gender: g),
-                  ),
                 const SizedBox(height: 28),
                 if (snap != null && snap.friends.isNotEmpty) ...[
                   _WeekCard(week: snap.weekAt(now)),
@@ -624,30 +625,34 @@ class _MyStatus extends ConsumerWidget {
                   ],
                 ),
                 padding: const EdgeInsets.all(18),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(modeIcon(mine.mode), color: Colors.white, size: 34),
-                    const SizedBox(height: 6),
-                    Text(
-                      l.realMeAvailableTitle(gender),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        height: 1.15,
+                // Large phone text: smaller rather than cut.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(modeIcon(mine.mode), color: Colors.white, size: 34),
+                      const SizedBox(height: 6),
+                      Text(
+                        l.realMeAvailableTitle(gender),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          height: 1.15,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      timeLeftLabel(l, mine, now),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 15,
+                      const SizedBox(height: 4),
+                      Text(
+                        timeLeftLabel(l, mine, now),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 15,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

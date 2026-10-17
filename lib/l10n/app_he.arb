@@ -1438,5 +1438,22 @@
         "type": "int"
       }
     }
+  },
+  "afterCallHope": "מקווים שהשיחה הייתה טובה 🙂",
+  "@afterCallHope": {
+    "description": "After a call, above \"when to suggest X again?\""
+  },
+  "afterCallWrite": "יש משוב או תובנה? אפשר לכתוב לנו, ונשפר",
+  "@afterCallWrite": {
+    "description": "After a call: opens the feedback note"
+  },
+  "realWaitingLeft": "{seconds, plural, =1{עוד שנייה} other{עוד {seconds} שניות}}",
+  "@realWaitingLeft": {
+    "description": "Waiting screen countdown",
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
   }
 }

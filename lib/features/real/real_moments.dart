@@ -173,6 +173,12 @@ class RealWaitingScreen extends ConsumerWidget {
             style: style,
             soft: true,
           ),
+          // How long I still wait (then I stop waiting by myself).
+          if (c.waitSecondsLeft(offer, ref.watch(realNowProvider))
+              case final left? when left > 0) ...[
+            const SizedBox(height: 14),
+            MomentText(l.realWaitingLeft(left), size: 22, style: style),
+          ],
         ],
       ),
       actions: [
@@ -378,7 +384,9 @@ class RealFeedbackScreen extends ConsumerWidget {
       top: Column(
         children: [
           if (call != null) HeroAvatar(person: call.other.toPerson()),
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
+          MomentText(l.afterCallHope, size: 17, soft: true),
+          const SizedBox(height: 8),
           MomentText(l.afterCallTitle(name), size: 28),
           const SizedBox(height: 8),
           MomentText(l.afterCallNote(name), size: 16, soft: true),
@@ -402,6 +410,12 @@ class RealFeedbackScreen extends ConsumerWidget {
         TextButton(
           onPressed: () => c.afterCall(0, talked: false),
           child: Text(l.afterCallNoTalk),
+        ),
+        // Feedback or an insight: welcome, never asked for.
+        TextButton.icon(
+          onPressed: () => openFeedbackDialog(context, ref),
+          icon: const Icon(Icons.edit_note_rounded),
+          label: Text(l.afterCallWrite, textAlign: TextAlign.center),
         ),
       ],
     );

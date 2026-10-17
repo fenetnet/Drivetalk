@@ -135,6 +135,9 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(find.text('כן, יש לי זמן'), 200);
+    await t.ensureVisible(find.text('כן, יש לי זמן'));
+    await t.pump();
     expect(find.text('לא ענית, אז הפסקנו להציע אותך.'), findsOneWidget);
     expect(find.text('כן, יש לי זמן'), findsOneWidget);
     expect(t.takeException(), isNull);
@@ -152,6 +155,9 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(find.text('יונתן־אלכסנדר'), 200);
+    await t.ensureVisible(find.text('יונתן־אלכסנדר'));
+    await t.pump();
     expect(
       find.text(
         'רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.',
@@ -224,6 +230,11 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(find.text('לא כרגע'), 200);
+    await t.ensureVisible(find.text('לא כרגע'));
+    await t.pump();
+    await t.ensureVisible(find.text('יונתן־אלכסנדר'));
+    await t.pump();
     expect(find.text('לא כרגע'), findsOneWidget);
     await t.tap(find.text('יונתן־אלכסנדר'));
     await t.pump(const Duration(milliseconds: 300));
@@ -635,6 +646,61 @@ void main() {
       findsOneWidget,
     );
     expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('waiting for their answer shows the seconds left', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      await friend
+          .read(realProvider.notifier)
+          .startAvailability(AvailabilityMode.free, 60);
+      await c.startAvailability(AvailabilityMode.free, 60);
+      await c.respond(currentOffer(me.read(realProvider), now)!, accept: true);
+    });
+    final offer = waitingOffer(me.read(realProvider), now)!;
+    await _show(t, me, RealWaitingScreen(offer: offer, dark: false));
+    expect(find.text('עוד 25 שניות'), findsOneWidget);
+    now = now.add(const Duration(seconds: 10));
+    await t.pump(const Duration(seconds: 1));
+    expect(find.text('עוד 15 שניות'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('after a call: a warm line and a way to write to us', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      final f = friend.read(realProvider.notifier);
+      await c.startAvailability(AvailabilityMode.free, 60);
+      await f.startAvailability(AvailabilityMode.free, 60);
+      await f.refresh();
+      await c.refresh();
+      final now0 = server.now();
+      await c.respond(currentOffer(me.read(realProvider), now0)!, accept: true);
+      await f.respond(
+        currentOffer(friend.read(realProvider), now0)!,
+        accept: true,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await c.refresh();
+      c.finishCall();
+    });
+    expect(me.read(realProvider).callStage, CallStage.feedback);
+    await _show(t, me, const RealFeedbackScreen());
+    expect(find.text('מקווים שהשיחה הייתה טובה 🙂'), findsOneWidget);
+    final write = find.text('יש משוב או תובנה? אפשר לכתוב לנו, ונשפר');
+    await t.scrollUntilVisible(write, 200);
+    await t.ensureVisible(write);
+    await t.pump();
+    await t.tap(write);
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('שליחת משוב'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await t.tap(find.text('ביטול'));
+    await t.pump(const Duration(milliseconds: 300));
     await _close(t);
   });
 }

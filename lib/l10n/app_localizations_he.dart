@@ -2174,4 +2174,21 @@ class AppLocalizationsHe extends AppLocalizations {
   String durationTripNoteDetected(int hours) {
     return 'נגמר לבד כשהנסיעה נגמרת (ולכל היותר אחרי $hours שעות).';
   }
+
+  @override
+  String get afterCallHope => 'מקווים שהשיחה הייתה טובה 🙂';
+
+  @override
+  String get afterCallWrite => 'יש משוב או תובנה? אפשר לכתוב לנו, ונשפר';
+
+  @override
+  String realWaitingLeft(int seconds) {
+    String _temp0 = intl.Intl.pluralLogic(
+      seconds,
+      locale: localeName,
+      other: 'עוד $seconds שניות',
+      one: 'עוד שנייה',
+    );
+    return '$_temp0';
+  }
 }

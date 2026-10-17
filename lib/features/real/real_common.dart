@@ -781,3 +781,37 @@ Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
   );
   if (ok ?? false) await c.setMyPhone(phone.text);
 }
+
+/// "Send feedback": a short note to the owner (no names or numbers added).
+Future<void> openFeedbackDialog(BuildContext context, WidgetRef ref) async {
+  final l = context.l10n;
+  // Read before the dialog: the screen may be gone when it closes.
+  final c = ref.read(realProvider.notifier);
+  final text = TextEditingController();
+  final send = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.feedbackTitle),
+      content: TextField(
+        controller: text,
+        autofocus: true,
+        maxLength: 1000,
+        minLines: 3,
+        maxLines: 6,
+        decoration: InputDecoration(hintText: l.feedbackHint),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.feedbackSend),
+        ),
+      ],
+    ),
+  );
+  if (send ?? false) await c.sendFeedback(text.text);
+  text.dispose();
+}
