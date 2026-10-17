@@ -646,12 +646,16 @@ class _MyStatus extends ConsumerWidget {
             ],
           ),
         ),
-        Text(
-          l.realWaitingForFriends,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
-        ),
-        const SizedBox(height: 12),
+        // Friends free that I can ask: say I may tap them. Nobody free: the
+        // card above already says so — nothing more here.
+        if (askableFriends(ref.watch(realProvider), now).isNotEmpty) ...[
+          Text(
+            l.realTapOrWait,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
+          ),
+          const SizedBox(height: 12),
+        ],
         Wrap(
           alignment: WrapAlignment.center,
           spacing: 10,
@@ -1197,8 +1201,7 @@ class _AutoDrivingRow extends ConsumerWidget {
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
         value: on,
-        activeThumbColor: Colors.white,
-        activeTrackColor: AppColors.sageDark,
+        // The app's usual switch colors (same as in Settings).
         onChanged: busy ? null : (v) => setAutoDriving(context, ref, v),
       ),
     );
@@ -1399,8 +1402,9 @@ class RealDriverHome extends ConsumerWidget {
           ],
           if (mine != null && !mine.auto) ...[
             const SizedBox(height: 6),
+            // Mine, clearly (not a friend's time).
             MomentText(
-              l.timeLeftMinutes(mine.minutesLeftAt(now)),
+              l.driverMyTimeLeft(mine.minutesLeftAt(now)),
               size: 20,
               style: MomentStyle.dark,
               soft: true,
@@ -1410,7 +1414,8 @@ class RealDriverHome extends ConsumerWidget {
       ),
       actions: [
         SecondaryPill(
-          label: l.driverStop,
+          // Same words as on the regular screen.
+          label: l.stopAvailability,
           style: MomentStyle.dark,
           height: 96,
           onTap: c.stopAvailability,

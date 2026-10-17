@@ -930,7 +930,13 @@ class RealController extends Notifier<RealState> {
     _setFirstRun(FirstRunStep.result);
   }
 
-  void firstRunNext() => _setFirstRun(switch (state.firstRun) {
+  void firstRunNext() {
+    // Past the permissions step: no "before we start…" note again later.
+    if (state.firstRun == FirstRunStep.permissions) markPermissionIntroShown();
+    _firstRunAdvance();
+  }
+
+  void _firstRunAdvance() => _setFirstRun(switch (state.firstRun) {
     FirstRunStep.photo => FirstRunStep.contacts,
     FirstRunStep.contacts => FirstRunStep.result,
     FirstRunStep.result => FirstRunStep.routine,

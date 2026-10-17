@@ -790,12 +790,6 @@ abstract class AppLocalizations {
   /// **'{gender, select, female{את פנויה לשיחה} male{אתה פנוי לשיחה} other{יש לך זמן לשיחה}}'**
   String realMeAvailableTitle(String gender);
 
-  /// No description provided for @realWaitingForFriends.
-  ///
-  /// In he, this message translates to:
-  /// **'כשחבר יהיה פנוי — נשאל את שניכם.'**
-  String get realWaitingForFriends;
-
   /// No description provided for @realFreeFriendsTitle.
   ///
   /// In he, this message translates to:
@@ -829,7 +823,7 @@ abstract class AppLocalizations {
   /// No description provided for @realNoFriendsBody.
   ///
   /// In he, this message translates to:
-  /// **'הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.'**
+  /// **'אפשר להזמין חבר — וכששניכם פנויים, נציע לכם לדבר.'**
   String get realNoFriendsBody;
 
   /// No description provided for @realInviteFriend.
@@ -1267,7 +1261,7 @@ abstract class AppLocalizations {
   /// No description provided for @realDialedBody.
   ///
   /// In he, this message translates to:
-  /// **'כשתסיימו — חזרו לכאן.'**
+  /// **'כשהשיחה נגמרת, חוזרים לכאן.'**
   String get realDialedBody;
 
   /// No description provided for @realTheyCallTitle.
@@ -1279,7 +1273,7 @@ abstract class AppLocalizations {
   /// No description provided for @realTheyCallBody.
   ///
   /// In he, this message translates to:
-  /// **'אם השיחה לא מגיעה תוך דקה — לחצו למטה.'**
+  /// **'הטלפון יצלצל עוד רגע. אם השיחה לא מגיעה תוך דקה — \"לא הגיעה שיחה\".'**
   String get realTheyCallBody;
 
   /// No description provided for @realTheyDidNotCall.
@@ -1351,13 +1345,13 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteProblemUsed.
   ///
   /// In he, this message translates to:
-  /// **'ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.'**
+  /// **'ההזמנה הזו כבר נוצלה. צריך הזמנה חדשה.'**
   String get realInviteProblemUsed;
 
   /// No description provided for @realInviteProblemExpired.
   ///
   /// In he, this message translates to:
-  /// **'פג תוקף ההזמנה. בקשו הזמנה חדשה.'**
+  /// **'פג תוקף ההזמנה. צריך הזמנה חדשה.'**
   String get realInviteProblemExpired;
 
   /// No description provided for @realInviteProblemOwn.
@@ -1387,7 +1381,7 @@ abstract class AppLocalizations {
   /// No description provided for @realErrorGeneric.
   ///
   /// In he, this message translates to:
-  /// **'משהו השתבש ({code}). נסו שוב.'**
+  /// **'משהו השתבש ({code}). אפשר לנסות שוב.'**
   String realErrorGeneric(String code);
 
   /// No description provided for @realErrorAnonymousDisabled.
@@ -1399,7 +1393,7 @@ abstract class AppLocalizations {
   /// No description provided for @realErrorSchema.
   ///
   /// In he, this message translates to:
-  /// **'השרת עוד לא מוכן. נסו שוב מאוחר יותר.'**
+  /// **'השרת עוד לא מוכן. אפשר לנסות שוב מאוחר יותר.'**
   String get realErrorSchema;
 
   /// No description provided for @realErrorInvalidPhone.
@@ -1417,13 +1411,13 @@ abstract class AppLocalizations {
   /// No description provided for @realErrorRateLimited.
   ///
   /// In he, this message translates to:
-  /// **'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.'**
+  /// **'יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות.'**
   String get realErrorRateLimited;
 
   /// No description provided for @realErrorTooManyInvites.
   ///
   /// In he, this message translates to:
-  /// **'יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.'**
+  /// **'יש כבר הרבה הזמנות פתוחות. אפשר לנסות שוב מחר.'**
   String get realErrorTooManyInvites;
 
   /// No description provided for @realSaved.
@@ -1771,7 +1765,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingFailed.
   ///
   /// In he, this message translates to:
-  /// **'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.'**
+  /// **'לא הצלחנו להפעיל זיהוי נסיעה. אפשר לנסות שוב.'**
   String get realAutoDrivingFailed;
 
   /// No description provided for @realStatusAutoDriving.
@@ -2419,13 +2413,13 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunRoutineTitle.
   ///
   /// In he, this message translates to:
-  /// **'מתי בדרך כלל יש לך זמן בדרך?'**
+  /// **'באילו שעות יש לך בדרך כלל נסיעה?'**
   String get firstRunRoutineTitle;
 
   /// No description provided for @firstRunRoutineBody.
   ///
   /// In he, this message translates to:
-  /// **'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.'**
+  /// **'מסמנים שעה אחת או יותר. בימים א׳–ה׳, בשעה הזו, נסמן שיש לך זמן — לחצי שעה. את השעה משנים בלחיצה על העיפרון, ואפשר לשנות הכול גם בהגדרות ← השגרה שלי.'**
   String get firstRunRoutineBody;
 
   /// No description provided for @firstRunRoutineMorning.
@@ -3277,13 +3271,13 @@ abstract class AppLocalizations {
   /// Spoken in the background (no voice answer possible there)
   ///
   /// In he, this message translates to:
-  /// **'ל{name} יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  /// **'ל{name} יש זמן לדבר. אם מתאים — \"לדבר\" בהתראה.'**
   String bgVoiceOffer(String name);
 
   /// Spoken in the background when a friend tapped me
   ///
   /// In he, this message translates to:
-  /// **'{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.'**
+  /// **'{name} רוצה לדבר איתך. אם מתאים — \"לדבר\" בהתראה.'**
   String bgVoiceDirect(String name);
 
   /// Locked screen: an offer, without the name
@@ -3301,7 +3295,7 @@ abstract class AppLocalizations {
   /// After "Talk": I have to dial (tap opens the app)
   ///
   /// In he, this message translates to:
-  /// **'גם {name} רוצה לדבר. לחצו כאן כדי להתקשר.'**
+  /// **'גם {name} רוצה לדבר. לחיצה כאן — ומתקשרים.'**
   String answeredYouCall(String name);
 
   /// After "Talk": the other side has not answered yet
@@ -3319,7 +3313,7 @@ abstract class AppLocalizations {
   /// Spoken: I have to dial
   ///
   /// In he, this message translates to:
-  /// **'גם {name} רוצה לדבר. לחצו על ההתראה כדי להתקשר.'**
+  /// **'גם {name} רוצה לדבר. לחיצה על ההתראה — ומתקשרים.'**
   String voiceYouCall(String name);
 
   /// Permissions step title
@@ -3427,7 +3421,7 @@ abstract class AppLocalizations {
   /// After "Talk": the answer did not go through; tap to answer in the app
   ///
   /// In he, this message translates to:
-  /// **'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.'**
+  /// **'לא הצלחנו לענות מכאן. לחיצה כאן — עונים באפליקציה.'**
   String get answeredRetry;
 
   /// Quick connect switch title
@@ -3627,6 +3621,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הדבקה'**
   String get pasteCode;
+
+  /// No description provided for @realCallEnded.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה הסתיימה'**
+  String get realCallEnded;
+
+  /// No description provided for @realTapOrWait.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר ללחוץ על חבר פנוי, או לחכות שנציע.'**
+  String get realTapOrWait;
+
+  /// No description provided for @driverMyTimeLeft.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמן הפנוי שלך: עוד {minutes} דק׳'**
+  String driverMyTimeLeft(int minutes);
 }
 
 class _AppLocalizationsDelegate

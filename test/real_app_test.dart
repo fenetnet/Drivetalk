@@ -86,7 +86,7 @@ void main() {
       await t.tap(find.text('אחר כך'));
       await pumpFor(t, 300);
       // When am I usually on the road? Morning → a routine Sun–Thu.
-      expect(find.text('מתי בדרך כלל יש לך זמן בדרך?'), findsOneWidget);
+      expect(find.text('באילו שעות יש לך בדרך כלל נסיעה?'), findsOneWidget);
       await t.tap(find.text('בוקר · 07:30 · בדרך לעבודה'));
       await pumpFor(t, 100);
       await t.tap(find.text('הבא'));
@@ -165,8 +165,12 @@ void main() {
       // Both shared numbers → one side dials after a short countdown (here
       // there is no phone dialer, so it becomes the in-app call).
       await pumpFor(t, 4500);
-      expect(find.text('סיימנו'), findsOneWidget);
-      await t.tap(find.text('סיימנו'));
+      // "We're done" (I dialed) or "the call ended" (they called me).
+      final done = find.text('סיימנו').evaluate().isNotEmpty
+          ? find.text('סיימנו')
+          : find.text('השיחה הסתיימה');
+      expect(done, findsOneWidget);
+      await t.tap(done);
       await pumpFor(t, 500);
       expect(find.text('מתי להציע לך שוב את יוני?'), findsOneWidget);
       await t.tap(find.text('בעוד 3 ימים'));

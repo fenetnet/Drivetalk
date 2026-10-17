@@ -92,7 +92,8 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
                   Text(l.permsDone),
                 ],
               )
-            : FilledButton(
+            // Lighter than the main "allow all" button below.
+            : OutlinedButton(
                 onPressed: _asking
                     ? null
                     : () => _ask(() => c.askPermission(kind)),
@@ -193,6 +194,8 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
               child: PermissionsList(key: _list, onChanged: _changed),
             ),
           ),
+          // Room between the list and the buttons below.
+          const SizedBox(height: 16),
         ],
       ),
       actions: [

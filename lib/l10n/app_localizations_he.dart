@@ -426,9 +426,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realWaitingForFriends => 'כשחבר יהיה פנוי — נשאל את שניכם.';
-
-  @override
   String get realFreeFriendsTitle => 'עכשיו';
 
   @override
@@ -447,7 +444,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realNoFriendsBody =>
-      'הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.';
+      'אפשר להזמין חבר — וכששניכם פנויים, נציע לכם לדבר.';
 
   @override
   String get realInviteFriend => 'להזמין חבר';
@@ -725,7 +722,7 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realDialedBody => 'כשתסיימו — חזרו לכאן.';
+  String get realDialedBody => 'כשהשיחה נגמרת, חוזרים לכאן.';
 
   @override
   String realTheyCallTitle(String name, String gender) {
@@ -738,7 +735,8 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get realTheyCallBody => 'אם השיחה לא מגיעה תוך דקה — לחצו למטה.';
+  String get realTheyCallBody =>
+      'הטלפון יצלצל עוד רגע. אם השיחה לא מגיעה תוך דקה — \"לא הגיעה שיחה\".';
 
   @override
   String get realTheyDidNotCall => 'לא הגיעה שיחה';
@@ -787,10 +785,10 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realInviteLoading => 'בודקים את ההזמנה…';
 
   @override
-  String get realInviteProblemUsed => 'ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.';
+  String get realInviteProblemUsed => 'ההזמנה הזו כבר נוצלה. צריך הזמנה חדשה.';
 
   @override
-  String get realInviteProblemExpired => 'פג תוקף ההזמנה. בקשו הזמנה חדשה.';
+  String get realInviteProblemExpired => 'פג תוקף ההזמנה. צריך הזמנה חדשה.';
 
   @override
   String get realInviteProblemOwn =>
@@ -810,7 +808,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realErrorGeneric(String code) {
-    return 'משהו השתבש ($code). נסו שוב.';
+    return 'משהו השתבש ($code). אפשר לנסות שוב.';
   }
 
   @override
@@ -818,7 +816,7 @@ class AppLocalizationsHe extends AppLocalizations {
       'בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).';
 
   @override
-  String get realErrorSchema => 'השרת עוד לא מוכן. נסו שוב מאוחר יותר.';
+  String get realErrorSchema => 'השרת עוד לא מוכן. אפשר לנסות שוב מאוחר יותר.';
 
   @override
   String get realErrorInvalidPhone => 'מספר הטלפון לא נראה תקין';
@@ -828,11 +826,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realErrorRateLimited =>
-      'יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.';
+      'יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות.';
 
   @override
   String get realErrorTooManyInvites =>
-      'יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.';
+      'יש כבר הרבה הזמנות פתוחות. אפשר לנסות שוב מחר.';
 
   @override
   String get realSaved => 'נשמר';
@@ -1024,7 +1022,8 @@ class AppLocalizationsHe extends AppLocalizations {
       'צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.';
 
   @override
-  String get realAutoDrivingFailed => 'לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.';
+  String get realAutoDrivingFailed =>
+      'לא הצלחנו להפעיל זיהוי נסיעה. אפשר לנסות שוב.';
 
   @override
   String get realStatusAutoDriving => 'זיהוי נסיעה';
@@ -1429,11 +1428,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get notNowShort => 'לא עכשיו';
 
   @override
-  String get firstRunRoutineTitle => 'מתי בדרך כלל יש לך זמן בדרך?';
+  String get firstRunRoutineTitle => 'באילו שעות יש לך בדרך כלל נסיעה?';
 
   @override
   String get firstRunRoutineBody =>
-      'בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.';
+      'מסמנים שעה אחת או יותר. בימים א׳–ה׳, בשעה הזו, נסמן שיש לך זמן — לחצי שעה. את השעה משנים בלחיצה על העיפרון, ואפשר לשנות הכול גם בהגדרות ← השגרה שלי.';
 
   @override
   String firstRunRoutineMorning(String time) {
@@ -1940,12 +1939,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String bgVoiceOffer(String name) {
-    return 'ל$name יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.';
+    return 'ל$name יש זמן לדבר. אם מתאים — \"לדבר\" בהתראה.';
   }
 
   @override
   String bgVoiceDirect(String name) {
-    return '$name רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.';
+    return '$name רוצה לדבר איתך. אם מתאים — \"לדבר\" בהתראה.';
   }
 
   @override
@@ -1958,7 +1957,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String answeredYouCall(String name) {
-    return 'גם $name רוצה לדבר. לחצו כאן כדי להתקשר.';
+    return 'גם $name רוצה לדבר. לחיצה כאן — ומתקשרים.';
   }
 
   @override
@@ -1971,7 +1970,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String voiceYouCall(String name) {
-    return 'גם $name רוצה לדבר. לחצו על ההתראה כדי להתקשר.';
+    return 'גם $name רוצה לדבר. לחיצה על ההתראה — ומתקשרים.';
   }
 
   @override
@@ -2030,7 +2029,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get permsSettingsBody => 'התראות, שיחות, מיקרופון, עבודה ברקע';
 
   @override
-  String get answeredRetry => 'לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.';
+  String get answeredRetry =>
+      'לא הצלחנו לענות מכאן. לחיצה כאן — עונים באפליקציה.';
 
   @override
   String get quickTitle => 'חיבור מהיר';
@@ -2158,4 +2158,15 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get pasteCode => 'הדבקה';
+
+  @override
+  String get realCallEnded => 'השיחה הסתיימה';
+
+  @override
+  String get realTapOrWait => 'אפשר ללחוץ על חבר פנוי, או לחכות שנציע.';
+
+  @override
+  String driverMyTimeLeft(int minutes) {
+    return 'הזמן הפנוי שלך: עוד $minutes דק׳';
+  }
 }

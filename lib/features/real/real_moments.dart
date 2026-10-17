@@ -29,14 +29,16 @@ class RealOfferScreen extends ConsumerWidget {
     // They tapped me: say so ("X wants to talk with you").
     final direct = offer.askedBy(other.id);
     final style = dark ? MomentStyle.dark : MomentStyle.coral;
+    // Only what we know: how long both are free, when they last talked.
+    final shared = offer.sharedUntil?.difference(now).inMinutes;
+    // The chip says how they're free; their minutes only when there's no
+    // "both free for…" line below (never two different numbers).
     final when = theirs != null && theirs.isActiveAt(now)
-        ? theirs.auto
+        ? theirs.auto || (shared != null && shared > 0)
               ? modeLabel(l, theirs.mode)
               : '${modeLabel(l, theirs.mode)} · '
                     '${l.timeLeftMinutes(theirs.minutesLeftAt(now))}'
         : null;
-    // Only what we know: how long both are free, when they last talked.
-    final shared = offer.sharedUntil?.difference(now).inMinutes;
     final last = offer.lastTalk;
     final days = last == null
         ? null
@@ -174,30 +176,21 @@ class RealWaitingScreen extends ConsumerWidget {
         ],
       ),
       actions: [
+        // One button. Someone else is free: it says so — stop waiting here
+        // and pick them (D-104).
         SecondaryPill(
-          label: l.realStopWaiting,
+          label:
+              !dark &&
+                  freeFriends(
+                    s,
+                    ref.watch(realNowProvider),
+                  ).any((f) => f.$1.id != other.id)
+              ? l.waitOther
+              : l.realStopWaiting,
           style: style,
           height: dark ? 88 : 60,
           onTap: () => c.cancelWaiting(offer),
         ),
-        // Someone else is free: stop waiting here and pick them (D-104).
-        if (!dark &&
-            freeFriends(
-              s,
-              ref.watch(realNowProvider),
-            ).any((f) => f.$1.id != other.id))
-          TextButton(
-            onPressed: () => c.cancelWaiting(offer),
-            child: Text(
-              l.waitOther,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.white,
-              ),
-            ),
-          ),
       ],
     );
   }
@@ -313,14 +306,20 @@ class RealCallScreen extends ConsumerWidget {
           l.realTheyCallTitle(call.other.name, g),
           body: l.realTheyCallBody,
         ),
+        // Two clear buttons: the call came and ended / it never came.
         actions: [
-          done,
-          TextButton(
-            onPressed: c.finishCall,
-            child: Text(
-              l.realTheyDidNotCall,
-              style: const TextStyle(color: Colors.white, fontSize: 16),
-            ),
+          PrimaryPill(
+            label: l.realCallEnded,
+            icon: Icons.check_rounded,
+            style: style,
+            height: dark ? 96 : 76,
+            onTap: c.finishCall,
+          ),
+          SecondaryPill(
+            label: l.realTheyDidNotCall,
+            style: style,
+            height: dark ? 88 : 60,
+            onTap: c.finishCall,
           ),
         ],
       ),

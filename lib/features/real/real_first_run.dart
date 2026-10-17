@@ -31,11 +31,15 @@ class RealFirstRunScreen extends ConsumerWidget {
       child: Icon(i, color: Colors.white, size: 60),
     );
 
-    Widget texts(String title, String body) => Column(
+    Widget texts(
+      String title,
+      String body, {
+      MomentStyle style = MomentStyle.light,
+    }) => Column(
       children: [
-        MomentText(title, size: 28),
+        MomentText(title, size: 28, style: style),
         const SizedBox(height: 12),
-        MomentText(body, size: 16, soft: true),
+        MomentText(body, size: 16, soft: true, style: style),
       ],
     );
 
@@ -159,7 +163,12 @@ class RealFirstRunScreen extends ConsumerWidget {
           children: [
             icon(Icons.call_rounded),
             const SizedBox(height: 32),
-            texts(l.firstRunMagicTitle, l.firstRunMagicBody),
+            // Light text on the green screen (it was dark on dark).
+            texts(
+              l.firstRunMagicTitle,
+              l.firstRunMagicBody,
+              style: MomentStyle.green,
+            ),
           ],
         ),
         actions: [
@@ -216,6 +225,14 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
         children: [
           Expanded(
             child: FilterChip(
+              // A clear box to tick (not a plain row).
+              avatar: Icon(
+                on
+                    ? Icons.check_box_rounded
+                    : Icons.check_box_outline_blank_rounded,
+                color: AppColors.terracotta,
+              ),
+              showCheckmark: false,
               label: SizedBox(
                 width: double.infinity,
                 child: Text(label, style: const TextStyle(fontSize: 17)),
@@ -227,7 +244,8 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
           ),
           IconButton(
             tooltip: l.firstRunRoutineChangeTime,
-            icon: const Icon(Icons.edit_calendar_rounded),
+            // A pencil, as the text says.
+            icon: const Icon(Icons.edit_rounded),
             onPressed: changeTime,
           ),
         ],

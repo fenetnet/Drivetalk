@@ -172,7 +172,7 @@
   "photoFromCamera": "צילום",
   "photoRemove": "הסרה",
   "settingsVoiceReadout": "הקראה בקול בנסיעה",
-  "settingsVoiceReadoutBody": "בנסיעה, הטלפון אומר בקול מי פנוי, ואפשר לענות \"כן\" או \"לא\" בלי לגעת במסך.",
+  "settingsVoiceReadoutBody": "בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.",
   "routinesTitle": "השגרה שלי",
   "routinesCount": "{count, plural, =0{עוד לא הוגדרו זמנים קבועים} =1{זמן קבוע אחד} other{{count} זמנים קבועים}}",
   "@routinesCount": {
@@ -213,13 +213,12 @@
       }
     }
   },
-  "realWaitingForFriends": "כשחבר יהיה פנוי — נשאל את שניכם.",
   "realFreeFriendsTitle": "עכשיו",
   "realNobodyFree": "כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.",
   "realFreeHint": "רוצים לדבר עם מישהו פנוי? לוחצים עליו, ונשאל אם מתאים לו עכשיו.",
   "realNobodyFreeYet": "נעדכן ברגע שמישהו מתאים יתפנה.",
   "realNoFriendsTitle": "עוד אין פה חברים",
-  "realNoFriendsBody": "הזמינו חבר — וכששניכם פנויים, נציע לכם לדבר.",
+  "realNoFriendsBody": "אפשר להזמין חבר — וכששניכם פנויים, נציע לכם לדבר.",
   "realInviteFriend": "להזמין חבר",
   "realHaveCode": "יש לי קוד הזמנה",
   "realCodeHint": "הדביקו כאן את הקישור או הקוד",
@@ -387,7 +386,7 @@
       }
     }
   },
-  "realDialedBody": "כשתסיימו — חזרו לכאן.",
+  "realDialedBody": "כשהשיחה נגמרת, חוזרים לכאן.",
   "realTheyCallTitle": "{gender, select, female{{name} מתקשרת אליך עכשיו} male{{name} מתקשר אליך עכשיו} other{שיחה מ{name} מגיעה עכשיו}}",
   "@realTheyCallTitle": {
     "placeholders": {
@@ -399,7 +398,7 @@
       }
     }
   },
-  "realTheyCallBody": "אם השיחה לא מגיעה תוך דקה — לחצו למטה.",
+  "realTheyCallBody": "הטלפון יצלצל עוד רגע. אם השיחה לא מגיעה תוך דקה — \"לא הגיעה שיחה\".",
   "realTheyDidNotCall": "לא הגיעה שיחה",
   "realNoNumbersTitle": "אי אפשר להתקשר הפעם",
   "realNoNumbersBody": "לשניכם אין מספר טלפון באפליקציה. כדי לדבר, אחד מכם מוסיף מספר: הגדרות ← לחיצה על השם ← \"המספר שלי לשיחה רגילה\".",
@@ -435,8 +434,8 @@
   "realInviteBody": "כששניכם פנויים — נציע לכם לדבר. רק אם שניכם מסכימים.",
   "realInviteAccept": "אישור",
   "realInviteLoading": "בודקים את ההזמנה…",
-  "realInviteProblemUsed": "ההזמנה הזו כבר נוצלה. בקשו הזמנה חדשה.",
-  "realInviteProblemExpired": "פג תוקף ההזמנה. בקשו הזמנה חדשה.",
+  "realInviteProblemUsed": "ההזמנה הזו כבר נוצלה. צריך הזמנה חדשה.",
+  "realInviteProblemExpired": "פג תוקף ההזמנה. צריך הזמנה חדשה.",
   "realInviteProblemOwn": "זו הזמנה ששלחת בעצמך 🙂 אפשר לשלוח אותה לחבר.",
   "realInviteProblemNotFound": "לא מצאנו את ההזמנה. בדקו שהקישור הועתק במלואו.",
   "realInviteAlready": "{name} כבר ברשימת האנשים שלך.",
@@ -448,7 +447,7 @@
     }
   },
   "realErrorOffline": "אין חיבור לאינטרנט. ננסה שוב לבד.",
-  "realErrorGeneric": "משהו השתבש ({code}). נסו שוב.",
+  "realErrorGeneric": "משהו השתבש ({code}). אפשר לנסות שוב.",
   "@realErrorGeneric": {
     "placeholders": {
       "code": {
@@ -457,11 +456,11 @@
     }
   },
   "realErrorAnonymousDisabled": "בשרת עוד לא הופעלה כניסה בלי סיסמה (Anonymous sign-ins).",
-  "realErrorSchema": "השרת עוד לא מוכן. נסו שוב מאוחר יותר.",
+  "realErrorSchema": "השרת עוד לא מוכן. אפשר לנסות שוב מאוחר יותר.",
   "realErrorInvalidPhone": "מספר הטלפון לא נראה תקין",
   "realErrorInvalidName": "השם צריך להיות באורך 1–40 תווים",
-  "realErrorRateLimited": "יותר מדי ניסיונות. נסו שוב בעוד כמה דקות.",
-  "realErrorTooManyInvites": "יש כבר הרבה הזמנות פתוחות. נסו שוב מחר.",
+  "realErrorRateLimited": "יותר מדי ניסיונות. אפשר לנסות שוב בעוד כמה דקות.",
+  "realErrorTooManyInvites": "יש כבר הרבה הזמנות פתוחות. אפשר לנסות שוב מחר.",
   "realSaved": "נשמר",
   "realDialFailed": "לא הצלחנו לפתוח את החייגן. אפשר להתקשר ידנית.",
   "realUnmatched": "הקשר עם {name} הוסר",
@@ -490,7 +489,7 @@
   "realLiveError": "לא יציב — מתעדכן כל כמה שניות",
   "realNone": "אין",
   "realShared": "משותף",
-  "realNotShared": "לא משותף",
+  "realNotShared": "אין מספר · להוסיף",
   "realMeNotAvailable": "אין זמינות",
   "realOfferPending": "מחכה לתשובה",
   "realOfferAccepted": "שניכם אמרתם כן",
@@ -543,7 +542,7 @@
   "realAutoDrivingOn": "מעולה. בנסיעה הבאה הזמינות תידלק לבד.",
   "realAutoDrivingOff": "זמינות אוטומטית בנסיעה כובתה",
   "realAutoDrivingNoPermission": "צריך הרשאת \"פעילות גופנית\": הגדרות הטלפון ← אפליקציות ← DriveBond ← הרשאות.",
-  "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. נסו שוב.",
+  "realAutoDrivingFailed": "לא הצלחנו להפעיל זיהוי נסיעה. אפשר לנסות שוב.",
   "realStatusAutoDriving": "זיהוי נסיעה",
   "realAutoOn": "פעיל",
   "realAutoOff": "כבוי",
@@ -783,8 +782,8 @@
   "newFriendGroup": "לבחור קבוצה",
   "newFriendOk": "מעולה",
   "notNowShort": "לא עכשיו",
-  "firstRunRoutineTitle": "מתי בדרך כלל יש לך זמן בדרך?",
-  "firstRunRoutineBody": "בימים א׳–ה׳ בשעה שבחרת הזמינות תידלק לבד לחצי שעה. אפשר לשנות את השעה בלחיצה על העיפרון, ובכל רגע גם בהגדרות ← השגרה שלי.",
+  "firstRunRoutineTitle": "באילו שעות יש לך בדרך כלל נסיעה?",
+  "firstRunRoutineBody": "מסמנים שעה אחת או יותר. בימים א׳–ה׳, בשעה הזו, נסמן שיש לך זמן — לחצי שעה. את השעה משנים בלחיצה על העיפרון, ואפשר לשנות הכול גם בהגדרות ← השגרה שלי.",
   "firstRunRoutineMorning": "בוקר · {time} · בדרך לעבודה",
   "firstRunRoutineEvening": "ערב · {time} · בדרך הביתה",
   "firstRunRoutineNone": "לא קבוע",
@@ -1118,7 +1117,7 @@
       }
     }
   },
-  "bgVoiceOffer": "ל{name} יש זמן לדבר. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "bgVoiceOffer": "ל{name} יש זמן לדבר. אם מתאים — \"לדבר\" בהתראה.",
   "@bgVoiceOffer": {
     "description": "Spoken in the background (no voice answer possible there)",
     "placeholders": {
@@ -1127,7 +1126,7 @@
       }
     }
   },
-  "bgVoiceDirect": "{name} רוצה לדבר איתך. אם מתאים, לחצו \"לדבר\" בהתראה.",
+  "bgVoiceDirect": "{name} רוצה לדבר איתך. אם מתאים — \"לדבר\" בהתראה.",
   "@bgVoiceDirect": {
     "description": "Spoken in the background when a friend tapped me",
     "placeholders": {
@@ -1149,7 +1148,7 @@
       }
     }
   },
-  "answeredYouCall": "גם {name} רוצה לדבר. לחצו כאן כדי להתקשר.",
+  "answeredYouCall": "גם {name} רוצה לדבר. לחיצה כאן — ומתקשרים.",
   "@answeredYouCall": {
     "description": "After \"Talk\": I have to dial (tap opens the app)",
     "placeholders": {
@@ -1171,7 +1170,7 @@
   "@answeredMissed": {
     "description": "After \"Talk\": too late / did not work out"
   },
-  "voiceYouCall": "גם {name} רוצה לדבר. לחצו על ההתראה כדי להתקשר.",
+  "voiceYouCall": "גם {name} רוצה לדבר. לחיצה על ההתראה — ומתקשרים.",
   "@voiceYouCall": {
     "description": "Spoken: I have to dial",
     "placeholders": {
@@ -1248,7 +1247,7 @@
   "@permsSettingsBody": {
     "description": "Settings entry subtitle"
   },
-  "answeredRetry": "לא הצלחנו לענות מכאן. לחצו כדי לענות באפליקציה.",
+  "answeredRetry": "לא הצלחנו לענות מכאן. לחיצה כאן — עונים באפליקציה.",
   "@answeredRetry": {
     "description": "After \"Talk\": the answer did not go through; tap to answer in the app"
   },
@@ -1421,5 +1420,15 @@
   },
   "routineAskYes": "כן, יש לי זמן",
   "othersRuleTitle": "חברים שלא בשום קבוצה: מתי הם יראו שיש לך זמן?",
-  "pasteCode": "הדבקה"
+  "pasteCode": "הדבקה",
+  "realCallEnded": "השיחה הסתיימה",
+  "realTapOrWait": "אפשר ללחוץ על חבר פנוי, או לחכות שנציע.",
+  "driverMyTimeLeft": "הזמן הפנוי שלך: עוד {minutes} דק׳",
+  "@driverMyTimeLeft": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }
