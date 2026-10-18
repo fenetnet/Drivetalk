@@ -282,14 +282,6 @@ class RealHomeScreen extends ConsumerWidget {
                     icon: Icons.wifi_off_rounded,
                   ),
                 ],
-                // The main buttons first: seen without scrolling.
-                const SizedBox(height: 20),
-                if (mine == null)
-                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
-                else
-                  Center(
-                    child: _MyStatus(mine: mine, now: now, gender: g),
-                  ),
                 const SizedBox(height: 24),
                 if (snap != null && snap.friends.isEmpty)
                   const _NoFriendsCard()
@@ -319,6 +311,14 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   tip,
                 ],
+                // Who's free first, then my buttons (the owner's choice).
+                const SizedBox(height: 28),
+                if (mine == null)
+                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
+                else
+                  Center(
+                    child: _MyStatus(mine: mine, now: now, gender: g),
+                  ),
                 const SizedBox(height: 28),
                 if (snap != null && snap.friends.isNotEmpty) ...[
                   _WeekCard(week: snap.weekAt(now)),

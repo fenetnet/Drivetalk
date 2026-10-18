@@ -155,7 +155,6 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
-    await t.scrollUntilVisible(find.text('יונתן־אלכסנדר'), 200);
     await t.ensureVisible(find.text('יונתן־אלכסנדר'));
     await t.pump();
     expect(
@@ -230,7 +229,6 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
-    await t.scrollUntilVisible(find.text('לא כרגע'), 200);
     await t.ensureVisible(find.text('לא כרגע'));
     await t.pump();
     await t.ensureVisible(find.text('יונתן־אלכסנדר'));
