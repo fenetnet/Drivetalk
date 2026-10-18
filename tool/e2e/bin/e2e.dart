@@ -1810,7 +1810,7 @@ Future<void> main() async {
   await tripPush();
 
   check(
-    await eve.rpc('schema_version') == 44,
+    await eve.rpc('schema_version') == 45,
     'the server says its version (41)',
   );
 
