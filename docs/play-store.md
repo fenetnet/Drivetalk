@@ -66,6 +66,7 @@
 - **מוצפן בהעברה:** כן (HTTPS).
 - **אפשר לבקש מחיקה:** כן. באפליקציה: הגדרות ← "למחוק את החשבון והמידע שלי". הקישור לאינטרנט (Delete account URL): https://fenetnet.github.io/Drivetalk/delete.html
 - **שירות השרת (Supabase):** מעבד את המידע בשבילנו, ולכן לא נחשב "שיתוף עם צד שלישי".
+- **התראות (Firebase Cloud Messaging של Google):** גם הוא ספק שמעביר בשבילנו, ולכן לא "שיתוף". ההודעות "X בדרך" ו"X ניסה להשיג אותך" מכילות שם של חבר. הוא כבר מסומן למעלה ב-Name.
 
 | סוג מידע (בטופס) | נאסף | רשות או חובה | למה |
 | --- | --- | --- | --- |
@@ -76,7 +77,7 @@
 | Contacts | כן | רשות | App functionality (מספרים מוצפנים בלבד, ונשמרים רק של מי שמשתמש ב-DriveBond; שמות לא יוצאים מהטלפון) |
 | App activity → App interactions | כן | חובה | App functionality, Analytics (שם פעולה ומשך בלבד; דירוג 0–5 לחברים; "פעיל לאחרונה" בימים; "בשיחה" כן/לא בזמן זמינות) |
 | App activity → Other user-generated content | כן | רשות | App functionality, Fraud prevention/security (משוב ודיווח שהמשתמש כותב ושולח) |
-| Device or other IDs | כן | חובה | App functionality (זמינות ברקע; נוצר לבד אחרי ההרשמה) |
+| Device or other IDs | כן | חובה | App functionality (זמינות ברקע; כתובת התראות של Firebase; נוצר לבד אחרי ההרשמה) |
 | Location | לא | — | — |
 | Audio | לא | — | זיהוי הדיבור נעשה בטלפון או בשירות של הטלפון. שום דבר לא נשמר אצלנו |
 

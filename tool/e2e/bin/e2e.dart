@@ -1812,7 +1812,7 @@ Future<void> main() async {
   await missedAndQuietDays();
 
   check(
-    await eve.rpc('schema_version') == 48,
+    await eve.rpc('schema_version') == 49,
     'the server says its version (41)',
   );
 
@@ -3492,4 +3492,15 @@ Future<void> missedAndQuietDays() async {
     );
   }
   await ma.rpc('set_settings', params: {'p_clear_quiet': true});
+
+  // Notifications don't pile up: old queue rows go at night.
+  await dbExec(
+    "update push_outbox set created_at = now() - interval '3 days' "
+    "where user_id = '${uid(mb)}'",
+  );
+  await dbExec("select public.nightly_cleanup()");
+  check(
+    (await missed(mb)).isEmpty,
+    'the notification queue is emptied after 2 days',
+  );
 }
