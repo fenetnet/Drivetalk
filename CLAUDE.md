@@ -62,6 +62,11 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 - Match explanations must only use data we actually have — never invent reasons.
 - Matching weights live in configuration, not hard-coded in logic.
 - Block / Report / Unmatch / Don't-suggest-again exist from day one.
+- A server change must keep working with the app version people already
+  have installed (D-118 broke older apps: friends' list empty until they
+  updated). Removing or limiting something an app reads takes two steps:
+  first an app that no longer reads it, then — once everyone updated — the
+  server change.
 - No age gate in the prototype (owner decision D-035). Revisit before a
   public store release (store requirements, Phase 9).
 
