@@ -753,12 +753,14 @@ class SupabaseRealBackend implements RealBackend {
       );
       final data = r.data;
       if (data is Map && data['error'] is String) {
-        return data['error'] as String;
+        return [data['error'], data['detail']].whereType<String>().join(': ');
       }
       return 'sent';
     } on FunctionException catch (e) {
       final d = e.details;
-      if (d is Map && d['error'] is String) return d['error'] as String;
+      if (d is Map && d['error'] is String) {
+        return [d['error'], d['detail']].whereType<String>().join(': ');
+      }
       return switch (e.status) {
         404 => 'no_function',
         401 || 403 => 'not_allowed',

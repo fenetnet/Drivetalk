@@ -205,7 +205,7 @@ class RealTestScreen extends ConsumerWidget {
                       'no_app_push' => l.pushTestNoAppPush,
                       'no_function' => l.pushTestNoFunction,
                       'not_configured' => l.pushTestNotConfigured,
-                      'no_server' || 'no_token' => l.pushTestNoServer,
+                      'no_token' => l.pushTestNoToken,
                       'not_allowed' => l.pushTestNotAllowed,
                       'offline' => l.realErrorOffline,
                       _ => l.pushTestFailed(r),

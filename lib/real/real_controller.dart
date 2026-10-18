@@ -1888,7 +1888,8 @@ class RealController extends Notifier<RealState> {
       await _backend.savePushToken(token);
       await _store.setString(_pushKey, token);
     } on RealBackendException catch (e) {
-      return e.code == 'offline' ? 'offline' : 'no_server';
+      // Saving this phone's address failed (the reason, for the owner).
+      return e.code == 'offline' ? 'offline' : 'save_failed: ${e.code}';
     }
     return _backend.testPush();
   }

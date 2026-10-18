@@ -3777,6 +3777,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בדיקה: ההתראות עובדות ✓'**
   String get pushTestTitle;
+
+  /// No description provided for @pushTestNoToken.
+  ///
+  /// In he, this message translates to:
+  /// **'הכתובת של הטלפון הזה לא נמצאה בשרת (no_token).'**
+  String get pushTestNoToken;
 }
 
 class _AppLocalizationsDelegate

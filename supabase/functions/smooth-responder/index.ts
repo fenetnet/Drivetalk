@@ -98,12 +98,18 @@ Deno.serve(async (req) => {
   if (body.kind === "test") {
     // The test button: my own phones only.
     const { data, error } = await admin.from("push_tokens").select("token").eq("user_id", user);
-    if (error) return json({ error: "no_server" }, 500);
+    if (error) {
+      console.error("push test: reading tokens failed", error.message);
+      return json({ error: "no_server", detail: error.message }, 500);
+    }
     list = (data ?? []).map((r: { token: string }) => ({ friend_id: user!, push_token: r.token, from_name: "" }));
     if (list.length === 0) return json({ sent: 0, error: "no_token" });
   } else {
     const { data: targets, error } = await admin.rpc("trip_push_claim", { p_user: user });
-    if (error) return json({ error: "claim" }, 500);
+    if (error) {
+      console.error("trip push: claim failed", error.message);
+      return json({ error: "claim", detail: error.message }, 500);
+    }
     list = (targets ?? []) as typeof list;
   }
   if (list.length === 0) return json({ sent: 0 });
@@ -111,6 +117,7 @@ Deno.serve(async (req) => {
   const sa = JSON.parse(saText);
   const access = await googleToken(sa);
   let sent = 0;
+  let lastError = "";
   for (const t of list) {
     const r = await fetch(
       `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
@@ -132,10 +139,17 @@ Deno.serve(async (req) => {
     );
     if (r.ok) {
       sent++;
-    } else if (r.status === 404 || r.status === 400) {
+      continue;
+    }
+    const why = await r.text();
+    console.error("push: Firebase answered", r.status, why);
+    lastError = `firebase_${r.status}`;
+    if (r.status === 404 || why.includes("UNREGISTERED")) {
       // The phone uninstalled the app or the token changed.
       await admin.rpc("drop_push_token", { p_token: t.push_token });
     }
   }
+  // Nothing went through: say why (the test button shows it).
+  if (sent === 0 && lastError) return json({ sent, error: lastError });
   return json({ sent });
 });

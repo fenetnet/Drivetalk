@@ -2258,4 +2258,8 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get pushTestTitle => 'בדיקה: ההתראות עובדות ✓';
+
+  @override
+  String get pushTestNoToken =>
+      'הכתובת של הטלפון הזה לא נמצאה בשרת (no_token).';
 }
