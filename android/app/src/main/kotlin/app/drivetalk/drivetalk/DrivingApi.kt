@@ -7,6 +7,11 @@ import java.net.URL
 
 /** The background calls (device token only). Never on the main thread. */
 class DrivingApi(private val store: DrivingStore) {
+    companion object {
+        /** The push server function as deployed in Supabase (D-119). */
+        const val PUSH_FUNCTION = "smooth-responder"
+    }
+
 
     /**
      * kind: "ask" (talk?), "direct" (a friend tapped me: "X wants to talk
@@ -41,7 +46,7 @@ class DrivingApi(private val store: DrivingStore) {
     fun notifyTrip() {
         if (store.url.isEmpty() || store.key.isEmpty() || store.token.isEmpty()) return
         try {
-            val c = URL("${store.url}/functions/v1/push").openConnection() as HttpURLConnection
+            val c = URL("${store.url}/functions/v1/$PUSH_FUNCTION").openConnection() as HttpURLConnection
             c.requestMethod = "POST"
             c.connectTimeout = 10_000
             c.readTimeout = 20_000

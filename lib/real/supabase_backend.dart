@@ -14,6 +14,10 @@ import 'real_models.dart';
 /// The app holds only the public URL and anon/publishable key. Everything a
 /// user may read or change is enforced by the database (see
 /// supabase/migrations), not by this code.
+/// The push server function's name as deployed in Supabase (D-119; the
+/// dashboard named it, source: supabase/functions/smooth-responder).
+const kPushFunction = 'smooth-responder';
+
 class SupabaseRealBackend implements RealBackend {
   /// [client] is for tests against a real server (several users per process).
   SupabaseRealBackend({SupabaseClient? client})
@@ -743,7 +747,10 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<String> testPush() async {
     try {
-      final r = await _c.functions.invoke('push', body: {'kind': 'test'});
+      final r = await _c.functions.invoke(
+        kPushFunction,
+        body: {'kind': 'test'},
+      );
       final data = r.data;
       if (data is Map && data['error'] is String) {
         return data['error'] as String;
@@ -765,7 +772,7 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<void> notifyTrip() => _guard(() async {
     // The push server function (Firebase); not set up yet → nothing.
-    await _c.functions.invoke('push', body: {'kind': 'trip'});
+    await _c.functions.invoke(kPushFunction, body: {'kind': 'trip'});
   });
 
   @override

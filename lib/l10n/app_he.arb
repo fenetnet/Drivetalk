@@ -1492,7 +1492,7 @@
   "@pushTestSent": {},
   "pushTestNoAppPush": "בגרסה הזו של האפליקציה עוד אין התראות (חסרות הגדרות Firebase ב-GitHub).",
   "@pushTestNoAppPush": {},
-  "pushTestNoFunction": "פונקציית ההתראות (push) לא נמצאה ב-Supabase.",
+  "pushTestNoFunction": "פונקציית ההתראות (smooth-responder) לא נמצאה ב-Supabase.",
   "@pushTestNoFunction": {},
   "pushTestNotConfigured": "בפונקציה חסר הסוד FCM_SERVICE_ACCOUNT ב-Supabase.",
   "@pushTestNotConfigured": {},

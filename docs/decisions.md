@@ -1197,7 +1197,7 @@ GitHub Actions ("Update database") מריץ קובצי SQL חדשים על הש�
   - הפונקציות `save_push_token`, `forget_push_token`, `set_trip_notify`, ו-`trip_push_claim`, שרק פונקציית השרת יכולה להריץ.
   - גם `my_status` מחזירה עכשיו את מצב המתג.
   - השינוי תואם לאפליקציות ישנות.
-- **פונקציית השרת `supabase/functions/push`:**
+- **פונקציית השרת `supabase/functions/smooth-responder`** (השם שנתן לה Supabase בהעלאה; האפליקציה קוראת לשם הזה):
   - מזהה מי פונה: אדם מחובר, או השירות שרץ ברקע בטלפון.
   - שואלת את המסד למי לשלוח, ושולחת דרך Firebase (FCM v1).
   - המפתח `FCM_SERVICE_ACCOUNT` נשמר רק בסודות של Supabase.

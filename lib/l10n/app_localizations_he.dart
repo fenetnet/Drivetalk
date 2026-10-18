@@ -2238,7 +2238,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get pushTestNoFunction =>
-      'פונקציית ההתראות (push) לא נמצאה ב-Supabase.';
+      'פונקציית ההתראות (smooth-responder) לא נמצאה ב-Supabase.';
 
   @override
   String get pushTestNotConfigured =>

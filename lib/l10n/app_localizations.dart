@@ -3745,7 +3745,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushTestNoFunction.
   ///
   /// In he, this message translates to:
-  /// **'פונקציית ההתראות (push) לא נמצאה ב-Supabase.'**
+  /// **'פונקציית ההתראות (smooth-responder) לא נמצאה ב-Supabase.'**
   String get pushTestNoFunction;
 
   /// No description provided for @pushTestNotConfigured.

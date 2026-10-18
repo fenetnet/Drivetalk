@@ -416,5 +416,5 @@ enabled = true
 
 # Push notifications (D-119): the function checks who is calling itself
 # (a sign-in token or the phone's device token).
-[functions.push]
+[functions.smooth-responder]
 verify_jwt = false
