@@ -1808,9 +1808,10 @@ Future<void> main() async {
   await reviewFixes2();
   await hideStartAndGroup();
   await tripPush();
+  await pushEvents();
 
   check(
-    await eve.rpc('schema_version') == 45,
+    await eve.rpc('schema_version') == 46,
     'the server says its version (41)',
   );
 
@@ -3247,4 +3248,106 @@ Future<void> tripPush() async {
   for (final c in [ta, tb, tc]) {
     await c.rpc('clear_availability');
   }
+}
+
+// --- push notes queued by the database (D-120)
+Future<void> pushEvents() async {
+  final pa = await newUser('פזית', 'female');
+  final pb = await newUser('פלג', 'male');
+  await befriend(pa, pb);
+  for (final c in [pa, pb]) {
+    await c.rpc(
+      'save_push_token',
+      params: {'p_token': 'events-token-${uid(c)}-0123456789', 'p_build': 140},
+    );
+  }
+  Future<int> queued(SupabaseClient c, String kind) async => int.parse(
+    await dbScalar(
+      "select count(*) from push_outbox where user_id = '${uid(c)}' "
+      "and kind = '$kind'",
+    ),
+  );
+  await dbExec("delete from push_outbox");
+  await skipQuietGap();
+  await free(pa);
+  await free(pb);
+  final offer = pendingOffers(await rows(pa, 'match_offers')).single;
+  check(
+    await queued(pa, 'sync') == 1 && await queued(pb, 'sync') == 1,
+    'a new question: both phones are woken to show it (D-120)',
+  );
+  await pa.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  await pb.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  check(
+    await queued(pa, 'sync') == 2 && await queued(pb, 'sync') == 2,
+    'both said yes: both phones are woken for the call',
+  );
+  final claimed = int.parse(
+    await dbScalar("select count(*) from push_outbox_claim()"),
+  );
+  final again = int.parse(
+    await dbScalar("select count(*) from push_outbox_claim()"),
+  );
+  check(claimed == 4 && again == 0, 'each queued note goes out once');
+  var hidden = false;
+  try {
+    await pa.from('push_outbox').select();
+  } on PostgrestException {
+    hidden = true;
+  }
+  var denied = false;
+  try {
+    await pa.rpc('push_outbox_claim');
+  } on PostgrestException {
+    denied = true;
+  }
+  check(hidden && denied, 'apps can neither read nor take the queue');
+  for (final c in [pa, pb]) {
+    await c.rpc('end_call', params: {'p_offer': offer['id']});
+    await c.rpc('clear_availability');
+  }
+  // The owner hears about feedback and new users.
+  await dbExec(
+    "insert into app_owners (user_id) values ('${uid(pa)}') on conflict do nothing",
+  );
+  await pb.rpc('send_feedback', params: {'p_body': 'נהדר', 'p_build': 140});
+  final owner = await queued(pa, 'owner');
+  await dbExec("delete from app_owners where user_id = '${uid(pa)}'");
+  check(owner >= 1, 'the owner is told about new feedback');
+  // A new version: once per build, only phones that don't have it.
+  await dbExec("delete from push_state");
+  final told = int.parse(
+    await dbScalar(
+      "select count(*) from version_push_claim(141) v "
+      "where v.push_token like 'events-token-%'",
+    ),
+  );
+  final twice = int.parse(
+    await dbScalar("select count(*) from version_push_claim(141)"),
+  );
+  final old = int.parse(
+    await dbScalar(
+      "select count(*) from version_push_claim(139) v "
+      "where v.push_token like 'events-token-%'",
+    ),
+  );
+  check(told == 2 && twice == 0 && old == 0, 'a new version is announced once');
+  // Older apps still save their address (one argument).
+  await pa.rpc(
+    'save_push_token',
+    params: {'p_token': 'older-app-token-0123456789'},
+  );
+  check(
+    await dbScalar(
+          "select count(*) from push_tokens where token = 'older-app-token-0123456789'",
+        ) ==
+        '1',
+    'an older app still saves its push address',
+  );
 }

@@ -18,6 +18,12 @@ class PushService : FirebaseMessagingService() {
         when (data["type"]) {
             // The test button on the app's test screen.
             "test" -> DrivingNotifications.showTest(this)
+            // A question or an agreed call for me (D-120).
+            "sync" -> PushSync.run(this)
+            // For the app's owners: feedback, a crash, a new user.
+            "owner" -> DrivingNotifications.showOwner(this, data["what"].orEmpty(), data["name"].orEmpty())
+            // A new version on Google Play.
+            "version" -> DrivingNotifications.showVersion(this)
             // "X is on the way" — a quick-connect friend started a trip.
             "trip" -> {
                 val from = data["from"] ?: return

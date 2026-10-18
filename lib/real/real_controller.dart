@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 44;
+const kRequiredSchema = 46;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1194,6 +1194,13 @@ class RealController extends Notifier<RealState> {
     'tripBody': _l.tripNotifBody,
     'tripTalk': _l.tripNotifTalk,
     'pushTestTitle': _l.pushTestTitle,
+    // News (D-120): a new version, notes for the owners.
+    'channelNews': _l.notifChannelNews,
+    'ownerFeedback': _l.ownerNotifFeedback,
+    'ownerCrash': _l.ownerNotifCrash,
+    'ownerUser': _l.ownerNotifUser('{name}'),
+    'versionTitle': _l.versionNotifTitle,
+    'versionBody': _l.versionNotifBody,
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
@@ -1871,7 +1878,7 @@ class RealController extends Notifier<RealState> {
       return;
     }
     try {
-      await _backend.savePushToken(token);
+      await _backend.savePushToken(token, build: ref.read(appBuildProvider));
       await _store.setString(_pushKey, token);
     } on RealBackendException {
       // Tried again next time the app opens.
@@ -1885,7 +1892,7 @@ class RealController extends Notifier<RealState> {
     if (token == null) return 'no_app_push';
     // Saved again now, in case it changed or the server was just updated.
     try {
-      await _backend.savePushToken(token);
+      await _backend.savePushToken(token, build: ref.read(appBuildProvider));
       await _store.setString(_pushKey, token);
     } on RealBackendException catch (e) {
       // Saving this phone's address failed (the reason, for the owner).

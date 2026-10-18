@@ -1527,7 +1527,7 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<void> savePushToken(String token) async {
+  Future<void> savePushToken(String token, {int? build}) async {
     server.pushTokens[token] = _uid;
   }
 

@@ -1511,5 +1511,23 @@
   "pushTestTitle": "בדיקה: ההתראות עובדות ✓",
   "@pushTestTitle": {},
   "pushTestNoToken": "הכתובת של הטלפון הזה לא נמצאה בשרת (no_token).",
-  "@pushTestNoToken": {}
+  "@pushTestNoToken": {},
+  "notifChannelNews": "עדכונים מ-DriveBond",
+  "@notifChannelNews": {},
+  "ownerNotifFeedback": "התקבל משוב חדש",
+  "@ownerNotifFeedback": {},
+  "ownerNotifCrash": "האפליקציה קרסה אצל מישהו",
+  "@ownerNotifCrash": {},
+  "ownerNotifUser": "משתמש חדש: {name}",
+  "@ownerNotifUser": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "versionNotifTitle": "יש גרסה חדשה של DriveBond",
+  "@versionNotifTitle": {},
+  "versionNotifBody": "לחיצה לעדכון ב-Google Play",
+  "@versionNotifBody": {}
 }

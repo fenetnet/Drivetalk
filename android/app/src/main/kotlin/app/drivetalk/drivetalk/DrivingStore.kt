@@ -102,6 +102,11 @@ class DrivingStore(context: Context) {
         false
     }
 
+    /** Push notifications work on this phone (D-120): poll the server less often. */
+    var pushReady: Boolean
+        get() = prefs.getBoolean("pushReady", false)
+        set(v) = prefs.edit().putBoolean("pushReady", v).apply()
+
     /** Texts come from the app (Hebrew strings live in the app's ARB file). */
     fun text(name: String, fallback: String): String =
         prefs.getString("text_$name", null) ?: fallback

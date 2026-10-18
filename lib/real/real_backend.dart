@@ -108,7 +108,7 @@ abstract class RealBackend {
 
   /// This phone's push address (Firebase), so notifications reach it when
   /// the app is closed (D-119).
-  Future<void> savePushToken(String token);
+  Future<void> savePushToken(String token, {int? build});
 
   /// Signing out on this phone: no more notifications for me here.
   Future<void> forgetPushToken(String token);

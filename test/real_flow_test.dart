@@ -1601,7 +1601,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 44)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 46)'));
     });
 
     test(

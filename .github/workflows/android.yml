@@ -187,6 +187,23 @@ jobs:
           status: completed
           releaseName: "${{ github.run_number }}"
 
+      # A new version is on Google Play: phones that don't have it yet hear
+      # about it, at most once a day each (D-120). The push function checks
+      # the build number itself in the public version.json.
+      - name: Tell phones about the new version
+        if: steps.play_upload.outcome == 'success'
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then exit 0; fi
+          # Give Google Play a moment to offer it.
+          sleep 90
+          curl -sS -m 60 -X POST "$SUPABASE_URL/functions/v1/smooth-responder" \
+            -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" \
+            -d '{"kind":"version"}' || true
+
       # An app not yet published to everyone may accept only a draft release:
       # then it waits in Play Console for one "Roll out" click.
       - name: Upload to Google Play (as a draft)

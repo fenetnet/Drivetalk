@@ -35,12 +35,9 @@ class DrivingApi(private val store: DrivingStore) {
         }
     }
 
-    /**
-     * "I'm on the way": the push function tells my quick-connect friends
-     * (D-119; the server decides who, at most once a day each).
-     */
-    fun notifyTrip() {
-        if (store.url.isEmpty() || store.key.isEmpty() || store.token.isEmpty()) return
+    /** Asks the push server function [body] (D-119/D-120). Quietly does nothing on failure. */
+    private fun callPush(body: JSONObject) {
+        if (store.url.isEmpty() || store.key.isEmpty()) return
         try {
             val c = URL("${store.url}/functions/v1/$PUSH_FUNCTION").openConnection() as HttpURLConnection
             c.requestMethod = "POST"
@@ -49,20 +46,32 @@ class DrivingApi(private val store: DrivingStore) {
             c.doOutput = true
             c.setRequestProperty("apikey", store.key)
             c.setRequestProperty("Content-Type", "application/json")
-            val body = JSONObject().put("kind", "trip").put("device_token", store.token)
             c.outputStream.use { it.write(body.toString().toByteArray()) }
             c.responseCode
             c.disconnect()
         } catch (e: Exception) {
-            // Not set up yet, or no network: nobody is told this time.
+            // Not set up yet, or no network: the phones still poll.
         }
     }
+
+    /**
+     * "I'm on the way": the push function tells my quick-connect friends
+     * (D-119; the server decides who, at most once a day each).
+     */
+    fun notifyTrip() {
+        if (store.token.isEmpty()) return
+        callPush(JSONObject().put("kind", "trip").put("device_token", store.token))
+    }
+
+    /** After my action: whatever the server queued for others goes out now (D-120). */
+    fun kick() = callPush(JSONObject().put("kind", "flush"))
 
     /**
      * Trip availability is a short lease (15 minutes) that the running
      * service renews: if the phone kills the service, it ends by itself soon.
      */
-    fun start(): String? = rpc("auto_start", JSONObject().put("p_minutes", LEASE_MINUTES))?.trim('"')
+    fun start(): String? =
+        rpc("auto_start", JSONObject().put("p_minutes", LEASE_MINUTES))?.trim('"')?.also { kick() }
 
     companion object {
         /** The push server function as deployed in Supabase (D-119). */
@@ -78,10 +87,10 @@ class DrivingApi(private val store: DrivingStore) {
         val body = JSONObject().put("p_minutes", minutes).put("p_mode", mode)
         if (circle.isNotEmpty()) {
             val r = rpc("device_start", JSONObject(body.toString()).put("p_circle", circle))
-            if (r != null) return r.trim() != "null"
+            if (r != null) return (r.trim() != "null").also { if (it) kick() }
             // Older server without circles here: for everyone instead.
         }
-        return rpc("device_start", body)?.let { it.trim() != "null" } ?: false
+        return (rpc("device_start", body)?.let { it.trim() != "null" } ?: false).also { if (it) kick() }
     }
 
     /** "Stop" on the notification: end any availability (manual too). */
@@ -103,6 +112,7 @@ class DrivingApi(private val store: DrivingStore) {
 
     fun answer(offerId: String): Answer? {
         val text = rpc("device_answer", JSONObject().put("p_offer", offerId)) ?: return null
+        kick()
         return try {
             val o = JSONObject(text)
             Answer(o.optString("status", ""), o.optBoolean("i_call", false))

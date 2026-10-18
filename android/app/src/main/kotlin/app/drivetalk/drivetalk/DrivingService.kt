@@ -50,6 +50,14 @@ class DrivingService : Service() {
         @Volatile var watching = false
             private set
 
+        @Volatile private var instance: DrivingService? = null
+
+        /**
+         * A push said "something for you" (D-120): look now. False when the
+         * service isn't running (then the push itself shows it).
+         */
+        fun pollNow(): Boolean = instance?.pollSoon() ?: false
+
         fun start(context: Context) = send(context, ACTION_START)
 
         fun end(context: Context) = send(context, ACTION_END)
@@ -196,6 +204,7 @@ class DrivingService : Service() {
         }
         running = true
         watching = true
+        instance = this
         startedAt = System.currentTimeMillis()
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
@@ -227,6 +236,21 @@ class DrivingService : Service() {
         main.postDelayed(poll, 3_000)
     }
 
+    /** Ticks of [poll]; with push working, offers are fetched every 3rd. */
+    private var ticks = 0
+
+    private fun pollSoon(): Boolean {
+        if (!running) return false
+        main.post {
+            callsUntil = System.currentTimeMillis() + 3 * 60_000L
+            if (running && !polling) {
+                polling = true
+                io.execute { pollOffers(this) }
+            }
+        }
+        return true
+    }
+
     private val poll: Runnable = object : Runnable {
         override fun run() {
             if (!running) return
@@ -249,7 +273,11 @@ class DrivingService : Service() {
                 tripTold = true
                 io.execute { DrivingApi(DrivingStore(ctx)).notifyTrip() }
             }
-            if (!polling) {
+            // With push working, the server wakes this service when there is
+            // something (D-120): looking every 30 seconds is a safety net.
+            ticks++
+            val due = !DrivingStore(ctx).pushReady || ticks % 3 == 0
+            if (due && !polling) {
                 polling = true
                 io.execute { pollOffers(ctx) }
             }
@@ -362,6 +390,7 @@ class DrivingService : Service() {
     private fun finish(callServer: Boolean) {
         running = false
         watching = false
+        if (instance === this) instance = null
         tripAt = 0L
         tripTold = false
         main.removeCallbacks(poll)
@@ -402,6 +431,7 @@ class DrivingService : Service() {
     override fun onDestroy() {
         running = false
         watching = false
+        if (instance === this) instance = null
         main.removeCallbacks(poll)
         tts?.shutdown()
         io.shutdown()

@@ -3783,6 +3783,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הכתובת של הטלפון הזה לא נמצאה בשרת (no_token).'**
   String get pushTestNoToken;
+
+  /// No description provided for @notifChannelNews.
+  ///
+  /// In he, this message translates to:
+  /// **'עדכונים מ-DriveBond'**
+  String get notifChannelNews;
+
+  /// No description provided for @ownerNotifFeedback.
+  ///
+  /// In he, this message translates to:
+  /// **'התקבל משוב חדש'**
+  String get ownerNotifFeedback;
+
+  /// No description provided for @ownerNotifCrash.
+  ///
+  /// In he, this message translates to:
+  /// **'האפליקציה קרסה אצל מישהו'**
+  String get ownerNotifCrash;
+
+  /// No description provided for @ownerNotifUser.
+  ///
+  /// In he, this message translates to:
+  /// **'משתמש חדש: {name}'**
+  String ownerNotifUser(String name);
+
+  /// No description provided for @versionNotifTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'יש גרסה חדשה של DriveBond'**
+  String get versionNotifTitle;
+
+  /// No description provided for @versionNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'לחיצה לעדכון ב-Google Play'**
+  String get versionNotifBody;
 }
 
 class _AppLocalizationsDelegate

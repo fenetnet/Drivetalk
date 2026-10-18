@@ -29,6 +29,11 @@ object DrivingNotifications {
     const val CHANNEL_TRIP = "friend_trips"
     private const val ID_TRIP_BASE = 7600
 
+    /** News for me: a new version, owner notes (D-120). */
+    const val CHANNEL_NEWS = "app_news"
+    private const val ID_OWNER = 7700
+    private const val ID_VERSION = 7701
+
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -62,6 +67,13 @@ object DrivingNotifications {
         talk.enableVibration(true)
         talk.vibrationPattern = VIBRATION
         nm.createNotificationChannel(talk)
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_NEWS,
+                store.text("channelNews", "DriveBond news"),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ),
+        )
         nm.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_TRIP,
@@ -339,6 +351,41 @@ object DrivingNotifications {
             .setAutoCancel(true)
             .setContentIntent(openApp(context, 299))
         context.getSystemService(NotificationManager::class.java).notify(ID_TRIP_BASE + 999, b.build())
+    }
+
+    /** For the app's owners: new feedback / a crash / a new user (D-120). */
+    fun showOwner(context: Context, what: String, name: String) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val title = when (what) {
+            "feedback" -> store.text("ownerFeedback", "New feedback")
+            "crash" -> store.text("ownerCrash", "A crash")
+            else -> store.text("ownerUser", "New user: {name}").replace("{name}", name)
+        }
+        val b = builder(context, CHANNEL_NEWS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(title)
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 298))
+        context.getSystemService(NotificationManager::class.java)
+            .notify(ID_OWNER + (what.hashCode() and 0x3f), b.build())
+    }
+
+    /** "A new version of DriveBond" — opens Google Play (D-120). */
+    fun showVersion(context: Context) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val play = Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://play.google.com/store/apps/details?id=${context.packageName}"),
+        ).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK }
+        val b = builder(context, CHANNEL_NEWS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text("versionTitle", "A new version of DriveBond"))
+            .setContentText(store.text("versionBody", ""))
+            .setAutoCancel(true)
+            .setContentIntent(PendingIntent.getActivity(context, 297, play, flags()))
+        context.getSystemService(NotificationManager::class.java).notify(ID_VERSION, b.build())
     }
 
     fun cancelTrip(context: Context, friendId: String) {

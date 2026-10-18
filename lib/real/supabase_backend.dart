@@ -71,7 +71,7 @@ class SupabaseRealBackend implements RealBackend {
     final p = await updateProfile(name, gender);
     _subscribe();
     return p;
-  });
+  }).whenComplete(_kickPush);
 
   @override
   Future<RealProfile> updateProfile(String name, Gender gender) =>
@@ -395,7 +395,7 @@ class SupabaseRealBackend implements RealBackend {
       'set_availability',
       params: {'p_mode': mode.name, 'p_minutes': minutes, 'p_circle': circleId},
     );
-  });
+  }).whenComplete(_kickPush);
 
   @override
   Future<void> nudgeOffers() => _guard(() async => _c.rpc('nudge_offers'));
@@ -534,7 +534,7 @@ class SupabaseRealBackend implements RealBackend {
           iCall: m['i_call'] == true,
           phone: m['phone'] as String?,
         );
-      });
+      }).whenComplete(_kickPush);
 
   @override
   Future<void> seenCall(String offerId) => _guard(() async {
@@ -733,8 +733,31 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() => _c.rpc('set_hide_status', params: {'p_hide': hide}));
 
   @override
-  Future<void> savePushToken(String token) =>
-      _guard(() => _c.rpc('save_push_token', params: {'p_token': token}));
+  Future<void> savePushToken(String token, {int? build}) => _guard(
+    () => _c.rpc(
+      'save_push_token',
+      params: {'p_token': token, 'p_build': ?build},
+    ),
+  );
+
+  DateTime? _lastKick;
+
+  /// After an action that may notify someone (a question, an answer, an
+  /// agreed call, feedback…): the push function sends whatever the server
+  /// queued (D-120). Never waited for, never an error for the user.
+  void _kickPush() {
+    final now = DateTime.now();
+    if (_lastKick != null &&
+        now.difference(_lastKick!) < const Duration(seconds: 2)) {
+      return;
+    }
+    _lastKick = now;
+    unawaited(
+      _c.functions
+          .invoke(kPushFunction, body: {'kind': 'flush'})
+          .then<void>((_) {}, onError: (Object _) {}),
+    );
+  }
 
   @override
   Future<void> forgetPushToken(String token) =>
@@ -926,7 +949,7 @@ class SupabaseRealBackend implements RealBackend {
   Future<String> askFriend(String userId) => _guard(
     () async =>
         await _c.rpc('ask_friend', params: {'p_user': userId}) as String,
-  );
+  ).whenComplete(_kickPush);
 
   @override
   Future<bool> stillFree() =>
@@ -990,7 +1013,7 @@ class SupabaseRealBackend implements RealBackend {
         'p_stack': stack,
       },
     ),
-  );
+  ).whenComplete(_kickPush);
 
   @override
   Future<void> touchSeen() async {
@@ -1004,7 +1027,7 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<void> sendFeedback(String text, {int? build}) => _guard(
     () => _c.rpc('send_feedback', params: {'p_body': text, 'p_build': build}),
-  );
+  ).whenComplete(_kickPush);
 
   @override
   Future<void> logEvent(String name, {int? ms}) async {

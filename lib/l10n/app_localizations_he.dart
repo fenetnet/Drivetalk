@@ -2262,4 +2262,24 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get pushTestNoToken =>
       'הכתובת של הטלפון הזה לא נמצאה בשרת (no_token).';
+
+  @override
+  String get notifChannelNews => 'עדכונים מ-DriveBond';
+
+  @override
+  String get ownerNotifFeedback => 'התקבל משוב חדש';
+
+  @override
+  String get ownerNotifCrash => 'האפליקציה קרסה אצל מישהו';
+
+  @override
+  String ownerNotifUser(String name) {
+    return 'משתמש חדש: $name';
+  }
+
+  @override
+  String get versionNotifTitle => 'יש גרסה חדשה של DriveBond';
+
+  @override
+  String get versionNotifBody => 'לחיצה לעדכון ב-Google Play';
 }

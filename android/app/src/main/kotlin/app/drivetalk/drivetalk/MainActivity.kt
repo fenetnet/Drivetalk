@@ -327,7 +327,10 @@ class MainActivity : FlutterActivity() {
             }
             com.google.firebase.messaging.FirebaseMessaging.getInstance().token
                 .addOnCompleteListener { t ->
-                    result.success(if (t.isSuccessful) t.result else null)
+                    val token = if (t.isSuccessful) t.result else null
+                    // Push works here: the background service polls less (D-120).
+                    if (token != null) DrivingStore(this).pushReady = true
+                    result.success(token)
                 }
         } catch (e: Exception) {
             result.success(null)

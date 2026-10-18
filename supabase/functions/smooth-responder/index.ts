@@ -1,5 +1,10 @@
 // DriveBond — push notifications through Firebase (D-119).
 //
+// POST { "kind": "flush" }: send whatever the database queued (questions,
+// agreed calls, owner notes) — any phone asks right after its own action;
+// each queued note goes out once, so asking twice does no harm.
+// POST { "kind": "version" }: a new build is out (CI calls it after Google
+// Play took it); the build number is read from the public version.json.
 // POST { "kind": "trip" } with the user's sign-in token, or
 // POST { "kind": "test" } (a test notification to my own phones), or
 // POST { "kind": "trip", "device_token": "…" } from the phone's background
@@ -63,6 +68,62 @@ export async function googleToken(sa: { client_email: string; private_key: strin
   return (await r.json()).access_token;
 }
 
+/** The public file the build publishes next to the APK ({"build": N}). */
+const VERSION_URL =
+  "https://github.com/fenetnet/Drivetalk/releases/download/prototype/version.json";
+
+type Note = { push_token: string; data: Record<string, string> };
+
+/** Sends [notes] through Firebase; tokens Firebase says are gone are dropped. */
+async function deliver(
+  admin: ReturnType<typeof createClient>,
+  saText: string,
+  notes: Note[],
+): Promise<{ sent: number; lastError: string }> {
+  if (notes.length === 0) return { sent: 0, lastError: "" };
+  const sa = JSON.parse(saText);
+  const access = await googleToken(sa);
+  let sent = 0;
+  let lastError = "";
+  for (const n of notes) {
+    const r = await fetch(
+      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: {
+            token: n.push_token,
+            // Data only: the app builds the notification itself (its
+            // texts, its buttons).
+            data: n.data,
+            android: { priority: "HIGH", ttl: "1800s" },
+          },
+        }),
+      },
+    );
+    if (r.ok) {
+      sent++;
+      continue;
+    }
+    const why = await r.text();
+    console.error("push: Firebase answered", r.status, why);
+    lastError = `firebase_${r.status}`;
+    if (r.status === 404 || why.includes("UNREGISTERED")) {
+      // The phone uninstalled the app or the token changed.
+      await admin.rpc("drop_push_token", { p_token: n.push_token });
+    }
+  }
+  return { sent, lastError };
+}
+
+/** Firebase data values must be strings. */
+function strings(o: Record<string, unknown>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(o)) out[k] = v == null ? "" : String(v);
+  return out;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ error: "method" }, 405);
@@ -78,6 +139,42 @@ Deno.serve(async (req) => {
   } catch {
     // empty body
   }
+
+  // Anyone may ask: only what the database already queued goes out, once.
+  if (body.kind === "flush") {
+    const { data, error } = await admin.rpc("push_outbox_claim");
+    if (error) {
+      console.error("flush: claim failed", error.message);
+      return json({ error: "claim", detail: error.message }, 500);
+    }
+    const rows = (data ?? []) as { kind: string; data: Record<string, unknown>; push_token: string }[];
+    const r = await deliver(admin, saText, rows.map((x) => ({
+      push_token: x.push_token,
+      data: strings({ ...(x.data ?? {}), type: x.kind }),
+    })));
+    return json({ sent: r.sent });
+  }
+
+  // A new build: checked against the public version file, once per build.
+  if (body.kind === "version") {
+    let build = 0;
+    try {
+      const v = await fetch(VERSION_URL);
+      build = Number((await v.json()).build) || 0;
+    } catch {
+      // unknown: nothing to announce
+    }
+    if (build <= 0) return json({ sent: 0, error: "no_version" });
+    const { data, error } = await admin.rpc("version_push_claim", { p_build: build });
+    if (error) return json({ error: "claim", detail: error.message }, 500);
+    const rows = (data ?? []) as { push_token: string }[];
+    const r = await deliver(admin, saText, rows.map((x) => ({
+      push_token: x.push_token,
+      data: { type: "version", build: String(build) },
+    })));
+    return json({ sent: r.sent, build });
+  }
+
   if (body.kind !== "trip" && body.kind !== "test") return json({ error: "kind" }, 400);
 
   // Who is asking: the background service (device token) or the app.
@@ -94,7 +191,7 @@ Deno.serve(async (req) => {
   }
   if (!user) return json({ error: "not_authenticated" }, 401);
 
-  let list: { friend_id: string; push_token: string; from_name: string }[];
+  let notes: Note[];
   if (body.kind === "test") {
     // The test button: my own phones only.
     const { data, error } = await admin.from("push_tokens").select("token").eq("user_id", user);
@@ -102,54 +199,21 @@ Deno.serve(async (req) => {
       console.error("push test: reading tokens failed", error.message);
       return json({ error: "no_server", detail: error.message }, 500);
     }
-    list = (data ?? []).map((r: { token: string }) => ({ friend_id: user!, push_token: r.token, from_name: "" }));
-    if (list.length === 0) return json({ sent: 0, error: "no_token" });
+    notes = (data ?? []).map((r: { token: string }) => ({ push_token: r.token, data: { type: "test" } }));
+    if (notes.length === 0) return json({ sent: 0, error: "no_token" });
   } else {
     const { data: targets, error } = await admin.rpc("trip_push_claim", { p_user: user });
     if (error) {
       console.error("trip push: claim failed", error.message);
       return json({ error: "claim", detail: error.message }, 500);
     }
-    list = (targets ?? []) as typeof list;
+    notes = ((targets ?? []) as { push_token: string; from_name: string }[]).map((t) => ({
+      push_token: t.push_token,
+      data: { type: "trip", from: user!, name: t.from_name ?? "" },
+    }));
   }
-  if (list.length === 0) return json({ sent: 0 });
-
-  const sa = JSON.parse(saText);
-  const access = await googleToken(sa);
-  let sent = 0;
-  let lastError = "";
-  for (const t of list) {
-    const r = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: {
-            token: t.push_token,
-            // Data only: the app builds the notification itself (its
-            // texts, its "Talk" button).
-            data: body.kind === "test"
-              ? { type: "test" }
-              : { type: "trip", from: user, name: t.from_name ?? "" },
-            android: { priority: "HIGH", ttl: "1800s" },
-          },
-        }),
-      },
-    );
-    if (r.ok) {
-      sent++;
-      continue;
-    }
-    const why = await r.text();
-    console.error("push: Firebase answered", r.status, why);
-    lastError = `firebase_${r.status}`;
-    if (r.status === 404 || why.includes("UNREGISTERED")) {
-      // The phone uninstalled the app or the token changed.
-      await admin.rpc("drop_push_token", { p_token: t.push_token });
-    }
-  }
+  const r = await deliver(admin, saText, notes);
   // Nothing went through: say why (the test button shows it).
-  if (sent === 0 && lastError) return json({ sent, error: lastError });
-  return json({ sent });
+  if (r.sent === 0 && r.lastError) return json({ sent: 0, error: r.lastError });
+  return json({ sent: r.sent });
 });
