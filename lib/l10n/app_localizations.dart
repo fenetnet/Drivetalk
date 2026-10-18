@@ -3837,6 +3837,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בשיחה: חברים לא רואים שיש לך זמן (מוסתר בשיחה).'**
   String get friendsSeeMeHidden;
+
+  /// Push: a friend said yes to talking, the question closed before I answered (D-121)
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{{name} ניסתה להשיג אותך} male{{name} ניסה להשיג אותך} other{פספסת שיחה עם {name}}}'**
+  String missedNotifTitle(String name, String gender);
+
+  /// No description provided for @missedNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'השאלה נסגרה לפני שענית. אפשר להתקשר כשנוח.'**
+  String get missedNotifBody;
+
+  /// No description provided for @quietPickDays.
+  ///
+  /// In he, this message translates to:
+  /// **'באילו ימים?'**
+  String get quietPickDays;
+
+  /// No description provided for @quietDaysSave.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירה'**
+  String get quietDaysSave;
+
+  /// Short day names Sunday..Saturday, comma separated
+  ///
+  /// In he, this message translates to:
+  /// **'א,ב,ג,ד,ה,ו,ש'**
+  String get quietDayLetters;
+
+  /// No description provided for @settingsQuietOnDays.
+  ///
+  /// In he, this message translates to:
+  /// **'בימים {days}, בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.'**
+  String settingsQuietOnDays(String days, String from, String to);
 }
 
 class _AppLocalizationsDelegate

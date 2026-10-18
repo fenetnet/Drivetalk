@@ -645,8 +645,72 @@ String _hhmm(int minutes) =>
 String _quietLine(BuildContext context, MyStatus? st) {
   final l = context.l10n;
   if (st == null || !st.hasQuietHours) return l.settingsQuietOff;
-  return l.settingsQuietOn(_hhmm(st.quietFrom!), _hhmm(st.quietTo!));
+  final days = st.quietDays;
+  if (days == null || days & 127 == 127) {
+    return l.settingsQuietOn(_hhmm(st.quietFrom!), _hhmm(st.quietTo!));
+  }
+  final letters = l.quietDayLetters.split(',');
+  return l.settingsQuietOnDays(
+    [
+      for (var d = 0; d < 7; d++)
+        if (days & (1 << d) != 0) letters[d],
+    ].join(', '),
+    _hhmm(st.quietFrom!),
+    _hhmm(st.quietTo!),
+  );
 }
+
+/// Which days quiet hours apply (bit 0 = Sunday). Null = closed.
+Future<int?> _pickQuietDays(BuildContext context, int initial) =>
+    showModalBottomSheet<int>(
+      context: context,
+      showDragHandle: true,
+      builder: (d) {
+        final l = d.l10n;
+        final letters = l.quietDayLetters.split(',');
+        var days = initial;
+        return StatefulBuilder(
+          builder: (d, set) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    l.quietPickDays,
+                    style: Theme.of(d).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      for (var i = 0; i < 7; i++)
+                        FilterChip(
+                          key: ValueKey('quiet-day-$i'),
+                          label: Text(letters[i]),
+                          selected: days & (1 << i) != 0,
+                          onSelected: (on) => set(
+                            () =>
+                                days = on ? days | (1 << i) : days & ~(1 << i),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: days == 0 ? null : () => Navigator.pop(d, days),
+                    child: Text(l.quietDaysSave),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
 
 /// Quiet hours: from / to (or off). Only automatic trips are affected.
 Future<void> _pickQuietHours(BuildContext context, WidgetRef ref) async {
@@ -698,6 +762,12 @@ Future<void> _pickQuietHours(BuildContext context, WidgetRef ref) async {
       minute: (st?.quietTo ?? 0) % 60,
     ),
   );
-  if (to == null) return;
-  await c.setQuietHours(from.hour * 60 + from.minute, to.hour * 60 + to.minute);
+  if (to == null || !context.mounted) return;
+  // Closing the days step keeps the days as they were.
+  final days = await _pickQuietDays(context, st?.quietDays ?? 127);
+  await c.setQuietHours(
+    from.hour * 60 + from.minute,
+    to.hour * 60 + to.minute,
+    days: days,
+  );
 }

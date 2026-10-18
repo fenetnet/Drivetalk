@@ -24,6 +24,11 @@ class PushService : FirebaseMessagingService() {
             "owner" -> DrivingNotifications.showOwner(this, data["what"].orEmpty(), data["name"].orEmpty())
             // A new version on Google Play.
             "version" -> DrivingNotifications.showVersion(this)
+            // "X tried to reach you" — they said yes, I didn't answer (D-121).
+            "missed" -> {
+                val from = data["from"] ?: return
+                DrivingNotifications.showMissed(this, from, data["name"].orEmpty(), data["gender"].orEmpty())
+            }
             // "X is on the way" — a quick-connect friend started a trip.
             "trip" -> {
                 val from = data["from"] ?: return

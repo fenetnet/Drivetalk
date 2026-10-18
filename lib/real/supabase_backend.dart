@@ -975,6 +975,7 @@ class SupabaseRealBackend implements RealBackend {
     bool? hideInCall,
     int? quietFrom,
     int? quietTo,
+    int? quietDays,
     bool clearQuiet = false,
     String? timeZone,
   }) => _guard(
@@ -985,6 +986,7 @@ class SupabaseRealBackend implements RealBackend {
         'p_hide_in_call': ?hideInCall,
         'p_quiet_from': ?quietFrom,
         'p_quiet_to': ?quietTo,
+        'p_quiet_days': ?quietDays,
         'p_clear_quiet': clearQuiet,
         'p_time_zone': ?timeZone,
       },
@@ -1260,6 +1262,7 @@ class SupabaseRealBackend implements RealBackend {
           hideInCall: r['hide_in_call'] == true,
           quietFrom: (r['quiet_from'] as num?)?.toInt(),
           quietTo: (r['quiet_to'] as num?)?.toInt(),
+          quietDays: (r['quiet_days'] as num?)?.toInt(),
           autoMissed: (r['auto_missed'] as num?)?.toInt() ?? 0,
           hiddenFree: (r['hidden_free'] as num?)?.toInt() ?? 0,
           pending: {for (final x in (r['pending'] as List? ?? const [])) '$x'},

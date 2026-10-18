@@ -604,6 +604,19 @@ void main() {
     expect(currentOffer(me.s, now), isNotNull);
   });
 
+  test('a phone call closes my open questions (D-121)', () async {
+    await connect();
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await me.c.refresh();
+    expect(currentOffer(me.s, now), isNotNull);
+    server.phoneCall(me.backend.userId!, true);
+    await me.c.refresh();
+    await yoni.c.refresh();
+    expect(currentOffer(me.s, now), isNull);
+    expect(currentOffer(yoni.s, now), isNull);
+  });
+
   test('"in a call" ends by itself if the phone stops reporting', () async {
     await connect();
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
@@ -1601,7 +1614,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 46)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 47)'));
     });
 
     test(
@@ -2165,6 +2178,23 @@ void main() {
       expect(server.autoStart(me.driving.token!), 'quiet_hours');
       await me.c.setQuietHours(null, null);
       expect(server.autoStart(me.driving.token!), 'available');
+    });
+
+    test('quiet hours only on the days I chose (D-121)', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final today = now.weekday % 7; // Sunday = 0
+      await me.c.setQuietHours(7 * 60, 9 * 60, days: 127 ^ (1 << today));
+      expect(me.s.snapshot!.status.quietDays, 127 ^ (1 << today));
+      expect(server.autoStart(me.driving.token!), 'available');
+      await me.c.stopAvailability();
+      await me.c.setQuietHours(7 * 60, 9 * 60, days: 1 << today);
+      expect(server.autoStart(me.driving.token!), 'quiet_hours');
+      // Changing only the hours keeps the days.
+      await me.c.setQuietHours(7 * 60, 10 * 60);
+      expect(me.s.snapshot!.status.quietDays, 1 << today);
+      await me.c.setQuietHours(7 * 60, 9 * 60, days: 127);
+      expect(me.s.snapshot!.status.quietDays, isNull, reason: 'every day');
     });
 
     test(

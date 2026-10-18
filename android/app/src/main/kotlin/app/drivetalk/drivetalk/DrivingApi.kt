@@ -102,7 +102,8 @@ class DrivingApi(private val store: DrivingStore) {
 
     /** "In a call" (true) / "call ended" (false): friends see "in a call". */
     fun phoneCall(on: Boolean): String? =
-        rpc("device_phone_call", JSONObject().put("p_on", on))?.trim('"')
+        // A call closes my open questions: the one who said yes is told (D-121).
+        rpc("device_phone_call", JSONObject().put("p_on", on))?.trim('"')?.also { if (on) kick() }
 
     fun decline(offerId: String): String? =
         rpc("auto_decline", JSONObject().put("p_offer", offerId))?.trim('"')

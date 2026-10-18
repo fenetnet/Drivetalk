@@ -349,6 +349,13 @@ class DrivingService : Service() {
         val busy = audio.mode == AudioManager.MODE_IN_CALL ||
             audio.mode == AudioManager.MODE_IN_COMMUNICATION
         if (busy == phoneBusy && !(busy && now - phoneSentAt > PHONE_RENEW_MS)) return
+        if (busy && !phoneBusy) {
+            // A call started: the open questions are closed (D-121) — stop
+            // asking aloud and take their notifications away.
+            tts?.stop()
+            for (id in quickShown) DrivingNotifications.cancelOffer(this, id)
+            quickShown.clear()
+        }
         // Remembered only once the server has it (else: again in 10 s).
         phoneSentAt = now
         val store = DrivingStore(this)

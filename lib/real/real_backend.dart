@@ -205,6 +205,7 @@ abstract class RealBackend {
     bool? hideInCall,
     int? quietFrom,
     int? quietTo,
+    int? quietDays,
     bool clearQuiet = false,
     String? timeZone,
   });

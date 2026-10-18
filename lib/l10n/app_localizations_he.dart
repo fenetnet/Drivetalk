@@ -2295,4 +2295,31 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get friendsSeeMeHidden =>
       'בשיחה: חברים לא רואים שיש לך זמן (מוסתר בשיחה).';
+
+  @override
+  String missedNotifTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': '$name ניסתה להשיג אותך',
+      'male': '$name ניסה להשיג אותך',
+      'other': 'פספסת שיחה עם $name',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get missedNotifBody => 'השאלה נסגרה לפני שענית. אפשר להתקשר כשנוח.';
+
+  @override
+  String get quietPickDays => 'באילו ימים?';
+
+  @override
+  String get quietDaysSave => 'שמירה';
+
+  @override
+  String get quietDayLetters => 'א,ב,ג,ד,ה,ו,ש';
+
+  @override
+  String settingsQuietOnDays(String days, String from, String to) {
+    return 'בימים $days, בין השעה $from לשעה $to, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.';
+  }
 }

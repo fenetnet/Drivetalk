@@ -303,6 +303,24 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('quiet hours show the chosen days (D-121)', (t) async {
+    final (me, _) = await twoFriends(
+      t,
+      driving: FakeDrivingDetector(supported: true),
+    );
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      await c.setQuietHours(22 * 60, 7 * 60, days: (1 << 5) | (1 << 6));
+      await c.phonePermissions(); // the phone's driving support, loaded
+    });
+    await _show(t, me, const RealSettingsScreen());
+    final line = find.textContaining('בימים ו, ש, בין השעה 22:00 לשעה 07:00');
+    await t.scrollUntilVisible(line, 200);
+    expect(line, findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
   testWidgets('asking a friend after the card behind changed does not crash', (
     t,
   ) async {

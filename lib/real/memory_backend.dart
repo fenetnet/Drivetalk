@@ -190,6 +190,9 @@ class MemoryServer {
   final anonymous = <String>{};
   final hideInCall = <String>{};
   final quietHours = <String, (int, int)>{};
+
+  /// Days of quiet hours (bit 0 = Sunday); none = every day (D-121).
+  final quietDays = <String, int>{};
   final autoMissed = <String, int>{};
 
   /// Pair → the one who must decide (added from contacts).
@@ -201,7 +204,16 @@ class MemoryServer {
     if (q == null || q.$1 == q.$2) return false;
     final t = now();
     final m = t.hour * 60 + t.minute;
-    return q.$1 < q.$2 ? m >= q.$1 && m < q.$2 : m >= q.$1 || m < q.$2;
+    final today = t.weekday % 7; // Sunday = 0
+    final int? day;
+    if (q.$1 < q.$2) {
+      day = m >= q.$1 && m < q.$2 ? today : null;
+    } else {
+      day = m >= q.$1 ? today : (m < q.$2 ? (today + 6) % 7 : null);
+    }
+    if (day == null) return false;
+    final days = quietDays[u];
+    return days == null || days & (1 << day) != 0;
   }
 
   bool awaitsApproval(String owner, String viewer) =>
@@ -389,12 +401,22 @@ class MemoryServer {
   final phoneUntil = <String, DateTime>{};
   bool _onPhone(String u) => phoneUntil[u]?.isAfter(now()) ?? false;
 
-  /// The phone says "in a call" (true) / "call ended" (false).
+  /// The phone says "in a call" (true) / "call ended" (false). A call
+  /// closes my open questions (D-121).
   void phoneCall(String u, bool on) {
     if (on && availability.containsKey(u)) {
       phoneUntil[u] = now().add(const Duration(minutes: 3));
     } else {
       phoneUntil.remove(u);
+    }
+    if (on) {
+      for (final o in offers.values) {
+        if (o.status == OfferStatus.pending && (o.a == u || o.b == u)) {
+          o
+            ..status = OfferStatus.cancelled
+            ..updatedAt = now();
+        }
+      }
     }
     _changed();
   }
@@ -966,6 +988,7 @@ class MemoryRealBackend implements RealBackend {
         tripNotify: !server.tripNotifyOff.contains(me),
         quietFrom: server.quietHours[me]?.$1,
         quietTo: server.quietHours[me]?.$2,
+        quietDays: server.quietDays[me],
         autoMissed: server.autoMissed[me] ?? 0,
         hiddenFree: [
           for (final f in friends)
@@ -1919,6 +1942,7 @@ class MemoryRealBackend implements RealBackend {
     bool? hideInCall,
     int? quietFrom,
     int? quietTo,
+    int? quietDays,
     bool clearQuiet = false,
     String? timeZone,
   }) async {
@@ -1932,7 +1956,15 @@ class MemoryRealBackend implements RealBackend {
     flag(server.hideInCall, hideInCall);
     if (clearQuiet) {
       server.quietHours.remove(me);
-    } else if (quietFrom != null || quietTo != null) {
+      server.quietDays.remove(me);
+    } else if (quietDays != null) {
+      if (quietDays <= 0 || quietDays >= 127) {
+        server.quietDays.remove(me);
+      } else {
+        server.quietDays[me] = quietDays;
+      }
+    }
+    if (!clearQuiet && (quietFrom != null || quietTo != null)) {
       final cur = server.quietHours[me];
       server.quietHours[me] = (
         quietFrom ?? cur?.$1 ?? 0,

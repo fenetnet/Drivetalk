@@ -1809,9 +1809,10 @@ Future<void> main() async {
   await hideStartAndGroup();
   await tripPush();
   await pushEvents();
+  await missedAndQuietDays();
 
   check(
-    await eve.rpc('schema_version') == 46,
+    await eve.rpc('schema_version') == 47,
     'the server says its version (41)',
   );
 
@@ -3325,7 +3326,8 @@ Future<void> pushEvents() async {
   final told = int.parse(
     await dbScalar(
       "select count(*) from version_push_claim(141) v "
-      "where v.push_token like 'events-token-%'",
+      "where v.push_token in ('events-token-${uid(pa)}-0123456789', "
+      "'events-token-${uid(pb)}-0123456789')",
     ),
   );
   final twice = int.parse(
@@ -3334,7 +3336,8 @@ Future<void> pushEvents() async {
   final old = int.parse(
     await dbScalar(
       "select count(*) from version_push_claim(139) v "
-      "where v.push_token like 'events-token-%'",
+      "where v.push_token in ('events-token-${uid(pa)}-0123456789', "
+      "'events-token-${uid(pb)}-0123456789')",
     ),
   );
   check(told == 2 && twice == 0 && old == 0, 'a new version is announced once');
@@ -3350,4 +3353,131 @@ Future<void> pushEvents() async {
         '1',
     'an older app still saves its push address',
   );
+}
+
+Future<void> missedAndQuietDays() async {
+  final ma = await newUser('מאיה', 'female');
+  final mb = await newUser('מתן', 'male');
+  await befriend(ma, mb);
+  for (final c in [ma, mb]) {
+    await c.rpc(
+      'save_push_token',
+      params: {'p_token': 'missed-token-${uid(c)}-0123456789', 'p_build': 150},
+    );
+  }
+  Future<List<dynamic>> missed(SupabaseClient c) async {
+    final r = await dbScalar(
+      "select coalesce(json_agg(data), '[]') from push_outbox "
+      "where user_id = '${uid(c)}' and kind = 'missed'",
+    );
+    return jsonDecode(r) as List<dynamic>;
+  }
+
+  final mbToken = await mb.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  await skipQuietGap();
+  await free(ma);
+  await free(mb);
+  final offer = pendingOffers(await rows(ma, 'match_offers')).single;
+  await ma.rpc(
+    'answer_offer',
+    params: {'p_offer': offer['id'], 'p_accept': true},
+  );
+  await bg.rpc('device_phone_call', params: {'p_token': mbToken, 'p_on': true});
+  final after = (await rows(
+    ma,
+    'match_offers',
+  )).firstWhere((o) => o['id'] == offer['id']);
+  check(
+    after['status'] == 'cancelled',
+    'a phone call starts: my open questions close (D-121)',
+  );
+  final toMb = await missed(mb);
+  final toMa = await missed(ma);
+  check(
+    toMb.length == 1 &&
+        toMb.single['from'] == uid(ma) &&
+        toMb.single['name'] == 'מאיה' &&
+        toMa.isEmpty,
+    'she said yes and I didn\'t answer: I hear "she tried to reach you"',
+  );
+  await bg.rpc(
+    'device_phone_call',
+    params: {'p_token': mbToken, 'p_on': false},
+  );
+  // Nobody said yes → no note.
+  await skipQuietGap();
+  final again = pendingOffers(await rows(ma, 'match_offers'));
+  for (final o in again) {
+    await mb.rpc(
+      'answer_offer',
+      params: {'p_offer': o['id'], 'p_accept': false},
+    );
+  }
+  check(
+    (await missed(ma)).isEmpty,
+    'a question I didn\'t say yes to: no "tried to reach you"',
+  );
+  for (final c in [ma, mb]) {
+    await c.rpc('clear_availability');
+  }
+
+  // Quiet hours on some days only.
+  final today = int.parse(
+    await dbScalar("select extract(dow from now() at time zone 'UTC')::int"),
+  );
+  Future<bool> quiet() async =>
+      await dbScalar("select public.in_quiet_hours('${uid(ma)}')") == 't';
+  await ma.rpc(
+    'set_settings',
+    params: {
+      'p_quiet_from': 0,
+      'p_quiet_to': 1439,
+      'p_time_zone': 'UTC',
+      'p_quiet_days': 1 << today,
+    },
+  );
+  final onToday = await quiet();
+  final status = await ma.rpc('my_status') as Map<String, dynamic>;
+  await ma.rpc('set_settings', params: {'p_quiet_days': 127 ^ (1 << today)});
+  final otherDays = await quiet();
+  // An older app (no days) leaves the days as they are.
+  await ma.rpc('set_settings', params: {'p_quiet_from': 0, 'p_quiet_to': 1439});
+  final kept = await quiet();
+  await ma.rpc('set_settings', params: {'p_quiet_days': 127});
+  final everyDay = await quiet();
+  check(
+    onToday &&
+        status['quiet_days'] == 1 << today &&
+        !otherDays &&
+        !kept &&
+        everyDay,
+    'quiet hours can be limited to chosen days',
+  );
+  // Hours across midnight belong to the day they start.
+  final yesterday = (today + 6) % 7;
+  final nowMin = int.parse(
+    await dbScalar(
+      "select (extract(hour from now() at time zone 'UTC') * 60 "
+      "+ extract(minute from now() at time zone 'UTC'))::int",
+    ),
+  );
+  if (nowMin < 1430) {
+    await ma.rpc(
+      'set_settings',
+      params: {
+        'p_quiet_from': 1439,
+        'p_quiet_to': nowMin + 5,
+        'p_quiet_days': 1 << yesterday,
+      },
+    );
+    final fromYesterday = await quiet();
+    await ma.rpc('set_settings', params: {'p_quiet_days': 1 << today});
+    final notToday = await quiet();
+    check(
+      fromYesterday && !notToday,
+      'night hours count for the evening they start',
+    );
+  }
+  await ma.rpc('set_settings', params: {'p_clear_quiet': true});
 }

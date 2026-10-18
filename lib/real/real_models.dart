@@ -259,6 +259,7 @@ class MyStatus {
     this.hideInCall = false,
     this.quietFrom,
     this.quietTo,
+    this.quietDays,
     this.autoMissed = 0,
     this.hiddenFree = 0,
     this.pending = const {},
@@ -281,6 +282,10 @@ class MyStatus {
   final int? quietTo;
   bool get hasQuietHours =>
       quietFrom != null && quietTo != null && quietFrom != quietTo;
+
+  /// The days quiet hours apply (bit 0 = Sunday … bit 6 = Saturday; null =
+  /// every day). Hours across midnight belong to the day they start.
+  final int? quietDays;
 
   /// Automatic trips in a row with an unanswered question.
   final int autoMissed;

@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 46;
+const kRequiredSchema = 47;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -1201,6 +1201,11 @@ class RealController extends Notifier<RealState> {
     'ownerUser': _l.ownerNotifUser('{name}'),
     'versionTitle': _l.versionNotifTitle,
     'versionBody': _l.versionNotifBody,
+    // "X tried to reach you" (D-121), by their gender.
+    'missedTitleF': _l.missedNotifTitle('{name}', 'female'),
+    'missedTitleM': _l.missedNotifTitle('{name}', 'male'),
+    'missedTitleO': _l.missedNotifTitle('{name}', 'other'),
+    'missedBody': _l.missedNotifBody,
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
@@ -2895,14 +2900,16 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
-  /// Quiet hours (minutes after midnight); null = none.
-  Future<void> setQuietHours(int? from, int? to) async {
+  /// Quiet hours (minutes after midnight); null = none. [days]: bit 0 =
+  /// Sunday … bit 6 = Saturday (127 = every day; null = unchanged).
+  Future<void> setQuietHours(int? from, int? to, {int? days}) async {
     await _run(
       () => from == null || to == null
           ? _backend.setSettings(clearQuiet: true)
           : _backend.setSettings(
               quietFrom: from,
               quietTo: to,
+              quietDays: days,
               timeZone: ref.read(timeZoneProvider),
             ),
     );

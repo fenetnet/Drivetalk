@@ -34,6 +34,9 @@ object DrivingNotifications {
     private const val ID_OWNER = 7700
     private const val ID_VERSION = 7701
 
+    /** "X tried to reach you" (D-121), one per friend. */
+    private const val ID_MISSED_BASE = 7800
+
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -386,6 +389,29 @@ object DrivingNotifications {
             .setAutoCancel(true)
             .setContentIntent(PendingIntent.getActivity(context, 297, play, flags()))
         context.getSystemService(NotificationManager::class.java).notify(ID_VERSION, b.build())
+    }
+
+    /**
+     * "X tried to reach you": they said yes, the question closed before I
+     * answered (D-121). Only a note; tapping opens the app.
+     */
+    fun showMissed(context: Context, friendId: String, name: String, gender: String) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val shown = store.nameFor(friendId, name)
+        val key = when (gender) {
+            "female" -> "missedTitleF"
+            "male" -> "missedTitleM"
+            else -> "missedTitleO"
+        }
+        val b = builder(context, CHANNEL_NEWS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text(key, "{name}").replace("{name}", shown))
+            .setContentText(store.text("missedBody", ""))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 296))
+        context.getSystemService(NotificationManager::class.java)
+            .notify(ID_MISSED_BASE + (friendId.hashCode() and 0xff), b.build())
     }
 
     fun cancelTrip(context: Context, friendId: String) {
