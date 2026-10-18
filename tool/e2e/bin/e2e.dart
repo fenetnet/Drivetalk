@@ -1812,7 +1812,7 @@ Future<void> main() async {
   await missedAndQuietDays();
 
   check(
-    await eve.rpc('schema_version') == 47,
+    await eve.rpc('schema_version') == 48,
     'the server says its version (41)',
   );
 
@@ -3400,6 +3400,18 @@ Future<void> missedAndQuietDays() async {
         toMb.single['name'] == 'מאיה' &&
         toMa.isEmpty,
     'she said yes and I didn\'t answer: I hear "she tried to reach you"',
+  );
+  await bg.rpc(
+    'device_phone_call',
+    params: {'p_token': mbToken, 'p_on': false},
+  );
+  // Once a day at most (owner: no overload).
+  await skipQuietGap();
+  final tapped = await ma.rpc('ask_friend', params: {'p_user': uid(mb)});
+  await bg.rpc('device_phone_call', params: {'p_token': mbToken, 'p_on': true});
+  check(
+    tapped == 'asked' && (await missed(mb)).length == 1,
+    '"tried to reach you" at most once a day',
   );
   await bg.rpc(
     'device_phone_call',
