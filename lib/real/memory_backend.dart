@@ -1546,6 +1546,10 @@ class MemoryRealBackend implements RealBackend {
   List<String> lastTripTold = const [];
 
   @override
+  Future<String> testPush() async =>
+      server.pushTokens.values.contains(_uid) ? 'sent' : 'no_token';
+
+  @override
   Future<void> notifyTrip() async {
     lastTripTold = server.tripPushClaim(_uid);
   }

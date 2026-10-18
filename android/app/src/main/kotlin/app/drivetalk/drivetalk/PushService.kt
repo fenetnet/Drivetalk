@@ -16,6 +16,8 @@ class PushService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         when (data["type"]) {
+            // The test button on the app's test screen.
+            "test" -> DrivingNotifications.showTest(this)
             // "X is on the way" — a quick-connect friend started a trip.
             "trip" -> {
                 val from = data["from"] ?: return

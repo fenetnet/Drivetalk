@@ -1,6 +1,7 @@
 // DriveBond — push notifications through Firebase (D-119).
 //
 // POST { "kind": "trip" } with the user's sign-in token, or
+// POST { "kind": "test" } (a test notification to my own phones), or
 // POST { "kind": "trip", "device_token": "…" } from the phone's background
 // service. The database decides who is told (trip_push_claim); this only
 // delivers. Secrets (never in git): FCM_SERVICE_ACCOUNT (the Firebase
@@ -77,7 +78,7 @@ Deno.serve(async (req) => {
   } catch {
     // empty body
   }
-  if (body.kind !== "trip") return json({ error: "kind" }, 400);
+  if (body.kind !== "trip" && body.kind !== "test") return json({ error: "kind" }, 400);
 
   // Who is asking: the background service (device token) or the app.
   let user: string | null = null;
@@ -93,9 +94,18 @@ Deno.serve(async (req) => {
   }
   if (!user) return json({ error: "not_authenticated" }, 401);
 
-  const { data: targets, error } = await admin.rpc("trip_push_claim", { p_user: user });
-  if (error) return json({ error: "claim" }, 500);
-  const list = (targets ?? []) as { friend_id: string; push_token: string; from_name: string }[];
+  let list: { friend_id: string; push_token: string; from_name: string }[];
+  if (body.kind === "test") {
+    // The test button: my own phones only.
+    const { data, error } = await admin.from("push_tokens").select("token").eq("user_id", user);
+    if (error) return json({ error: "no_server" }, 500);
+    list = (data ?? []).map((r: { token: string }) => ({ friend_id: user!, push_token: r.token, from_name: "" }));
+    if (list.length === 0) return json({ sent: 0, error: "no_token" });
+  } else {
+    const { data: targets, error } = await admin.rpc("trip_push_claim", { p_user: user });
+    if (error) return json({ error: "claim" }, 500);
+    list = (targets ?? []) as typeof list;
+  }
   if (list.length === 0) return json({ sent: 0 });
 
   const sa = JSON.parse(saText);
@@ -112,7 +122,9 @@ Deno.serve(async (req) => {
             token: t.push_token,
             // Data only: the app builds the notification itself (its
             // texts, its "Talk" button).
-            data: { type: "trip", from: user, name: t.from_name ?? "" },
+            data: body.kind === "test"
+              ? { type: "test" }
+              : { type: "trip", from: user, name: t.from_name ?? "" },
             android: { priority: "HIGH", ttl: "1800s" },
           },
         }),

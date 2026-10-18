@@ -2224,4 +2224,38 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get settingsTripNotifyBody =>
       'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.';
+
+  @override
+  String get pushTestButton => 'שליחת התראת בדיקה אליי';
+
+  @override
+  String get pushTestSent =>
+      'נשלחה התראת בדיקה. היא אמורה להופיע בעוד כמה שניות.';
+
+  @override
+  String get pushTestNoAppPush =>
+      'בגרסה הזו של האפליקציה עוד אין התראות (חסרות הגדרות Firebase ב-GitHub).';
+
+  @override
+  String get pushTestNoFunction =>
+      'פונקציית ההתראות (push) לא נמצאה ב-Supabase.';
+
+  @override
+  String get pushTestNotConfigured =>
+      'בפונקציה חסר הסוד FCM_SERVICE_ACCOUNT ב-Supabase.';
+
+  @override
+  String get pushTestNoServer => 'השרת עוד לא עודכן לחלק 12 (גרסה 44).';
+
+  @override
+  String get pushTestNotAllowed =>
+      'הפונקציה דורשת אימות: צריך לכבות בה את Enforce JWT Verification.';
+
+  @override
+  String pushTestFailed(String code) {
+    return 'השליחה לא הצליחה ($code).';
+  }
+
+  @override
+  String get pushTestTitle => 'בדיקה: ההתראות עובדות ✓';
 }

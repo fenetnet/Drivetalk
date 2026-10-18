@@ -329,6 +329,18 @@ object DrivingNotifications {
             .notify(ID_TRIP_BASE + (friendId.hashCode() and 0xff), b.build())
     }
 
+    /** The test screen's "send me a test notification" (D-119). */
+    fun showTest(context: Context) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val b = builder(context, CHANNEL_TRIP)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text("pushTestTitle", "DriveBond ✓"))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 299))
+        context.getSystemService(NotificationManager::class.java).notify(ID_TRIP_BASE + 999, b.build())
+    }
+
     fun cancelTrip(context: Context, friendId: String) {
         context.getSystemService(NotificationManager::class.java)
             .cancel(ID_TRIP_BASE + (friendId.hashCode() and 0xff))

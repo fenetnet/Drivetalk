@@ -1485,5 +1485,29 @@
   "settingsTripNotify": "להודיע לחברים עם חיבור מהיר כשיוצאים לדרך",
   "@settingsTripNotify": {},
   "settingsTripNotifyBody": "רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.",
-  "@settingsTripNotifyBody": {}
+  "@settingsTripNotifyBody": {},
+  "pushTestButton": "שליחת התראת בדיקה אליי",
+  "@pushTestButton": {},
+  "pushTestSent": "נשלחה התראת בדיקה. היא אמורה להופיע בעוד כמה שניות.",
+  "@pushTestSent": {},
+  "pushTestNoAppPush": "בגרסה הזו של האפליקציה עוד אין התראות (חסרות הגדרות Firebase ב-GitHub).",
+  "@pushTestNoAppPush": {},
+  "pushTestNoFunction": "פונקציית ההתראות (push) לא נמצאה ב-Supabase.",
+  "@pushTestNoFunction": {},
+  "pushTestNotConfigured": "בפונקציה חסר הסוד FCM_SERVICE_ACCOUNT ב-Supabase.",
+  "@pushTestNotConfigured": {},
+  "pushTestNoServer": "השרת עוד לא עודכן לחלק 12 (גרסה 44).",
+  "@pushTestNoServer": {},
+  "pushTestNotAllowed": "הפונקציה דורשת אימות: צריך לכבות בה את Enforce JWT Verification.",
+  "@pushTestNotAllowed": {},
+  "pushTestFailed": "השליחה לא הצליחה ({code}).",
+  "@pushTestFailed": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "pushTestTitle": "בדיקה: ההתראות עובדות ✓",
+  "@pushTestTitle": {}
 }

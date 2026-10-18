@@ -3723,6 +3723,60 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.'**
   String get settingsTripNotifyBody;
+
+  /// No description provided for @pushTestButton.
+  ///
+  /// In he, this message translates to:
+  /// **'שליחת התראת בדיקה אליי'**
+  String get pushTestButton;
+
+  /// No description provided for @pushTestSent.
+  ///
+  /// In he, this message translates to:
+  /// **'נשלחה התראת בדיקה. היא אמורה להופיע בעוד כמה שניות.'**
+  String get pushTestSent;
+
+  /// No description provided for @pushTestNoAppPush.
+  ///
+  /// In he, this message translates to:
+  /// **'בגרסה הזו של האפליקציה עוד אין התראות (חסרות הגדרות Firebase ב-GitHub).'**
+  String get pushTestNoAppPush;
+
+  /// No description provided for @pushTestNoFunction.
+  ///
+  /// In he, this message translates to:
+  /// **'פונקציית ההתראות (push) לא נמצאה ב-Supabase.'**
+  String get pushTestNoFunction;
+
+  /// No description provided for @pushTestNotConfigured.
+  ///
+  /// In he, this message translates to:
+  /// **'בפונקציה חסר הסוד FCM_SERVICE_ACCOUNT ב-Supabase.'**
+  String get pushTestNotConfigured;
+
+  /// No description provided for @pushTestNoServer.
+  ///
+  /// In he, this message translates to:
+  /// **'השרת עוד לא עודכן לחלק 12 (גרסה 44).'**
+  String get pushTestNoServer;
+
+  /// No description provided for @pushTestNotAllowed.
+  ///
+  /// In he, this message translates to:
+  /// **'הפונקציה דורשת אימות: צריך לכבות בה את Enforce JWT Verification.'**
+  String get pushTestNotAllowed;
+
+  /// No description provided for @pushTestFailed.
+  ///
+  /// In he, this message translates to:
+  /// **'השליחה לא הצליחה ({code}).'**
+  String pushTestFailed(String code);
+
+  /// No description provided for @pushTestTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בדיקה: ההתראות עובדות ✓'**
+  String get pushTestTitle;
 }
 
 class _AppLocalizationsDelegate

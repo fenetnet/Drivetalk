@@ -741,6 +741,28 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() => _c.rpc('set_trip_notify', params: {'p_on': on}));
 
   @override
+  Future<String> testPush() async {
+    try {
+      final r = await _c.functions.invoke('push', body: {'kind': 'test'});
+      final data = r.data;
+      if (data is Map && data['error'] is String) {
+        return data['error'] as String;
+      }
+      return 'sent';
+    } on FunctionException catch (e) {
+      final d = e.details;
+      if (d is Map && d['error'] is String) return d['error'] as String;
+      return switch (e.status) {
+        404 => 'no_function',
+        401 || 403 => 'not_allowed',
+        _ => 'error_${e.status}',
+      };
+    } catch (_) {
+      return 'offline';
+    }
+  }
+
+  @override
   Future<void> notifyTrip() => _guard(() async {
     // The push server function (Firebase); not set up yet → nothing.
     await _c.functions.invoke('push', body: {'kind': 'trip'});

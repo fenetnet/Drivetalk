@@ -1193,6 +1193,7 @@ class RealController extends Notifier<RealState> {
     'tripTitle': _l.tripNotifTitle('{name}'),
     'tripBody': _l.tripNotifBody,
     'tripTalk': _l.tripNotifTalk,
+    'pushTestTitle': _l.pushTestTitle,
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
@@ -1875,6 +1876,21 @@ class RealController extends Notifier<RealState> {
     } on RealBackendException {
       // Tried again next time the app opens.
     }
+  }
+
+  /// The test screen: a notification to my own phone (checks the whole
+  /// push chain). Returns a code (see [RealBackend.testPush]).
+  Future<String> testPush() async {
+    final token = await ref.read(drivingDetectorProvider).pushToken();
+    if (token == null) return 'no_app_push';
+    // Saved again now, in case it changed or the server was just updated.
+    try {
+      await _backend.savePushToken(token);
+      await _store.setString(_pushKey, token);
+    } on RealBackendException catch (e) {
+      return e.code == 'offline' ? 'offline' : 'no_server';
+    }
+    return _backend.testPush();
   }
 
   /// "Tell my quick-connect friends when I'm on the way" (D-119).

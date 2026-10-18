@@ -120,6 +120,10 @@ abstract class RealBackend {
   /// at most once a day each).
   Future<void> notifyTrip();
 
+  /// A test notification to my own phones: 'sent', 'no_token',
+  /// 'no_function', 'not_configured', 'no_server', 'offline' or another code.
+  Future<String> testPush();
+
   /// "Everyone else" (friends in none of my circles): who sees that I'm
   /// free. null = always, empty = never.
   Future<void> setOthersVisibility(Set<AvailabilityMode>? modes);

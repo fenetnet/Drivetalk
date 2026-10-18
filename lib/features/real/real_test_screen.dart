@@ -192,6 +192,32 @@ class RealTestScreen extends ConsumerWidget {
               icon: const Icon(Icons.copy_rounded),
               label: Text(l.realCopyDiagnostics),
             ),
+            const SizedBox(height: 8),
+            // The whole notification chain, end to end (D-119).
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+              onPressed: () async {
+                final r = await c.testPush();
+                messengerKey.currentState?.showSnackBar(
+                  SnackBar(
+                    content: Text(switch (r) {
+                      'sent' => l.pushTestSent,
+                      'no_app_push' => l.pushTestNoAppPush,
+                      'no_function' => l.pushTestNoFunction,
+                      'not_configured' => l.pushTestNotConfigured,
+                      'no_server' || 'no_token' => l.pushTestNoServer,
+                      'not_allowed' => l.pushTestNotAllowed,
+                      'offline' => l.realErrorOffline,
+                      _ => l.pushTestFailed(r),
+                    }),
+                    behavior: SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 6),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.notifications_active_rounded),
+              label: Text(l.pushTestButton),
+            ),
             if (kDevTools && s.driving.enabled) ...[
               const SizedBox(height: 8),
               Row(
