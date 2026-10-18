@@ -7,10 +7,6 @@ import java.net.URL
 
 /** The background calls (device token only). Never on the main thread. */
 class DrivingApi(private val store: DrivingStore) {
-    companion object {
-        /** The push server function as deployed in Supabase (D-119). */
-        const val PUSH_FUNCTION = "smooth-responder"
-    }
 
 
     /**
@@ -69,6 +65,9 @@ class DrivingApi(private val store: DrivingStore) {
     fun start(): String? = rpc("auto_start", JSONObject().put("p_minutes", LEASE_MINUTES))?.trim('"')
 
     companion object {
+        /** The push server function as deployed in Supabase (D-119). */
+        const val PUSH_FUNCTION = "smooth-responder"
+
         const val LEASE_MINUTES = 15
     }
 
