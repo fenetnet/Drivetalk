@@ -3873,6 +3873,234 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בימים {days}, בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.'**
   String settingsQuietOnDays(String days, String from, String to);
+
+  /// No description provided for @aboutTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'על DriveBond'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutSettingsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותן'**
+  String get aboutSettingsBody;
+
+  /// No description provided for @aboutHero.
+  ///
+  /// In he, this message translates to:
+  /// **'הזמן המת של היום, בנסיעה, בפקק או בהליכה, הופך לשיחה טובה עם מישהו שחשוב לך.'**
+  String get aboutHero;
+
+  /// No description provided for @aboutSpecialTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מה מיוחד כאן'**
+  String get aboutSpecialTitle;
+
+  /// No description provided for @aboutSpecial1Title.
+  ///
+  /// In he, this message translates to:
+  /// **'רגע מת הופך לשיחה'**
+  String get aboutSpecial1Title;
+
+  /// No description provided for @aboutSpecial1Body.
+  ///
+  /// In he, this message translates to:
+  /// **'כשיש לכם זמן באותו רגע, האפליקציה מחברת ביניכם. בלי לתאם מראש ובלי \"נדבר מתישהו\".'**
+  String get aboutSpecial1Body;
+
+  /// No description provided for @aboutSpecial2Title.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה רק כששניכם רוצים'**
+  String get aboutSpecial2Title;
+
+  /// No description provided for @aboutSpecial2Body.
+  ///
+  /// In he, this message translates to:
+  /// **'אף שיחה לא מתחילה בלי \"כן\" משני הצדדים. גם כשמזוהה נסיעה, זה רק אומר שיש זמן, לא שמישהו יתקשר.'**
+  String get aboutSpecial2Body;
+
+  /// No description provided for @aboutSpecial3Title.
+  ///
+  /// In he, this message translates to:
+  /// **'בנהיגה: בקול ובכפתורים גדולים'**
+  String get aboutSpecial3Title;
+
+  /// No description provided for @aboutSpecial3Body.
+  ///
+  /// In he, this message translates to:
+  /// **'הטלפון מקריא מי פנוי, ועונים \"כן\" או \"לא\" בקול. בלי הקלדה ובלי רשימות לגלול.'**
+  String get aboutSpecial3Body;
+
+  /// No description provided for @aboutSpecial4Title.
+  ///
+  /// In he, this message translates to:
+  /// **'אתם שולטים'**
+  String get aboutSpecial4Title;
+
+  /// No description provided for @aboutSpecial4Body.
+  ///
+  /// In he, this message translates to:
+  /// **'מי רואה שיש לכם זמן, שעות וימים שקטים, הסתרה בזמן שיחה, וחסימה. הכול בהגדרות.'**
+  String get aboutSpecial4Body;
+
+  /// No description provided for @aboutSpecial5Title.
+  ///
+  /// In he, this message translates to:
+  /// **'בלי פיד ובלי זרים'**
+  String get aboutSpecial5Title;
+
+  /// No description provided for @aboutSpecial5Body.
+  ///
+  /// In he, this message translates to:
+  /// **'אין גלילה אינסופית ואין צ\'אט אקראי. רק שיחות עם אנשים שבחרתם.'**
+  String get aboutSpecial5Body;
+
+  /// No description provided for @aboutPermsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'ההרשאות בטלפון'**
+  String get aboutPermsTitle;
+
+  /// No description provided for @aboutPermsIntro.
+  ///
+  /// In he, this message translates to:
+  /// **'מה אישרת ולמה צריך את זה. כל הרשאה משמשת רק למה שכתוב כאן.'**
+  String get aboutPermsIntro;
+
+  /// No description provided for @aboutPermOn.
+  ///
+  /// In he, this message translates to:
+  /// **'מאושר'**
+  String get aboutPermOn;
+
+  /// No description provided for @aboutPermOff.
+  ///
+  /// In he, this message translates to:
+  /// **'לא אושר'**
+  String get aboutPermOff;
+
+  /// No description provided for @aboutPermOptional.
+  ///
+  /// In he, this message translates to:
+  /// **'רשות'**
+  String get aboutPermOptional;
+
+  /// No description provided for @aboutPermInUse.
+  ///
+  /// In he, this message translates to:
+  /// **'בשימוש'**
+  String get aboutPermInUse;
+
+  /// No description provided for @aboutPermNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי שתדעו כשחבר פנוי, כשמישהו שואל אם יש לכם זמן, או כשמישהו ניסה להשיג אתכם, גם כשהאפליקציה סגורה.'**
+  String get aboutPermNotifBody;
+
+  /// No description provided for @aboutPermCallBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם אומרים \"כן\", השיחה יוצאת מיד דרך החייגן הרגיל של הטלפון, בלי עוד לחיצה. האפליקציה לא קוראת את יומן השיחות.'**
+  String get aboutPermCallBody;
+
+  /// No description provided for @aboutPermMicBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.'**
+  String get aboutPermMicBody;
+
+  /// No description provided for @aboutPermBgBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חיסכון הסוללה של הטלפון עלול לעצור את האפליקציה באמצע נסיעה. הפטור מאפשר לה להמשיך לעבוד ולהודיע לכם בזמן.'**
+  String get aboutPermBgBody;
+
+  /// No description provided for @aboutPermContactsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אנשי קשר'**
+  String get aboutPermContactsTitle;
+
+  /// No description provided for @aboutPermContactsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי למצוא חברים שכבר משתמשים ב-DriveBond. נקראים רק מספרי הטלפון, והם עוברים הצפנה חד-כיוונית בטלפון עצמו. השמות לא יוצאים מהטלפון, ואף אחד לא מתחבר אליכם בלי שתבחרו.'**
+  String get aboutPermContactsBody;
+
+  /// No description provided for @aboutPermActivityTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'פעילות גופנית (זיהוי נסיעה)'**
+  String get aboutPermActivityTitle;
+
+  /// No description provided for @aboutPermActivityBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רק אם הדלקתם \"זמינות אוטומטית בנסיעה\". אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום. זה כבוי עד שמדליקים.'**
+  String get aboutPermActivityBody;
+
+  /// No description provided for @aboutPermBtTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'בלוטות\' (הרכב)'**
+  String get aboutPermBtTitle;
+
+  /// No description provided for @aboutPermBtBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רשות: אם בחרתם את הרכב, האפליקציה שמה לב כשהטלפון מתחבר אליו, וכך מזהה נסיעה מהר יותר. המידע נשאר בטלפון.'**
+  String get aboutPermBtBody;
+
+  /// No description provided for @aboutPrivacyTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מה אנחנו אף פעם לא עושים'**
+  String get aboutPrivacyTitle;
+
+  /// No description provided for @aboutNever1.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מקליטים שיחות, לא מתמללים, ואין שום בינה מלאכותית על מה שנאמר.'**
+  String get aboutNever1;
+
+  /// No description provided for @aboutNever2.
+  ///
+  /// In he, this message translates to:
+  /// **'לא קוראים את יומן השיחות.'**
+  String get aboutNever2;
+
+  /// No description provided for @aboutNever3.
+  ///
+  /// In he, this message translates to:
+  /// **'לא משתמשים ב-GPS. מיקום, מסלול ומהירות לא נשלחים לאף אחד.'**
+  String get aboutNever3;
+
+  /// No description provided for @aboutNever4.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים רואים רק אם יש לכם זמן, באיזה מצב (למשל בנסיעה), ועד מתי.'**
+  String get aboutNever4;
+
+  /// No description provided for @aboutNever5.
+  ///
+  /// In he, this message translates to:
+  /// **'לא אומרים שאתם הנהגים, רק ש\"הטלפון כנראה ברכב\".'**
+  String get aboutNever5;
+
+  /// No description provided for @aboutFeedbackTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'עזרו לנו לשפר'**
+  String get aboutFeedbackTitle;
+
+  /// No description provided for @aboutFeedbackBody.
+  ///
+  /// In he, this message translates to:
+  /// **'האפליקציה עדיין בבדיקה. כל הערה עוזרת: מה אהבתם, מה בלבל, ומה לא עבד.'**
+  String get aboutFeedbackBody;
 }
 
 class _AppLocalizationsDelegate

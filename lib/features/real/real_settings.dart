@@ -12,6 +12,7 @@ import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
+import 'real_about.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
 import 'real_home.dart';
@@ -192,6 +193,15 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsGeneral,
             children: [
+              ListTile(
+                leading: const Icon(Icons.info_rounded),
+                title: Text(l.aboutTitle),
+                subtitle: Text(l.aboutSettingsBody),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+                ),
+              ),
               ListTile(
                 leading: const Icon(Icons.app_settings_alt_rounded),
                 title: Text(l.permsSettings),

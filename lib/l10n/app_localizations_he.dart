@@ -2322,4 +2322,137 @@ class AppLocalizationsHe extends AppLocalizations {
   String settingsQuietOnDays(String days, String from, String to) {
     return 'בימים $days, בין השעה $from לשעה $to, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.';
   }
+
+  @override
+  String get aboutTitle => 'על DriveBond';
+
+  @override
+  String get aboutSettingsBody =>
+      'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותן';
+
+  @override
+  String get aboutHero =>
+      'הזמן המת של היום, בנסיעה, בפקק או בהליכה, הופך לשיחה טובה עם מישהו שחשוב לך.';
+
+  @override
+  String get aboutSpecialTitle => 'מה מיוחד כאן';
+
+  @override
+  String get aboutSpecial1Title => 'רגע מת הופך לשיחה';
+
+  @override
+  String get aboutSpecial1Body =>
+      'כשיש לכם זמן באותו רגע, האפליקציה מחברת ביניכם. בלי לתאם מראש ובלי \"נדבר מתישהו\".';
+
+  @override
+  String get aboutSpecial2Title => 'שיחה רק כששניכם רוצים';
+
+  @override
+  String get aboutSpecial2Body =>
+      'אף שיחה לא מתחילה בלי \"כן\" משני הצדדים. גם כשמזוהה נסיעה, זה רק אומר שיש זמן, לא שמישהו יתקשר.';
+
+  @override
+  String get aboutSpecial3Title => 'בנהיגה: בקול ובכפתורים גדולים';
+
+  @override
+  String get aboutSpecial3Body =>
+      'הטלפון מקריא מי פנוי, ועונים \"כן\" או \"לא\" בקול. בלי הקלדה ובלי רשימות לגלול.';
+
+  @override
+  String get aboutSpecial4Title => 'אתם שולטים';
+
+  @override
+  String get aboutSpecial4Body =>
+      'מי רואה שיש לכם זמן, שעות וימים שקטים, הסתרה בזמן שיחה, וחסימה. הכול בהגדרות.';
+
+  @override
+  String get aboutSpecial5Title => 'בלי פיד ובלי זרים';
+
+  @override
+  String get aboutSpecial5Body =>
+      'אין גלילה אינסופית ואין צ\'אט אקראי. רק שיחות עם אנשים שבחרתם.';
+
+  @override
+  String get aboutPermsTitle => 'ההרשאות בטלפון';
+
+  @override
+  String get aboutPermsIntro =>
+      'מה אישרת ולמה צריך את זה. כל הרשאה משמשת רק למה שכתוב כאן.';
+
+  @override
+  String get aboutPermOn => 'מאושר';
+
+  @override
+  String get aboutPermOff => 'לא אושר';
+
+  @override
+  String get aboutPermOptional => 'רשות';
+
+  @override
+  String get aboutPermInUse => 'בשימוש';
+
+  @override
+  String get aboutPermNotifBody =>
+      'כדי שתדעו כשחבר פנוי, כשמישהו שואל אם יש לכם זמן, או כשמישהו ניסה להשיג אתכם, גם כשהאפליקציה סגורה.';
+
+  @override
+  String get aboutPermCallBody =>
+      'כששניכם אומרים \"כן\", השיחה יוצאת מיד דרך החייגן הרגיל של הטלפון, בלי עוד לחיצה. האפליקציה לא קוראת את יומן השיחות.';
+
+  @override
+  String get aboutPermMicBody =>
+      'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.';
+
+  @override
+  String get aboutPermBgBody =>
+      'חיסכון הסוללה של הטלפון עלול לעצור את האפליקציה באמצע נסיעה. הפטור מאפשר לה להמשיך לעבוד ולהודיע לכם בזמן.';
+
+  @override
+  String get aboutPermContactsTitle => 'אנשי קשר';
+
+  @override
+  String get aboutPermContactsBody =>
+      'כדי למצוא חברים שכבר משתמשים ב-DriveBond. נקראים רק מספרי הטלפון, והם עוברים הצפנה חד-כיוונית בטלפון עצמו. השמות לא יוצאים מהטלפון, ואף אחד לא מתחבר אליכם בלי שתבחרו.';
+
+  @override
+  String get aboutPermActivityTitle => 'פעילות גופנית (זיהוי נסיעה)';
+
+  @override
+  String get aboutPermActivityBody =>
+      'רק אם הדלקתם \"זמינות אוטומטית בנסיעה\". אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום. זה כבוי עד שמדליקים.';
+
+  @override
+  String get aboutPermBtTitle => 'בלוטות\' (הרכב)';
+
+  @override
+  String get aboutPermBtBody =>
+      'רשות: אם בחרתם את הרכב, האפליקציה שמה לב כשהטלפון מתחבר אליו, וכך מזהה נסיעה מהר יותר. המידע נשאר בטלפון.';
+
+  @override
+  String get aboutPrivacyTitle => 'מה אנחנו אף פעם לא עושים';
+
+  @override
+  String get aboutNever1 =>
+      'לא מקליטים שיחות, לא מתמללים, ואין שום בינה מלאכותית על מה שנאמר.';
+
+  @override
+  String get aboutNever2 => 'לא קוראים את יומן השיחות.';
+
+  @override
+  String get aboutNever3 =>
+      'לא משתמשים ב-GPS. מיקום, מסלול ומהירות לא נשלחים לאף אחד.';
+
+  @override
+  String get aboutNever4 =>
+      'חברים רואים רק אם יש לכם זמן, באיזה מצב (למשל בנסיעה), ועד מתי.';
+
+  @override
+  String get aboutNever5 => 'לא אומרים שאתם הנהגים, רק ש\"הטלפון כנראה ברכב\".';
+
+  @override
+  String get aboutFeedbackTitle => 'עזרו לנו לשפר';
+
+  @override
+  String get aboutFeedbackBody =>
+      'האפליקציה עדיין בבדיקה. כל הערה עוזרת: מה אהבתם, מה בלבל, ומה לא עבד.';
 }
