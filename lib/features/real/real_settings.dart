@@ -12,11 +12,11 @@ import '../../real/real_models.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
-import 'real_about.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
 import 'real_home.dart';
 import 'real_permissions.dart';
+import 'real_quiet.dart';
 import 'real_stats.dart';
 
 class RealSettingsScreen extends ConsumerWidget {
@@ -126,11 +126,15 @@ class RealSettingsScreen extends ConsumerWidget {
                 ListTile(
                   leading: const Icon(Icons.bedtime_rounded),
                   title: Text(l.settingsQuietHours),
-                  subtitle: Text(_quietLine(context, s.snapshot?.status)),
+                  subtitle: Text(quietSummary(context, s.snapshot?.status)),
                   trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: s.snapshot == null || s.busy
+                  onTap: s.snapshot == null
                       ? null
-                      : () => _pickQuietHours(context, ref),
+                      : () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const QuietHoursScreen(),
+                          ),
+                        ),
                 ),
             ],
           ),
@@ -193,15 +197,6 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsGeneral,
             children: [
-              ListTile(
-                leading: const Icon(Icons.info_rounded),
-                title: Text(l.aboutTitle),
-                subtitle: Text(l.aboutSettingsBody),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
-                ),
-              ),
               ListTile(
                 leading: const Icon(Icons.app_settings_alt_rounded),
                 title: Text(l.permsSettings),
@@ -646,138 +641,4 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
       ),
     );
   }
-}
-
-String _hhmm(int minutes) =>
-    '${(minutes ~/ 60).toString().padLeft(2, '0')}:'
-    '${(minutes % 60).toString().padLeft(2, '0')}';
-
-String _quietLine(BuildContext context, MyStatus? st) {
-  final l = context.l10n;
-  if (st == null || !st.hasQuietHours) return l.settingsQuietOff;
-  final days = st.quietDays;
-  if (days == null || days & 127 == 127) {
-    return l.settingsQuietOn(_hhmm(st.quietFrom!), _hhmm(st.quietTo!));
-  }
-  final letters = l.quietDayLetters.split(',');
-  return l.settingsQuietOnDays(
-    [
-      for (var d = 0; d < 7; d++)
-        if (days & (1 << d) != 0) letters[d],
-    ].join(', '),
-    _hhmm(st.quietFrom!),
-    _hhmm(st.quietTo!),
-  );
-}
-
-/// Which days quiet hours apply (bit 0 = Sunday). Null = closed.
-Future<int?> _pickQuietDays(BuildContext context, int initial) =>
-    showModalBottomSheet<int>(
-      context: context,
-      showDragHandle: true,
-      builder: (d) {
-        final l = d.l10n;
-        final letters = l.quietDayLetters.split(',');
-        var days = initial;
-        return StatefulBuilder(
-          builder: (d, set) => SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    l.quietPickDays,
-                    style: Theme.of(d).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      for (var i = 0; i < 7; i++)
-                        FilterChip(
-                          key: ValueKey('quiet-day-$i'),
-                          label: Text(letters[i]),
-                          selected: days & (1 << i) != 0,
-                          onSelected: (on) => set(
-                            () =>
-                                days = on ? days | (1 << i) : days & ~(1 << i),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: days == 0 ? null : () => Navigator.pop(d, days),
-                    child: Text(l.quietDaysSave),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-
-/// Quiet hours: from / to (or off). Only automatic trips are affected.
-Future<void> _pickQuietHours(BuildContext context, WidgetRef ref) async {
-  final l = context.l10n;
-  final c = ref.read(realProvider.notifier);
-  final st = ref.read(realProvider).snapshot?.status;
-  if (st != null && st.hasQuietHours) {
-    final clear = await showModalBottomSheet<bool>(
-      context: context,
-      showDragHandle: true,
-      builder: (d) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit_rounded),
-              title: Text(l.quietSet),
-              onTap: () => Navigator.pop(d, false),
-            ),
-            ListTile(
-              leading: const Icon(Icons.close_rounded),
-              title: Text(l.quietClear),
-              onTap: () => Navigator.pop(d, true),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (clear == null || !context.mounted) return;
-    if (clear) {
-      await c.setQuietHours(null, null);
-      return;
-    }
-  }
-  final from = await showTimePicker(
-    context: context,
-    helpText: l.quietPickFrom,
-    initialTime: TimeOfDay(
-      hour: (st?.quietFrom ?? 22 * 60) ~/ 60,
-      minute: (st?.quietFrom ?? 0) % 60,
-    ),
-  );
-  if (from == null || !context.mounted) return;
-  final to = await showTimePicker(
-    context: context,
-    helpText: l.quietPickTo,
-    initialTime: TimeOfDay(
-      hour: (st?.quietTo ?? 7 * 60) ~/ 60,
-      minute: (st?.quietTo ?? 0) % 60,
-    ),
-  );
-  if (to == null || !context.mounted) return;
-  // Closing the days step keeps the days as they were.
-  final days = await _pickQuietDays(context, st?.quietDays ?? 127);
-  await c.setQuietHours(
-    from.hour * 60 + from.minute,
-    to.hour * 60 + to.minute,
-    days: days,
-  );
 }

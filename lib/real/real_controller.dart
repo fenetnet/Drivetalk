@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 47;
+const kRequiredSchema = 50;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -2900,18 +2900,24 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
-  /// Quiet hours (minutes after midnight); null = none. [days]: bit 0 =
-  /// Sunday … bit 6 = Saturday (127 = every day; null = unchanged).
+  /// One quiet-hours schedule (minutes after midnight); null = none. [days]:
+  /// bit 0 = Sunday … bit 6 = Saturday (127 = every day; null = as before).
   Future<void> setQuietHours(int? from, int? to, {int? days}) async {
+    if (from == null || to == null) return setQuietRanges(const []);
+    final cur = state.snapshot?.status.quietRanges ?? const <QuietRange>[];
+    await setQuietRanges([
+      QuietRange(from, to, days ?? cur.firstOrNull?.days),
+      ...cur.skip(1),
+    ]);
+  }
+
+  /// All quiet-hours schedules at once (D-124; up to 4, empty = none).
+  Future<void> setQuietRanges(List<QuietRange> ranges) async {
     await _run(
-      () => from == null || to == null
-          ? _backend.setSettings(clearQuiet: true)
-          : _backend.setSettings(
-              quietFrom: from,
-              quietTo: to,
-              quietDays: days,
-              timeZone: ref.read(timeZoneProvider),
-            ),
+      () => _backend.setQuietRanges(
+        ranges.take(4).toList(),
+        timeZone: ref.read(timeZoneProvider),
+      ),
     );
     await refresh();
   }

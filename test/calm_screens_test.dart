@@ -10,6 +10,8 @@ import 'package:drivetalk/features/real/real_permissions.dart';
 import 'package:drivetalk/features/real/real_quick.dart';
 import 'package:drivetalk/features/real/real_root.dart';
 import 'package:drivetalk/features/real/real_about.dart';
+import 'package:drivetalk/features/real/real_quiet.dart';
+import 'package:drivetalk/real/real_models.dart';
 import 'package:drivetalk/features/real/real_settings.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
@@ -136,7 +138,11 @@ void main() {
       await me.read(realProvider.notifier).refresh();
     });
     await _show(t, me, const RealHomeScreen());
-    await t.scrollUntilVisible(find.text('כן, יש לי זמן'), 200);
+    await t.scrollUntilVisible(
+      find.text('כן, יש לי זמן'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await t.ensureVisible(find.text('כן, יש לי זמן'));
     await t.pump();
     expect(find.text('לא ענית, אז הפסקנו להציע אותך.'), findsOneWidget);
@@ -317,6 +323,58 @@ void main() {
     await t.scrollUntilVisible(find.text('אנשי קשר'), 200);
     expect(find.text('מאושר'), findsWidgets);
     await t.scrollUntilVisible(find.text('עזרו לנו לשפר'), 200);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('home: me among the free people, and "about" up top', (t) async {
+    final (me, _) = await twoFriends(t);
+    await _show(t, me, const RealHomeScreen());
+    expect(find.byKey(const ValueKey('me-free')), findsNothing);
+    await t.runAsync(
+      () => me
+          .read(realProvider.notifier)
+          .startAvailability(AvailabilityMode.free, 30),
+    );
+    await t.pump();
+    expect(find.byKey(const ValueKey('me-free')), findsOneWidget);
+    expect(find.text('אני'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('about')));
+    await t.pumpAndSettle();
+    expect(find.byType(AboutScreen), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('quiet hours: several schedules on their own screen (D-124)', (
+    t,
+  ) async {
+    final (me, _) = await twoFriends(t);
+    await t.runAsync(
+      () => me.read(realProvider.notifier).setQuietRanges(const [
+        QuietRange(23 * 60, 6 * 60, 31), // Sunday–Thursday nights
+        QuietRange(1 * 60, 9 * 60, 96), // Friday, Saturday
+      ]),
+    );
+    await _show(t, me, const QuietHoursScreen());
+    expect(find.text('23:00–06:00'), findsOneWidget);
+    expect(find.text('א–ה'), findsOneWidget);
+    expect(find.text('01:00–09:00'), findsOneWidget);
+    expect(find.text('ו, ש'), findsOneWidget);
+    // Delete the weekend one.
+    await t.ensureVisible(find.byKey(const ValueKey('quiet-range-1')));
+    await t.pump();
+    await t.runAsync(() async {
+      await t.tap(
+        find.descendant(
+          of: find.byKey(const ValueKey('quiet-range-1')),
+          matching: find.byIcon(Icons.delete_outline_rounded),
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await t.pump();
+    expect(find.text('01:00–09:00'), findsNothing);
     expect(t.takeException(), isNull);
     await _close(t);
   });

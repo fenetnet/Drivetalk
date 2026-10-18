@@ -204,6 +204,19 @@ void main() {
     expect(me.read(realProvider).snapshot!.hidden, isTrue);
     await m.setHideStatus(false);
 
+    // Several quiet schedules are saved and read back (D-124).
+    await m.setQuietRanges(const [
+      QuietRange(23 * 60, 6 * 60, 31),
+      QuietRange(60, 9 * 60, 96),
+    ]);
+    final ranges = me.read(realProvider).snapshot!.status.quietRanges;
+    expect(
+      [for (final r in ranges) (r.from, r.to, r.days)],
+      [(23 * 60, 6 * 60, 31), (60, 9 * 60, 96)],
+    );
+    await m.setQuietRanges(const []);
+    expect(me.read(realProvider).snapshot!.status.quietRanges, isEmpty);
+
     // Delete my account through the real server.
     expect(await m.deleteAccount(), isNull);
     expect(me.read(realProvider).phase, RealPhase.signedOut);

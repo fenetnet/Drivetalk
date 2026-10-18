@@ -4101,6 +4101,54 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'האפליקציה עדיין בבדיקה. כל הערה עוזרת: מה אהבתם, מה בלבל, ומה לא עבד.'**
   String get aboutFeedbackBody;
+
+  /// Me, first in the row of free people on home
+  ///
+  /// In he, this message translates to:
+  /// **'אני'**
+  String get meInRow;
+
+  /// No description provided for @quietEveryDay.
+  ///
+  /// In he, this message translates to:
+  /// **'כל יום'**
+  String get quietEveryDay;
+
+  /// No description provided for @quietRangeLine.
+  ///
+  /// In he, this message translates to:
+  /// **'{days}: {from}–{to}'**
+  String quietRangeLine(String days, String from, String to);
+
+  /// No description provided for @quietScreenBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בשעות האלה, בנסיעה שמזוהה לבד לא נסמן אותך פנוי. אפשר כמה לוחות זמנים, למשל ראשון–חמישי בלילה ושעות אחרות בשישי ושבת.'**
+  String get quietScreenBody;
+
+  /// No description provided for @quietAdd.
+  ///
+  /// In he, this message translates to:
+  /// **'הוספת שעות שקטות'**
+  String get quietAdd;
+
+  /// No description provided for @quietNone.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין שעות שקטות.'**
+  String get quietNone;
+
+  /// No description provided for @quietDelete.
+  ///
+  /// In he, this message translates to:
+  /// **'למחוק'**
+  String get quietDelete;
+
+  /// No description provided for @quietMany.
+  ///
+  /// In he, this message translates to:
+  /// **'{count} לוחות זמנים: {lines}'**
+  String quietMany(String count, String lines);
 }
 
 class _AppLocalizationsDelegate

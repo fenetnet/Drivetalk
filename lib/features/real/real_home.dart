@@ -12,6 +12,7 @@ import '../../real/routine_suggest.dart';
 import '../availability/pick_mode_screen.dart';
 import '../common/labels.dart';
 import '../common/widgets.dart';
+import 'real_about.dart';
 import 'real_common.dart';
 import 'real_quick.dart';
 import 'real_people.dart';
@@ -240,6 +241,21 @@ class RealHomeScreen extends ConsumerWidget {
                       ),
                     ),
                     if (me != null) RealAvatar(person: me.toPerson(), size: 42),
+                    // "About DriveBond": what's special, the permissions.
+                    IconButton(
+                      key: const ValueKey('about'),
+                      tooltip: l.aboutTitle,
+                      icon: const Icon(
+                        Icons.info_outline_rounded,
+                        color: AppColors.terracotta,
+                        size: 30,
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AboutScreen(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -297,6 +313,8 @@ class RealHomeScreen extends ConsumerWidget {
                     ],
                     now: now,
                     meFree: mine != null,
+                    me: me,
+                    mine: mine,
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
@@ -426,6 +444,8 @@ class _FreeNowCard extends ConsumerWidget {
     required this.busy,
     required this.now,
     required this.meFree,
+    this.me,
+    this.mine,
     this.hiddenFree = 0,
     this.anonymous = false,
     this.notNow = const [],
@@ -445,10 +465,17 @@ class _FreeNowCard extends ConsumerWidget {
   final DateTime now;
   final bool meFree;
 
+  /// Me, first in the row while I'm free — like friends see me.
+  final RealProfile? me;
+  final RealAvailability? mine;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = context.l10n;
     final total = free.length + hiddenFree;
+    final self = me != null && mine != null ? (me!, mine!) : null;
+    final shift = self == null ? 0 : 1;
+    final others = free.length + busy.length + notNow.length;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -480,19 +507,18 @@ class _FreeNowCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (free.isEmpty && busy.isEmpty && notNow.isEmpty && hiddenFree == 0)
-            Text(
-              meFree ? l.realNobodyFreeYet : l.realNobodyFree,
-              style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
-            )
-          else if (free.isNotEmpty || busy.isNotEmpty || notNow.isNotEmpty)
+          if (others + shift > 0)
             SizedBox(
               height: 138,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: free.length + busy.length + notNow.length,
+                itemCount: others + shift,
                 separatorBuilder: (_, _) => const SizedBox(width: 14),
-                itemBuilder: (_, i) {
+                itemBuilder: (_, j) {
+                  if (self != null && j == 0) {
+                    return _MeFace(me: self.$1, mine: self.$2, now: now);
+                  }
+                  final i = j - shift;
                   final faded = i >= free.length + busy.length;
                   final inCall = !faded && i >= free.length;
                   final (p, a) = faded
@@ -555,6 +581,11 @@ class _FreeNowCard extends ConsumerWidget {
                 },
               ),
             ),
+          if (others == 0 && hiddenFree == 0)
+            Text(
+              meFree ? l.realNobodyFreeYet : l.realNobodyFree,
+              style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
+            ),
           if (hiddenFree > 0)
             Padding(
               padding: const EdgeInsets.only(top: 6),
@@ -580,6 +611,45 @@ class _FreeNowCard extends ConsumerWidget {
                 style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
               ),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Me in the row of free people: my picture, "me", and my time left.
+class _MeFace extends StatelessWidget {
+  const _MeFace({required this.me, required this.mine, required this.now});
+  final RealProfile me;
+  final RealAvailability mine;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return SizedBox(
+      key: const ValueKey('me-free'),
+      width: 76,
+      child: Column(
+        children: [
+          RealAvatar(person: me.toPerson(), online: true),
+          const SizedBox(height: 8),
+          Text(
+            l.meInRow,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: StatusLine(
+              icon: modeIcon(mine.mode),
+              text: timeLeftLabel(l, mine, now),
+              color: AppColors.inkSoft,
+              size: 12,
+              center: true,
+            ),
+          ),
         ],
       ),
     );

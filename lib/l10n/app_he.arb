@@ -1656,5 +1656,44 @@
   "aboutFeedbackTitle": "עזרו לנו לשפר",
   "@aboutFeedbackTitle": {},
   "aboutFeedbackBody": "האפליקציה עדיין בבדיקה. כל הערה עוזרת: מה אהבתם, מה בלבל, ומה לא עבד.",
-  "@aboutFeedbackBody": {}
+  "@aboutFeedbackBody": {},
+  "meInRow": "אני",
+  "@meInRow": {
+    "description": "Me, first in the row of free people on home"
+  },
+  "quietEveryDay": "כל יום",
+  "@quietEveryDay": {},
+  "quietRangeLine": "{days}: {from}–{to}",
+  "@quietRangeLine": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "quietScreenBody": "בשעות האלה, בנסיעה שמזוהה לבד לא נסמן אותך פנוי. אפשר כמה לוחות זמנים, למשל ראשון–חמישי בלילה ושעות אחרות בשישי ושבת.",
+  "@quietScreenBody": {},
+  "quietAdd": "הוספת שעות שקטות",
+  "@quietAdd": {},
+  "quietNone": "עוד אין שעות שקטות.",
+  "@quietNone": {},
+  "quietDelete": "למחוק",
+  "@quietDelete": {},
+  "quietMany": "{count} לוחות זמנים: {lines}",
+  "@quietMany": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "lines": {
+        "type": "String"
+      }
+    }
+  }
 }

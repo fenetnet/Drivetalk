@@ -2455,4 +2455,33 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get aboutFeedbackBody =>
       'האפליקציה עדיין בבדיקה. כל הערה עוזרת: מה אהבתם, מה בלבל, ומה לא עבד.';
+
+  @override
+  String get meInRow => 'אני';
+
+  @override
+  String get quietEveryDay => 'כל יום';
+
+  @override
+  String quietRangeLine(String days, String from, String to) {
+    return '$days: $from–$to';
+  }
+
+  @override
+  String get quietScreenBody =>
+      'בשעות האלה, בנסיעה שמזוהה לבד לא נסמן אותך פנוי. אפשר כמה לוחות זמנים, למשל ראשון–חמישי בלילה ושעות אחרות בשישי ושבת.';
+
+  @override
+  String get quietAdd => 'הוספת שעות שקטות';
+
+  @override
+  String get quietNone => 'עוד אין שעות שקטות.';
+
+  @override
+  String get quietDelete => 'למחוק';
+
+  @override
+  String quietMany(String count, String lines) {
+    return '$count לוחות זמנים: $lines';
+  }
 }

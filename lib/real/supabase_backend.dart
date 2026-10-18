@@ -994,6 +994,18 @@ class SupabaseRealBackend implements RealBackend {
   );
 
   @override
+  Future<void> setQuietRanges(List<QuietRange> ranges, {String? timeZone}) =>
+      _guard(
+        () async => _c.rpc(
+          'set_quiet_ranges',
+          params: {
+            'p_ranges': [for (final r in ranges) r.toJson()],
+            'p_time_zone': ?timeZone,
+          },
+        ),
+      );
+
+  @override
   Future<bool> approveFriend(String userId) => _guard(
     () async =>
         await _c.rpc('approve_friend', params: {'p_user': userId}) == true,
@@ -1255,6 +1267,17 @@ class SupabaseRealBackend implements RealBackend {
     endedB: r['ended_b'] == true,
   );
 
+  /// The list (server 50), or the older single range.
+  static List<QuietRange> _quietRanges(Map<String, dynamic> r) {
+    if (r['quiet_ranges'] case final List list) {
+      return [for (final j in list) ?QuietRange.fromJson(j)];
+    }
+    final f = (r['quiet_from'] as num?)?.toInt();
+    final t = (r['quiet_to'] as num?)?.toInt();
+    if (f == null || t == null || f == t) return const [];
+    return [QuietRange(f, t, (r['quiet_days'] as num?)?.toInt())];
+  }
+
   static MyStatus _myStatus(Map<String, dynamic>? r) => r == null
       ? const MyStatus()
       : MyStatus(
@@ -1263,6 +1286,7 @@ class SupabaseRealBackend implements RealBackend {
           quietFrom: (r['quiet_from'] as num?)?.toInt(),
           quietTo: (r['quiet_to'] as num?)?.toInt(),
           quietDays: (r['quiet_days'] as num?)?.toInt(),
+          quietRanges: _quietRanges(r),
           autoMissed: (r['auto_missed'] as num?)?.toInt() ?? 0,
           hiddenFree: (r['hidden_free'] as num?)?.toInt() ?? 0,
           pending: {for (final x in (r['pending'] as List? ?? const [])) '$x'},

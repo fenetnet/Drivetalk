@@ -189,32 +189,17 @@ class MemoryServer {
   // D-103…D-106: private settings (like the new profile columns).
   final anonymous = <String>{};
   final hideInCall = <String>{};
-  final quietHours = <String, (int, int)>{};
 
-  /// Days of quiet hours (bit 0 = Sunday); none = every day (D-121).
-  final quietDays = <String, int>{};
+  /// Quiet-hours schedules (D-121, D-124).
+  final quietRanges = <String, List<QuietRange>>{};
   final autoMissed = <String, int>{};
 
   /// Pair → the one who must decide (added from contacts).
   final pendingFor = <String, String>{};
   final crashes = <Map<String, String>>[];
 
-  bool inQuietHours(String u) {
-    final q = quietHours[u];
-    if (q == null || q.$1 == q.$2) return false;
-    final t = now();
-    final m = t.hour * 60 + t.minute;
-    final today = t.weekday % 7; // Sunday = 0
-    final int? day;
-    if (q.$1 < q.$2) {
-      day = m >= q.$1 && m < q.$2 ? today : null;
-    } else {
-      day = m >= q.$1 ? today : (m < q.$2 ? (today + 6) % 7 : null);
-    }
-    if (day == null) return false;
-    final days = quietDays[u];
-    return days == null || days & (1 << day) != 0;
-  }
+  bool inQuietHours(String u) =>
+      quietRanges[u]?.any((r) => r.covers(now())) ?? false;
 
   bool awaitsApproval(String owner, String viewer) =>
       pendingFor[_pair(owner, viewer)] == owner;
@@ -986,9 +971,10 @@ class MemoryRealBackend implements RealBackend {
         anonymous: server.anonymous.contains(me),
         hideInCall: server.hideInCall.contains(me),
         tripNotify: !server.tripNotifyOff.contains(me),
-        quietFrom: server.quietHours[me]?.$1,
-        quietTo: server.quietHours[me]?.$2,
-        quietDays: server.quietDays[me],
+        quietFrom: server.quietRanges[me]?.firstOrNull?.from,
+        quietTo: server.quietRanges[me]?.firstOrNull?.to,
+        quietDays: server.quietRanges[me]?.firstOrNull?.days,
+        quietRanges: server.quietRanges[me] ?? const [],
         autoMissed: server.autoMissed[me] ?? 0,
         hiddenFree: [
           for (final f in friends)
@@ -1954,22 +1940,37 @@ class MemoryRealBackend implements RealBackend {
 
     flag(server.anonymous, anonymous);
     flag(server.hideInCall, hideInCall);
+    // Like an older app: one range, which replaces the list.
     if (clearQuiet) {
-      server.quietHours.remove(me);
-      server.quietDays.remove(me);
-    } else if (quietDays != null) {
-      if (quietDays <= 0 || quietDays >= 127) {
-        server.quietDays.remove(me);
-      } else {
-        server.quietDays[me] = quietDays;
-      }
+      server.quietRanges.remove(me);
+    } else if (quietFrom != null || quietTo != null || quietDays != null) {
+      final cur = server.quietRanges[me]?.firstOrNull;
+      final days = quietDays ?? cur?.days;
+      server.quietRanges[me] = [
+        QuietRange(
+          quietFrom ?? cur?.from ?? 0,
+          quietTo ?? cur?.to ?? 0,
+          days == null || days <= 0 || days >= 127 ? null : days,
+        ),
+      ];
     }
-    if (!clearQuiet && (quietFrom != null || quietTo != null)) {
-      final cur = server.quietHours[me];
-      server.quietHours[me] = (
-        quietFrom ?? cur?.$1 ?? 0,
-        quietTo ?? cur?.$2 ?? 0,
-      );
+    server._changed();
+  }
+
+  @override
+  Future<void> setQuietRanges(
+    List<QuietRange> ranges, {
+    String? timeZone,
+  }) async {
+    if (ranges.length > 4) throw RealBackendException('bad');
+    final me = _uid;
+    if (ranges.isEmpty) {
+      server.quietRanges.remove(me);
+    } else {
+      server.quietRanges[me] = [
+        for (final r in ranges)
+          QuietRange(r.from, r.to, r.everyDay ? null : r.days),
+      ];
     }
     server._changed();
   }

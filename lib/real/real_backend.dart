@@ -210,6 +210,9 @@ abstract class RealBackend {
     String? timeZone,
   });
 
+  /// All my quiet-hours schedules at once (empty = none) (D-124).
+  Future<void> setQuietRanges(List<QuietRange> ranges, {String? timeZone});
+
   /// Keep a friend who added me from their contacts.
   Future<bool> approveFriend(String userId);
 

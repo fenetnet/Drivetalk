@@ -1614,7 +1614,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 47)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 50)'));
     });
 
     test(
@@ -2195,6 +2195,27 @@ void main() {
       expect(me.s.snapshot!.status.quietDays, 1 << today);
       await me.c.setQuietHours(7 * 60, 9 * 60, days: 127);
       expect(me.s.snapshot!.status.quietDays, isNull, reason: 'every day');
+    });
+
+    test('several quiet schedules (D-124)', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      final today = now.weekday % 7; // now is 08:00
+      final others = 127 ^ (1 << today);
+      await me.c.setQuietRanges([
+        QuietRange(7 * 60, 9 * 60, others),
+        QuietRange(22 * 60, 6 * 60),
+      ]);
+      expect(server.autoStart(me.driving.token!), 'available');
+      await me.c.stopAvailability();
+      await me.c.setQuietRanges([
+        QuietRange(7 * 60, 9 * 60, others),
+        QuietRange(7 * 60 + 30, 8 * 60 + 30, 1 << today),
+      ]);
+      expect(server.autoStart(me.driving.token!), 'quiet_hours');
+      expect(me.s.snapshot!.status.quietRanges, hasLength(2));
+      await me.c.setQuietRanges(const []);
+      expect(server.autoStart(me.driving.token!), 'available');
     });
 
     test(

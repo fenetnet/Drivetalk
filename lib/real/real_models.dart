@@ -252,6 +252,46 @@ class ContactMatch {
       ContactMatch(id, local, hash: hash, isFriend: isFriend);
 }
 
+/// One quiet-hours schedule: minutes after midnight, and the days (bit 0 =
+/// Sunday … bit 6 = Saturday; null = every day). Hours across midnight
+/// belong to the day they start (D-121, D-124).
+class QuietRange {
+  const QuietRange(this.from, this.to, [this.days]);
+  final int from;
+  final int to;
+  final int? days;
+
+  bool get everyDay => days == null || days! & 127 == 127;
+
+  /// Inside this schedule at [t] (local time)?
+  bool covers(DateTime t) {
+    if (from == to) return false;
+    final m = t.hour * 60 + t.minute;
+    final today = t.weekday % 7; // Sunday = 0
+    final int? day;
+    if (from < to) {
+      day = m >= from && m < to ? today : null;
+    } else {
+      day = m >= from ? today : (m < to ? (today + 6) % 7 : null);
+    }
+    return day != null && (everyDay || days! & (1 << day) != 0);
+  }
+
+  Map<String, int> toJson() => {
+    'f': from,
+    't': to,
+    'd': ?(everyDay ? null : days),
+  };
+
+  static QuietRange? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final f = (j['f'] as num?)?.toInt();
+    final t = (j['t'] as num?)?.toInt();
+    if (f == null || t == null) return null;
+    return QuietRange(f, t, (j['d'] as num?)?.toInt());
+  }
+}
+
 /// About me, from the server; friends can't read any of it.
 class MyStatus {
   const MyStatus({
@@ -260,6 +300,7 @@ class MyStatus {
     this.quietFrom,
     this.quietTo,
     this.quietDays,
+    this.quietRanges = const [],
     this.autoMissed = 0,
     this.hiddenFree = 0,
     this.pending = const {},
@@ -286,6 +327,9 @@ class MyStatus {
   /// The days quiet hours apply (bit 0 = Sunday … bit 6 = Saturday; null =
   /// every day). Hours across midnight belong to the day they start.
   final int? quietDays;
+
+  /// All my quiet-hours schedules (D-124).
+  final List<QuietRange> quietRanges;
 
   /// Automatic trips in a row with an unanswered question.
   final int autoMissed;

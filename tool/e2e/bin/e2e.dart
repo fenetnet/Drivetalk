@@ -1812,7 +1812,7 @@ Future<void> main() async {
   await missedAndQuietDays();
 
   check(
-    await eve.rpc('schema_version') == 49,
+    await eve.rpc('schema_version') == 50,
     'the server says its version (41)',
   );
 
@@ -3492,6 +3492,51 @@ Future<void> missedAndQuietDays() async {
     );
   }
   await ma.rpc('set_settings', params: {'p_clear_quiet': true});
+
+  // Several schedules (D-124): e.g. weekdays and the weekend apart.
+  final others = 127 ^ (1 << today);
+  Future<Object?> ranges(List<Map<String, int>> r) =>
+      ma.rpc('set_quiet_ranges', params: {'p_ranges': r, 'p_time_zone': 'UTC'});
+  final saved = await ranges([
+    {'f': 0, 't': 1439, 'd': others},
+    {'f': 0, 't': 1439, 'd': 1 << today},
+  ]);
+  final inSecond = await quiet();
+  final listed =
+      ((await ma.rpc('my_status') as Map<String, dynamic>)['quiet_ranges']
+              as List)
+          .length;
+  await ranges([
+    {'f': 0, 't': 1439, 'd': others},
+    {'f': 60, 't': 120, 'd': others},
+  ]);
+  final notToday2 = await quiet();
+  final tooMany = await ranges([
+    for (var i = 0; i < 5; i++) {'f': i, 't': i + 10},
+  ]);
+  // An older app sets one range: it replaces the list.
+  await ma.rpc(
+    'set_settings',
+    params: {'p_quiet_from': 0, 'p_quiet_to': 1439, 'p_quiet_days': 127},
+  );
+  final older = await quiet();
+  final afterOlder =
+      ((await ma.rpc('my_status') as Map<String, dynamic>)['quiet_ranges']
+              as List)
+          .length;
+  await ranges([]);
+  final cleared = await quiet();
+  check(
+    saved == 'ok' &&
+        inSecond &&
+        listed == 2 &&
+        !notToday2 &&
+        tooMany == 'bad' &&
+        older &&
+        afterOlder == 1 &&
+        !cleared,
+    'quiet hours: several schedules, older apps still work',
+  );
 
   // Notifications don't pile up: old queue rows go at night.
   await dbExec(
