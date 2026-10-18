@@ -658,6 +658,11 @@ class _MyStatus extends ConsumerWidget {
             ],
           ),
         ),
+        // How friends see me right now (in a call: no questions meanwhile).
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: _HowFriendsSeeMe(mine: mine, now: now),
+        ),
         // Friends free that I can ask: say I may tap them. Nobody free: the
         // card above already says so — nothing more here.
         if (askableFriends(ref.watch(realProvider), now).isNotEmpty) ...[
@@ -1766,6 +1771,47 @@ class _NewFriendCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// "Friends see: free · driving · 20 more min" — or, in a call, that they
+/// see me in a call and no questions come meanwhile.
+class _HowFriendsSeeMe extends ConsumerWidget {
+  const _HowFriendsSeeMe({required this.mine, required this.now});
+  final RealAvailability mine;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final hide = ref.watch(realProvider).snapshot?.status.hideInCall ?? false;
+    final inCall = mine.inCallAt(now);
+    final text = !inCall
+        ? l.friendsSeeMeFree(
+            modeLabel(l, mine.mode),
+            timeLeftLabel(l, mine, now),
+          )
+        : hide
+        ? l.friendsSeeMeHidden
+        : l.friendsSeeMeInCall;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          inCall ? Icons.phone_in_talk_rounded : Icons.visibility_rounded,
+          size: 18,
+          color: AppColors.inkSoft,
+        ),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: AppColors.inkSoft, fontSize: 14),
+          ),
+        ),
+      ],
     );
   }
 }

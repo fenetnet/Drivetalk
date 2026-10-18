@@ -2282,4 +2282,17 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get versionNotifBody => 'לחיצה לעדכון ב-Google Play';
+
+  @override
+  String friendsSeeMeFree(String mode, String left) {
+    return 'חברים רואים: פנוי · $mode · $left';
+  }
+
+  @override
+  String get friendsSeeMeInCall =>
+      'חברים רואים: בשיחה. בינתיים לא יגיעו שאלות.';
+
+  @override
+  String get friendsSeeMeHidden =>
+      'בשיחה: חברים לא רואים שיש לך זמן (מוסתר בשיחה).';
 }

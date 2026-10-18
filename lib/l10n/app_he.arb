@@ -1529,5 +1529,20 @@
   "versionNotifTitle": "יש גרסה חדשה של DriveBond",
   "@versionNotifTitle": {},
   "versionNotifBody": "לחיצה לעדכון ב-Google Play",
-  "@versionNotifBody": {}
+  "@versionNotifBody": {},
+  "friendsSeeMeFree": "חברים רואים: פנוי · {mode} · {left}",
+  "@friendsSeeMeFree": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "friendsSeeMeInCall": "חברים רואים: בשיחה. בינתיים לא יגיעו שאלות.",
+  "@friendsSeeMeInCall": {},
+  "friendsSeeMeHidden": "בשיחה: חברים לא רואים שיש לך זמן (מוסתר בשיחה).",
+  "@friendsSeeMeHidden": {}
 }

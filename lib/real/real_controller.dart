@@ -1535,6 +1535,8 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ data
 
   Future<void> refresh() async {
+    // A late timer after the app closed (or a test ended): nothing to do.
+    if (!ref.mounted) return;
     if (state.phase == RealPhase.notConfigured ||
         state.phase == RealPhase.signedOut ||
         _backend.userId == null) {

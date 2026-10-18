@@ -3819,6 +3819,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לחיצה לעדכון ב-Google Play'**
   String get versionNotifBody;
+
+  /// No description provided for @friendsSeeMeFree.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים רואים: פנוי · {mode} · {left}'**
+  String friendsSeeMeFree(String mode, String left);
+
+  /// No description provided for @friendsSeeMeInCall.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים רואים: בשיחה. בינתיים לא יגיעו שאלות.'**
+  String get friendsSeeMeInCall;
+
+  /// No description provided for @friendsSeeMeHidden.
+  ///
+  /// In he, this message translates to:
+  /// **'בשיחה: חברים לא רואים שיש לך זמן (מוסתר בשיחה).'**
+  String get friendsSeeMeHidden;
 }
 
 class _AppLocalizationsDelegate
