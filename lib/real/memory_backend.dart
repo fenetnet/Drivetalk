@@ -301,6 +301,57 @@ class MemoryServer {
   /// Quick connect is per person only (D-116).
   bool _isQuick(String x, String y) => quickPicks.contains('$x|$y');
 
+  /// Push addresses (D-119): token → user.
+  final pushTokens = <String, String>{};
+
+  /// Turned off "tell my quick-connect friends when I'm on the way".
+  final tripNotifyOff = <String>{};
+
+  /// "owner|member" → when told.
+  final tripPushes = <String, DateTime>{};
+
+  /// Who is told "[owner] is on the way" now (like trip_push_claim); they
+  /// are marked as told.
+  List<String> tripPushClaim(String owner) {
+    final mine = availability[owner];
+    final t = now();
+    if (mine == null ||
+        !t.isBefore(mine.expiresAt) ||
+        mine.mode != AvailabilityMode.driving ||
+        mine.missed ||
+        mine.quietAt(t) ||
+        tripNotifyOff.contains(owner) ||
+        anonymous.contains(owner) ||
+        hidden.contains(owner)) {
+      return const [];
+    }
+    final told = <String>[];
+    for (final f in profiles.keys) {
+      if (f == owner) continue;
+      final last = tripPushes['$owner|$f'];
+      final theirs = availability[f];
+      if (_isQuick(owner, f) &&
+          _isQuick(f, owner) &&
+          seesFree(f, owner) &&
+          !anonymous.contains(f) &&
+          !inQuietHours(f) &&
+          ratingOf(f, owner) != 0 &&
+          !(theirs != null && t.isBefore(theirs.expiresAt)) &&
+          !['$owner|$f', '$f|$owner'].any(
+            (k) =>
+                chosenSnoozes.contains(k) &&
+                snoozes[k] != null &&
+                t.isBefore(snoozes[k]!),
+          ) &&
+          (last == null || t.difference(last) > const Duration(hours: 20)) &&
+          pushTokens.values.contains(f)) {
+        tripPushes['$owner|$f'] = t;
+        told.add(f);
+      }
+    }
+    return told;
+  }
+
   /// Quick connect per friend: "owner|member" (D-112).
   final quickPicks = <String>{};
 
@@ -912,6 +963,7 @@ class MemoryRealBackend implements RealBackend {
       status: MyStatus(
         anonymous: server.anonymous.contains(me),
         hideInCall: server.hideInCall.contains(me),
+        tripNotify: !server.tripNotifyOff.contains(me),
         quietFrom: server.quietHours[me]?.$1,
         quietTo: server.quietHours[me]?.$2,
         autoMissed: server.autoMissed[me] ?? 0,
@@ -1472,6 +1524,30 @@ class MemoryRealBackend implements RealBackend {
     final me = _uid;
     hide ? server.hidden.add(me) : server.hidden.remove(me);
     server._changed();
+  }
+
+  @override
+  Future<void> savePushToken(String token) async {
+    server.pushTokens[token] = _uid;
+  }
+
+  @override
+  Future<void> forgetPushToken(String token) async {
+    if (server.pushTokens[token] == _uid) server.pushTokens.remove(token);
+  }
+
+  @override
+  Future<void> setTripNotify(bool on) async {
+    on ? server.tripNotifyOff.remove(_uid) : server.tripNotifyOff.add(_uid);
+    server._changed();
+  }
+
+  /// Who was told by my last [notifyTrip] (tests).
+  List<String> lastTripTold = const [];
+
+  @override
+  Future<void> notifyTrip() async {
+    lastTripTold = server.tripPushClaim(_uid);
   }
 
   @override

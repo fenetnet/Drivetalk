@@ -40,9 +40,12 @@ class DrivingStatus {
 
 /// "Talk now" (or a tap) on a driving notification that opened the app.
 class LaunchAction {
-  const LaunchAction(this.offerId, {required this.accept});
+  const LaunchAction(this.offerId, {required this.accept, this.askFriend});
   final String offerId;
   final bool accept;
+
+  /// "Talk" on "X is on the way" (D-119): ask this friend now.
+  final String? askFriend;
 }
 
 /// Automatic driving availability (Android: Activity Recognition — motion
@@ -107,6 +110,9 @@ abstract class DrivingDetector {
   /// Developer tools: pretend a trip started / ended.
   Future<void> simulate({required bool enter});
   Future<LaunchAction?> takeLaunchAction();
+
+  /// This phone's push address (Firebase); null when push isn't set up.
+  Future<String?> pushToken();
 
   /// "enter", "exit" (trip) and "action" (a notification was tapped).
   Stream<String> get events;
@@ -282,6 +288,16 @@ class AndroidDrivingDetector implements DrivingDetector {
       _call('callHandled', {'offer': offerId});
 
   @override
+  Future<String?> pushToken() async {
+    if (!_android) return null;
+    try {
+      return await _channel.invokeMethod<String>('pushToken');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<void> simulate({required bool enter}) async {
     try {
       await _channel.invokeMethod<void>('simulate', {'enter': enter});
@@ -295,6 +311,10 @@ class AndroidDrivingDetector implements DrivingDetector {
       final m = await _channel.invokeMapMethod<String, Object?>(
         'takeLaunchAction',
       );
+      final ask = m?['ask'];
+      if (ask is String) {
+        return LaunchAction('', accept: false, askFriend: ask);
+      }
       final id = m?['offerId'];
       if (id is! String) return null;
       return LaunchAction(id, accept: m?['accept'] == true);
@@ -379,6 +399,12 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> callHandled(String offerId) async => handledCalls.add(offerId);
+
+  /// Tests: this phone's push address (null = push not set up).
+  String? push;
+
+  @override
+  Future<String?> pushToken() async => push;
 
   @override
   Future<void> configure({

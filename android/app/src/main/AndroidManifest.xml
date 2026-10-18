@@ -75,6 +75,12 @@
             <!-- Links are handled by the app (app_links), not Flutter's router. -->
             <meta-data android:name="flutter_deeplinking_enabled" android:value="false"/>
         </activity>
+        <!-- Push notifications (Firebase, D-119). -->
+        <service android:name=".PushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
         <receiver android:name=".DrivingReceiver" android:exported="false"/>
         <receiver android:name=".DrivingBootReceiver" android:exported="false">
             <intent-filter>

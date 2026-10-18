@@ -50,3 +50,5 @@ app.*.map.json
 # e2e tool
 tool/e2e/.dart_tool/
 tool/e2e/pubspec.lock
+# Firebase settings: CI writes them from a secret (D-119).
+/android/app/google-services.json

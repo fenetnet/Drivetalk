@@ -111,6 +111,16 @@ class RealSettingsScreen extends ConsumerWidget {
                 value: s.prefs.voice,
                 onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
               ),
+              // "X is on the way" to my quick-connect friends (D-119).
+              SwitchListTile(
+                secondary: const Icon(Icons.campaign_rounded),
+                title: Text(l.settingsTripNotify),
+                subtitle: Text(l.settingsTripNotifyBody),
+                value: s.snapshot?.status.tripNotify ?? true,
+                onChanged: s.snapshot == null || s.busy
+                    ? null
+                    : c.setTripNotify,
+              ),
               if (s.driving.supported)
                 ListTile(
                   leading: const Icon(Icons.bedtime_rounded),

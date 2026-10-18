@@ -35,6 +35,29 @@ class DrivingApi(private val store: DrivingStore) {
     }
 
     /**
+     * "I'm on the way": the push function tells my quick-connect friends
+     * (D-119; the server decides who, at most once a day each).
+     */
+    fun notifyTrip() {
+        if (store.url.isEmpty() || store.key.isEmpty() || store.token.isEmpty()) return
+        try {
+            val c = URL("${store.url}/functions/v1/push").openConnection() as HttpURLConnection
+            c.requestMethod = "POST"
+            c.connectTimeout = 10_000
+            c.readTimeout = 20_000
+            c.doOutput = true
+            c.setRequestProperty("apikey", store.key)
+            c.setRequestProperty("Content-Type", "application/json")
+            val body = JSONObject().put("kind", "trip").put("device_token", store.token)
+            c.outputStream.use { it.write(body.toString().toByteArray()) }
+            c.responseCode
+            c.disconnect()
+        } catch (e: Exception) {
+            // Not set up yet, or no network: nobody is told this time.
+        }
+    }
+
+    /**
      * Trip availability is a short lease (15 minutes) that the running
      * service renews: if the phone kills the service, it ends by itself soon.
      */

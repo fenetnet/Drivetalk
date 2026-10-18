@@ -472,7 +472,7 @@ final realProvider = NotifierProvider<RealController, RealState>(
 const _prefsKey = 'real.prefs.v1';
 
 /// The server version this app needs (supabase/migrations, schema_version()).
-const kRequiredSchema = 43;
+const kRequiredSchema = 44;
 const _firstRunKey = 'real.firstRun.v1';
 const _adminKey = 'real.admin.v1';
 
@@ -658,6 +658,7 @@ class RealController extends Notifier<RealState> {
     unawaited(_handleLaunchAction());
     unawaited(_maybeSyncContacts());
     unawaited(_ensureDevice());
+    unawaited(_ensurePushToken());
     unawaited(_ensurePresets(thenRefresh: true));
     _openPendingInvite();
   }
@@ -798,6 +799,7 @@ class RealController extends Notifier<RealState> {
     unawaited(_refreshAndRewatch());
     unawaited(_backend.touchSeen());
     unawaited(_handleLaunchAction());
+    unawaited(_ensurePushToken());
     // New people from my contacts (at most twice a day).
     unawaited(_maybeSyncContacts());
   }
@@ -1186,6 +1188,11 @@ class RealController extends Notifier<RealState> {
     'channelStatus': _l.realNotifChannelStatus,
     'channelOffers': _l.realNotifChannelOffers,
     'channelTalk': _l.realNotifChannelTalk,
+    // "X is on the way" (D-119).
+    'channelTrip': _l.tripNotifChannel,
+    'tripTitle': _l.tripNotifTitle('{name}'),
+    'tripBody': _l.tripNotifBody,
+    'tripTalk': _l.tripNotifTalk,
     'statusTitle': _l.realNotifStatusTitle,
     'statusBody': _l.realNotifStatusBody,
     'stop': _l.driverStop,
@@ -1318,6 +1325,26 @@ class RealController extends Notifier<RealState> {
     final action = await ref.read(drivingDetectorProvider).takeLaunchAction();
     if (action == null || !ref.mounted) return;
     await refresh();
+    // "Talk" on "X is on the way": my tap is my yes — ask them now (free
+    // for 30 minutes first, like tapping a free friend).
+    if (action.askFriend case final id?) {
+      final friend = state.snapshot?.friend(id);
+      if (friend == null || !ref.mounted) return;
+      if (myActiveAvailability(state, _now()) == null &&
+          !await startAvailability(AvailabilityMode.free, 30)) {
+        return;
+      }
+      if (!ref.mounted) return;
+      // Both free now: quick connect may already be connecting us.
+      final already = state.snapshot?.offers.any(
+        (o) =>
+            o.otherId(state.myId ?? '') == id &&
+            (o.status == OfferStatus.pending ||
+                (o.status == OfferStatus.accepted && !o.callOver)),
+      );
+      if (already != true) await askFriend(friend);
+      return;
+    }
     if (!action.accept || !ref.mounted) return;
     final offer = state.snapshot?.offers
         .where((o) => o.id == action.offerId)
@@ -1403,6 +1430,9 @@ class RealController extends Notifier<RealState> {
   Future<void> signOut() async {
     try {
       await _backend.revokeDeviceTokens();
+      // No more notifications for this account on this phone.
+      final push = _store.getString(_pushKey);
+      if (push != null) await _backend.forgetPushToken(push);
     } on RealBackendException {
       // Signing out anyway.
     }
@@ -1444,6 +1474,7 @@ class RealController extends Notifier<RealState> {
       _quickIntroKey,
       _crashesKey,
       _tripOnlyKey,
+      _pushKey,
     ]) {
       await _store.setString(k, null);
     }
@@ -1818,11 +1849,39 @@ class RealController extends Notifier<RealState> {
         untilTripEnds && mine != null ? mine.startedAt.toIso8601String() : null,
       );
       if (ref.mounted) unawaited(_watchWhileFree());
+      // On the way: my quick-connect friends hear about it (D-119; the
+      // server decides who, at most once a day each).
+      if (mode == AvailabilityMode.driving) {
+        unawaited(_quietly(_backend.notifyTrip));
+      }
     }
     return ok;
   }
 
   static const _tripOnlyKey = 'real.tripOnly.v1';
+
+  /// The push address last saved for this phone (D-119).
+  static const _pushKey = 'real.pushToken.v1';
+
+  /// Saves this phone's push address when it's new or changed.
+  Future<void> _ensurePushToken() async {
+    final token = await ref.read(drivingDetectorProvider).pushToken();
+    if (token == null || !ref.mounted || _store.getString(_pushKey) == token) {
+      return;
+    }
+    try {
+      await _backend.savePushToken(token);
+      await _store.setString(_pushKey, token);
+    } on RealBackendException {
+      // Tried again next time the app opens.
+    }
+  }
+
+  /// "Tell my quick-connect friends when I'm on the way" (D-119).
+  Future<void> setTripNotify(bool on) async {
+    await _run(() => _backend.setTripNotify(on));
+    await refresh();
+  }
 
   Future<void> stopAvailability() async {
     _stopVoice();

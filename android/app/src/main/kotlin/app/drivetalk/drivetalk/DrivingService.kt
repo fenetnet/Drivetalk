@@ -31,6 +31,9 @@ class DrivingService : Service() {
         const val ACTION_QUIET_END = "app.drivetalk.driving.QUIET_END"
         const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
         private const val POLL_MS = 10_000L
+
+        /** The server's quiet first minutes of a trip (5) and a little. */
+        private const val TRIP_TELL_MS = 5 * 60_000L + 30_000L
         /** Renew the trip lease well before it runs out. */
         private const val RENEW_MS = 4 * 60 * 1000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
@@ -108,6 +111,10 @@ class DrivingService : Service() {
     private var startedAt = 0L
     private var renewedAt = 0L
     private var running = false
+
+    /** When the detected trip started (0 = none) and whether friends heard. */
+    private var tripAt = 0L
+    private var tripTold = false
     private var manual = false
     /** Last "in a call" sent to the server, and when (renewed every 2 minutes). */
     private var phoneBusy = false
@@ -162,7 +169,11 @@ class DrivingService : Service() {
                     store.availableUntil = 0L
                     finish(callServer = false)
                 }
-                manual && running -> Unit
+                // The trip ended but my own free time goes on.
+                manual && running -> {
+                    tripAt = 0L
+                    tripTold = false
+                }
                 else -> finish(callServer = true)
             }
             ACTION_QUIET_END -> finish(callServer = false)
@@ -177,6 +188,7 @@ class DrivingService : Service() {
     }
 
     private fun begin(callStart: Boolean) {
+        if (callStart && tripAt == 0L) tripAt = System.currentTimeMillis()
         if (running) {
             // Already watching (e.g. manual → a trip started): just update.
             if (callStart) io.execute { DrivingApi(DrivingStore(this)).start() }
@@ -231,6 +243,12 @@ class DrivingService : Service() {
                 io.execute { DrivingApi(DrivingStore(ctx)).start() }
             }
             checkPhoneCall(now)
+            // After the trip's quiet first minutes: my quick-connect friends
+            // hear I'm on the way (once per trip, D-119).
+            if (!manual && tripAt > 0L && !tripTold && now - tripAt > TRIP_TELL_MS) {
+                tripTold = true
+                io.execute { DrivingApi(DrivingStore(ctx)).notifyTrip() }
+            }
             if (!polling) {
                 polling = true
                 io.execute { pollOffers(ctx) }
@@ -344,6 +362,8 @@ class DrivingService : Service() {
     private fun finish(callServer: Boolean) {
         running = false
         watching = false
+        tripAt = 0L
+        tripTold = false
         main.removeCallbacks(poll)
         val store = DrivingStore(this)
         // "In a call" doesn't outlive the service.

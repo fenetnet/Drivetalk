@@ -15,6 +15,8 @@ class MainActivity : FlutterActivity() {
     companion object {
         const val EXTRA_OFFER = "drivetalk_offer"
         const val EXTRA_ACCEPT = "drivetalk_accept"
+        /** "Talk" on "X is on the way": ask this friend (D-119). */
+        const val EXTRA_ASK = "drivetalk_ask"
 
         /** The app is on screen: it reads questions aloud itself (and
          *  listens for yes/no), so the background service stays quiet. */
@@ -60,7 +62,17 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun readLaunchAction(intent: Intent?): Boolean {
-        val offer = intent?.getStringExtra(EXTRA_OFFER) ?: return false
+        if (intent == null) return false
+        val ask = intent.getStringExtra(EXTRA_ASK)
+        if (ask != null) {
+            intent.removeExtra(EXTRA_ASK)
+            DrivingNotifications.cancelTrip(this, ask)
+            // Only for a notification this phone really showed.
+            if (!DrivingStore(this).wasShown("trip:$ask")) return false
+            launchAction = mapOf("ask" to ask)
+            return true
+        }
+        val offer = intent.getStringExtra(EXTRA_OFFER) ?: return false
         // "Talk now" counts only for an offer this phone really showed
         // (another app could send the same intent; then it only opens).
         val accept = intent.getBooleanExtra(EXTRA_ACCEPT, false) &&
@@ -295,6 +307,8 @@ class MainActivity : FlutterActivity() {
                     DrivingReceiver.onVehicle(this, call.argument<Boolean>("enter") == true)
                     result.success(true)
                 }
+                // This phone's push address (Firebase), or null without it.
+                "pushToken" -> pushToken(result)
                 "takeLaunchAction" -> {
                     result.success(launchAction)
                     launchAction = null
@@ -305,6 +319,21 @@ class MainActivity : FlutterActivity() {
     }
 
     // Friends from contacts: numbers only, hashed in the app before sending.
+    private fun pushToken(result: MethodChannel.Result) {
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
+                result.success(null)
+                return
+            }
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                .addOnCompleteListener { t ->
+                    result.success(if (t.isSuccessful) t.result else null)
+                }
+        } catch (e: Exception) {
+            result.success(null)
+        }
+    }
+
     private fun configureContacts(flutterEngine: FlutterEngine) {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/contacts")
             .setMethodCallHandler { call, result ->

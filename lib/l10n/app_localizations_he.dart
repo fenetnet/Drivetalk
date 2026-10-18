@@ -2203,4 +2203,25 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get addFriendContactsBody => 'רואים מי מאנשי הקשר כבר כאן, ובוחרים';
+
+  @override
+  String get tripNotifChannel => 'חברים יוצאים לדרך';
+
+  @override
+  String tripNotifTitle(String name) {
+    return '$name בדרך';
+  }
+
+  @override
+  String get tripNotifBody => 'יש זמן לדבר עכשיו';
+
+  @override
+  String get tripNotifTalk => 'לדבר';
+
+  @override
+  String get settingsTripNotify => 'להודיע לחברים עם חיבור מהיר כשיוצאים לדרך';
+
+  @override
+  String get settingsTripNotifyBody =>
+      'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.';
 }

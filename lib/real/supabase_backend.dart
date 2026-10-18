@@ -729,6 +729,24 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() => _c.rpc('set_hide_status', params: {'p_hide': hide}));
 
   @override
+  Future<void> savePushToken(String token) =>
+      _guard(() => _c.rpc('save_push_token', params: {'p_token': token}));
+
+  @override
+  Future<void> forgetPushToken(String token) =>
+      _guard(() => _c.rpc('forget_push_token', params: {'p_token': token}));
+
+  @override
+  Future<void> setTripNotify(bool on) =>
+      _guard(() => _c.rpc('set_trip_notify', params: {'p_on': on}));
+
+  @override
+  Future<void> notifyTrip() => _guard(() async {
+    // The push server function (Firebase); not set up yet → nothing.
+    await _c.functions.invoke('push', body: {'kind': 'trip'});
+  });
+
+  @override
   Future<void> setOthersVisibility(Set<AvailabilityMode>? modes) =>
       _guard(() async {
         await _c.from('others_visibility').upsert({
@@ -1191,6 +1209,7 @@ class SupabaseRealBackend implements RealBackend {
           autoMissed: (r['auto_missed'] as num?)?.toInt() ?? 0,
           hiddenFree: (r['hidden_free'] as num?)?.toInt() ?? 0,
           pending: {for (final x in (r['pending'] as List? ?? const [])) '$x'},
+          tripNotify: r['trip_notify'] != false,
         );
 
   static bool? _answer(Object? v) => switch (v) {

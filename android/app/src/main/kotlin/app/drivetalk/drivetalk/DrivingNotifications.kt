@@ -25,6 +25,10 @@ object DrivingNotifications {
     /** After "Talk": "X is calling you" / "tap to call X" (its own id). */
     private const val ID_CALL_BASE = 7400
 
+    /** "X is on the way" from a quick-connect friend (D-119). */
+    const val CHANNEL_TRIP = "friend_trips"
+    private const val ID_TRIP_BASE = 7600
+
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
@@ -58,6 +62,13 @@ object DrivingNotifications {
         talk.enableVibration(true)
         talk.vibrationPattern = VIBRATION
         nm.createNotificationChannel(talk)
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_TRIP,
+                store.text("channelTrip", "Friends on the way"),
+                NotificationManager.IMPORTANCE_HIGH,
+            ),
+        )
     }
 
     private fun builder(context: Context, channel: String): Notification.Builder =
@@ -278,6 +289,49 @@ object DrivingNotifications {
         b.setVisibility(Notification.VISIBILITY_PRIVATE).setPublicVersion(public)
         context.getSystemService(NotificationManager::class.java)
             .notify(ID_CALL_BASE + (offerId.hashCode() and 0xff), b.build())
+    }
+
+    /**
+     * "Dani is on the way — there's time to talk" (D-119). "Talk" opens the
+     * app, which asks Dani (my tap is my yes); the friend decides as usual.
+     */
+    fun showTrip(context: Context, friendId: String, name: String) {
+        val store = DrivingStore(context)
+        // Only a notification this phone really showed may ask (another
+        // app could send the same "open" request).
+        store.markShown("trip:$friendId")
+        ensureChannels(context)
+        val req = 300 + (friendId.hashCode() and 0xffff)
+        val talkIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(MainActivity.EXTRA_ASK, friendId)
+        }
+        val talk = PendingIntent.getActivity(context, req, talkIntent, flags())
+        val title = store.text("tripTitle", "{name}").replace("{name}", name)
+        val b = builder(context, CHANNEL_TRIP)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(title)
+            .setContentText(store.text("tripBody", ""))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, req + 1))
+            .addAction(
+                Notification.Action.Builder(null, store.text("tripTalk", "Talk"), talk).build(),
+            )
+            .apply {
+                // Gone by itself when the moment has passed (30 minutes).
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) setTimeoutAfter(30 * 60_000L)
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    @Suppress("DEPRECATION")
+                    setPriority(Notification.PRIORITY_HIGH)
+                }
+            }
+        context.getSystemService(NotificationManager::class.java)
+            .notify(ID_TRIP_BASE + (friendId.hashCode() and 0xff), b.build())
+    }
+
+    fun cancelTrip(context: Context, friendId: String) {
+        context.getSystemService(NotificationManager::class.java)
+            .cancel(ID_TRIP_BASE + (friendId.hashCode() and 0xff))
     }
 
     fun cancelOffer(context: Context, offerId: String) {

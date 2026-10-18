@@ -3687,6 +3687,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רואים מי מאנשי הקשר כבר כאן, ובוחרים'**
   String get addFriendContactsBody;
+
+  /// Android notification channel for "X is on the way" (D-119)
+  ///
+  /// In he, this message translates to:
+  /// **'חברים יוצאים לדרך'**
+  String get tripNotifChannel;
+
+  /// No description provided for @tripNotifTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{name} בדרך'**
+  String tripNotifTitle(String name);
+
+  /// No description provided for @tripNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'יש זמן לדבר עכשיו'**
+  String get tripNotifBody;
+
+  /// No description provided for @tripNotifTalk.
+  ///
+  /// In he, this message translates to:
+  /// **'לדבר'**
+  String get tripNotifTalk;
+
+  /// No description provided for @settingsTripNotify.
+  ///
+  /// In he, this message translates to:
+  /// **'להודיע לחברים עם חיבור מהיר כשיוצאים לדרך'**
+  String get settingsTripNotify;
+
+  /// No description provided for @settingsTripNotifyBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.'**
+  String get settingsTripNotifyBody;
 }
 
 class _AppLocalizationsDelegate

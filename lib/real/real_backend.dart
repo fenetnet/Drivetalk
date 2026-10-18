@@ -106,6 +106,20 @@ abstract class RealBackend {
   /// Hide my status from friends (and theirs from me).
   Future<void> setHideStatus(bool hide);
 
+  /// This phone's push address (Firebase), so notifications reach it when
+  /// the app is closed (D-119).
+  Future<void> savePushToken(String token);
+
+  /// Signing out on this phone: no more notifications for me here.
+  Future<void> forgetPushToken(String token);
+
+  /// "Tell my quick-connect friends when I'm on the way" (D-119).
+  Future<void> setTripNotify(bool on);
+
+  /// I'm on the way: tell my quick-connect friends (the server decides who,
+  /// at most once a day each).
+  Future<void> notifyTrip();
+
   /// "Everyone else" (friends in none of my circles): who sees that I'm
   /// free. null = always, empty = never.
   Future<void> setOthersVisibility(Set<AvailabilityMode>? modes);

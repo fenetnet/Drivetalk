@@ -1807,9 +1807,10 @@ Future<void> main() async {
   await quickAndPauses();
   await reviewFixes2();
   await hideStartAndGroup();
+  await tripPush();
 
   check(
-    await eve.rpc('schema_version') == 43,
+    await eve.rpc('schema_version') == 44,
     'the server says its version (41)',
   );
 
@@ -3176,6 +3177,74 @@ Future<void> hideStartAndGroup() async {
   final theirs = List.from(await hb.rpc('my_availability_details'));
   check(theirs.isEmpty, 'and nobody else\'s');
   for (final c in [ha, hb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+// --- "X is on the way" for quick-connect friends (D-119)
+Future<void> tripPush() async {
+  final ta = await newUser('תמר', 'female');
+  final tb = await newUser('תום', 'male');
+  final tc = await newUser('טליה', 'female');
+  await befriend(ta, tb);
+  await befriend(ta, tc);
+  // Tom: quick both ways. Talia: only I turned it on for her.
+  await ta.rpc('set_quick', params: {'p_user': uid(tb), 'p_on': true});
+  await tb.rpc('set_quick', params: {'p_user': uid(ta), 'p_on': true});
+  await ta.rpc('set_quick', params: {'p_user': uid(tc), 'p_on': true});
+  for (final c in [tb, tc]) {
+    await c.rpc(
+      'save_push_token',
+      params: {'p_token': 'test-token-${uid(c)}-0123456789'},
+    );
+  }
+  Future<List<String>> claim() async {
+    final out = await dbScalar(
+      "select coalesce(string_agg(friend_id::text, ','), '') "
+      "from trip_push_claim('${uid(ta)}')",
+    );
+    return out.isEmpty ? [] : out.split(',');
+  }
+
+  check((await claim()).isEmpty, 'not free: nobody is told (D-119)');
+  await ta.rpc(
+    'set_availability',
+    params: {'p_mode': 'driving', 'p_minutes': 30},
+  );
+  final told = await claim();
+  check(
+    told.length == 1 && told.single == uid(tb),
+    'on the way: only a friend with quick connect both ways is told',
+  );
+  check((await claim()).isEmpty, 'once a day per friend');
+  await dbExec("delete from trip_pushes where owner = '${uid(ta)}'");
+  await tb.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  check(
+    (await claim()).isEmpty,
+    'a friend who is free already isn\'t told (quick connect handles it)',
+  );
+  await tb.rpc('clear_availability');
+  await ta.rpc('set_trip_notify', params: {'p_on': false});
+  check((await claim()).isEmpty, 'the switch off: nobody is told');
+  check((await status(ta))['trip_notify'] == false, 'my status shows it');
+  await ta.rpc('set_trip_notify', params: {'p_on': true});
+  await ta.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  check((await claim()).isEmpty, 'only on the way (driving), not just free');
+  var blocked = false;
+  try {
+    await tb.rpc('trip_push_claim', params: {'p_user': uid(ta)});
+  } on PostgrestException {
+    blocked = true;
+  }
+  check(blocked, 'an app can\'t ask who would be told');
+  var hidden = false;
+  try {
+    await tb.from('push_tokens').select();
+  } on PostgrestException {
+    hidden = true;
+  }
+  check(hidden, 'push tokens are never readable');
+  for (final c in [ta, tb, tc]) {
     await c.rpc('clear_availability');
   }
 }

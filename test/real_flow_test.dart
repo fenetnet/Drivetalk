@@ -1601,7 +1601,7 @@ void main() {
       await connect();
       await pump(10);
       expect(me.s.serverOutdated, isTrue);
-      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 43)'));
+      expect(me.c.diagnostics(), contains('server schema: 12 (app needs 44)'));
     });
 
     test(
@@ -2493,5 +2493,75 @@ void main() {
         );
       },
     );
+  });
+
+  group('"X is on the way" (D-119)', () {
+    test('a quick-connect friend is told once; tapping Talk asks', () async {
+      await connect();
+      yoni.driving.push = 'yoni-push-token-0123456789';
+      // The app saves the phone's push address when it comes back.
+      yoni.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      expect(
+        server.pushTokens['yoni-push-token-0123456789'],
+        yoni.backend.userId,
+      );
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, [yoni.backend.userId]);
+      // Once a day.
+      await me.c.stopAvailability();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, isEmpty);
+      // Yoni taps "Talk" on the notification.
+      yoni.driving.pendingAction = LaunchAction(
+        '',
+        accept: false,
+        askFriend: me.backend.userId,
+      );
+      yoni.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump(20);
+      await me.c.refresh();
+      // Both free and quick both ways: quick connect connects us (no
+      // extra question, no "busy" note).
+      expect(
+        me.s.snapshot!.offers.where(
+          (o) => o.quick && o.status == OfferStatus.accepted,
+        ),
+        hasLength(1),
+      );
+      expect(yoni.s.notice?.kind, isNot(RealNoticeKind.askFailed));
+    });
+
+    test('the switch off, or not quick both ways: nobody is told', () async {
+      await connect();
+      yoni.driving.push = 'yoni-push-token-0123456789';
+      yoni.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      await me.c.setQuick(me.s.snapshot!.friends.single, true);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, isEmpty);
+      await me.c.stopAvailability();
+      await yoni.c.setQuick(yoni.s.snapshot!.friends.single, true);
+      await me.c.setTripNotify(false);
+      expect(me.s.snapshot!.status.tripNotify, isFalse);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, isEmpty);
+    });
+
+    test('signing out forgets this phone\'s push address', () async {
+      await connect();
+      yoni.driving.push = 'yoni-push-token-0123456789';
+      yoni.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      expect(server.pushTokens, isNotEmpty);
+      await yoni.c.signOut();
+      expect(server.pushTokens, isEmpty);
+    });
   });
 }

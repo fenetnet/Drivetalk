@@ -1465,5 +1465,25 @@
   "addFriendCodeBody": "קיבלת הזמנה בלי קישור? מכניסים כאן את הקוד",
   "@addFriendCodeBody": {},
   "addFriendContactsBody": "רואים מי מאנשי הקשר כבר כאן, ובוחרים",
-  "@addFriendContactsBody": {}
+  "@addFriendContactsBody": {},
+  "tripNotifChannel": "חברים יוצאים לדרך",
+  "@tripNotifChannel": {
+    "description": "Android notification channel for \"X is on the way\" (D-119)"
+  },
+  "tripNotifTitle": "{name} בדרך",
+  "@tripNotifTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "tripNotifBody": "יש זמן לדבר עכשיו",
+  "@tripNotifBody": {},
+  "tripNotifTalk": "לדבר",
+  "@tripNotifTalk": {},
+  "settingsTripNotify": "להודיע לחברים עם חיבור מהיר כשיוצאים לדרך",
+  "@settingsTripNotify": {},
+  "settingsTripNotifyBody": "רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.",
+  "@settingsTripNotifyBody": {}
 }

@@ -37,6 +37,31 @@ android {
                 ?: "invite.drivetalk.invalid"
         manifestPlaceholders["invitePathPrefix"] =
             System.getenv("INVITE_PATH_PREFIX")?.takeIf { it.isNotBlank() } ?: "/i/"
+
+        // Push notifications (Firebase, D-119). CI writes google-services.json
+        // from a GitHub secret (never in git); its four public values become
+        // the string resources Firebase reads at start. Without the file the
+        // app simply has no push.
+        val googleServices = file("google-services.json")
+        if (googleServices.exists()) {
+            val json = groovy.json.JsonSlurper().parseText(googleServices.readText()) as Map<*, *>
+            val projectInfo = json["project_info"] as Map<*, *>
+            val clients = json["client"] as List<*>
+            val client = (clients.firstOrNull {
+                val info = (it as Map<*, *>)["client_info"] as Map<*, *>
+                (info["android_client_info"] as Map<*, *>)["package_name"] == "app.drivetalk.drivetalk"
+            } ?: clients.first()) as Map<*, *>
+            val appId = (client["client_info"] as Map<*, *>)["mobilesdk_app_id"] as String
+            val apiKey = ((client["api_key"] as List<*>).first() as Map<*, *>)["current_key"] as String
+            resValue("string", "google_app_id", appId)
+            resValue("string", "google_api_key", apiKey)
+            resValue("string", "gcm_defaultSenderId", projectInfo["project_number"].toString())
+            resValue("string", "project_id", projectInfo["project_id"].toString())
+        }
+    }
+
+    buildFeatures {
+        resValues = true
     }
 
     // Test builds are signed with ONE stable key so updates install over the
@@ -94,4 +119,6 @@ flutter {
 dependencies {
     // In-vehicle detection (Activity Recognition Transition API).
     implementation("com.google.android.gms:play-services-location:21.3.0")
+    // Push notifications (D-119).
+    implementation("com.google.firebase:firebase-messaging:24.1.0")
 }

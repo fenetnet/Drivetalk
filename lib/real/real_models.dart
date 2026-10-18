@@ -262,7 +262,12 @@ class MyStatus {
     this.autoMissed = 0,
     this.hiddenFree = 0,
     this.pending = const {},
+    this.tripNotify = true,
   });
+
+  /// Tell my quick-connect friends when I'm on the way (D-119; on unless
+  /// turned off).
+  final bool tripNotify;
 
   /// "Free without my name": friends see only how many are free (and so
   /// do I).
