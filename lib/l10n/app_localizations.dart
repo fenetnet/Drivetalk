@@ -3883,7 +3883,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutSettingsBody.
   ///
   /// In he, this message translates to:
-  /// **'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותן'**
+  /// **'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותם'**
   String get aboutSettingsBody;
 
   /// No description provided for @aboutHero.

@@ -2328,7 +2328,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get aboutSettingsBody =>
-      'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותן';
+      'מה מיוחד באפליקציה, אילו הרשאות אישרת ולמה צריך אותם';
 
   @override
   String get aboutHero =>
