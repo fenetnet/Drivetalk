@@ -217,6 +217,27 @@ void main() {
     await m.setQuietRanges(const []);
     expect(me.read(realProvider).snapshot!.status.quietRanges, isEmpty);
 
+    // Instant updates dropped: reconnecting opens them again.
+    final live = me.read(realBackendProvider) as SupabaseRealBackend;
+    for (
+      var i = 0;
+      i < 50 && live.realtimeTables['availability'] != true;
+      i++
+    ) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    live.realtimeTables['availability'] = false;
+    await live.reconnectLive();
+    for (
+      var i = 0;
+      i < 100 && live.realtimeTables['availability'] != true;
+      i++
+    ) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    expect(live.realtimeTables['availability'], isTrue);
+    expect(live.realtimeTables['match_offers'], isTrue);
+
     // Delete my account through the real server.
     expect(await m.deleteAccount(), isNull);
     expect(me.read(realProvider).phase, RealPhase.signedOut);

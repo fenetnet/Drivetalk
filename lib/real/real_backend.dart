@@ -25,6 +25,10 @@ abstract class RealBackend {
   Stream<void> get changes;
   Stream<LiveStatus> get liveStatus;
 
+  /// Instant updates stopped (the phone slept, the network changed, the
+  /// login was renewed): open them again. Nothing when they work.
+  Future<void> reconnectLive();
+
   Future<CreatedInvitation> createInvitation();
   Future<InviteInfo> getInvitation(String token);
   Future<AcceptResult> acceptInvitation(String token);

@@ -1004,6 +1004,18 @@ class MemoryRealBackend implements RealBackend {
   @override
   Stream<LiveStatus> get liveStatus => _live.stream;
 
+  /// How many times the app asked to reconnect (tests).
+  var reconnects = 0;
+
+  /// Instant updates stop (tests).
+  void dropLive() => _live.add(LiveStatus.error);
+
+  @override
+  Future<void> reconnectLive() async {
+    reconnects++;
+    if (_me != null) _live.add(LiveStatus.connected);
+  }
+
   @override
   Future<CreatedInvitation> createInvitation() async {
     final me = _uid;

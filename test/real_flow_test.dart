@@ -617,6 +617,18 @@ void main() {
     expect(currentOffer(yoni.s, now), isNull);
   });
 
+  test('instant updates stopped: the app opens them again', () async {
+    await connect();
+    me.backend.dropLive();
+    await Future<void>.delayed(Duration.zero);
+    expect(me.s.live, LiveStatus.error);
+    me.c.debugTick();
+    me.c.debugTick(); // at most once a minute
+    await Future<void>.delayed(Duration.zero);
+    expect(me.backend.reconnects, 1);
+    expect(me.s.live, LiveStatus.connected);
+  });
+
   test('"in a call" ends by itself if the phone stops reporting', () async {
     await connect();
     await yoni.c.startAvailability(AvailabilityMode.free, 30);

@@ -681,6 +681,8 @@ class RealController extends Notifier<RealState> {
         waitingOffer(state, now) != null;
     final every = busy || state.live != LiveStatus.connected ? 2 : 6;
     if (myExpired || _tick % every == 0) refresh();
+    // Instant updates stopped: try again (at most once a minute).
+    if (state.live == LiveStatus.error && _foreground) _reconnectLive();
     checkWaiting();
     // A call screen left open (the call was taken on the phone and the
     // screen forgotten): once I'm back in the app 20 minutes after it
@@ -784,6 +786,18 @@ class RealController extends Notifier<RealState> {
   void debugLifecycle(AppLifecycleState s) {
     _onLifecycle(s);
     if (s == AppLifecycleState.resumed) _onResume();
+  }
+
+  DateTime? _lastReconnect;
+
+  void _reconnectLive() {
+    final now = DateTime.now();
+    if (_lastReconnect != null &&
+        now.difference(_lastReconnect!) < const Duration(minutes: 1)) {
+      return;
+    }
+    _lastReconnect = now;
+    unawaited(_quietly(_backend.reconnectLive));
   }
 
   void _onResume() {
@@ -1290,6 +1304,8 @@ class RealController extends Notifier<RealState> {
   Future<void> _refreshAndRewatch() async {
     await refresh();
     if (!ref.mounted) return;
+    // Back in the app: instant updates may have stopped meanwhile.
+    if (state.live != LiveStatus.connected) _reconnectLive();
     await _loadDriving();
     if (!ref.mounted) return;
     final d = state.driving;

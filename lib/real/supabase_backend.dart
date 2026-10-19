@@ -1117,6 +1117,20 @@ class SupabaseRealBackend implements RealBackend {
     }
   }
 
+  @override
+  Future<void> reconnectLive() async {
+    if (_client == null || _c.auth.currentUser == null) return;
+    final working =
+        _channels.isNotEmpty &&
+        _coreTables.every((t) => realtimeTables[t] == true);
+    if (working) return;
+    await _unsubscribe();
+    // The current login for the new channels.
+    final token = _c.auth.currentSession?.accessToken;
+    if (token != null) await _c.realtime.setAuth(token);
+    _subscribe();
+  }
+
   void _reportLive() {
     final core = [for (final t in _coreTables) realtimeTables[t]];
     if (core.every((v) => v == true)) {
