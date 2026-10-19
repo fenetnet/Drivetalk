@@ -15,11 +15,20 @@ class DrivingStatus {
     this.background = true,
     this.notifications = true,
     this.watching = true,
+    this.log = '',
+    this.inCallNow = false,
   });
 
   /// The background watcher runs now (Android); the app re-arms it when
   /// I'm free and it doesn't.
   final bool watching;
+
+  /// The phone's own short log (trip start/end and why, pushes,
+  /// notifications, calls) — for the test info only.
+  final String log;
+
+  /// The phone is in a call right now (as the app detects it).
+  final bool inCallNow;
 
   /// Notifications are allowed for DriveTalk (Android).
   final bool notifications;
@@ -140,6 +149,8 @@ class AndroidDrivingDetector implements DrivingDetector {
         background: m?['background'] != false,
         notifications: m?['notifications'] != false,
         watching: m?['watching'] != false,
+        log: '${m?['log'] ?? ''}',
+        inCallNow: m?['inCallNow'] == true,
       );
     } catch (_) {
       return const DrivingStatus();

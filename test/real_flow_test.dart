@@ -629,6 +629,20 @@ void main() {
     expect(me.s.live, LiveStatus.connected);
   });
 
+  test('test info says why a friend looks "in a call"', () async {
+    await connect();
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    server.phoneCall(yoni.backend.userId!, true);
+    await me.c.refresh();
+    expect(
+      me.c.diagnostics(),
+      contains('friends in a call: יוני (phone until'),
+    );
+    server.phoneCall(yoni.backend.userId!, false);
+    await me.c.refresh();
+    expect(me.c.diagnostics(), contains('friends in a call: —'));
+  });
+
   test('"in a call" ends by itself if the phone stops reporting', () async {
     await connect();
     await yoni.c.startAvailability(AvailabilityMode.free, 30);

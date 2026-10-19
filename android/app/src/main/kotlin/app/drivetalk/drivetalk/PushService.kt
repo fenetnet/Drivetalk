@@ -15,6 +15,7 @@ class PushService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
+        DrivingStore(this).log("push: ${data["type"]}")
         when (data["type"]) {
             // The test button on the app's test screen.
             "test" -> DrivingNotifications.showTest(this)

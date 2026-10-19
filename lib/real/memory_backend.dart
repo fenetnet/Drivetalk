@@ -902,7 +902,10 @@ class MemoryRealBackend implements RealBackend {
                   (server.seesFree(me, e.key) &&
                       !server.anonymous.contains(e.key) &&
                       !server.anonymous.contains(me))))
-            e.key: e.value.withBusy(server.busyUntil(e.key)),
+            e.key: e.value.withBusy(
+              server.busyUntil(e.key),
+              phone: server._onPhone(e.key) ? server.phoneUntil[e.key] : null,
+            ),
       },
       offers: [
         for (final o in server.offers.values)

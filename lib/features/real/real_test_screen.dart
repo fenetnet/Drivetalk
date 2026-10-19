@@ -181,6 +181,7 @@ class RealTestScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () async {
+                await c.reloadDriving();
                 await Clipboard.setData(ClipboardData(text: c.diagnostics()));
                 messengerKey.currentState?.showSnackBar(
                   SnackBar(

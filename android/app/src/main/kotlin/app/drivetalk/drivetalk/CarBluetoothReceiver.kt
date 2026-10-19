@@ -18,8 +18,8 @@ class CarBluetoothReceiver : BroadcastReceiver() {
         val address = try { device?.address } catch (e: SecurityException) { null }
         if (address == null || !address.equals(store.carAddress, ignoreCase = true)) return
         when (intent.action) {
-            BluetoothDevice.ACTION_ACL_CONNECTED -> DrivingReceiver.onVehicle(context, true)
-            BluetoothDevice.ACTION_ACL_DISCONNECTED -> DrivingReceiver.onVehicle(context, false)
+            BluetoothDevice.ACTION_ACL_CONNECTED -> DrivingReceiver.onVehicle(context, true, "car bluetooth")
+            BluetoothDevice.ACTION_ACL_DISCONNECTED -> DrivingReceiver.onVehicle(context, false, "car bluetooth off")
         }
     }
 }

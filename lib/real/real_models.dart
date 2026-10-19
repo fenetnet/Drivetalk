@@ -90,10 +90,14 @@ class RealAvailability {
     this.circleId,
     this.auto = false,
     this.busyUntil,
+    this.phoneUntil,
     this.missedAt,
     this.quietUntil,
   });
   final String userId;
+
+  /// The phone itself reported a call until then (part of [busyUntil]).
+  final DateTime? phoneUntil;
 
   /// I didn't answer a question: no more questions, and friends see me as
   /// not free, until I say "still free" (my own row only).
@@ -119,17 +123,19 @@ class RealAvailability {
   bool isActiveAt(DateTime now) => now.isBefore(expiresAt);
   bool inCallAt(DateTime now) => busyUntil != null && now.isBefore(busyUntil!);
 
-  RealAvailability withBusy(DateTime? until) => RealAvailability(
-    userId: userId,
-    mode: mode,
-    startedAt: startedAt,
-    expiresAt: expiresAt,
-    circleId: circleId,
-    auto: auto,
-    busyUntil: until,
-    missedAt: missedAt,
-    quietUntil: quietUntil,
-  );
+  RealAvailability withBusy(DateTime? until, {DateTime? phone}) =>
+      RealAvailability(
+        userId: userId,
+        mode: mode,
+        startedAt: startedAt,
+        expiresAt: expiresAt,
+        circleId: circleId,
+        auto: auto,
+        busyUntil: until,
+        phoneUntil: phone,
+        missedAt: missedAt,
+        quietUntil: quietUntil,
+      );
 
   /// The same, with these marks (null clears one).
   RealAvailability withMarks({
@@ -144,6 +150,7 @@ class RealAvailability {
     circleId: circleId,
     auto: auto,
     busyUntil: busyUntil,
+    phoneUntil: phoneUntil,
     missedAt: missedAt,
     quietUntil: quietUntil,
   );

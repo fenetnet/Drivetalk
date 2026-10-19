@@ -150,6 +150,7 @@ object DrivingNotifications {
 
     fun showOffer(context: Context, offer: DrivingApi.Offer) {
         val store = DrivingStore(context)
+        store.log("question shown (${offer.kind})")
         val req = 100 + (offer.id.hashCode() and 0xffff)
         val quick = offer.kind == "quick"
         ensureChannels(context)
@@ -277,8 +278,10 @@ object DrivingNotifications {
     }
 
     /** From the background check: a call I should dial, or one coming to me. */
-    fun showCall(context: Context, offerId: String, name: String, iCall: Boolean) =
+    fun showCall(context: Context, offerId: String, name: String, iCall: Boolean) {
+        DrivingStore(context).log("call shown (${if (iCall) "I call" else "they call"})")
         showCallNote(context, offerId, name, if (iCall) "answeredYouCall" else "answeredTheyCall", ring = iCall)
+    }
 
     private fun showCallNote(
         context: Context,

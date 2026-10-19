@@ -194,6 +194,8 @@ class MainActivity : FlutterActivity() {
                         "background" to backgroundAllowed(),
                         "notifications" to notificationsAllowed(),
                         "watching" to DrivingService.watching,
+                        "log" to store.eventLog,
+                        "inCallNow" to PhoneState.inCall(this),
                     ),
                 )
                 // Battery saving must not stop the background service.

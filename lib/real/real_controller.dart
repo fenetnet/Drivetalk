@@ -3279,6 +3279,9 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ diagnostics
 
   /// Text for "copy test info": no keys, tokens, phone numbers or full ids.
+  /// The phone's own state (and log), fresh — before copying the test info.
+  Future<void> reloadDriving() => _loadDriving();
+
   String diagnostics() {
     final s = state;
     final now = _now();
@@ -3317,11 +3320,27 @@ class RealController extends Notifier<RealState> {
           '${s.driving.supported ? '' : ' (unsupported)'}'
           '${s.driving.permission ? '' : ' (no permission)'}'
           '${s.driving.inVehicle ? ', in vehicle' : ''}',
+      'my phone in a call now: ${s.driving.inCallNow ? 'yes' : 'no'}',
+      'friends in a call: ${_busyLine(s, now, time)}',
       'last refresh: ${time(snap?.fetchedAt)}',
       if (_refreshing) 'refreshing since: ${time(_refreshStarted)}',
       'last error: ${s.lastError ?? '—'}${s.lastErrorAt == null ? '' : ' at ${time(s.lastErrorAt)}'}',
       'now: ${now.toIso8601String()}',
+      if (s.driving.log.isNotEmpty) ...['phone log:', s.driving.log],
     ].join('\n');
+  }
+
+  /// Who looks "in a call", and why: their phone said so, or a call
+  /// through the app (agreed, not finished yet).
+  String _busyLine(RealState s, DateTime now, String Function(DateTime?) time) {
+    final busy = busyFriends(s, now);
+    if (busy.isEmpty) return '—';
+    return [
+      for (final (p, a) in busy)
+        '${p.name} '
+            '(${a.phoneUntil != null && now.isBefore(a.phoneUntil!) ? 'phone' : 'app call'}'
+            ' until ${time(a.busyUntil)})',
+    ].join(', ');
   }
 
   // ------------------------------------------------------------ helpers

@@ -26,9 +26,13 @@ class DrivingReceiver : BroadcastReceiver() {
 
 
         /** Shared by real detections and the developer "simulate" buttons. */
-        fun onVehicle(context: Context, entered: Boolean) {
+        fun onVehicle(context: Context, entered: Boolean, why: String = "test") {
             val store = DrivingStore(context)
             if (!store.enabled) return
+            store.log(
+                (if (entered) "trip start" else "trip end") + " ($why)" +
+                    if (!entered && !store.inVehicle) " — no trip" else "",
+            )
             // A new trip always (re)starts the service, even if a previous
             // one was never closed; "trip over" only matters during a trip.
             if (!entered && !store.inVehicle) return
@@ -47,7 +51,14 @@ class DrivingReceiver : BroadcastReceiver() {
                 val e = result.transitionEvents.maxByOrNull { it.elapsedRealTimeNanos } ?: return
                 val entered = e.activityType == DetectedActivity.IN_VEHICLE &&
                     e.transitionType == ActivityTransition.ACTIVITY_TRANSITION_ENTER
-                onVehicle(context, entered)
+                val why = when (e.activityType) {
+                    DetectedActivity.IN_VEHICLE -> if (entered) "android: in vehicle" else "android: left vehicle"
+                    DetectedActivity.WALKING -> "walking"
+                    DetectedActivity.RUNNING -> "running"
+                    DetectedActivity.ON_BICYCLE -> "bicycle"
+                    else -> "other"
+                }
+                onVehicle(context, entered, why)
             }
             ACTION_STOP -> {
                 DrivingStore(context).inVehicle = false

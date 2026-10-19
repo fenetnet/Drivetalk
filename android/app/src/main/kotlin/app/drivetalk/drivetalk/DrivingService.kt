@@ -316,9 +316,7 @@ class DrivingService : Service() {
             if (offers.isNotEmpty()) callsUntil = System.currentTimeMillis() + 3 * 60_000L
             // On screen, the app shows the call itself.
             // In a call right now: the call is already happening.
-            val inCall = (getSystemService(AUDIO_SERVICE) as? AudioManager)?.mode.let {
-                it == AudioManager.MODE_IN_CALL || it == AudioManager.MODE_IN_COMMUNICATION
-            }
+            val inCall = PhoneState.inCall(ctx)
             for (c in if (MainActivity.onScreen) emptyList<DrivingApi.Call>() else calls ?: emptyList()) {
                 if (inCall) {
                     // They're calling me — that's this call: nothing to add,
@@ -345,9 +343,7 @@ class DrivingService : Service() {
      * see "in a call" and nobody is offered me until it ends.
      */
     private fun checkPhoneCall(now: Long) {
-        val audio = getSystemService(AUDIO_SERVICE) as? AudioManager ?: return
-        val busy = audio.mode == AudioManager.MODE_IN_CALL ||
-            audio.mode == AudioManager.MODE_IN_COMMUNICATION
+        val busy = PhoneState.inCall(this)
         if (busy == phoneBusy && !(busy && now - phoneSentAt > PHONE_RENEW_MS)) return
         if (busy && !phoneBusy) {
             // A call started: the open questions are closed (D-121) — stop
@@ -359,6 +355,7 @@ class DrivingService : Service() {
         // Remembered only once the server has it (else: again in 10 s).
         phoneSentAt = now
         val store = DrivingStore(this)
+        if (busy != phoneBusy) store.log(if (busy) "phone call: yes" else "phone call: ended")
         io.execute {
             val ok = DrivingApi(store).phoneCall(busy) != null
             main.post {

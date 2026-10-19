@@ -74,6 +74,22 @@ class DrivingStore(context: Context) {
     val minutes: Int get() = prefs.getInt("minutes", 120)
 
     /**
+     * A short log of what the phone did (trip start/end and why, pushes,
+     * notifications, phone calls) for the test info. No names or numbers;
+     * stays on the phone; the last 15 lines.
+     */
+    fun log(event: String) = synchronized(lock) {
+        val time = java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.US)
+            .format(java.util.Date())
+        val old = prefs.getString("eventLog", "") ?: ""
+        val lines = (old.split('\n').filter { it.isNotBlank() } + "$time $event").takeLast(15)
+        prefs.edit().putString("eventLog", lines.joinToString("\n")).apply()
+    }
+
+    val eventLog: String
+        get() = prefs.getString("eventLog", "") ?: ""
+
+    /**
      * Offers already shown (and read aloud), so a restarted service doesn't
      * show them again. id → when (ms); kept for 3 hours.
      */

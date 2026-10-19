@@ -1,7 +1,6 @@
 package app.drivetalk.drivetalk
 
 import android.content.Context
-import android.media.AudioManager
 
 /**
  * A push said "something for you" (a question, or an agreed call — D-120).
@@ -21,8 +20,7 @@ object PushSync {
             if (store.markShown(o.id)) DrivingNotifications.showOffer(context, o)
         }
         val calls = api.calls() ?: return
-        val mode = (context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager)?.mode
-        val inCall = mode == AudioManager.MODE_IN_CALL || mode == AudioManager.MODE_IN_COMMUNICATION
+        val inCall = PhoneState.inCall(context)
         for (c in calls) {
             if (inCall) {
                 // They're calling me — that's this call: nothing to add.

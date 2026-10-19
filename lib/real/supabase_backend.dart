@@ -286,6 +286,7 @@ class SupabaseRealBackend implements RealBackend {
               _maybeTime(r['call_until']),
               _maybeTime(r['phone_until']),
             ),
+            phoneUntil: _maybeTime(r['phone_until']),
             missedAt: _maybeTime(r['missed_at']),
             quietUntil: _maybeTime(r['quiet_until']),
           ),
