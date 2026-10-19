@@ -1695,5 +1695,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "settingsShortStops": "עצירות קצרות לא מסיימות נסיעה",
+  "@settingsShortStops": {},
+  "settingsShortStopsBody": "למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות' מתנתק.",
+  "@settingsShortStopsBody": {}
 }

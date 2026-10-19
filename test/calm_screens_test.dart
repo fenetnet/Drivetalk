@@ -346,6 +346,31 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('a car picked: "short stops keep the trip" switch (D-128)', (
+    t,
+  ) async {
+    final driving = FakeDrivingDetector(supported: true);
+    final (me, _) = await twoFriends(t, driving: driving);
+    await t.runAsync(() async {
+      final c = me.read(realProvider.notifier);
+      await c.enableAutoDriving();
+      await c.setCar('AA:BB', 'Car Audio');
+    });
+    await _show(t, me, const RealSettingsScreen());
+    final sw = find.text('עצירות קצרות לא מסיימות נסיעה');
+    await t.scrollUntilVisible(sw, 200);
+    await t.ensureVisible(sw);
+    await t.pump();
+    await t.runAsync(() async {
+      await t.tap(sw, warnIfMissed: true);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    });
+    await t.pump();
+    expect(driving.shortStops, isTrue);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
   testWidgets('quiet hours: several schedules on their own screen (D-124)', (
     t,
   ) async {

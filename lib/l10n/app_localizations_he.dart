@@ -2484,4 +2484,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String quietMany(String count, String lines) {
     return '$count לוחות זמנים: $lines';
   }
+
+  @override
+  String get settingsShortStops => 'עצירות קצרות לא מסיימות נסיעה';
+
+  @override
+  String get settingsShortStopsBody =>
+      'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.';
 }

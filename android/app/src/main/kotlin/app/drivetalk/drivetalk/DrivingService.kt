@@ -32,6 +32,9 @@ class DrivingService : Service() {
         const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
         private const val POLL_MS = 10_000L
 
+        /** "Short stops keep the trip": how long the car may be off (D-128). */
+        const val STOP_GRACE_MS = 5 * 60_000L
+
         /** The server's quiet first minutes of a trip (5) and a little. */
         private const val TRIP_TELL_MS = 5 * 60_000L + 30_000L
         /** Renew the trip lease well before it runs out. */
@@ -267,6 +270,12 @@ class DrivingService : Service() {
                 io.execute { DrivingApi(DrivingStore(ctx)).start() }
             }
             checkPhoneCall(now)
+            // A short stop that went on too long: the trip is over (D-128).
+            val endsAt = DrivingStore(ctx).tripEndsAt
+            if (endsAt > 0L && now - endsAt > STOP_GRACE_MS) {
+                DrivingStore(ctx).tripEndsAt = 0L
+                DrivingReceiver.onVehicle(ctx, false, "car bluetooth off 5 min")
+            }
             // After the trip's quiet first minutes: my quick-connect friends
             // hear I'm on the way (once per trip, D-119).
             if (!manual && tripAt > 0L && !tripTold && now - tripAt > TRIP_TELL_MS) {

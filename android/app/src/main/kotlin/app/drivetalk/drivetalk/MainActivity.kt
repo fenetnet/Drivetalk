@@ -195,6 +195,7 @@ class MainActivity : FlutterActivity() {
                         "notifications" to notificationsAllowed(),
                         "watching" to DrivingService.watching,
                         "log" to store.eventLog,
+                        "shortStops" to store.shortStops,
                         "inCallNow" to PhoneState.inCall(this),
                     ),
                 )
@@ -286,6 +287,10 @@ class MainActivity : FlutterActivity() {
                 "setRoutines" -> {
                     store.routines = call.argument<String>("json") ?: "[]"
                     Routines.schedule(this)
+                    result.success(true)
+                }
+                "setShortStops" -> {
+                    store.shortStops = call.argument<Boolean>("on") == true
                     result.success(true)
                 }
                 "setCar" -> {

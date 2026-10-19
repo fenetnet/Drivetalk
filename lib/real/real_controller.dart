@@ -1332,6 +1332,12 @@ class RealController extends Notifier<RealState> {
   Future<List<(String, String)>> carCandidates() =>
       ref.read(drivingDetectorProvider).bondedDevices();
 
+  /// "Short stops keep the trip" (D-128).
+  Future<void> setShortStops(bool on) async {
+    await ref.read(drivingDetectorProvider).setShortStops(on);
+    await _loadDriving();
+  }
+
   /// The car's Bluetooth as an extra trip signal (turns automatic driving
   /// availability on if it was off).
   Future<void> setCar(String address, String name) async {

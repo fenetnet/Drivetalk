@@ -4149,6 +4149,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'{count} לוחות זמנים: {lines}'**
   String quietMany(String count, String lines);
+
+  /// No description provided for @settingsShortStops.
+  ///
+  /// In he, this message translates to:
+  /// **'עצירות קצרות לא מסיימות נסיעה'**
+  String get settingsShortStops;
+
+  /// No description provided for @settingsShortStopsBody.
+  ///
+  /// In he, this message translates to:
+  /// **'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.'**
+  String get settingsShortStopsBody;
 }
 
 class _AppLocalizationsDelegate

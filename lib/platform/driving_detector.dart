@@ -17,6 +17,7 @@ class DrivingStatus {
     this.watching = true,
     this.log = '',
     this.inCallNow = false,
+    this.shortStops = false,
   });
 
   /// The background watcher runs now (Android); the app re-arms it when
@@ -29,6 +30,9 @@ class DrivingStatus {
 
   /// The phone is in a call right now (as the app detects it).
   final bool inCallNow;
+
+  /// "Short stops keep the trip" is on (D-128).
+  final bool shortStops;
 
   /// Notifications are allowed for DriveTalk (Android).
   final bool notifications;
@@ -109,6 +113,10 @@ abstract class DrivingDetector {
   Future<List<(String, String)>> bondedDevices();
   Future<void> setCar(String address, String name);
 
+  /// "Short stops keep the trip" (D-128): the car's Bluetooth may be off
+  /// for 5 minutes before the trip ends.
+  Future<void> setShortStops(bool on);
+
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
 
@@ -151,6 +159,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         watching: m?['watching'] != false,
         log: '${m?['log'] ?? ''}',
         inCallNow: m?['inCallNow'] == true,
+        shortStops: m?['shortStops'] == true,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -248,6 +257,9 @@ class AndroidDrivingDetector implements DrivingDetector {
   @override
   Future<void> setCar(String address, String name) =>
       _call('setCar', {'address': address, 'name': name});
+
+  @override
+  Future<void> setShortStops(bool on) => _call('setShortStops', {'on': on});
 
   @override
   Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
@@ -367,6 +379,7 @@ class FakeDrivingDetector implements DrivingDetector {
     background: background,
     notifications: notifications,
     watching: watching,
+    shortStops: shortStops,
   );
 
   /// Like the native watcher: runs while I'm free (tests can stop it).
@@ -470,6 +483,11 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> setCar(String address, String name) async => carName = name;
+
+  bool shortStops = false;
+
+  @override
+  Future<void> setShortStops(bool on) async => shortStops = on;
 
   String routinesJson = '[]';
   @override
