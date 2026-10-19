@@ -60,6 +60,7 @@ object DrivingDetection {
 
     @SuppressLint("MissingPermission")
     fun unregister(context: Context) {
+        TripCheck.stop(context)
         try {
             if (hasPermission(context)) {
                 ActivityRecognition.getClient(context)

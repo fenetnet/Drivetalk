@@ -25,6 +25,24 @@ class DrivingStore(context: Context) {
         get() = prefs.getBoolean("inVehicle", false)
         set(v) = prefs.edit().putBoolean("inVehicle", v).apply()
 
+    /** The double check (TripCheck): Android said "vehicle" at (ms), 0 = none. */
+    var pendingTripAt: Long
+        get() = prefs.getLong("pendingTripAt", 0L)
+        set(v) = prefs.edit().putLong("pendingTripAt", v).apply()
+
+    var walkSamples: Int
+        get() = prefs.getInt("walkSamples", 0)
+        set(v) = prefs.edit().putInt("walkSamples", v).apply()
+
+    var stillSince: Long
+        get() = prefs.getLong("stillSince", 0L)
+        set(v) = prefs.edit().putLong("stillSince", v).apply()
+
+    /** This trip came from the car's Bluetooth (it ends it too). */
+    var tripByBluetooth: Boolean
+        get() = prefs.getBoolean("tripByBluetooth", false)
+        set(v) = prefs.edit().putBoolean("tripByBluetooth", v).apply()
+
     /** Manual availability: keep the service until this time (ms). */
     var availableUntil: Long
         get() = prefs.getLong("availableUntil", 0L)

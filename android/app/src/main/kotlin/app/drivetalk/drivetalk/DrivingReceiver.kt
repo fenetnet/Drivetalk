@@ -37,6 +37,7 @@ class DrivingReceiver : BroadcastReceiver() {
             // one was never closed; "trip over" only matters during a trip.
             if (!entered && !store.inVehicle) return
             store.inVehicle = entered
+            if (entered) TripCheck.tripStarted(context, why.startsWith("car bluetooth")) else TripCheck.stop(context)
             DrivingEvents.send(if (entered) "enter" else "exit")
             if (entered) DrivingService.start(context) else DrivingService.end(context)
         }
@@ -58,8 +59,16 @@ class DrivingReceiver : BroadcastReceiver() {
                     DetectedActivity.ON_BICYCLE -> "bicycle"
                     else -> "other"
                 }
-                onVehicle(context, entered, why)
+                val store = DrivingStore(context)
+                when {
+                    // Android's "in a vehicle" counts once a check agrees (D-127).
+                    entered && store.enabled && !store.inVehicle -> TripCheck.maybeTrip(context)
+                    // Walking before the check agreed: it wasn't a trip.
+                    !entered && !store.inVehicle && store.pendingTripAt > 0L -> TripCheck.notATrip(context, why)
+                    else -> onVehicle(context, entered, why)
+                }
             }
+            TripCheck.ACTION_SAMPLE -> TripCheck.onSample(context, intent)
             ACTION_STOP -> {
                 DrivingStore(context).inVehicle = false
                 DrivingEvents.send("exit")
