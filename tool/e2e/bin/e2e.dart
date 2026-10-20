@@ -1814,9 +1814,10 @@ Future<void> main() async {
   await callEndsWithPhone();
   await phoneFormatsAndCheck();
   await widgetFreeFriends();
+  await sweepFixes();
 
   check(
-    await eve.rpc('schema_version') == 54,
+    await eve.rpc('schema_version') == 55,
     'the server says its version (41)',
   );
 
@@ -3698,4 +3699,57 @@ Future<void> widgetFreeFriends() async {
   for (final c in [wb, wc]) {
     await c.rpc('clear_availability');
   }
+}
+
+Future<void> sweepFixes() async {
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final sa = await newUser('שקד', 'female');
+  final sb = await newUser('שמעון', 'male');
+  final digits = 520000000 + DateTime.now().millisecondsSinceEpoch % 9999999;
+  await sb.from('phone_numbers').upsert({
+    'user_id': uid(sb),
+    'phone': '+972$digits',
+  });
+  // She blocks him; he reinstalls (a new account, the same number).
+  await befriend(sa, sb);
+  await sa.rpc('block_user', params: {'p_user': uid(sb)});
+  final sb2 = await newUser('שמעון', 'male');
+  await sb2.from('phone_numbers').upsert({
+    'user_id': uid(sb2),
+    'phone': '+972$digits',
+  });
+  final found = List<Map<String, dynamic>>.from(
+    await sa.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h('+972$digits')],
+      },
+    ),
+  );
+  final added = List<Map<String, dynamic>>.from(
+    await sa.rpc(
+      'add_contacts',
+      params: {
+        'p_users': [uid(sb2)],
+      },
+    ),
+  );
+  final hers = await sa.rpc(
+    'contact_check',
+    params: {'p_hash': h('+972$digits')},
+  );
+  // He checks her number: never told that she blocked him.
+  final herDigits = 530000000 + DateTime.now().millisecondsSinceEpoch % 9999999;
+  await sa.from('phone_numbers').upsert({
+    'user_id': uid(sa),
+    'phone': '+972$herDigits',
+  });
+  final his = await sb2.rpc(
+    'contact_check',
+    params: {'p_hash': h('+972$herDigits')},
+  );
+  check(
+    found.isEmpty && added.isEmpty && hers == 'blocked' && his == 'not_user',
+    'blocked stays blocked after a reinstall; nobody learns who blocked them (D-134)',
+  );
 }

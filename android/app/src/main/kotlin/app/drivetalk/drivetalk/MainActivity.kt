@@ -375,6 +375,12 @@ class MainActivity : FlutterActivity() {
                 }
                 // This phone's push address (Firebase), or null without it.
                 "pushToken" -> pushToken(result)
+                // The server has this phone's push address (or lost it):
+                // the background service polls less only while it does.
+                "pushReady" -> {
+                    DrivingStore(this).pushReady = call.argument<Boolean>("on") == true
+                    result.success(true)
+                }
                 "takeLaunchAction" -> {
                     result.success(launchAction)
                     launchAction = null
@@ -394,8 +400,7 @@ class MainActivity : FlutterActivity() {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().token
                 .addOnCompleteListener { t ->
                     val token = if (t.isSuccessful) t.result else null
-                    // Push works here: the background service polls less (D-120).
-                    if (token != null) DrivingStore(this).pushReady = true
+                    // pushReady is set by the app once the server saved it.
                     result.success(token)
                 }
         } catch (e: Exception) {

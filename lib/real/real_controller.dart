@@ -743,6 +743,13 @@ class RealController extends Notifier<RealState> {
     if (w == null || _handled.contains(w.id) || _givingUp.contains(w.id)) {
       return;
     }
+    // Behind other apps (e.g. "Talk" tapped on the notification): the
+    // wait counts only while the app is open, never withdrawing my yes
+    // unseen.
+    if (!_foreground) {
+      _waitingSince[w.id] = now;
+      return;
+    }
     final since = _waitingSince.putIfAbsent(w.id, () => now);
     if (now.difference(since) >= waitLimit) unawaited(_giveUpWaiting(w));
   }
@@ -1332,8 +1339,9 @@ class RealController extends Notifier<RealState> {
   Future<void> _refreshAndRewatch() async {
     await refresh();
     if (!ref.mounted) return;
-    // Back in the app: instant updates may have stopped meanwhile.
-    if (state.live != LiveStatus.connected) _reconnectLive();
+    // Back in the app: instant updates may have stopped meanwhile (while
+    // "connecting", the library is already rejoining them by itself).
+    if (state.live == LiveStatus.error) _reconnectLive();
     await _loadDriving();
     if (!ref.mounted) return;
     final d = state.driving;
@@ -1403,11 +1411,25 @@ class RealController extends Notifier<RealState> {
       return;
     }
     if (!action.accept || !ref.mounted) return;
-    final offer = state.snapshot?.offers
-        .where((o) => o.id == action.offerId)
-        .firstOrNull;
-    if (offer != null &&
-        offer.status == OfferStatus.pending &&
+    RealOffer? find() =>
+        state.snapshot?.offers.where((o) => o.id == action.offerId).firstOrNull;
+    var offer = find();
+    if (offer == null) {
+      // Bad reception or a just-made question: look once more.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      if (!ref.mounted) return;
+      await refresh();
+      if (!ref.mounted) return;
+      offer = find();
+    }
+    if (offer == null) {
+      // Still not here: the tap was a "yes" — tell the server directly (it
+      // checks the question is real and still open); the call follows.
+      await _quietly(() => _backend.answerOffer(action.offerId, accept: true));
+      if (ref.mounted) await refresh();
+      return;
+    }
+    if (offer.status == OfferStatus.pending &&
         _myAnswer(state, offer) == null) {
       await respond(offer, accept: true);
     }
@@ -1440,6 +1462,8 @@ class RealController extends Notifier<RealState> {
       await refresh();
       _openPendingInvite();
       unawaited(_ensureDevice());
+      // Notifications from the first minute, not from the next start.
+      unawaited(_ensurePushToken());
     } on RealBackendException catch (e) {
       if (!ref.mounted) return;
       state = state.copyWith(busy: false);
@@ -1488,7 +1512,8 @@ class RealController extends Notifier<RealState> {
     try {
       await _backend.revokeDeviceTokens();
       // No more notifications for this account on this phone.
-      final push = _store.getString(_pushKey);
+      // Stored as "token|build|day".
+      final push = _store.getString(_pushKey)?.split('|').first;
       if (push != null) await _backend.forgetPushToken(push);
     } on RealBackendException {
       // Signing out anyway.
@@ -1758,6 +1783,16 @@ class RealController extends Notifier<RealState> {
           state.callStage == CallStage.connecting) {
         _endQuick(cancelledByOther: true);
       }
+      // My phone said its call is over (D-131): the call screen moves on
+      // to "how was it?" instead of waiting on with nothing coming.
+      if (state.call?.offerId == o.id &&
+          (me == o.userA ? o.endedA : o.endedB) &&
+          const {
+            CallStage.waitingForTheirCall,
+            CallStage.dialed,
+          }.contains(state.callStage)) {
+        state = state.copyWith(callStage: CallStage.feedback);
+      }
       if (_handled.contains(o.id) || _answering.contains(o.id)) continue;
       if (_givingUp.contains(o.id) && o.status != OfferStatus.accepted) {
         continue;
@@ -1792,8 +1827,10 @@ class RealController extends Notifier<RealState> {
             break;
           }
           _markHandled(o.id);
-          // My side of it is already over (I answered "when again?").
-          if (other == null || (me == o.userA ? o.endedA : o.endedB)) break;
+          // (Answered "when again?" already: then it was handled before.
+          // My side may have ended by itself when the phone call ended —
+          // "how was it?" still comes, below.)
+          if (other == null) break;
           if (fresh) {
             unawaited(_beginCall(o, other));
           } else if (now.difference(agreedAt) < const Duration(hours: 12)) {
@@ -1927,15 +1964,24 @@ class RealController extends Notifier<RealState> {
 
   /// Saves this phone's push address when it's new or changed.
   Future<void> _ensurePushToken() async {
-    final token = await ref.read(drivingDetectorProvider).pushToken();
-    if (token == null || !ref.mounted || _store.getString(_pushKey) == token) {
-      return;
-    }
+    final detector = ref.read(drivingDetectorProvider);
+    final token = await detector.pushToken();
+    if (token == null || !ref.mounted) return;
+    // Saved again once a day (and after an update): the server forgets an
+    // address unused for 180 days, and keeps the build for "new version".
+    final now = _now();
+    final mark =
+        '$token|${ref.read(appBuildProvider)}|'
+        '${now.year}-${now.month}-${now.day}';
+    if (_store.getString(_pushKey) == mark) return;
     try {
       await _backend.savePushToken(token, build: ref.read(appBuildProvider));
-      await _store.setString(_pushKey, token);
+      await _store.setString(_pushKey, mark);
+      await detector.setPushReady(true);
     } on RealBackendException {
-      // Tried again next time the app opens.
+      // Tried again next time the app opens; until then the background
+      // service doesn't count on pushes.
+      await detector.setPushReady(false);
     }
   }
 
@@ -1947,7 +1993,7 @@ class RealController extends Notifier<RealState> {
     // Saved again now, in case it changed or the server was just updated.
     try {
       await _backend.savePushToken(token, build: ref.read(appBuildProvider));
-      await _store.setString(_pushKey, token);
+      await ref.read(drivingDetectorProvider).setPushReady(true);
     } on RealBackendException catch (e) {
       // Saving this phone's address failed (the reason, for the owner).
       return e.code == 'offline' ? 'offline' : 'save_failed: ${e.code}';
@@ -1965,13 +2011,13 @@ class RealController extends Notifier<RealState> {
     _stopVoice();
     // I stopped: the question I was waiting on ends without a "sorry".
     final w = waitingOffer(state, _now());
-    if (w != null) _markHandled(w.id);
     // Also end the trip-bound background service, if one is running.
     if (state.driving.inVehicle) {
       await ref.read(drivingDetectorProvider).simulate(enter: false);
     }
     await ref.read(drivingDetectorProvider).stopAvailable();
-    await _run(_backend.clearAvailability);
+    final ok = await _run(_backend.clearAvailability);
+    if (ok && w != null) _markHandled(w.id);
     unawaited(_loadDriving());
     await refresh();
   }
@@ -2002,6 +2048,9 @@ class RealController extends Notifier<RealState> {
       if (!ref.mounted) return;
       if (accept && status == OfferStatus.accepted) {
         final other = state.snapshot?.friend(offer.otherId(state.myId!));
+        // The app went away while the answer was on its way: Android won't
+        // let it dial from the background — the call starts when I'm back.
+        if (!_foreground) return;
         _markHandled(offer.id);
         _event('both_accepted');
         if (other != null && _callIdle(state)) {
@@ -2101,6 +2150,10 @@ class RealController extends Notifier<RealState> {
       }
     } finally {
       if (_askingSeq == seq) _askingSeq = null;
+      // Stopped from elsewhere mid-listen: the "listening" line goes too.
+      if (ref.mounted && state.listening && _askingSeq == null) {
+        state = state.copyWith(listening: false);
+      }
     }
   }
 
@@ -2114,6 +2167,8 @@ class RealController extends Notifier<RealState> {
   static const _askListen = Duration(seconds: 6);
 
   void _speak(String text) {
+    // Never speak into an open mic: a question being asked stops first.
+    if (_voiceAsking) _stopVoice();
     _voiceSeq++;
     unawaited(ref.read(voiceServiceProvider).speak(text));
   }
@@ -2876,13 +2931,14 @@ class RealController extends Notifier<RealState> {
   /// Tap a free friend: ask them now (my tap is my yes). True if asked.
   Future<bool> askFriend(RealProfile friend) async {
     _stopVoice();
-    // My own open question gives way (the server cancels it too).
+    // My own open question gives way — once the server really asked (it
+    // cancels mine then); otherwise I keep waiting for it as before.
     final w = waitingOffer(state, _now());
-    if (w != null) _markHandled(w.id);
     String? result;
     final ok = await _run(() async {
       result = await _backend.askFriend(friend.id);
     });
+    if (w != null && result == 'asked') _markHandled(w.id);
     if (ok && result != 'asked' && ref.mounted) {
       _notify(
         RealNoticeKind.askFailed,
@@ -3136,6 +3192,8 @@ class RealController extends Notifier<RealState> {
     _store.setString(_knownFriendsKey, jsonEncode(keep));
   }
 
+  static const _pendingSyncKey = 'real.pendingSync.v1';
+
   /// Pending "keep?" questions already checked against my contacts.
   final _pendingChecked = <String>{};
 
@@ -3146,6 +3204,13 @@ class RealController extends Notifier<RealState> {
     final fresh = snap.status.pending.difference(_pendingChecked);
     if (fresh.isEmpty) return;
     _pendingChecked.addAll(fresh);
+    // At most every 6 hours: a cold start shouldn't use up the day's
+    // contact searches (shared with "search again" and the test screen).
+    final last = DateTime.tryParse(_store.getString(_pendingSyncKey) ?? '');
+    if (last != null && _now().difference(last) < const Duration(hours: 6)) {
+      return;
+    }
+    await _store.setString(_pendingSyncKey, _now().toIso8601String());
     final synced = _store.getString(_contactsSyncKey) != null;
     if (synced &&
         _store.getString(_contactsOffKey) == null &&

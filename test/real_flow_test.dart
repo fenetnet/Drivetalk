@@ -1503,6 +1503,12 @@ void main() {
       expect(e164Phone('+972-050-680-2360'), '+972506802360');
       expect(e164Phone('50-680-2360'), '+972506802360');
       expect(e164Phone('+1 212 555 0100'), '+12125550100');
+      // Copied from the dialer, wrapped in direction marks.
+      expect(e164Phone('\u202a+972 50-680-2360\u202c'), '+972506802360');
+      expect(normalizePhone('\u202a050-680-2360\u202c'), '0506802360');
+      // Numbers nobody could ever find are refused.
+      expect(normalizePhone('+0501234567'), isNull);
+      expect(normalizePhone('123456'), isNull);
     });
   });
 

@@ -763,15 +763,23 @@ class SupabaseRealBackend implements RealBackend {
   );
 
   DateTime? _lastKick;
+  Timer? _laterKick;
 
   /// After an action that may notify someone (a question, an answer, an
   /// agreed call, feedback…): the push function sends whatever the server
   /// queued (D-120). Never waited for, never an error for the user.
+  /// At most one every 2 seconds; one asked for sooner goes out right after.
   void _kickPush() {
     final now = DateTime.now();
-    if (_lastKick != null &&
-        now.difference(_lastKick!) < const Duration(seconds: 2)) {
-      return;
+    if (_lastKick != null) {
+      final left = const Duration(seconds: 2) - now.difference(_lastKick!);
+      if (left > Duration.zero) {
+        _laterKick ??= Timer(left, () {
+          _laterKick = null;
+          _kickPush();
+        });
+        return;
+      }
     }
     _lastKick = now;
     unawaited(
@@ -1124,6 +1132,8 @@ class SupabaseRealBackend implements RealBackend {
           );
       _channels[table] = ch;
       ch.subscribe((status, [error]) {
+        // A channel already replaced (reconnect): its late news don't count.
+        if (!identical(_channels[table], ch)) return;
         switch (status) {
           case RealtimeSubscribeStatus.subscribed:
             realtimeTables[table] = true;

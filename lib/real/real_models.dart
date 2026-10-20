@@ -599,14 +599,23 @@ class CallStart {
 }
 
 /// Digits with an optional leading +, 6–15 digits (same rule as the server).
+/// Also: a number friends can actually find (international form exists),
+/// never "+0…" (D-132).
 String? normalizePhone(String raw) {
-  final t = raw.replaceAll(RegExp(r'[\s\-().]'), '');
-  return RegExp(r'^\+?[0-9]{6,15}$').hasMatch(t) ? t : null;
+  final t = raw.replaceAll(_bidi, '').replaceAll(RegExp(r'[\s\-()./]'), '');
+  if (!RegExp(r'^\+?[0-9]{6,15}$').hasMatch(t) || t.startsWith('+0')) {
+    return null;
+  }
+  return e164Phone(t) == null ? null : t;
 }
+
+/// Invisible direction marks Android wraps around copied numbers.
+final _bidi = RegExp('[\u200e\u200f\u202a-\u202e\u2066-\u2069]');
 
 /// International form used for matching contacts (+972…). Must match the
 /// server's `e164()` in supabase/migrations/20261005000000_contacts.sql.
 String? e164Phone(String raw) {
+  raw = raw.replaceAll(_bidi, '');
   final plus = raw.trim().startsWith('+');
   var d = raw.replaceAll(RegExp(r'[^0-9]'), '');
   if (d.isEmpty) return null;

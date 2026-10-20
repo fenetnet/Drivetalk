@@ -178,12 +178,21 @@ class DeviceVoiceService implements VoiceService {
     }
   }
 
+  /// Each listen belongs to one round; [stop] starts a new round, so a
+  /// listen still on its way never opens the mic afterwards, and an old
+  /// one never closes a newer one's mic (or the car's during a call).
+  int _round = 0;
+
   @override
   Future<void> stop() async {
+    _round++;
+    final p = _pending;
+    if (p != null && !p.isCompleted) p.complete(VoiceAnswer.none);
     try {
       await _tts.stop();
       if (_stt.isListening) await _stt.stop();
     } catch (_) {}
+    await _carMic(false);
   }
 
   @override
@@ -245,6 +254,7 @@ class DeviceVoiceService implements VoiceService {
       return simulated;
     }
     final completer = _pending = Completer<VoiceAnswer>();
+    final round = _round;
     try {
       _heardSomething = false;
       // Never ask for the microphone here (mid-drive): only [prepare] does.
@@ -259,6 +269,13 @@ class DeviceVoiceService implements VoiceService {
       // The car hears better: switch to its microphone (it takes a moment).
       if (await _carMic(true)) {
         await Future<void>.delayed(const Duration(milliseconds: 1200));
+      }
+      // Stopped meanwhile (a button, the app went away): never listen.
+      if (round != _round || completer.isCompleted) {
+        if (round == _round) await _carMic(false);
+        return completer.isCompleted
+            ? await completer.future
+            : VoiceAnswer.none;
       }
       await _stt.listen(
         listenOptions: SpeechListenOptions(
@@ -284,10 +301,13 @@ class DeviceVoiceService implements VoiceService {
       timeout + const Duration(seconds: 1),
       onTimeout: () => VoiceAnswer.none,
     );
-    try {
-      if (_stt.isListening) await _stt.stop();
-    } catch (_) {}
-    await _carMic(false);
+    // Only this round's mic: a newer listen keeps its own.
+    if (round == _round) {
+      try {
+        if (_stt.isListening) await _stt.stop();
+      } catch (_) {}
+      await _carMic(false);
+    }
     return answer;
   }
 }

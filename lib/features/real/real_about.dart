@@ -37,8 +37,10 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
 
   Future<void> _reload() async {
     if (!mounted) return;
+    final reader = ref.read(contactsReaderProvider);
     final p = await ref.read(realProvider.notifier).phonePermissions();
-    final contacts = await ref.read(contactsReaderProvider).hasPermission();
+    if (!mounted) return;
+    final contacts = await reader.hasPermission();
     if (!mounted) return;
     setState(() {
       _perms = p;

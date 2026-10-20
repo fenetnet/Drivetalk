@@ -124,6 +124,11 @@ object TripCheck {
             return
         }
         if (!store.inVehicle) return stop(context)
+        // Android closed the app mid-trip: watch again.
+        if (!DrivingService.watching && !DrivingService.start(context)) {
+            store.inVehicle = false
+            return stop(context)
+        }
         if (store.tripByBluetooth) return
         when {
             vehicle >= SURE -> {

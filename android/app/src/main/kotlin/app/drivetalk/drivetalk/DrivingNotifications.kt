@@ -184,6 +184,10 @@ object DrivingNotifications {
             .setCategory(Notification.CATEGORY_CALL)
             .setContentIntent(openApp(context, req, offer.id, accept = false))
             .apply {
+                // A question is open for 2 minutes: never left behind.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) setTimeoutAfter(3 * 60_000L)
+            }
+            .apply {
                 // Driving and the app isn't on screen: open it, like an
                 // incoming call (over the lock screen), so "yes" can be said
                 // aloud. With the screen in use (e.g. navigation) Android

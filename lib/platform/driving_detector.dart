@@ -142,6 +142,9 @@ abstract class DrivingDetector {
   /// This phone's push address (Firebase); null when push isn't set up.
   Future<String?> pushToken();
 
+  /// The server saved this phone's push address (true) or not (false).
+  Future<void> setPushReady(bool on);
+
   /// "enter", "exit" (trip) and "action" (a notification was tapped).
   Stream<String> get events;
 }
@@ -329,6 +332,9 @@ class AndroidDrivingDetector implements DrivingDetector {
       _call('callHandled', {'offer': offerId});
 
   @override
+  Future<void> setPushReady(bool on) => _call('pushReady', {'on': on});
+
+  @override
   Future<String?> pushToken() async {
     if (!_android) return null;
     try {
@@ -460,6 +466,11 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<String?> pushToken() async => push;
+
+  var pushReady = false;
+
+  @override
+  Future<void> setPushReady(bool on) async => pushReady = on;
 
   @override
   Future<void> configure({

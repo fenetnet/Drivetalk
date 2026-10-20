@@ -201,7 +201,11 @@ class DrivingService : Service() {
         if (callStart && tripAt == 0L) tripAt = System.currentTimeMillis()
         if (running) {
             // Already watching (e.g. manual → a trip started): just update.
-            if (callStart) io.execute { DrivingApi(DrivingStore(this)).start() }
+            if (callStart) {
+                startedAt = System.currentTimeMillis()
+                renewedAt = startedAt
+                renewTrip()
+            }
             return
         }
         running = true
@@ -225,17 +229,21 @@ class DrivingService : Service() {
         }
         val store = DrivingStore(this)
         renewedAt = System.currentTimeMillis()
-        if (callStart) {
-            io.execute {
-                val r = DrivingApi(store).start()
-                // Quiet hours: the server didn't mark me free, so don't
-                // claim "available while driving" for the whole trip.
-                if (r == "bad_token" || r == "quiet_hours") {
-                    main.post { finish(callServer = false) }
-                }
+        if (callStart) renewTrip()
+        main.postDelayed(poll, 3_000)
+    }
+
+    /** Mark me free for the trip (again: the lease is renewed every 4 minutes). */
+    private fun renewTrip() {
+        val store = DrivingStore(this)
+        io.execute {
+            val r = DrivingApi(store).start()
+            // Quiet hours (also when they begin mid-trip): the server didn't
+            // mark me free, so don't claim "available while driving".
+            if (r == "bad_token" || r == "quiet_hours") {
+                main.post { if (running && !manual) finish(callServer = false) }
             }
         }
-        main.postDelayed(poll, 3_000)
     }
 
     /** Ticks of [poll]; with push working, offers are fetched every 3rd. */
@@ -258,16 +266,27 @@ class DrivingService : Service() {
         override fun run() {
             if (!running) return
             val now = System.currentTimeMillis()
-            if (now - startedAt > MAX_MS ||
-                (manual && now > DrivingStore(this@DrivingService).availableUntil)
+            val ctx = this@DrivingService
+            val store = DrivingStore(ctx)
+            if (manual && now <= startedAt + MAX_MS && now > store.availableUntil &&
+                store.inVehicle && store.enabled
             ) {
+                // My own free time is over but the trip goes on: back to
+                // "available while driving", as before it.
+                manual = false
+                store.availableUntil = 0L
+                if (tripAt == 0L) tripAt = now
+                renewedAt = now
+                renewTrip()
+                QuickFree.refreshAll(ctx)
+            }
+            if (now - startedAt > MAX_MS || (manual && now > store.availableUntil)) {
                 finish(callServer = !manual)
                 return
             }
-            val ctx = this@DrivingService
             if (!manual && now - renewedAt > RENEW_MS) {
                 renewedAt = now
-                io.execute { DrivingApi(DrivingStore(ctx)).start() }
+                renewTrip()
             }
             checkPhoneCall(now)
             // After the trip's quiet first minutes: my quick-connect friends
@@ -409,8 +428,10 @@ class DrivingService : Service() {
         tripTold = false
         main.removeCallbacks(poll)
         val store = DrivingStore(this)
-        // "In a call" doesn't outlive the service.
-        if (phoneBusy) io.execute { DrivingApi(store).phoneCall(false) }
+        // "In a call" doesn't outlive the service. Still on the phone: it
+        // runs out by itself in 3 minutes — "call over" now would close my
+        // side of a call I'm still in (D-131).
+        if (phoneBusy && !PhoneState.inCall(this)) io.execute { DrivingApi(store).phoneCall(false) }
         phoneBusy = false
         store.inVehicle = false
         if (callServer) {

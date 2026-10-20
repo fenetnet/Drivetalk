@@ -61,6 +61,9 @@ class DrivingReceiver : BroadcastReceiver() {
                 }
                 val store = DrivingStore(context)
                 when {
+                    // A trip from the car's Bluetooth starts and ends with it.
+                    store.inVehicle && store.tripByBluetooth ->
+                        store.log("$why — ignored, trip by car bluetooth")
                     // Android's "in a vehicle" counts once a check agrees (D-127).
                     entered && store.enabled && !store.inVehicle -> TripCheck.maybeTrip(context)
                     // Walking before the check agreed: it wasn't a trip.
@@ -133,6 +136,7 @@ class DrivingBootReceiver : BroadcastReceiver() {
         }
         val store = DrivingStore(context)
         store.inVehicle = false
+        TripCheck.stop(context)
         if (store.enabled) DrivingDetection.register(context)
         Routines.schedule(context)
     }
