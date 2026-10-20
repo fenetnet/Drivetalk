@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // Two "phones" (Netanel & Yoni) running the real-mode controller against an
 // in-memory copy of the server rules.
 import 'dart:typed_data';
@@ -630,6 +632,22 @@ void main() {
       expect(me.driving.driving, isFalse);
     },
   );
+
+  test('the "who\'s free" widget gets what home shows (D-133)', () async {
+    await connect();
+    me.driving.friendsWidget = true;
+    await me.c.reloadDriving();
+    await yoni.c.startAvailability(AvailabilityMode.driving, 30);
+    await me.c.refresh();
+    final list = jsonDecode(me.driving.widgetJson!) as List;
+    expect(list, hasLength(1));
+    expect(list.single['name'], 'יוני');
+    expect(list.single['mode'], 'driving');
+    expect(list.single['busy'], isFalse);
+    await yoni.c.stopAvailability();
+    await me.c.refresh();
+    expect(jsonDecode(me.driving.widgetJson!), isEmpty);
+  });
 
   test('instant updates stopped: the app opens them again', () async {
     await connect();

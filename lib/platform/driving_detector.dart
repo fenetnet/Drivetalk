@@ -18,6 +18,7 @@ class DrivingStatus {
     this.log = '',
     this.inCallNow = false,
     this.fullScreen = true,
+    this.friendsWidget = false,
   });
 
   /// The background watcher runs now (Android); the app re-arms it when
@@ -33,6 +34,9 @@ class DrivingStatus {
 
   /// A question may open the app while driving (D-130).
   final bool fullScreen;
+
+  /// The "who's free now" widget is on the home screen (D-133).
+  final bool friendsWidget;
 
   /// Notifications are allowed for DriveTalk (Android).
   final bool notifications;
@@ -100,6 +104,9 @@ abstract class DrivingDetector {
   /// Android 14+: the settings switch for "full-screen notifications"
   /// (a question opens the app while driving, D-130).
   Future<void> allowFullScreen();
+
+  /// The "who's free now" widget's list (JSON, D-133).
+  Future<void> setWidgetFriends(String json);
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
@@ -164,6 +171,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         log: '${m?['log'] ?? ''}',
         inCallNow: m?['inCallNow'] == true,
         fullScreen: m?['fullScreen'] != false,
+        friendsWidget: m?['friendsWidget'] == true,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -278,6 +286,10 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<void> allowFullScreen() => _call('allowFullScreen');
 
   @override
+  Future<void> setWidgetFriends(String json) =>
+      _call('widgetFriends', {'json': json});
+
+  @override
   Future<bool> allowBackground() async {
     if (!_android) return true;
     try {
@@ -386,6 +398,7 @@ class FakeDrivingDetector implements DrivingDetector {
     notifications: notifications,
     watching: watching,
     fullScreen: fullScreen,
+    friendsWidget: friendsWidget,
   );
 
   /// Like the native watcher: runs while I'm free (tests can stop it).
@@ -404,6 +417,13 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> allowFullScreen() async => fullScreen = true;
+
+  /// The widget: installed (tests), and the last list sent.
+  var friendsWidget = false;
+  String? widgetJson;
+
+  @override
+  Future<void> setWidgetFriends(String json) async => widgetJson = json;
 
   @override
   Future<bool> requestPermission() async => grantPermission;

@@ -2561,4 +2561,15 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get whyOldServer => 'השרת עוד לא עודכן לבדיקה הזו (חלק 21).';
+
+  @override
+  String get widgetTitle => 'פנויים עכשיו';
+
+  @override
+  String get widgetEmpty => 'אף אחד לא פנוי כרגע';
+
+  @override
+  String widgetLeft(String m) {
+    return 'עוד $m דק׳';
+  }
 }

@@ -38,6 +38,11 @@ class DrivingStore(context: Context) {
         get() = prefs.getLong("stillSince", 0L)
         set(v) = prefs.edit().putLong("stillSince", v).apply()
 
+    /** The "who's free now" widget's list (JSON, D-133). */
+    var widgetFriends: String
+        get() = prefs.getString("widgetFriends", "[]") ?: "[]"
+        set(v) = prefs.edit().putString("widgetFriends", v).apply()
+
     /** My own free time is "driving" (set by the app) — like a trip (D-130). */
     var manualDriving: Boolean
         get() = prefs.getBoolean("manualDriving", false)

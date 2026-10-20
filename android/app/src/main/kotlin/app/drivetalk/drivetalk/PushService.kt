@@ -16,6 +16,8 @@ class PushService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         val data = message.data
         DrivingStore(this).log("push: ${data["type"]}")
+        // Something changed: the "who's free" widget looks again (D-133).
+        FreeWidget.refresh(this)
         when (data["type"]) {
             // The test button on the app's test screen.
             "test" -> DrivingNotifications.showTest(this)

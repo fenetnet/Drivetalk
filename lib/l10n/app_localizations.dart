@@ -4275,6 +4275,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'השרת עוד לא עודכן לבדיקה הזו (חלק 21).'**
   String get whyOldServer;
+
+  /// No description provided for @widgetTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'פנויים עכשיו'**
+  String get widgetTitle;
+
+  /// No description provided for @widgetEmpty.
+  ///
+  /// In he, this message translates to:
+  /// **'אף אחד לא פנוי כרגע'**
+  String get widgetEmpty;
+
+  /// No description provided for @widgetLeft.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד {m} דק׳'**
+  String widgetLeft(String m);
 }
 
 class _AppLocalizationsDelegate

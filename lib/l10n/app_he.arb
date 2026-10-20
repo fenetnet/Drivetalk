@@ -1764,5 +1764,17 @@
   "whyRateLimited": "היום כבר חיפשו הרבה. אפשר לנסות שוב מחר.",
   "@whyRateLimited": {},
   "whyOldServer": "השרת עוד לא עודכן לבדיקה הזו (חלק 21).",
-  "@whyOldServer": {}
+  "@whyOldServer": {},
+  "widgetTitle": "פנויים עכשיו",
+  "@widgetTitle": {},
+  "widgetEmpty": "אף אחד לא פנוי כרגע",
+  "@widgetEmpty": {},
+  "widgetLeft": "עוד {m} דק׳",
+  "@widgetLeft": {
+    "placeholders": {
+      "m": {
+        "type": "String"
+      }
+    }
+  }
 }

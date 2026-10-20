@@ -100,6 +100,16 @@
                 <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED"/>
             </intent-filter>
         </receiver>
+        <!-- "Who's free now" on the home screen (D-133). -->
+        <receiver android:name=".FreeFriendsWidget" android:exported="false"
+            android:label="DriveBond — מי פנוי">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_friends_info"/>
+        </receiver>
         <!-- One tap "I'm free": home-screen widget and quick-settings tile. -->
         <receiver android:name=".QuickWidget" android:exported="false">
             <intent-filter>

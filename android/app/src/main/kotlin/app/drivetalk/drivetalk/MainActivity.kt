@@ -16,6 +16,7 @@ class MainActivity : FlutterActivity() {
         const val EXTRA_OFFER = "drivetalk_offer"
         const val EXTRA_ACCEPT = "drivetalk_accept"
         const val EXTRA_WAKE = "drivetalk_wake"
+        const val EXTRA_WIDGET_ASK = "drivetalk_widget_ask"
         /** "Talk" on "X is on the way": ask this friend (D-119). */
         const val EXTRA_ASK = "drivetalk_ask"
 
@@ -102,6 +103,14 @@ class MainActivity : FlutterActivity() {
 
     private fun readLaunchAction(intent: Intent?): Boolean {
         if (intent == null) return false
+        // A friend tapped on the "who's free" widget (D-133): ask them.
+        val fromWidget = intent.getStringExtra(EXTRA_WIDGET_ASK)
+        if (fromWidget != null) {
+            intent.removeExtra(EXTRA_WIDGET_ASK)
+            if (!FreeWidget.shows(this, fromWidget)) return false
+            launchAction = mapOf("ask" to fromWidget)
+            return true
+        }
         val ask = intent.getStringExtra(EXTRA_ASK)
         if (ask != null) {
             intent.removeExtra(EXTRA_ASK)
@@ -235,6 +244,7 @@ class MainActivity : FlutterActivity() {
                         "watching" to DrivingService.watching,
                         "log" to store.eventLog,
                         "fullScreen" to fullScreenAllowed(),
+                        "friendsWidget" to FreeWidget.installed(this),
                         "inCallNow" to PhoneState.inCall(this),
                     ),
                 )
@@ -333,6 +343,11 @@ class MainActivity : FlutterActivity() {
                 // screen, so "yes" can be said aloud (D-130).
                 "allowFullScreen" -> {
                     openFullScreenSettings()
+                    result.success(true)
+                }
+                // The app's list for the "who's free" widget (D-133).
+                "widgetFriends" -> {
+                    FreeWidget.setFromApp(this, call.argument<String>("json") ?: "[]")
                     result.success(true)
                 }
                 // The car's microphone while listening for "yes" / "no".

@@ -1813,9 +1813,10 @@ Future<void> main() async {
   await questionDelivered();
   await callEndsWithPhone();
   await phoneFormatsAndCheck();
+  await widgetFreeFriends();
 
   check(
-    await eve.rpc('schema_version') == 53,
+    await eve.rpc('schema_version') == 54,
     'the server says its version (41)',
   );
 
@@ -3670,4 +3671,31 @@ Future<void> phoneFormatsAndCheck() async {
         mine == 'me',
     'numbers saved differently match; "why isn\'t X here?" answers (D-132)',
   );
+}
+
+Future<void> widgetFreeFriends() async {
+  final wa = await newUser('ורד', 'female');
+  final wb = await newUser('ויקטור', 'male');
+  final wc = await newUser('ורדה', 'female');
+  await befriend(wa, wb);
+  await skipQuietGap();
+  await free(wb);
+  await free(wc); // not a friend
+  final token = await wa.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  final list = List<Map<String, dynamic>>.from(
+    await bg.rpc('device_free_friends', params: {'p_token': token}) as List,
+  );
+  final bad = await bg.rpc('device_free_friends', params: {'p_token': 'nope'});
+  check(
+    list.length == 1 &&
+        list.single['id'] == uid(wb) &&
+        list.single['name'] == 'ויקטור' &&
+        list.single['mode'] == 'free' &&
+        (bad as List).isEmpty,
+    'the widget lists free friends only, and only for its owner (D-133)',
+  );
+  for (final c in [wb, wc]) {
+    await c.rpc('clear_availability');
+  }
 }

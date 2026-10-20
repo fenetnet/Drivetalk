@@ -105,6 +105,9 @@ class DrivingApi(private val store: DrivingStore) {
         // A call closes my open questions: the one who said yes is told (D-121).
         rpc("device_phone_call", JSONObject().put("p_on", on))?.trim('"')?.also { if (on) kick() }
 
+    /** Free friends for the home-screen widget (JSON, D-133); null = no answer. */
+    fun freeFriends(): String? = rpc("device_free_friends", JSONObject())?.takeIf { it.trim().startsWith("[") }
+
     /** "It reached my phone" — the one who asked sees it (D-129). */
     fun shown(offerId: String): String? =
         rpc("device_offer_shown", JSONObject().put("p_offer", offerId))?.trim('"')

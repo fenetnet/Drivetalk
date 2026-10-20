@@ -1233,6 +1233,15 @@ class RealController extends Notifier<RealState> {
     'ownerUser': _l.ownerNotifUser('{name}'),
     'versionTitle': _l.versionNotifTitle,
     'versionBody': _l.versionNotifBody,
+    // The "who's free now" widget (D-133).
+    'widgetTitle': _l.widgetTitle,
+    'widgetEmpty': _l.widgetEmpty,
+    'widgetBusy': _l.inCall,
+    'widgetLeft': _l.widgetLeft('{m}'),
+    'widgetMode_driving': _l.modeDriving,
+    'widgetMode_walking': _l.modeWalking,
+    'widgetMode_breakTime': _l.modeBreak,
+    'widgetMode_free': '',
     // "X tried to reach you" (D-121), by their gender.
     'missedTitleF': _l.missedNotifTitle('{name}', 'female'),
     'missedTitleM': _l.missedNotifTitle('{name}', 'male'),
@@ -1831,6 +1840,7 @@ class RealController extends Notifier<RealState> {
     }
     // The first time on this phone: everyone already here is "known".
     if (_knownFriends == null) _rememberFriends(snap.friends.map((f) => f.id));
+    _updateWidget(now);
     final hasFriends = snap.friends.isNotEmpty;
     if (hasFriends && !_hadFriends) _event('first_friend_connected');
     _hadFriends = hasFriends;
@@ -3301,6 +3311,34 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ diagnostics
 
   /// Text for "copy test info": no keys, tokens, phone numbers or full ids.
+  String? _widgetSent;
+
+  /// The "who's free now" widget gets what the home screen shows (D-133);
+  /// it also refreshes itself (push / every 30 minutes) with the device
+  /// token, made here if the phone has none yet.
+  void _updateWidget(DateTime now) {
+    if (!state.driving.friendsWidget) return;
+    if (!state.driving.configured) unawaited(_quietly(_ensureDevice));
+    final json = jsonEncode([
+      for (final (p, a) in [
+        ...freeFriends(state, now),
+        ...busyFriends(state, now),
+      ])
+        {
+          'id': p.id,
+          'name': p.name,
+          'mode': a.mode.name,
+          'until': a.expiresAt.toUtc().toIso8601String(),
+          'busy': a.inCallAt(now),
+        },
+    ]);
+    if (json == _widgetSent) return;
+    _widgetSent = json;
+    unawaited(
+      _quietly(() => ref.read(drivingDetectorProvider).setWidgetFriends(json)),
+    );
+  }
+
   /// Test screen: "why isn't this number among my contacts here?" (D-132).
   /// Each line is one step: the number, my contacts, the server.
   Future<List<String>> whyNotShown(String raw) async {
