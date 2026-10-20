@@ -31,6 +31,8 @@ class DrivingService : Service() {
         const val ACTION_QUIET_END = "app.drivetalk.driving.QUIET_END"
         const val ACTION_STOP_ALL = "app.drivetalk.driving.STOP_ALL"
         private const val POLL_MS = 10_000L
+        private const val FAST_POLL_MS = 3_000L
+        private const val FAST_MS = 2 * 60_000L
 
         /** "Short stops keep the trip": how long the car may be off (D-128). */
         const val STOP_GRACE_MS = 5 * 60_000L
@@ -246,6 +248,7 @@ class DrivingService : Service() {
         if (!running) return false
         main.post {
             callsUntil = System.currentTimeMillis() + 3 * 60_000L
+            fastUntil = System.currentTimeMillis() + FAST_MS
             if (running && !polling) {
                 polling = true
                 io.execute { pollOffers(this) }
@@ -285,17 +288,23 @@ class DrivingService : Service() {
             // With push working, the server wakes this service when there is
             // something (D-120): looking every 30 seconds is a safety net.
             ticks++
-            val due = !DrivingStore(ctx).pushReady || ticks % 3 == 0
+            // Around a question: every 3 seconds, so "agreed" or "cancelled"
+            // shows at once (D-129).
+            val fast = now < fastUntil
+            val due = fast || !DrivingStore(ctx).pushReady || ticks % 3 == 0
             if (due && !polling) {
                 polling = true
                 io.execute { pollOffers(ctx) }
             }
-            main.postDelayed(this, POLL_MS)
+            main.postDelayed(this, if (fast) FAST_POLL_MS else POLL_MS)
         }
     }
 
     /** Until when to also ask "is a call agreed?" (after a question was shown). */
     @Volatile private var callsUntil = 0L
+
+    /** Until when to look every 3 seconds (2 minutes from a question). */
+    @Volatile private var fastUntil = 0L
 
     private fun pollOffers(ctx: Context) {
         // null = no answer (network): keep what is shown, try again later.
@@ -310,6 +319,7 @@ class DrivingService : Service() {
             for (o in offers) {
                 // Remembered on the phone: not repeated after a restart.
                 if (store.markShown(o.id)) {
+                    fastUntil = System.currentTimeMillis() + FAST_MS
                     DrivingNotifications.showOffer(ctx, o)
                     // In the background "yes" can't be heard: say how to answer.
                     val text = when (o.kind) {

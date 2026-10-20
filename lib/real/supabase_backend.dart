@@ -538,6 +538,16 @@ class SupabaseRealBackend implements RealBackend {
       }).whenComplete(_kickPush);
 
   @override
+  Future<void> offerShown(String offerId) => _guard(() async {
+    try {
+      await _c.rpc('offer_shown', params: {'p_offer': offerId});
+    } on PostgrestException catch (e) {
+      // An older server: nothing to tell.
+      if (!_missingFunction(e)) rethrow;
+    }
+  });
+
+  @override
   Future<void> seenCall(String offerId) => _guard(() async {
     try {
       await _c.rpc('seen_call', params: {'p_offer': offerId});
@@ -1280,6 +1290,8 @@ class SupabaseRealBackend implements RealBackend {
     acceptedAt: _maybeTime(r['accepted_at']),
     endedA: r['ended_a'] == true,
     endedB: r['ended_b'] == true,
+    shownA: _maybeTime(r['shown_a']),
+    shownB: _maybeTime(r['shown_b']),
   );
 
   /// The list (server 50), or the older single range.

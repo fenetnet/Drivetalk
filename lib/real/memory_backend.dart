@@ -789,6 +789,8 @@ class _Offer {
   String? laterFrom;
   DateTime? seenA;
   DateTime? seenB;
+  DateTime? shownA;
+  DateTime? shownB;
   bool endedA = false;
   bool endedB = false;
   bool? talked;
@@ -816,6 +818,8 @@ class _Offer {
     acceptedAt: acceptedAt,
     endedA: endedA,
     endedB: endedB,
+    shownA: shownA,
+    shownB: shownB,
   );
 }
 
@@ -1246,6 +1250,16 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   Future<void> seenCall(String offerId) async => server.markSeen(offerId, _uid);
+
+  @override
+  Future<void> offerShown(String offerId) async {
+    final o = server.offers[offerId];
+    if (o == null || o.status != OfferStatus.pending) return;
+    if (o.a == _uid) o.shownA ??= server.now();
+    if (o.b == _uid) o.shownB ??= server.now();
+    o.updatedAt = server.now();
+    server._changed();
+  }
 
   @override
   Future<bool> cancelCall(String offerId) async {

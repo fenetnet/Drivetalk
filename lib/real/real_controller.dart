@@ -488,6 +488,7 @@ class RealController extends Notifier<RealState> {
   final _subs = <StreamSubscription<Object?>>[];
   Timer? _debounce;
   Timer? _ticker;
+  Timer? _fastTicker;
   AppLifecycleListener? _lifecycle;
   var _noticeSeq = 0;
   var _voiceSeq = 0;
@@ -581,6 +582,7 @@ class RealController extends Notifier<RealState> {
     }
     _debounce?.cancel();
     _ticker?.cancel();
+    _fastTicker?.cancel();
     _lifecycle?.dispose();
   }
 
@@ -622,6 +624,13 @@ class RealController extends Notifier<RealState> {
     // Safety net when realtime is down: refresh every 10s while something is
     // going on, every 30s otherwise; also notice my own expiry promptly.
     _ticker = Timer.periodic(const Duration(seconds: 5), (_) => _onTick());
+    // Waiting for an answer: look every 2 seconds, so each step shows at
+    // once even when instant updates are down (D-129).
+    _fastTicker = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (_foreground && !_refreshing && waitingOffer(state, _now()) != null) {
+        refresh();
+      }
+    });
     try {
       _lifecycle = AppLifecycleListener(
         onResume: _onResume,
@@ -1810,9 +1819,11 @@ class RealController extends Notifier<RealState> {
     }
     // A new question for me → read it aloud when driving.
     final offer = currentOffer(state, now);
-    if (offer != null && offer.id != _shownOfferId) {
+    if (offer != null && offer.id != _shownOfferId && _foreground) {
       _shownOfferId = offer.id;
       _event('offer_shown');
+      // The one who asked sees it reached me (D-129).
+      unawaited(_quietly(() => _backend.offerShown(offer.id)));
     }
     // The first time on this phone: everyone already here is "known".
     if (_knownFriends == null) _rememberFriends(snap.friends.map((f) => f.id));

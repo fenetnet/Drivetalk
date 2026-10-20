@@ -1699,5 +1699,21 @@
   "settingsShortStops": "עצירות קצרות לא מסיימות נסיעה",
   "@settingsShortStops": {},
   "settingsShortStopsBody": "למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות' מתנתק.",
-  "@settingsShortStopsBody": {}
+  "@settingsShortStopsBody": {},
+  "waitingSent": "✓ נשלח ל{name}",
+  "@waitingSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingReached": "✓✓ הגיע לטלפון של {name}",
+  "@waitingReached": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  }
 }

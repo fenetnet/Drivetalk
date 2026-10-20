@@ -191,6 +191,8 @@ class RealOffer {
     this.acceptedAt,
     this.endedA = false,
     this.endedB = false,
+    this.shownA,
+    this.shownB,
   });
   final String id;
   final String userA;
@@ -234,6 +236,13 @@ class RealOffer {
   final bool endedA;
   final bool endedB;
   bool get callOver => endedA || endedB;
+
+  /// When the question showed on each side's phone (D-129).
+  final DateTime? shownA;
+  final DateTime? shownB;
+
+  /// It reached [user]'s phone (shown in the app or as a notification).
+  bool shownTo(String user) => (user == userA ? shownA : shownB) != null;
 
   String otherId(String me) => me == userA ? userB : userA;
 

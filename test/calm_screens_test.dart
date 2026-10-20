@@ -782,6 +782,15 @@ void main() {
     now = now.add(const Duration(seconds: 10));
     await t.pump(const Duration(seconds: 1));
     expect(find.text('עוד 15 שניות'), findsOneWidget);
+    // Each step (D-129): sent, then it reached their phone.
+    expect(find.text('✓ נשלח ליונתן־אלכסנדר'), findsOneWidget);
+    await t.runAsync(() async {
+      // Their app shows the question.
+      await friend.read(realProvider.notifier).refresh();
+      await me.read(realProvider.notifier).refresh();
+    });
+    await t.pump();
+    expect(find.text('✓✓ הגיע לטלפון של יונתן־אלכסנדר'), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });

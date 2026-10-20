@@ -151,6 +151,8 @@ object DrivingNotifications {
     fun showOffer(context: Context, offer: DrivingApi.Offer) {
         val store = DrivingStore(context)
         store.log("question shown (${offer.kind})")
+        // The one who asked sees it reached me (D-129); never on this thread.
+        Thread { DrivingApi(store).shown(offer.id) }.start()
         val req = 100 + (offer.id.hashCode() and 0xffff)
         val quick = offer.kind == "quick"
         ensureChannels(context)

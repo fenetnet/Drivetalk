@@ -2491,4 +2491,14 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get settingsShortStopsBody =>
       'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.';
+
+  @override
+  String waitingSent(String name) {
+    return '✓ נשלח ל$name';
+  }
+
+  @override
+  String waitingReached(String name) {
+    return '✓✓ הגיע לטלפון של $name';
+  }
 }

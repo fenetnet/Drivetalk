@@ -54,6 +54,10 @@ abstract class RealBackend {
 
   Future<OfferAnswer> answerOffer(String offerId, {required bool accept});
 
+  /// A question shows on my screen now: the one who asked sees it reached
+  /// me (D-129).
+  Future<void> offerShown(String offerId);
+
   /// Quick connect: my phone shows it (the 5 seconds start once both saw it).
   Future<void> seenCall(String offerId);
 

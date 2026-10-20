@@ -173,6 +173,17 @@ class RealWaitingScreen extends ConsumerWidget {
             style: style,
             soft: true,
           ),
+          // Each step, so the wait doesn't feel lost (D-129).
+          const SizedBox(height: 14),
+          MomentText(
+            (s.snapshot?.offers.where((o) => o.id == offer.id).firstOrNull ??
+                        offer)
+                    .shownTo(other.id)
+                ? l.waitingReached(other.name)
+                : l.waitingSent(other.name),
+            size: 18,
+            style: style,
+          ),
           // How long I still wait (then I stop waiting by myself).
           if (c.waitSecondsLeft(offer, ref.watch(realNowProvider))
               case final left? when left > 0) ...[

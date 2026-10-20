@@ -4161,6 +4161,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.'**
   String get settingsShortStopsBody;
+
+  /// No description provided for @waitingSent.
+  ///
+  /// In he, this message translates to:
+  /// **'✓ נשלח ל{name}'**
+  String waitingSent(String name);
+
+  /// No description provided for @waitingReached.
+  ///
+  /// In he, this message translates to:
+  /// **'✓✓ הגיע לטלפון של {name}'**
+  String waitingReached(String name);
 }
 
 class _AppLocalizationsDelegate

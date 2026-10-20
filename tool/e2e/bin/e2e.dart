@@ -1810,9 +1810,10 @@ Future<void> main() async {
   await tripPush();
   await pushEvents();
   await missedAndQuietDays();
+  await questionDelivered();
 
   check(
-    await eve.rpc('schema_version') == 50,
+    await eve.rpc('schema_version') == 51,
     'the server says its version (41)',
   );
 
@@ -3548,4 +3549,39 @@ Future<void> missedAndQuietDays() async {
     (await missed(mb)).isEmpty,
     'the notification queue is emptied after 2 days',
   );
+}
+
+Future<void> questionDelivered() async {
+  final qa = await newUser('קרן', 'female');
+  final qb = await newUser('קובי', 'male');
+  final qc = await newUser('קשת', 'female');
+  await befriend(qa, qb);
+  await skipQuietGap();
+  await free(qa);
+  await free(qb);
+  // Both free: a question is made for them.
+  Map<String, dynamic> offerOf(List<Map<String, dynamic>> rows) =>
+      rows.firstWhere((o) => o['status'] == 'pending');
+  final before = offerOf(await rows(qa, 'match_offers'));
+  // A stranger can't mark it.
+  await qc.rpc('offer_shown', params: {'p_offer': before['id']});
+  final still = offerOf(await rows(qa, 'match_offers'));
+  final bSide = before['user_a'] == uid(qb) ? 'shown_a' : 'shown_b';
+  final token = await qb.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  final ok = await bg.rpc(
+    'device_offer_shown',
+    params: {'p_token': token, 'p_offer': before['id']},
+  );
+  final after = offerOf(await rows(qa, 'match_offers'));
+  check(
+    before[bSide] == null &&
+        still[bSide] == null &&
+        ok == 'ok' &&
+        after[bSide] != null,
+    'the one who asked sees "it reached their phone" (D-129)',
+  );
+  for (final c in [qa, qb]) {
+    await c.rpc('clear_availability');
+  }
 }
