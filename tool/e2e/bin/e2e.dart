@@ -1811,9 +1811,10 @@ Future<void> main() async {
   await pushEvents();
   await missedAndQuietDays();
   await questionDelivered();
+  await callEndsWithPhone();
 
   check(
-    await eve.rpc('schema_version') == 51,
+    await eve.rpc('schema_version') == 52,
     'the server says its version (41)',
   );
 
@@ -3582,6 +3583,50 @@ Future<void> questionDelivered() async {
     'the one who asked sees "it reached their phone" (D-129)',
   );
   for (final c in [qa, qb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> callEndsWithPhone() async {
+  final ca = await newUser('כנרת', 'female');
+  final cb = await newUser('כפיר', 'male');
+  await befriend(ca, cb);
+  await skipQuietGap();
+  await free(ca);
+  await free(cb);
+  final offer = (await rows(
+    ca,
+    'match_offers',
+  )).firstWhere((o) => o['status'] == 'pending');
+  for (final c in [ca, cb]) {
+    await c.rpc(
+      'answer_offer',
+      params: {'p_offer': offer['id'], 'p_accept': true},
+    );
+  }
+  Future<bool> busyToB() async => (await rows(cb, 'availability')).any(
+    (a) =>
+        a['user_id'] == uid(ca) &&
+        a['call_until'] != null &&
+        DateTime.parse(a['call_until'] as String).isAfter(DateTime.now()),
+  );
+  final during = await busyToB();
+  final token = await ca.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  await bg.rpc('device_phone_call', params: {'p_token': token, 'p_on': true});
+  await bg.rpc('device_phone_call', params: {'p_token': token, 'p_on': false});
+  final after = await busyToB();
+  final o = (await rows(
+    ca,
+    'match_offers',
+  )).firstWhere((x) => x['id'] == offer['id']);
+  final mineEnded = o['user_a'] == uid(ca) ? o['ended_a'] : o['ended_b'];
+  check(
+    during && !after && mineEnded == true,
+    'the phone call ends: "in a call" ends too (D-131)',
+  );
+  for (final c in [ca, cb]) {
+    await c.rpc('end_call', params: {'p_offer': offer['id']});
     await c.rpc('clear_availability');
   }
 }

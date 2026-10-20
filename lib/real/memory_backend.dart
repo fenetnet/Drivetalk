@@ -389,6 +389,17 @@ class MemoryServer {
   /// The phone says "in a call" (true) / "call ended" (false). A call
   /// closes my open questions (D-121).
   void phoneCall(String u, bool on) {
+    // The phone call is over: so is my side of an agreed app call (D-131).
+    if (!on && phoneUntil.containsKey(u)) {
+      for (final o in offers.values) {
+        if (o.status != OfferStatus.accepted || o.acceptedAt == null) continue;
+        if (o.quick && (o.notBefore == null || o.notBefore!.isAfter(now()))) {
+          continue;
+        }
+        if (o.a == u) o.endedA = true;
+        if (o.b == u) o.endedB = true;
+      }
+    }
     if (on && availability.containsKey(u)) {
       phoneUntil[u] = now().add(const Duration(minutes: 3));
     } else {

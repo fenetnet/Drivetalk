@@ -643,6 +643,29 @@ void main() {
     expect(me.s.live, LiveStatus.connected);
   });
 
+  test(
+    'a call through the app ends when the phone call ends (D-131)',
+    () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      await me.c.respond(currentOffer(me.s, now)!, accept: true);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await me.c.refresh();
+      expect(
+        busyFriends(me.s, now),
+        hasLength(1),
+        reason: 'Yoni is in our call',
+      );
+      server.phoneCall(yoni.backend.userId!, true);
+      server.phoneCall(yoni.backend.userId!, false);
+      await me.c.refresh();
+      expect(busyFriends(me.s, now), isEmpty, reason: 'he hung up');
+    },
+  );
+
   test('test info says why a friend looks "in a call"', () async {
     await connect();
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
