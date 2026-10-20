@@ -105,17 +105,6 @@ class RealSettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => _pickCar(context, ref),
                 ),
-              // Dropping the kids off: the trip goes on (D-128).
-              if (s.driving.supported &&
-                  s.driving.enabled &&
-                  s.driving.carName.isNotEmpty)
-                SwitchListTile(
-                  secondary: const Icon(Icons.local_parking_rounded),
-                  title: Text(l.settingsShortStops),
-                  subtitle: Text(l.settingsShortStopsBody),
-                  value: s.driving.shortStops,
-                  onChanged: c.setShortStops,
-                ),
               SwitchListTile(
                 secondary: const Icon(Icons.record_voice_over_rounded),
                 title: Text(l.settingsVoiceReadout),

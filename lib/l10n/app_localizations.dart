@@ -4009,7 +4009,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutPermMicBody.
   ///
   /// In he, this message translates to:
-  /// **'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.'**
+  /// **'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. כשהטלפון מחובר לדיבורית של הרכב, משתמשים במיקרופון של הרכב (המוזיקה עלולה להיעצר לשנייה). ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.'**
   String get aboutPermMicBody;
 
   /// No description provided for @aboutPermBgBody.
@@ -4150,18 +4150,6 @@ abstract class AppLocalizations {
   /// **'{count} לוחות זמנים: {lines}'**
   String quietMany(String count, String lines);
 
-  /// No description provided for @settingsShortStops.
-  ///
-  /// In he, this message translates to:
-  /// **'עצירות קצרות לא מסיימות נסיעה'**
-  String get settingsShortStops;
-
-  /// No description provided for @settingsShortStopsBody.
-  ///
-  /// In he, this message translates to:
-  /// **'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.'**
-  String get settingsShortStopsBody;
-
   /// No description provided for @waitingSent.
   ///
   /// In he, this message translates to:
@@ -4173,6 +4161,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'✓✓ הגיע לטלפון של {name}'**
   String waitingReached(String name);
+
+  /// No description provided for @permsFullTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'שאלה על כל המסך בנהיגה'**
+  String get permsFullTitle;
+
+  /// No description provided for @permsFullBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כדי לענות \"כן\" בקול גם כשהמסך נעול.'**
+  String get permsFullBody;
+
+  /// No description provided for @aboutPermFullBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בנהיגה, כשחבר שואל אם יש לך זמן, האפליקציה נפתחת כמו שיחה נכנסת, גם על מסך נעול, ושואלת בקול. ככה אפשר לענות \"כן\" או \"לא\" בלי לגעת בטלפון. כשהמסך בשימוש (למשל ניווט), מופיעה רק התראה למעלה.'**
+  String get aboutPermFullBody;
 }
 
 class _AppLocalizationsDelegate

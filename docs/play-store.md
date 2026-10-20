@@ -97,6 +97,11 @@
    - מטרות: לפי הטבלה.
 5. **תצוגה מקדימה** ← "שמירה".
 
+### הצהרה על "כוונה במסך מלא" (Full-screen intent) — נדרש מגרסה 157
+- ב-Play Console ← תוכן האפליקציה ← **Full-screen intent** (כוונה במסך מלא).
+- לבחור: האפליקציה **מבצעת ומקבלת שיחות** (Calling).
+- בתיבת ההסבר: `While driving, a friend's request to talk opens the app like an incoming call, so the driver can answer "yes"/"no" by voice without touching the phone. The call itself goes through the phone's dialer.`
+
 ### שאר הטפסים בדף "תוכן האפליקציה"
 - **מזהה פרסום (Advertising ID):** האפליקציה לא משתמשת בו (No).
 - **אפליקציות ממשלתיות, תכונות פיננסיות, אפליקציות בריאות, אפליקציות חדשות:** הכל No / "אין".

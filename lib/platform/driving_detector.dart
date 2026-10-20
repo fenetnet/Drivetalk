@@ -17,7 +17,7 @@ class DrivingStatus {
     this.watching = true,
     this.log = '',
     this.inCallNow = false,
-    this.shortStops = false,
+    this.fullScreen = true,
   });
 
   /// The background watcher runs now (Android); the app re-arms it when
@@ -31,8 +31,8 @@ class DrivingStatus {
   /// The phone is in a call right now (as the app detects it).
   final bool inCallNow;
 
-  /// "Short stops keep the trip" is on (D-128).
-  final bool shortStops;
+  /// A question may open the app while driving (D-130).
+  final bool fullScreen;
 
   /// Notifications are allowed for DriveTalk (Android).
   final bool notifications;
@@ -91,7 +91,15 @@ abstract class DrivingDetector {
 
   /// I'm free until [until]: watch for friends in the background.
   /// [endWithTrip]: "for the whole trip" — it also ends when the trip does.
-  Future<bool> startAvailable(DateTime until, {bool endWithTrip = false});
+  Future<bool> startAvailable(
+    DateTime until, {
+    bool endWithTrip = false,
+    bool driving = false,
+  });
+
+  /// Android 14+: the settings switch for "full-screen notifications"
+  /// (a question opens the app while driving, D-130).
+  Future<void> allowFullScreen();
   Future<void> stopAvailable();
   Future<bool> requestNotificationPermission();
 
@@ -112,10 +120,6 @@ abstract class DrivingDetector {
   /// Paired Bluetooth devices (name, address) — to pick the car.
   Future<List<(String, String)>> bondedDevices();
   Future<void> setCar(String address, String name);
-
-  /// "Short stops keep the trip" (D-128): the car's Bluetooth may be off
-  /// for 5 minutes before the trip ends.
-  Future<void> setShortStops(bool on);
 
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
@@ -159,7 +163,7 @@ class AndroidDrivingDetector implements DrivingDetector {
         watching: m?['watching'] != false,
         log: '${m?['log'] ?? ''}',
         inCallNow: m?['inCallNow'] == true,
-        shortStops: m?['shortStops'] == true,
+        fullScreen: m?['fullScreen'] != false,
       );
     } catch (_) {
       return const DrivingStatus();
@@ -224,12 +228,14 @@ class AndroidDrivingDetector implements DrivingDetector {
   Future<bool> startAvailable(
     DateTime until, {
     bool endWithTrip = false,
+    bool driving = false,
   }) async {
     if (!_android) return false;
     try {
       return await _channel.invokeMethod<bool>('startAvailable', {
             'until': until.millisecondsSinceEpoch,
             'endWithTrip': endWithTrip,
+            'driving': driving,
           }) ??
           false;
     } catch (_) {
@@ -259,9 +265,6 @@ class AndroidDrivingDetector implements DrivingDetector {
       _call('setCar', {'address': address, 'name': name});
 
   @override
-  Future<void> setShortStops(bool on) => _call('setShortStops', {'on': on});
-
-  @override
   Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
 
   @override
@@ -270,6 +273,9 @@ class AndroidDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> openNotificationSettings() => _call('openNotificationSettings');
+
+  @override
+  Future<void> allowFullScreen() => _call('allowFullScreen');
 
   @override
   Future<bool> allowBackground() async {
@@ -379,7 +385,7 @@ class FakeDrivingDetector implements DrivingDetector {
     background: background,
     notifications: notifications,
     watching: watching,
-    shortStops: shortStops,
+    fullScreen: fullScreen,
   );
 
   /// Like the native watcher: runs while I'm free (tests can stop it).
@@ -393,6 +399,11 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<bool> allowBackground() async => background = true;
+
+  var fullScreen = true;
+
+  @override
+  Future<void> allowFullScreen() async => fullScreen = true;
 
   @override
   Future<bool> requestPermission() async => grantPermission;
@@ -452,15 +463,20 @@ class FakeDrivingDetector implements DrivingDetector {
   var endWithTrip = false;
   var startAvailableCalls = 0;
 
+  /// The last "my free time is driving" passed (D-130).
+  var driving = false;
+
   @override
   Future<bool> startAvailable(
     DateTime until, {
     bool endWithTrip = false,
+    bool driving = false,
   }) async {
     if (token == null) return false;
     startAvailableCalls++;
     availableUntil = until;
     this.endWithTrip = endWithTrip;
+    this.driving = driving;
     watching = true;
     return true;
   }
@@ -483,11 +499,6 @@ class FakeDrivingDetector implements DrivingDetector {
 
   @override
   Future<void> setCar(String address, String name) async => carName = name;
-
-  bool shortStops = false;
-
-  @override
-  Future<void> setShortStops(bool on) async => shortStops = on;
 
   String routinesJson = '[]';
   @override

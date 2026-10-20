@@ -15,6 +15,7 @@ class MainActivity : FlutterActivity() {
     companion object {
         const val EXTRA_OFFER = "drivetalk_offer"
         const val EXTRA_ACCEPT = "drivetalk_accept"
+        const val EXTRA_WAKE = "drivetalk_wake"
         /** "Talk" on "X is on the way": ask this friend (D-119). */
         const val EXTRA_ASK = "drivetalk_ask"
 
@@ -49,15 +50,53 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        wakeFor(intent)
         readLaunchAction(intent)
         // Android can drop the detection registration (an update, clearing
         // Play services data): arm it again whenever the app opens.
         if (DrivingStore(this).enabled) DrivingDetection.register(this)
     }
 
+    /** Android 14+: "full-screen notifications" may be switched off. */
+    private fun fullScreenAllowed(): Boolean =
+        Build.VERSION.SDK_INT < 34 ||
+            getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+
+    private fun openFullScreenSettings() {
+        if (Build.VERSION.SDK_INT < 34) return
+        try {
+            startActivity(
+                Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                    .setData(android.net.Uri.parse("package:$packageName")),
+            )
+        } catch (e: Exception) {
+            openNotificationSettings()
+        }
+    }
+
+    /** Opened by a question while driving: show over the lock screen. */
+    private fun wakeFor(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_WAKE, false) != true) return
+        intent.removeExtra(EXTRA_WAKE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Only for that one question: next time the lock screen stays.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        }
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        wakeFor(intent)
         if (readLaunchAction(intent)) DrivingEvents.send("action")
     }
 
@@ -195,7 +234,7 @@ class MainActivity : FlutterActivity() {
                         "notifications" to notificationsAllowed(),
                         "watching" to DrivingService.watching,
                         "log" to store.eventLog,
-                        "shortStops" to store.shortStops,
+                        "fullScreen" to fullScreenAllowed(),
                         "inCallNow" to PhoneState.inCall(this),
                     ),
                 )
@@ -257,6 +296,7 @@ class MainActivity : FlutterActivity() {
                     } else {
                         store.availableUntil = (call.argument<Number>("until") ?: 0).toLong()
                         store.endWithTrip = call.argument<Boolean>("endWithTrip") == true
+                        store.manualDriving = call.argument<Boolean>("driving") == true
                         DrivingService.startManual(this)
                         QuickFree.refreshAll(this)
                         result.success(true)
@@ -289,10 +329,14 @@ class MainActivity : FlutterActivity() {
                     Routines.schedule(this)
                     result.success(true)
                 }
-                "setShortStops" -> {
-                    store.shortStops = call.argument<Boolean>("on") == true
+                // While driving, a question opens the app over the lock
+                // screen, so "yes" can be said aloud (D-130).
+                "allowFullScreen" -> {
+                    openFullScreenSettings()
                     result.success(true)
                 }
+                // The car's microphone while listening for "yes" / "no".
+                "carMic" -> result.success(CarMic.set(this, call.argument<Boolean>("on") == true))
                 "setCar" -> {
                     store.carAddress = call.argument<String>("address") ?: ""
                     store.carName = call.argument<String>("name") ?: ""

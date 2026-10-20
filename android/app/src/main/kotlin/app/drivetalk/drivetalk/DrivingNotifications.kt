@@ -117,6 +117,16 @@ object DrivingNotifications {
         return PendingIntent.getActivity(context, request, i, flags())
     }
 
+    private fun wakeApp(context: Context, request: Int, offerId: String): PendingIntent {
+        val i = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(MainActivity.EXTRA_OFFER, offerId)
+            putExtra(MainActivity.EXTRA_ACCEPT, false)
+            putExtra(MainActivity.EXTRA_WAKE, true)
+        }
+        return PendingIntent.getActivity(context, request, i, flags())
+    }
+
     private fun broadcast(
         context: Context,
         action: String,
@@ -173,6 +183,15 @@ object DrivingNotifications {
             .setAutoCancel(true)
             .setCategory(Notification.CATEGORY_CALL)
             .setContentIntent(openApp(context, req, offer.id, accept = false))
+            .apply {
+                // Driving and the app isn't on screen: open it, like an
+                // incoming call (over the lock screen), so "yes" can be said
+                // aloud. With the screen in use (e.g. navigation) Android
+                // shows the usual pop-up instead (D-130).
+                if (store.drivingNow && !MainActivity.onScreen) {
+                    setFullScreenIntent(wakeApp(context, req + 5, offer.id), true)
+                }
+            }
         if (quick) {
             // Agreed in advance: 5 seconds to cancel (server-side), then
             // opening the app starts the call.

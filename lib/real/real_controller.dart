@@ -86,7 +86,7 @@ enum CallRole {
 enum FirstRunStep { photo, contacts, result, routine, permissions, magic }
 
 /// The phone permissions asked for at the start (and in Settings).
-enum PhonePermission { notifications, calls, mic, background }
+enum PhonePermission { notifications, calls, mic, background, fullScreen }
 
 class PhonePermissions {
   const PhonePermissions({
@@ -96,7 +96,12 @@ class PhonePermissions {
     required this.mic,
     required this.background,
     required this.autoDriving,
+    this.fullScreen = true,
   });
+
+  /// While driving, a question may open the app (like a call) — Android
+  /// 14+ lets the user switch it off (D-130).
+  final bool fullScreen;
 
   /// Android (background notifications etc.); elsewhere only calls + mic.
   final bool supported;
@@ -111,6 +116,7 @@ class PhonePermissions {
     PhonePermission.calls => calls,
     PhonePermission.mic => mic,
     PhonePermission.background => !supported || background,
+    PhonePermission.fullScreen => !supported || fullScreen,
   };
 }
 
@@ -1077,6 +1083,7 @@ class RealController extends Notifier<RealState> {
       mic: mic,
       background: d.background,
       autoDriving: d.enabled,
+      fullScreen: d.fullScreen,
     );
   }
 
@@ -1092,6 +1099,8 @@ class RealController extends Notifier<RealState> {
         await ref.read(voiceServiceProvider).prepare();
       case PhonePermission.background:
         await allowBackground();
+      case PhonePermission.fullScreen:
+        await detector.allowFullScreen();
     }
     await _loadDriving();
   }
@@ -1305,6 +1314,7 @@ class RealController extends Notifier<RealState> {
     await detector.startAvailable(
       mine.expiresAt,
       endWithTrip: tripOnly == mine.startedAt.toIso8601String(),
+      driving: mine.mode == AvailabilityMode.driving,
     );
   }
 
@@ -1340,12 +1350,6 @@ class RealController extends Notifier<RealState> {
   /// Paired Bluetooth devices, to pick the car.
   Future<List<(String, String)>> carCandidates() =>
       ref.read(drivingDetectorProvider).bondedDevices();
-
-  /// "Short stops keep the trip" (D-128).
-  Future<void> setShortStops(bool on) async {
-    await ref.read(drivingDetectorProvider).setShortStops(on);
-    await _loadDriving();
-  }
 
   /// The car's Bluetooth as an extra trip signal (turns automatic driving
   /// availability on if it was off).
@@ -2096,7 +2100,8 @@ class RealController extends Notifier<RealState> {
 
   /// The question, up to 3 times; about 3 seconds to answer each time.
   static const _askTimes = 3;
-  static const _askListen = Duration(seconds: 4);
+  // Driving, people answer a little slower.
+  static const _askListen = Duration(seconds: 6);
 
   void _speak(String text) {
     _voiceSeq++;

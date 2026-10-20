@@ -73,6 +73,8 @@ code { background:#EAF2FA; border-radius:6px; padding:0 4px; }
 <li>קודם מנסים זיהוי דיבור על הטלפון עצמו. אם אין בטלפון זיהוי עברית מקומי, משתמשים בשירות זיהוי הדיבור של הטלפון (למשל של Google), שעשוי לעבד את הקול בשרתים שלו.</li>
 <li>גם ההקראה בקול מעדיפה קול שעובד על הטלפון עצמו.</li>
 <li>הכפתורים תמיד עובדים, בלי מיקרופון.</li>
+<li>כשהטלפון מחובר לדיבורית של הרכב, ההקשבה נעשית דרך המיקרופון של הרכב, רק בזמן ההקשבה.</li>
+<li>בנהיגה, שאלה מחבר יכולה לפתוח את האפליקציה כמו שיחה נכנסת, גם על מסך נעול, כדי שאפשר יהיה לענות בקול. אפשר לכבות את זה בהגדרות הטלפון ("התראות במסך מלא").</li>
 </ul>
 </ul>
 <h2 id="">תמונת פרופיל</h2>
@@ -105,7 +107,7 @@ code { background:#EAF2FA; border-radius:6px; padding:0 4px; }
 <li><b>Contacts (optional):</b> phone numbers and names are read. Names never leave the phone: they are kept on the device only, to show you who is who. Numbers are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.</li>
 <li><b>Driving detection (optional, off by default):</b> uses on-device motion sensors or the car's Bluetooth.</li>
 <li><b>Sharing:</b> data is not sold or shared. It is hosted on Supabase (EU); notifications pass through Google Firebase Cloud Messaging. Both act only as infrastructure providers.</li>
-<li><b>Voice:</b> on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.</li>
+<li><b>Voice:</b> while driving, a friend's question may open the app over the lock screen (like an incoming call) so it can be answered aloud; with the car's hands-free connected, its microphone is used while listening. On-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.</li>
 <li><b>Usage measurements:</b> event names and durations only (no content, numbers or names).</li>
 <li><b>Deletion:</b> in the app, Settings → "Delete my account and my information" removes everything from the server and the phone; or contact <a href="mailto:fenet.net@gmail.com">fenet.net@gmail.com</a>.</li>
 </ul>

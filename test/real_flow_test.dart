@@ -617,6 +617,20 @@ void main() {
     expect(currentOffer(yoni.s, now), isNull);
   });
 
+  test(
+    'free as "driving": the phone knows (full-screen question, D-130)',
+    () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump(20);
+      expect(me.driving.driving, isTrue);
+      await me.c.stopAvailability();
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      await pump(20);
+      expect(me.driving.driving, isFalse);
+    },
+  );
+
   test('instant updates stopped: the app opens them again', () async {
     await connect();
     me.backend.dropLive();

@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
@@ -44,6 +46,15 @@ const _yesPhrases = {
   'כן בואי נדבר',
   'תתקשר',
   'כן תתקשר',
+  'סבבה',
+  'כן סבבה',
+  'אוקיי',
+  'ברור',
+  'בטח שכן',
+  'בשמחה',
+  'כן בבקשה',
+  'יאללה בוא',
+  'יאללה בואי',
   'yes',
   'ok',
   'okay',
@@ -57,6 +68,14 @@ const _noPhrases = {
   'אחר כך',
   'לא כרגע',
   'בטל',
+  'לא יכול',
+  'לא יכולה',
+  'עסוק',
+  'עסוקה',
+  'אני עסוק',
+  'אני עסוקה',
+  'לא מתאים',
+  'לא עכשיו תודה',
   'no',
   'not now',
 };
@@ -69,6 +88,8 @@ VoiceAnswer parseYesNo(String heard) {
       .split(RegExp(r'\s+'))
       .where((w) => w.isNotEmpty)
       .toList();
+  // "OK" alone is a yes; before other words it's only a filler.
+  if (_yesPhrases.contains(words.join(' '))) return VoiceAnswer.yes;
   // Leading "uh"/"um" don't change the answer.
   while (words.isNotEmpty && _fillers.contains(words.first)) {
     words.removeAt(0);
@@ -81,7 +102,20 @@ VoiceAnswer parseYesNo(String heard) {
 }
 
 class DeviceVoiceService implements VoiceService {
+  static const _driving = MethodChannel('app.drivetalk/driving');
   final _tts = FlutterTts();
+
+  /// The car's microphone (Bluetooth hands-free) while listening, when
+  /// connected (D-130). True when it was switched on.
+  Future<bool> _carMic(bool on) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return false;
+    try {
+      return await _driving.invokeMethod<bool>('carMic', {'on': on}) ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
   final _stt = SpeechToText();
   bool? _sttReady;
   bool _onDeviceFailed = false;
@@ -222,6 +256,10 @@ class DeviceVoiceService implements VoiceService {
         final denied = !(await _stt.hasPermission);
         return denied ? VoiceAnswer.permissionDenied : VoiceAnswer.unavailable;
       }
+      // The car hears better: switch to its microphone (it takes a moment).
+      if (await _carMic(true)) {
+        await Future<void>.delayed(const Duration(milliseconds: 1200));
+      }
       await _stt.listen(
         listenOptions: SpeechListenOptions(
           localeId: 'he_IL',
@@ -249,6 +287,7 @@ class DeviceVoiceService implements VoiceService {
     try {
       if (_stt.isListening) await _stt.stop();
     } catch (_) {}
+    await _carMic(false);
     return answer;
   }
 }

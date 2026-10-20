@@ -37,7 +37,6 @@ class DrivingReceiver : BroadcastReceiver() {
             // one was never closed; "trip over" only matters during a trip.
             if (!entered && !store.inVehicle) return
             store.inVehicle = entered
-            store.tripEndsAt = 0L
             if (entered) TripCheck.tripStarted(context, why.startsWith("car bluetooth")) else TripCheck.stop(context)
             DrivingEvents.send(if (entered) "enter" else "exit")
             if (entered) DrivingService.start(context) else DrivingService.end(context)

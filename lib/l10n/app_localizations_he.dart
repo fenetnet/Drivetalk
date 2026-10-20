@@ -2401,7 +2401,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get aboutPermMicBody =>
-      'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.';
+      'רק כשהאפליקציה שואלת ומחכה ל\"כן\" או \"לא\" בנהיגה. כשהטלפון מחובר לדיבורית של הרכב, משתמשים במיקרופון של הרכב (המוזיקה עלולה להיעצר לשנייה). ההקשבה נעשית בטלפון עצמו, ושום דבר לא מוקלט ולא נשמר.';
 
   @override
   String get aboutPermBgBody =>
@@ -2486,13 +2486,6 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get settingsShortStops => 'עצירות קצרות לא מסיימות נסיעה';
-
-  @override
-  String get settingsShortStopsBody =>
-      'למשל כשמורידים את הילדים: אם הרכב מתחבר שוב תוך 5 דקות, זו אותה נסיעה. כבוי = הנסיעה נגמרת מיד כשהבלוטות\' מתנתק.';
-
-  @override
   String waitingSent(String name) {
     return '✓ נשלח ל$name';
   }
@@ -2501,4 +2494,14 @@ class AppLocalizationsHe extends AppLocalizations {
   String waitingReached(String name) {
     return '✓✓ הגיע לטלפון של $name';
   }
+
+  @override
+  String get permsFullTitle => 'שאלה על כל המסך בנהיגה';
+
+  @override
+  String get permsFullBody => 'כדי לענות \"כן\" בקול גם כשהמסך נעול.';
+
+  @override
+  String get aboutPermFullBody =>
+      'בנהיגה, כשחבר שואל אם יש לך זמן, האפליקציה נפתחת כמו שיחה נכנסת, גם על מסך נעול, ושואלת בקול. ככה אפשר לענות \"כן\" או \"לא\" בלי לגעת בטלפון. כשהמסך בשימוש (למשל ניווט), מופיעה רק התראה למעלה.';
 }

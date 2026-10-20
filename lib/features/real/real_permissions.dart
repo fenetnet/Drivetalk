@@ -126,6 +126,13 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
         ),
         if (p.supported)
           row(
+            PhonePermission.fullScreen,
+            Icons.fullscreen_rounded,
+            l.permsFullTitle,
+            l.permsFullBody,
+          ),
+        if (p.supported)
+          row(
             PhonePermission.background,
             Icons.battery_charging_full_rounded,
             l.permsBgTitle,

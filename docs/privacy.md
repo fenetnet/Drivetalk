@@ -51,6 +51,8 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
   - קודם מנסים זיהוי דיבור על הטלפון עצמו. אם אין בטלפון זיהוי עברית מקומי, משתמשים בשירות זיהוי הדיבור של הטלפון (למשל של Google), שעשוי לעבד את הקול בשרתים שלו.
   - גם ההקראה בקול מעדיפה קול שעובד על הטלפון עצמו.
   - הכפתורים תמיד עובדים, בלי מיקרופון.
+  - כשהטלפון מחובר לדיבורית של הרכב, ההקשבה נעשית דרך המיקרופון של הרכב, רק בזמן ההקשבה.
+  - בנהיגה, שאלה מחבר יכולה לפתוח את האפליקציה כמו שיחה נכנסת, גם על מסך נעול, כדי שאפשר יהיה לענות בקול. אפשר לכבות את זה בהגדרות הטלפון ("התראות במסך מלא").
 
 ## תמונת פרופיל
 רשות. נשמרת באחסון פרטי. רק את/ה והחברים שלך יכולים לראות אותה. תמונות של חברים נשמרות בטלפון בתיקיית מטמון (לא בגיבוי), ונמחקות כשמישהו כבר לא חבר או כשיוצאים מהחשבון.
@@ -82,6 +84,6 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 - **Contacts (optional):** phone numbers and names are read. Names never leave the phone: they are kept on the device only, to show you who is who. Numbers are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.
 - **Driving detection (optional, off by default):** uses on-device motion sensors or the car's Bluetooth.
 - **Sharing:** data is not sold or shared. It is hosted on Supabase (EU); notifications pass through Google Firebase Cloud Messaging. Both act only as infrastructure providers.
-- **Voice:** on-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.
+- **Voice:** while driving, a friend's question may open the app over the lock screen (like an incoming call) so it can be answered aloud; with the car's hands-free connected, its microphone is used while listening. On-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.
 - **Usage measurements:** event names and durations only (no content, numbers or names).
 - **Deletion:** in the app, Settings → "Delete my account and my information" removes everything from the server and the phone; or contact fenet.net@gmail.com.

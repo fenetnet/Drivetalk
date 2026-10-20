@@ -22,6 +22,11 @@
     <!-- Optional: the car's Bluetooth as an extra "trip" signal (D-052). -->
     <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30"/>
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <!-- While driving, a question opens the app like an incoming call, so
+         "yes" can be said aloud (D-130). -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
+    <!-- The car's microphone (Bluetooth hands-free) while listening. -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <!-- Profile photo from the camera (gallery needs no permission). -->
     <uses-feature android:name="android.hardware.telephony" android:required="false"/>
     <uses-feature android:name="android.hardware.camera" android:required="false"/>

@@ -38,19 +38,13 @@ class DrivingStore(context: Context) {
         get() = prefs.getLong("stillSince", 0L)
         set(v) = prefs.edit().putLong("stillSince", v).apply()
 
-    /**
-     * "Short stops keep the trip" (D-128): after the car's Bluetooth
-     * disconnects, wait [STOP_GRACE_MS] before the trip ends (dropping the
-     * kids off). Off = ends at once.
-     */
-    var shortStops: Boolean
-        get() = prefs.getBoolean("shortStops", false)
-        set(v) = prefs.edit().putBoolean("shortStops", v).apply()
+    /** My own free time is "driving" (set by the app) — like a trip (D-130). */
+    var manualDriving: Boolean
+        get() = prefs.getBoolean("manualDriving", false)
+        set(v) = prefs.edit().putBoolean("manualDriving", v).apply()
 
-    /** The car's Bluetooth went off at (ms) during a trip; 0 = not waiting. */
-    var tripEndsAt: Long
-        get() = prefs.getLong("tripEndsAt", 0L)
-        set(v) = prefs.edit().putLong("tripEndsAt", v).apply()
+    /** Driving now (a trip, or my free time as "driving"). */
+    val drivingNow: Boolean get() = inVehicle || (freeNow && manualDriving)
 
     /** This trip came from the car's Bluetooth (it ends it too). */
     var tripByBluetooth: Boolean

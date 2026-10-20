@@ -277,8 +277,9 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await t.pump(const Duration(milliseconds: 300));
-    // Phone calls stay "allow" here (this test phone refuses them).
-    expect(find.text('מאושר'), findsNWidgets(3));
+    // Phone calls stay "allow" here (this test phone refuses them); the
+    // full-screen question is allowed on this phone from the start.
+    expect(find.text('מאושר'), findsNWidgets(4));
     expect(detector.enabled, isFalse, reason: 'driving detection: a choice');
     expect(t.takeException(), isNull);
     await _close(t);
@@ -342,31 +343,6 @@ void main() {
     await t.tap(find.byKey(const ValueKey('about')));
     await t.pumpAndSettle();
     expect(find.byType(AboutScreen), findsOneWidget);
-    expect(t.takeException(), isNull);
-    await _close(t);
-  });
-
-  testWidgets('a car picked: "short stops keep the trip" switch (D-128)', (
-    t,
-  ) async {
-    final driving = FakeDrivingDetector(supported: true);
-    final (me, _) = await twoFriends(t, driving: driving);
-    await t.runAsync(() async {
-      final c = me.read(realProvider.notifier);
-      await c.enableAutoDriving();
-      await c.setCar('AA:BB', 'Car Audio');
-    });
-    await _show(t, me, const RealSettingsScreen());
-    final sw = find.text('עצירות קצרות לא מסיימות נסיעה');
-    await t.scrollUntilVisible(sw, 200);
-    await t.ensureVisible(sw);
-    await t.pump();
-    await t.runAsync(() async {
-      await t.tap(sw, warnIfMissed: true);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-    });
-    await t.pump();
-    expect(driving.shortStops, isTrue);
     expect(t.takeException(), isNull);
     await _close(t);
   });

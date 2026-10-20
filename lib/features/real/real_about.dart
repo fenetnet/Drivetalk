@@ -160,6 +160,14 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                 ),
                 if (p.supported)
                   perm(
+                    Icons.fullscreen_rounded,
+                    l.permsFullTitle,
+                    l.aboutPermFullBody,
+                    on(p.has(PhonePermission.fullScreen)),
+                    ask: () => c.askPermission(PhonePermission.fullScreen),
+                  ),
+                if (p.supported)
+                  perm(
                     Icons.battery_charging_full_rounded,
                     l.permsBgTitle,
                     l.aboutPermBgBody,
