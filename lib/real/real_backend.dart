@@ -92,6 +92,10 @@ abstract class RealBackend {
   /// can be added. Connects nobody (I pick).
   Future<List<ContactMatch>> syncContacts(List<String> hashes);
 
+  /// Test screen, "why isn't X here?" (D-132): 'me', 'not_user', 'user',
+  /// 'friend', 'removed', 'blocked', 'rate_limited' or 'old_server'.
+  Future<String> contactCheck(String hash);
+
   /// Add the contacts I picked — connected at once. Returns their names.
   Future<List<String>> addContacts(List<String> userIds);
 

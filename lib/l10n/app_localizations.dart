@@ -4179,6 +4179,102 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בנהיגה, כשחבר שואל אם יש לך זמן, האפליקציה נפתחת כמו שיחה נכנסת, גם על מסך נעול, ושואלת בקול. ככה אפשר לענות \"כן\" או \"לא\" בלי לגעת בטלפון. כשהמסך בשימוש (למשל ניווט), מופיעה רק התראה למעלה.'**
   String get aboutPermFullBody;
+
+  /// No description provided for @whyTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'למה מישהו לא מופיע?'**
+  String get whyTitle;
+
+  /// No description provided for @whyHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מספר הטלפון שלו'**
+  String get whyHint;
+
+  /// No description provided for @whyCheck.
+  ///
+  /// In he, this message translates to:
+  /// **'לבדוק'**
+  String get whyCheck;
+
+  /// No description provided for @whyBadNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'זה לא נראה כמו מספר טלפון.'**
+  String get whyBadNumber;
+
+  /// No description provided for @whyNumber.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר בצורה אחידה: {number}'**
+  String whyNumber(String number);
+
+  /// No description provided for @whyNoContacts.
+  ///
+  /// In he, this message translates to:
+  /// **'אין לאפליקציה גישה לאנשי הקשר, אז היא לא יכולה למצוא אותו משם.'**
+  String get whyNoContacts;
+
+  /// No description provided for @whyNotInContacts.
+  ///
+  /// In he, this message translates to:
+  /// **'המספר הזה לא נמצא באנשי הקשר בטלפון הזה (אולי שמור אצלך מספר אחר שלו).'**
+  String get whyNotInContacts;
+
+  /// No description provided for @whyInContacts.
+  ///
+  /// In he, this message translates to:
+  /// **'נמצא באנשי הקשר: {name}, שמור כ-{number}.'**
+  String whyInContacts(String name, String number);
+
+  /// No description provided for @whyMe.
+  ///
+  /// In he, this message translates to:
+  /// **'זה המספר שלך.'**
+  String get whyMe;
+
+  /// No description provided for @whyNotUser.
+  ///
+  /// In he, this message translates to:
+  /// **'אין ב-DriveBond משתמש עם המספר הזה (אולי נרשם בלי מספר, או עם מספר אחר).'**
+  String get whyNotUser;
+
+  /// No description provided for @whyUser.
+  ///
+  /// In he, this message translates to:
+  /// **'הוא משתמש ב-DriveBond. בהוספת חבר ← אנשי קשר הוא אמור להופיע; אם לא, לחפש שוב.'**
+  String get whyUser;
+
+  /// No description provided for @whyFriend.
+  ///
+  /// In he, this message translates to:
+  /// **'הוא כבר חבר שלך.'**
+  String get whyFriend;
+
+  /// No description provided for @whyRemoved.
+  ///
+  /// In he, this message translates to:
+  /// **'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. אפשר לשלוח לו הזמנה.'**
+  String get whyRemoved;
+
+  /// No description provided for @whyBlocked.
+  ///
+  /// In he, this message translates to:
+  /// **'יש חסימה ביניכם, ולכן הוא לא מופיע.'**
+  String get whyBlocked;
+
+  /// No description provided for @whyRateLimited.
+  ///
+  /// In he, this message translates to:
+  /// **'היום כבר חיפשו הרבה. אפשר לנסות שוב מחר.'**
+  String get whyRateLimited;
+
+  /// No description provided for @whyOldServer.
+  ///
+  /// In he, this message translates to:
+  /// **'השרת עוד לא עודכן לבדיקה הזו (חלק 21).'**
+  String get whyOldServer;
 }
 
 class _AppLocalizationsDelegate

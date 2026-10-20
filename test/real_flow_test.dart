@@ -1458,12 +1458,33 @@ void main() {
       expect(sent.single, isNot(contains('532222222')));
     });
 
+    test('"why isn\'t X here?" goes step by step (D-132)', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      me.contacts
+        ..numbers = ['53-222-2222']
+        ..names = {'53-222-2222': 'יוני'}
+        ..asked = true;
+      final lines = await me.c.whyNotShown('+972 053 222 2222');
+      expect(lines, [
+        'המספר בצורה אחידה: +972532222222',
+        'נמצא באנשי הקשר: יוני, שמור כ-53-222-2222.',
+        'הוא כבר חבר שלך.',
+      ]);
+      final nobody = await me.c.whyNotShown('054-999-9999');
+      expect(nobody.last, contains('אין ב-DriveBond משתמש'));
+      expect(await me.c.whyNotShown('abc'), ['זה לא נראה כמו מספר טלפון.']);
+    });
+
     test('phone formats all match', () {
       expect(e164Phone('052-111-1111'), '+972521111111');
       expect(e164Phone('+972 52 111 1111'), '+972521111111');
       expect(e164Phone('00972521111111'), '+972521111111');
       expect(e164Phone('972521111111'), '+972521111111');
       expect(e164Phone('12'), isNull);
+      // Saved differently on another phone (D-132).
+      expect(e164Phone('+972-050-680-2360'), '+972506802360');
+      expect(e164Phone('50-680-2360'), '+972506802360');
+      expect(e164Phone('+1 212 555 0100'), '+12125550100');
     });
   });
 

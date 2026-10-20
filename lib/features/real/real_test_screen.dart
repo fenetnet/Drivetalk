@@ -194,6 +194,9 @@ class RealTestScreen extends ConsumerWidget {
               label: Text(l.realCopyDiagnostics),
             ),
             const SizedBox(height: 8),
+            // "Why isn't X here?" — contacts, step by step (D-132).
+            const _WhyNotShown(),
+            const SizedBox(height: 8),
             // The whole notification chain, end to end (D-119).
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
@@ -265,6 +268,83 @@ class RealTestScreen extends ConsumerWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Type a number: is it in my contacts, on DriveBond, removed or blocked.
+class _WhyNotShown extends ConsumerStatefulWidget {
+  const _WhyNotShown();
+
+  @override
+  ConsumerState<_WhyNotShown> createState() => _WhyNotShownState();
+}
+
+class _WhyNotShownState extends ConsumerState<_WhyNotShown> {
+  final _number = TextEditingController();
+  List<String> _lines = const [];
+  var _busy = false;
+
+  @override
+  void dispose() {
+    _number.dispose();
+    super.dispose();
+  }
+
+  Future<void> _check() async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final lines = await ref
+        .read(realProvider.notifier)
+        .whyNotShown(_number.text);
+    if (!mounted) return;
+    setState(() {
+      _lines = lines;
+      _busy = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.whyTitle,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    key: const ValueKey('why-number'),
+                    controller: _number,
+                    keyboardType: TextInputType.phone,
+                    textDirection: TextDirection.ltr,
+                    decoration: InputDecoration(hintText: l.whyHint),
+                    onSubmitted: (_) => _check(),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: _busy ? null : _check,
+                  child: Text(l.whyCheck),
+                ),
+              ],
+            ),
+            for (final line in _lines)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('• $line'),
+              ),
           ],
         ),
       ),

@@ -1812,9 +1812,10 @@ Future<void> main() async {
   await missedAndQuietDays();
   await questionDelivered();
   await callEndsWithPhone();
+  await phoneFormatsAndCheck();
 
   check(
-    await eve.rpc('schema_version') == 52,
+    await eve.rpc('schema_version') == 53,
     'the server says its version (41)',
   );
 
@@ -3629,4 +3630,44 @@ Future<void> callEndsWithPhone() async {
     await c.rpc('end_call', params: {'p_offer': offer['id']});
     await c.rpc('clear_availability');
   }
+}
+
+Future<void> phoneFormatsAndCheck() async {
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final pa = await newUser('פנינה', 'female');
+  final pb = await newUser('פנחס', 'male');
+  // He saved his own number with an extra 0 after +972 (D-132).
+  final digits = 500000000 + DateTime.now().millisecondsSinceEpoch % 99999999;
+  await pb.from('phone_numbers').upsert({
+    'user_id': uid(pb),
+    'phone': '+9720$digits',
+  });
+  // She has him as 0… in her contacts: the same number.
+  final found = List<Map<String, dynamic>>.from(
+    await pa.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h('+972$digits')],
+      },
+    ),
+  );
+  final asUser = await pa.rpc(
+    'contact_check',
+    params: {'p_hash': h('+972$digits')},
+  );
+  final nobody = await pa.rpc(
+    'contact_check',
+    params: {'p_hash': h('+972599999998')},
+  );
+  final mine = await pb.rpc(
+    'contact_check',
+    params: {'p_hash': h('+972$digits')},
+  );
+  check(
+    found.any((f) => f['user_id'] == uid(pb)) &&
+        asUser == 'user' &&
+        nobody == 'not_user' &&
+        mine == 'me',
+    'numbers saved differently match; "why isn\'t X here?" answers (D-132)',
+  );
 }

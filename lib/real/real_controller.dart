@@ -3301,6 +3301,44 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ diagnostics
 
   /// Text for "copy test info": no keys, tokens, phone numbers or full ids.
+  /// Test screen: "why isn't this number among my contacts here?" (D-132).
+  /// Each line is one step: the number, my contacts, the server.
+  Future<List<String>> whyNotShown(String raw) async {
+    final l = _l;
+    final e = e164Phone(raw);
+    if (e == null) return [l.whyBadNumber];
+    final lines = [l.whyNumber(e)];
+    final reader = ref.read(contactsReaderProvider);
+    if (!await reader.hasPermission()) {
+      lines.add(l.whyNoContacts);
+    } else {
+      final saved = (await reader.contacts())
+          .where((c) => e164Phone(c.number) == e)
+          .firstOrNull;
+      lines.add(
+        saved == null
+            ? l.whyNotInContacts
+            : l.whyInContacts(saved.name, saved.number),
+      );
+    }
+    try {
+      final r = await _backend.contactCheck(hashPhone(raw)!);
+      lines.add(switch (r) {
+        'me' => l.whyMe,
+        'not_user' => l.whyNotUser,
+        'friend' => l.whyFriend,
+        'removed' => l.whyRemoved,
+        'blocked' => l.whyBlocked,
+        'rate_limited' => l.whyRateLimited,
+        'old_server' => l.whyOldServer,
+        _ => l.whyUser,
+      });
+    } on RealBackendException {
+      lines.add(l.realErrorOffline);
+    }
+    return lines;
+  }
+
   /// The phone's own state (and log), fresh — before copying the test info.
   Future<void> reloadDriving() => _loadDriving();
 

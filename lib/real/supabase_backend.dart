@@ -538,6 +538,17 @@ class SupabaseRealBackend implements RealBackend {
       }).whenComplete(_kickPush);
 
   @override
+  Future<String> contactCheck(String hash) => _guard(() async {
+    try {
+      final r = await _c.rpc('contact_check', params: {'p_hash': hash});
+      return '$r';
+    } on PostgrestException catch (e) {
+      if (_missingFunction(e)) return 'old_server';
+      rethrow;
+    }
+  });
+
+  @override
   Future<void> offerShown(String offerId) => _guard(() async {
     try {
       await _c.rpc('offer_shown', params: {'p_offer': offerId});

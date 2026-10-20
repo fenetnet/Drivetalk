@@ -2504,4 +2504,61 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get aboutPermFullBody =>
       'בנהיגה, כשחבר שואל אם יש לך זמן, האפליקציה נפתחת כמו שיחה נכנסת, גם על מסך נעול, ושואלת בקול. ככה אפשר לענות \"כן\" או \"לא\" בלי לגעת בטלפון. כשהמסך בשימוש (למשל ניווט), מופיעה רק התראה למעלה.';
+
+  @override
+  String get whyTitle => 'למה מישהו לא מופיע?';
+
+  @override
+  String get whyHint => 'מספר הטלפון שלו';
+
+  @override
+  String get whyCheck => 'לבדוק';
+
+  @override
+  String get whyBadNumber => 'זה לא נראה כמו מספר טלפון.';
+
+  @override
+  String whyNumber(String number) {
+    return 'המספר בצורה אחידה: $number';
+  }
+
+  @override
+  String get whyNoContacts =>
+      'אין לאפליקציה גישה לאנשי הקשר, אז היא לא יכולה למצוא אותו משם.';
+
+  @override
+  String get whyNotInContacts =>
+      'המספר הזה לא נמצא באנשי הקשר בטלפון הזה (אולי שמור אצלך מספר אחר שלו).';
+
+  @override
+  String whyInContacts(String name, String number) {
+    return 'נמצא באנשי הקשר: $name, שמור כ-$number.';
+  }
+
+  @override
+  String get whyMe => 'זה המספר שלך.';
+
+  @override
+  String get whyNotUser =>
+      'אין ב-DriveBond משתמש עם המספר הזה (אולי נרשם בלי מספר, או עם מספר אחר).';
+
+  @override
+  String get whyUser =>
+      'הוא משתמש ב-DriveBond. בהוספת חבר ← אנשי קשר הוא אמור להופיע; אם לא, לחפש שוב.';
+
+  @override
+  String get whyFriend => 'הוא כבר חבר שלך.';
+
+  @override
+  String get whyRemoved =>
+      'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. אפשר לשלוח לו הזמנה.';
+
+  @override
+  String get whyBlocked => 'יש חסימה ביניכם, ולכן הוא לא מופיע.';
+
+  @override
+  String get whyRateLimited => 'היום כבר חיפשו הרבה. אפשר לנסות שוב מחר.';
+
+  @override
+  String get whyOldServer => 'השרת עוד לא עודכן לבדיקה הזו (חלק 21).';
 }

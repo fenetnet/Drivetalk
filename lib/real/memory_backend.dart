@@ -1406,6 +1406,23 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
+  Future<String> contactCheck(String hash) async {
+    final me = _uid;
+    if (hashPhone(server.phones[me] ?? '') == hash) return 'me';
+    final other = server.phones.entries
+        .where((e) => e.key != me && hashPhone(e.value) == hash)
+        .map((e) => e.key)
+        .lastOrNull;
+    if (other == null) return 'not_user';
+    if (server.blockedBetween(me, other)) return 'blocked';
+    if (server.connected(me, other)) return 'friend';
+    if (server.removed.contains(MemoryServer._pair(me, other))) {
+      return 'removed';
+    }
+    return 'user';
+  }
+
+  @override
   Future<List<ContactMatch>> syncContacts(List<String> hashes) async {
     final me = _uid;
     // Only numbers of DriveTalk users are kept; the rest is dropped.

@@ -1717,5 +1717,52 @@
   "permsFullBody": "כדי לענות \"כן\" בקול גם כשהמסך נעול.",
   "@permsFullBody": {},
   "aboutPermFullBody": "בנהיגה, כשחבר שואל אם יש לך זמן, האפליקציה נפתחת כמו שיחה נכנסת, גם על מסך נעול, ושואלת בקול. ככה אפשר לענות \"כן\" או \"לא\" בלי לגעת בטלפון. כשהמסך בשימוש (למשל ניווט), מופיעה רק התראה למעלה.",
-  "@aboutPermFullBody": {}
+  "@aboutPermFullBody": {},
+  "whyTitle": "למה מישהו לא מופיע?",
+  "@whyTitle": {},
+  "whyHint": "מספר הטלפון שלו",
+  "@whyHint": {},
+  "whyCheck": "לבדוק",
+  "@whyCheck": {},
+  "whyBadNumber": "זה לא נראה כמו מספר טלפון.",
+  "@whyBadNumber": {},
+  "whyNumber": "המספר בצורה אחידה: {number}",
+  "@whyNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "whyNoContacts": "אין לאפליקציה גישה לאנשי הקשר, אז היא לא יכולה למצוא אותו משם.",
+  "@whyNoContacts": {},
+  "whyNotInContacts": "המספר הזה לא נמצא באנשי הקשר בטלפון הזה (אולי שמור אצלך מספר אחר שלו).",
+  "@whyNotInContacts": {},
+  "whyInContacts": "נמצא באנשי הקשר: {name}, שמור כ-{number}.",
+  "@whyInContacts": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "whyMe": "זה המספר שלך.",
+  "@whyMe": {},
+  "whyNotUser": "אין ב-DriveBond משתמש עם המספר הזה (אולי נרשם בלי מספר, או עם מספר אחר).",
+  "@whyNotUser": {},
+  "whyUser": "הוא משתמש ב-DriveBond. בהוספת חבר ← אנשי קשר הוא אמור להופיע; אם לא, לחפש שוב.",
+  "@whyUser": {},
+  "whyFriend": "הוא כבר חבר שלך.",
+  "@whyFriend": {},
+  "whyRemoved": "אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. אפשר לשלוח לו הזמנה.",
+  "@whyRemoved": {},
+  "whyBlocked": "יש חסימה ביניכם, ולכן הוא לא מופיע.",
+  "@whyBlocked": {},
+  "whyRateLimited": "היום כבר חיפשו הרבה. אפשר לנסות שוב מחר.",
+  "@whyRateLimited": {},
+  "whyOldServer": "השרת עוד לא עודכן לבדיקה הזו (חלק 21).",
+  "@whyOldServer": {}
 }

@@ -617,8 +617,13 @@ String? e164Phone(String raw) {
       // already international
     } else if (d.startsWith('0')) {
       d = '972${d.substring(1)}';
+    } else if (d.length == 9 && (d.startsWith('5') || d.startsWith('7'))) {
+      // An Israeli mobile saved without its 0 (D-132).
+      d = '972$d';
     }
   }
+  // "+972 0…": the 0 doesn't belong after the country code (D-132).
+  if (d.startsWith('9720')) d = '972${d.substring(4)}';
   if (d.length < 8 || d.length > 15) return null;
   return '+$d';
 }
