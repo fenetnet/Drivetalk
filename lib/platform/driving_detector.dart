@@ -57,9 +57,22 @@ class DrivingStatus {
 
 /// "Talk now" (or a tap) on a driving notification that opened the app.
 class LaunchAction {
-  const LaunchAction(this.offerId, {required this.accept, this.askFriend});
+  const LaunchAction(
+    this.offerId, {
+    required this.accept,
+    this.askFriend,
+    this.wake = false,
+    this.name,
+    this.kind,
+  });
   final String offerId;
   final bool accept;
+
+  /// Opened on the screen by a question while driving (D-130): ask it
+  /// aloud at once, with the name the notification had (D-138).
+  final bool wake;
+  final String? name;
+  final String? kind;
 
   /// "Talk" on "X is on the way" (D-119): ask this friend now.
   final String? askFriend;
@@ -364,7 +377,13 @@ class AndroidDrivingDetector implements DrivingDetector {
       }
       final id = m?['offerId'];
       if (id is! String) return null;
-      return LaunchAction(id, accept: m?['accept'] == true);
+      return LaunchAction(
+        id,
+        accept: m?['accept'] == true,
+        wake: m?['wake'] == true,
+        name: m?['name'] as String?,
+        kind: m?['kind'] as String?,
+      );
     } catch (_) {
       return null;
     }

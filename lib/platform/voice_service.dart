@@ -16,7 +16,7 @@ abstract class VoiceService {
   Future<void> speak(String text);
   Future<void> stop();
   Future<VoiceAnswer> listenYesNo({
-    Duration timeout = const Duration(seconds: 6),
+    Duration timeout = const Duration(seconds: 12),
   });
 
   /// Asks for the microphone now (a calm moment, before driving) so the
@@ -219,6 +219,10 @@ class DeviceVoiceService implements VoiceService {
                 m.contains('not_supported'))) {
           _onDeviceFailed = true;
         }
+        // Quiet: the phone stopped listening by itself (listen again).
+        if (m.contains('no_match') || m.contains('speech_timeout')) {
+          _silence = true;
+        }
         final p = _pending;
         if (p != null && !p.isCompleted) p.complete(VoiceAnswer.none);
       },
@@ -246,18 +250,16 @@ class DeviceVoiceService implements VoiceService {
 
   @override
   Future<VoiceAnswer> listenYesNo({
-    Duration timeout = const Duration(seconds: 6),
+    Duration timeout = const Duration(seconds: 12),
   }) async {
     final simulated = _simulatedNext;
     if (simulated != null) {
       _simulatedNext = null;
       return simulated;
     }
-    final completer = _pending = Completer<VoiceAnswer>();
     final round = _round;
+    // Never ask for the microphone here (mid-drive): only [prepare] does.
     try {
-      _heardSomething = false;
-      // Never ask for the microphone here (mid-drive): only [prepare] does.
       if (_sttReady != true) {
         if (!await _stt.hasPermission) return VoiceAnswer.permissionDenied;
         await _init();
@@ -266,13 +268,58 @@ class DeviceVoiceService implements VoiceService {
         final denied = !(await _stt.hasPermission);
         return denied ? VoiceAnswer.permissionDenied : VoiceAnswer.unavailable;
       }
-      // The car hears better: switch to its microphone (it takes a moment).
-      if (await _carMic(true)) {
-        await Future<void>.delayed(const Duration(milliseconds: 1200));
+    } catch (_) {
+      return VoiceAnswer.unavailable;
+    }
+    // The car hears better: switch to its microphone (it takes a moment).
+    if (await _carMic(true)) {
+      await Future<void>.delayed(const Duration(milliseconds: 1200));
+    }
+    final deadline = DateTime.now().add(timeout);
+    var answer = VoiceAnswer.none;
+    var first = true;
+    // The phone's recognizer gives up after a few quiet seconds: listen
+    // again until the whole time is up — time to think (owner, D-138).
+    while (round == _round) {
+      final left = deadline.difference(DateTime.now());
+      if (left < const Duration(milliseconds: 1500)) break;
+      if (first) {
+        first = false;
+        // "Listening now": a short beep (the screen says it too).
+        await _beep();
       }
+      _silence = false;
+      answer = await _listenOnce(left, round);
+      if (answer != VoiceAnswer.none || !_silence) break;
+    }
+    // Only this round's mic: a newer listen keeps its own.
+    if (round == _round) {
+      try {
+        if (_stt.isListening) await _stt.stop();
+      } catch (_) {}
+      await _carMic(false);
+    }
+    return answer;
+  }
+
+  /// Nothing was said (the recognizer stopped by itself).
+  bool _silence = false;
+
+  Future<void> _beep() async {
+    try {
+      await _driving.invokeMethod<bool>('beep');
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+    } catch (_) {
+      // No beep on this phone: the screen still shows "listening".
+    }
+  }
+
+  Future<VoiceAnswer> _listenOnce(Duration timeout, int round) async {
+    final completer = _pending = Completer<VoiceAnswer>();
+    _heardSomething = false;
+    try {
       // Stopped meanwhile (a button, the app went away): never listen.
       if (round != _round || completer.isCompleted) {
-        if (round == _round) await _carMic(false);
         return completer.isCompleted
             ? await completer.future
             : VoiceAnswer.none;
@@ -297,18 +344,10 @@ class DeviceVoiceService implements VoiceService {
     } catch (_) {
       if (!completer.isCompleted) completer.complete(VoiceAnswer.unavailable);
     }
-    final answer = await completer.future.timeout(
+    return completer.future.timeout(
       timeout + const Duration(seconds: 1),
       onTimeout: () => VoiceAnswer.none,
     );
-    // Only this round's mic: a newer listen keeps its own.
-    if (round == _round) {
-      try {
-        if (_stt.isListening) await _stt.stop();
-      } catch (_) {}
-      await _carMic(false);
-    }
-    return answer;
   }
 }
 

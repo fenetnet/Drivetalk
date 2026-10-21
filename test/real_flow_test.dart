@@ -854,6 +854,38 @@ void main() {
     expect(waitingOffer(me.s, now), isNotNull);
   });
 
+  test(
+    'opened on the screen by a question: asked aloud at once (D-138)',
+    () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      // The phone is locked, the app behind: the question arrives.
+      me.c.debugLifecycle(AppLifecycleState.paused);
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      final id = server.offers.values
+          .firstWhere((o) => o.status == OfferStatus.pending)
+          .id;
+      // It opens the app on the screen with the name from the notification.
+      me.voice.simulateAnswer(VoiceAnswer.yes);
+      me.driving.pendingAction = LaunchAction(
+        id,
+        accept: false,
+        wake: true,
+        name: 'יוני',
+        kind: 'ask',
+      );
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump(50);
+      expect(me.voice.spoken.first, 'ליוני יש זמן. לדבר?');
+      expect(
+        me.voice.spoken.where((x) => x.contains('יוני')),
+        hasLength(1),
+        reason: 'asked once, not again after loading',
+      );
+      expect(waitingOffer(me.s, now)?.id, id, reason: '"yes" answered it');
+    },
+  );
+
   test('driving: no answer → asked again, 3 times in all', () async {
     await connect();
     await me.c.startAvailability(AvailabilityMode.driving, 30);

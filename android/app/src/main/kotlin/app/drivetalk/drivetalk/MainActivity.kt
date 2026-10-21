@@ -16,6 +16,8 @@ class MainActivity : FlutterActivity() {
         const val EXTRA_OFFER = "drivetalk_offer"
         const val EXTRA_ACCEPT = "drivetalk_accept"
         const val EXTRA_WAKE = "drivetalk_wake"
+        const val EXTRA_NAME = "drivetalk_name"
+        const val EXTRA_KIND = "drivetalk_kind"
         const val EXTRA_WIDGET_ASK = "drivetalk_widget_ask"
         /** "Talk" on "X is on the way": ask this friend (D-119). */
         const val EXTRA_ASK = "drivetalk_ask"
@@ -48,6 +50,8 @@ class MainActivity : FlutterActivity() {
 
     /** "Talk now" / tap from a driving notification, waiting for the app. */
     private var launchAction: Map<String, Any>? = null
+    /** Opened by a question while driving (full screen): ask aloud at once. */
+    private var woke = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,6 +83,7 @@ class MainActivity : FlutterActivity() {
     private fun wakeFor(intent: Intent?) {
         if (intent?.getBooleanExtra(EXTRA_WAKE, false) != true) return
         intent.removeExtra(EXTRA_WAKE)
+        woke = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -125,10 +130,17 @@ class MainActivity : FlutterActivity() {
         // (another app could send the same intent; then it only opens).
         val accept = intent.getBooleanExtra(EXTRA_ACCEPT, false) &&
             DrivingStore(this).wasShown(offer)
-        launchAction = mapOf(
-            "offerId" to offer,
-            "accept" to accept,
-        )
+        val wake = woke && DrivingStore(this).wasShown(offer)
+        woke = false
+        launchAction = buildMap {
+            put("offerId", offer)
+            put("accept", accept)
+            if (wake) {
+                put("wake", true)
+                intent.getStringExtra(EXTRA_NAME)?.let { put("name", it) }
+                intent.getStringExtra(EXTRA_KIND)?.let { put("kind", it) }
+            }
+        }
         intent.removeExtra(EXTRA_OFFER)
         DrivingNotifications.cancelOffer(this, offer)
         return true
@@ -352,6 +364,17 @@ class MainActivity : FlutterActivity() {
                 }
                 // The car's microphone while listening for "yes" / "no".
                 "carMic" -> result.success(CarMic.set(this, call.argument<Boolean>("on") == true))
+                // A short beep: the microphone is listening now.
+                "beep" -> {
+                    try {
+                        val tone = android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 80)
+                        tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150)
+                        android.os.Handler(mainLooper).postDelayed({ tone.release() }, 400)
+                    } catch (e: Exception) {
+                        // No beep: the screen still shows "listening".
+                    }
+                    result.success(true)
+                }
                 "setCar" -> {
                     store.carAddress = call.argument<String>("address") ?: ""
                     store.carName = call.argument<String>("name") ?: ""

@@ -499,30 +499,45 @@ class MomentLayout extends ConsumerWidget {
                     child: Center(child: SingleChildScrollView(child: top)),
                   ),
                   if (listening)
+                    // "Listening now": big and clear, from a glance (D-138).
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.mic_rounded,
-                            color: st.onColor
-                                ? AppColors.sand
-                                : AppColors.terracotta,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              l.driverListening,
-                              style: TextStyle(
-                                color: st.onColor
-                                    ? AppColors.sand
-                                    : AppColors.terracotta,
-                                fontSize: 17,
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: st.onColor
+                              ? AppColors.sand
+                              : AppColors.terracotta,
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.mic_rounded,
+                              size: 34,
+                              color: st.onColor
+                                  ? AppColors.terracotta
+                                  : Colors.white,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                l.driverListening,
+                                style: TextStyle(
+                                  color: st.onColor
+                                      ? AppColors.terracotta
+                                      : Colors.white,
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   for (final a in actions) ...[a, const SizedBox(height: 14)],

@@ -1397,6 +1397,21 @@ class RealController extends Notifier<RealState> {
     if (state.phase != RealPhase.ready) return;
     final action = await ref.read(drivingDetectorProvider).takeLaunchAction();
     if (action == null || !ref.mounted) return;
+    // Opened on the screen by a question while driving: ask aloud right
+    // away with the name we have — no waiting for the server (D-138).
+    final name = action.name;
+    if (action.wake &&
+        name != null &&
+        action.kind != 'quick' &&
+        action.offerId != _spokenOfferId &&
+        _foreground &&
+        state.prefs.voice) {
+      _spokenOfferId = action.offerId;
+      final question = action.kind == 'direct'
+          ? _l.voiceDirect(name)
+          : _l.realVoiceOffer(name, 'other');
+      unawaited(_askAloud(action.offerId, question));
+    }
     await refresh();
     // "Talk" on "X is on the way": my tap is my yes — ask them now (free
     // for 30 minutes first, like tapping a free friend).
@@ -2116,32 +2131,57 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
-  Future<void> _askByVoice(RealOffer offer, RealProfile p) async {
-    final seq = ++_voiceSeq;
-    final voice = ref.read(voiceServiceProvider);
+  Future<void> _askByVoice(RealOffer offer, RealProfile p) {
     final direct = offer.askedBy(p.id);
     final question = direct
         ? _l.voiceDirect(p.name)
         : _l.realVoiceOffer(p.name, _genderKey(p.gender));
+    return _askAloud(offer.id, question);
+  }
+
+  /// Ask [question] aloud and listen for yes / no. The question may not be
+  /// loaded yet (opened from the notification): then the answer goes to
+  /// the server directly.
+  Future<void> _askAloud(String offerId, String question) async {
+    final seq = ++_voiceSeq;
+    final voice = ref.read(voiceServiceProvider);
+    // Still open: the current question, or one not loaded yet.
+    bool stillOpen() {
+      final known = state.snapshot?.offers.any((o) => o.id == offerId) ?? false;
+      return !known || currentOffer(state, _now())?.id == offerId;
+    }
+
+    Future<void> answer(bool yes) async {
+      final offer = state.snapshot?.offers
+          .where((o) => o.id == offerId)
+          .firstOrNull;
+      if (offer != null) {
+        await respond(offer, accept: yes);
+        return;
+      }
+      await _quietly(() => _backend.answerOffer(offerId, accept: yes));
+      if (ref.mounted) await refresh();
+    }
+
     // No answer: asked again right away, 3 times in all (D-112) — only
     // while the app is on screen.
     _askingSeq = seq;
     try {
       for (var i = 0; i < _askTimes; i++) {
-        if (!_foreground) return;
+        if (!_foreground || !stillOpen()) return;
         await voice.speak(question);
         if (seq != _voiceSeq || !ref.mounted || !_foreground) return;
         state = state.copyWith(listening: true);
-        final answer = await voice.listenYesNo(timeout: _askListen);
+        final heard = await voice.listenYesNo(timeout: _askListen);
         if (seq != _voiceSeq || !ref.mounted) return;
         state = state.copyWith(listening: false);
-        if (currentOffer(state, _now())?.id != offer.id) return;
-        switch (answer) {
+        if (!stillOpen()) return;
+        switch (heard) {
           case VoiceAnswer.yes:
-            await respond(offer, accept: true);
+            await answer(true);
             return;
           case VoiceAnswer.no:
-            await respond(offer, accept: false);
+            await answer(false);
             return;
           case VoiceAnswer.permissionDenied:
             // Said once; after that the buttons simply do the job.
@@ -2169,10 +2209,10 @@ class RealController extends Notifier<RealState> {
   int? _askingSeq;
   bool get _voiceAsking => _askingSeq != null;
 
-  /// The question, up to 3 times; about 3 seconds to answer each time.
+  /// The question, up to 3 times; 12 seconds to answer each time — time
+  /// to take it in and reply (owner, D-138).
   static const _askTimes = 3;
-  // Driving, people answer a little slower.
-  static const _askListen = Duration(seconds: 6);
+  static const _askListen = Duration(seconds: 12);
 
   void _speak(String text) {
     // Never speak into an open mic: a question being asked stops first.

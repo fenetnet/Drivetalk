@@ -117,12 +117,15 @@ object DrivingNotifications {
         return PendingIntent.getActivity(context, request, i, flags())
     }
 
-    private fun wakeApp(context: Context, request: Int, offerId: String): PendingIntent {
+    private fun wakeApp(context: Context, request: Int, offer: DrivingApi.Offer): PendingIntent {
         val i = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            putExtra(MainActivity.EXTRA_OFFER, offerId)
+            putExtra(MainActivity.EXTRA_OFFER, offer.id)
             putExtra(MainActivity.EXTRA_ACCEPT, false)
             putExtra(MainActivity.EXTRA_WAKE, true)
+            // So the app asks aloud at once, before it has loaded anything.
+            putExtra(MainActivity.EXTRA_NAME, offer.name)
+            putExtra(MainActivity.EXTRA_KIND, offer.kind)
         }
         return PendingIntent.getActivity(context, request, i, flags())
     }
@@ -158,7 +161,26 @@ object DrivingNotifications {
             .build()
     }
 
-    fun showOffer(context: Context, offer: DrivingApi.Offer) {
+    /**
+     * Will this question open the app on the screen (like an incoming call)?
+     * Only while driving, with the screen off or locked and "full screen"
+     * allowed; with the screen in use Android shows the usual pop-up.
+     */
+    private fun opensApp(context: Context): Boolean {
+        if (!DrivingStore(context).drivingNow || MainActivity.onScreen) return false
+        if (Build.VERSION.SDK_INT >= 34 &&
+            !context.getSystemService(NotificationManager::class.java).canUseFullScreenIntent()
+        ) {
+            return false
+        }
+        val power = context.getSystemService(android.os.PowerManager::class.java)
+        val lock = context.getSystemService(android.app.KeyguardManager::class.java)
+        return power?.isInteractive == false || lock?.isKeyguardLocked == true
+    }
+
+    /** Shows the question; true when it opens the app (which then asks aloud). */
+    fun showOffer(context: Context, offer: DrivingApi.Offer): Boolean {
+        val opens = opensApp(context)
         val store = DrivingStore(context)
         store.log("question shown (${offer.kind})")
         // The one who asked sees it reached me (D-129); never on this thread.
@@ -193,7 +215,7 @@ object DrivingNotifications {
                 // aloud. With the screen in use (e.g. navigation) Android
                 // shows the usual pop-up instead (D-130).
                 if (store.drivingNow && !MainActivity.onScreen) {
-                    setFullScreenIntent(wakeApp(context, req + 5, offer.id), true)
+                    setFullScreenIntent(wakeApp(context, req + 5, offer), true)
                 }
             }
         if (quick) {
@@ -258,6 +280,7 @@ object DrivingNotifications {
             .build()
         context.getSystemService(NotificationManager::class.java)
             .notify(ID_OFFER_BASE + (offer.id.hashCode() and 0xff), n)
+        return opens
     }
 
     /** "Couldn't turn on availability in the background — open DriveBond." */

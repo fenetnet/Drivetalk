@@ -330,7 +330,9 @@ class DrivingService : Service() {
                 // Remembered on the phone: not repeated after a restart.
                 if (store.markShown(o.id)) {
                     fastUntil = System.currentTimeMillis() + FAST_MS
-                    DrivingNotifications.showOffer(ctx, o)
+                    // Opening on the screen: the app asks aloud itself, at
+                    // once — never read twice (owner, D-138).
+                    if (DrivingNotifications.showOffer(ctx, o)) continue
                     // In the background "yes" can't be heard: say how to answer.
                     val text = when (o.kind) {
                         "quick" -> store.text("voiceQuick", "{name}")
