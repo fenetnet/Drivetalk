@@ -1817,7 +1817,7 @@ Future<void> main() async {
   await sweepFixes();
 
   check(
-    await eve.rpc('schema_version') == 55,
+    await eve.rpc('schema_version') == 56,
     'the server says its version (41)',
   );
 
