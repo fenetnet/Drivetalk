@@ -1816,9 +1816,10 @@ Future<void> main() async {
   await widgetFreeFriends();
   await sweepFixes();
   await questionThirtySeconds();
+  await removedPerAccount();
 
   check(
-    await eve.rpc('schema_version') == 57,
+    await eve.rpc('schema_version') == 58,
     'the server says its version (41)',
   );
 
@@ -3776,4 +3777,39 @@ Future<void> questionThirtySeconds() async {
   for (final c in [qa, qb]) {
     await c.rpc('clear_availability');
   }
+}
+
+Future<void> removedPerAccount() async {
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final ra = await newUser('רונית', 'female');
+  final rb = await newUser('רועי', 'male');
+  final digits = 540000000 + DateTime.now().millisecondsSinceEpoch % 9999999;
+  await rb.from('phone_numbers').upsert({
+    'user_id': uid(rb),
+    'phone': '+972$digits',
+  });
+  // She once removed his old account (a stale duplicate, a test)…
+  await befriend(ra, rb);
+  await ra
+      .from('connections')
+      .delete()
+      .neq('user_a', '00000000-0000-0000-0000-000000000000');
+  // …he reinstalled: a new account, the same number.
+  final rb2 = await newUser('רועי', 'male');
+  await rb2.from('phone_numbers').upsert({
+    'user_id': uid(rb2),
+    'phone': '+972$digits',
+  });
+  final found = List<Map<String, dynamic>>.from(
+    await ra.rpc(
+      'find_friends',
+      params: {
+        'p_hashes': [h('+972$digits')],
+      },
+    ),
+  );
+  check(
+    found.any((f) => f['user_id'] == uid(rb2)),
+    "removing someone's old account doesn't hide their new one (D-141)",
+  );
 }
