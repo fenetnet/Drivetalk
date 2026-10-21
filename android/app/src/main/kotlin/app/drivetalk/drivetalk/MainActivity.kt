@@ -364,6 +364,11 @@ class MainActivity : FlutterActivity() {
                 }
                 // The car's microphone while listening for "yes" / "no".
                 "carMic" -> result.success(CarMic.set(this, call.argument<Boolean>("on") == true))
+                // A line for the test tab's log (D-140).
+                "log" -> {
+                    call.argument<String>("line")?.let { DrivingStore(this).log(it.take(120)) }
+                    result.success(true)
+                }
                 // A short beep: the microphone is listening now.
                 "beep" -> {
                     try {

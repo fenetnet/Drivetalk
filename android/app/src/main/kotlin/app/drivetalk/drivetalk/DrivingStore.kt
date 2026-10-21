@@ -113,7 +113,7 @@ class DrivingStore(context: Context) {
         val time = java.text.SimpleDateFormat("dd/MM HH:mm:ss", java.util.Locale.US)
             .format(java.util.Date())
         val old = prefs.getString("eventLog", "") ?: ""
-        val lines = (old.split('\n').filter { it.isNotBlank() } + "$time $event").takeLast(15)
+        val lines = (old.split('\n').filter { it.isNotBlank() } + "$time $event").takeLast(25)
         prefs.edit().putString("eventLog", lines.joinToString("\n")).apply()
     }
 

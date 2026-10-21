@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 import '../domain/hebrew_text.dart';
@@ -208,16 +209,23 @@ class DeviceVoiceService implements VoiceService {
   /// Only success is remembered: a refusal can be fixed in settings.
   Future<void> _init() async {
     if (_sttReady == true) return;
+    // Learned before on this phone: no Hebrew without the internet (D-140).
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(_deviceFailedKey) == true) _onDeviceFailed = true;
+    } catch (_) {}
     _sttReady = await _stt.initialize(
       onError: (e) {
-        // No offline Hebrew model: next time use the phone's recognizer.
+        // No offline Hebrew model: use the phone's recognizer from now on.
         final m = e.errorMsg.toLowerCase();
+        _lastError = m;
         if (!_heardSomething &&
+            !_onDeviceFailed &&
             (m.contains('language') ||
                 m.contains('server') ||
                 m.contains('network') ||
                 m.contains('not_supported'))) {
-          _onDeviceFailed = true;
+          unawaited(_rememberDeviceFailed());
         }
         // Quiet: the phone stopped listening by itself (listen again).
         if (m.contains('no_match') || m.contains('speech_timeout')) {
@@ -278,8 +286,12 @@ class DeviceVoiceService implements VoiceService {
     final deadline = DateTime.now().add(timeout);
     var answer = VoiceAnswer.none;
     var first = true;
+    var retries = 0;
     // The phone's recognizer gives up after a few quiet seconds: listen
     // again until the whole time is up — time to think (owner, D-138).
+    // A listen that fails at once (no Hebrew on the phone itself, the
+    // recognizer still busy) is tried again in the same time, never
+    // wasting the question (D-140).
     while (round == _round) {
       final left = deadline.difference(DateTime.now());
       if (left < const Duration(milliseconds: 1500)) break;
@@ -289,8 +301,30 @@ class DeviceVoiceService implements VoiceService {
         await _beep();
       }
       _silence = false;
-      answer = await _listenOnce(left, round);
-      if (answer != VoiceAnswer.none || !_silence) break;
+      _lastError = null;
+      final onDevice = !_onDeviceFailed;
+      final started = DateTime.now();
+      answer = await _listenOnce(left, round, onDevice: onDevice);
+      final took = DateTime.now().difference(started);
+      final instant =
+          !_heardSomething && took < const Duration(milliseconds: 1500);
+      // What happened — for the test tab; never the words themselves.
+      _log(
+        'voice: ${onDevice ? 'on phone' : 'google'} '
+        '${(took.inMilliseconds / 1000).toStringAsFixed(1)}s → '
+        '${answer.name}${_lastError == null ? '' : ' ($_lastError)'}',
+      );
+      if (answer != VoiceAnswer.none) break;
+      if (onDevice && instant) {
+        await _rememberDeviceFailed();
+        continue;
+      }
+      if (_silence) continue;
+      if (instant && retries++ < 2) {
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        continue;
+      }
+      break;
     }
     // Only this round's mic: a newer listen keeps its own.
     if (round == _round) {
@@ -304,6 +338,26 @@ class DeviceVoiceService implements VoiceService {
 
   /// Nothing was said (the recognizer stopped by itself).
   bool _silence = false;
+  String? _lastError;
+
+  static const _deviceFailedKey = 'voice.onDeviceFailed.v1';
+
+  /// Hebrew doesn't work without the internet on this phone: remembered,
+  /// so the first listen after the app opens isn't wasted again (D-140).
+  Future<void> _rememberDeviceFailed() async {
+    _onDeviceFailed = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_deviceFailedKey, true);
+    } catch (_) {}
+  }
+
+  void _log(String line) {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    unawaited(
+      _driving.invokeMethod<void>('log', {'line': line}).catchError((_) {}),
+    );
+  }
 
   Future<void> _beep() async {
     try {
@@ -314,7 +368,11 @@ class DeviceVoiceService implements VoiceService {
     }
   }
 
-  Future<VoiceAnswer> _listenOnce(Duration timeout, int round) async {
+  Future<VoiceAnswer> _listenOnce(
+    Duration timeout,
+    int round, {
+    required bool onDevice,
+  }) async {
     final completer = _pending = Completer<VoiceAnswer>();
     _heardSomething = false;
     try {
@@ -333,7 +391,7 @@ class DeviceVoiceService implements VoiceService {
           cancelOnError: true,
           // On the phone itself when it can; otherwise the phone's own
           // recognizer service (see the privacy policy).
-          onDevice: !_onDeviceFailed,
+          onDevice: onDevice,
         ),
         onResult: (r) {
           if (!r.finalResult || completer.isCompleted) return;
