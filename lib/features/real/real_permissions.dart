@@ -169,7 +169,10 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
 
 /// First steps: all the permissions at once, before the first drive.
 class PermissionsStep extends ConsumerStatefulWidget {
-  const PermissionsStep({super.key});
+  const PermissionsStep({super.key, this.onDone});
+
+  /// After "later" / "next" (default: the next first-run step).
+  final VoidCallback? onDone;
 
   @override
   ConsumerState<PermissionsStep> createState() => _PermissionsStepState();
@@ -188,6 +191,7 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = ref.read(realProvider.notifier);
+    final done = widget.onDone ?? c.firstRunNext;
     return MomentLayout(
       top: Column(
         children: [
@@ -213,9 +217,9 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
             onTap: () => _list.currentState?.askAll(),
           ),
         if (_missing)
-          SecondaryPill(label: l.firstRunLater, onTap: c.firstRunNext)
+          SecondaryPill(label: l.firstRunLater, onTap: done)
         else
-          PrimaryPill(label: l.next, onTap: c.firstRunNext),
+          PrimaryPill(label: l.next, onTap: done),
       ],
     );
   }

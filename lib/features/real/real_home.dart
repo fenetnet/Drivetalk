@@ -1,3 +1,5 @@
+import 'real_permissions.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -212,6 +214,7 @@ class RealHomeScreen extends ConsumerWidget {
 
     return Stack(
       children: [
+        const _MissingPermissions(),
         // Soft decorative circles.
         const PositionedDirectional(
           top: -120,
@@ -1884,4 +1887,39 @@ class _HowFriendsSeeMe extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// Opening Home on a new version with a phone permission missing: the list
+/// with "allow all", once per version (owner: right after an update).
+class _MissingPermissions extends ConsumerStatefulWidget {
+  const _MissingPermissions();
+
+  @override
+  ConsumerState<_MissingPermissions> createState() =>
+      _MissingPermissionsState();
+}
+
+class _MissingPermissionsState extends ConsumerState<_MissingPermissions> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _check());
+  }
+
+  Future<void> _check() async {
+    final c = ref.read(realProvider.notifier);
+    if (!await c.shouldAskMissingPermissions() || !mounted) return;
+    await navigatorKey.currentState?.push(
+      MaterialPageRoute<void>(
+        builder: (r) => Scaffold(
+          body: SafeArea(
+            child: PermissionsStep(onDone: () => Navigator.of(r).pop()),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

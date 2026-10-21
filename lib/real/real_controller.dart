@@ -997,7 +997,11 @@ class RealController extends Notifier<RealState> {
 
   void firstRunNext() {
     // Past the permissions step: no "before we start…" note again later.
-    if (state.firstRun == FirstRunStep.permissions) markPermissionIntroShown();
+    if (state.firstRun == FirstRunStep.permissions) {
+      markPermissionIntroShown();
+      // Just asked: not again on Home for this version.
+      _store.setString(_permAskKey, '${ref.read(appBuildProvider)}');
+    }
     _firstRunAdvance();
   }
 
@@ -3273,6 +3277,23 @@ class RealController extends Notifier<RealState> {
       state.driving.supported && _store.getString(_permIntroKey) == null;
 
   void markPermissionIntroShown() => _store.setString(_permIntroKey, 'shown');
+
+  static const _permAskKey = 'real.permAsk.v1';
+
+  /// Once per app version (e.g. right after an update that needs a new
+  /// one): is a phone permission missing? Then Home shows the list with
+  /// "allow all" (owner: don't make people hunt for it in Settings).
+  Future<bool> shouldAskMissingPermissions() async {
+    if (state.firstRun != null) return false;
+    final mark = '${ref.read(appBuildProvider)}';
+    if (_store.getString(_permAskKey) == mark) return false;
+    final p = await phonePermissions();
+    if (!p.supported || !PhonePermission.values.any((k) => !p.has(k))) {
+      return false;
+    }
+    _store.setString(_permAskKey, mark);
+    return true;
+  }
 
   /// Family / friends / work, once (empty; the server remembers it too).
   Future<void> _ensurePresets({bool thenRefresh = false}) async {
