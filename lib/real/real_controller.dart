@@ -538,6 +538,10 @@ class RealController extends Notifier<RealState> {
   /// Offers whose outcome was already shown (so a restart doesn't repeat it).
   final _handled = <String>{};
 
+  /// Calls still waiting for "when to suggest X again?" behind the one on
+  /// screen (several calls in one drive: each is asked, one after another).
+  final _laterFeedback = <RealCall>[];
+
   AppLocalizations get _l => lookupAppLocalizations(const Locale('he'));
 
   @override
@@ -1565,6 +1569,7 @@ class RealController extends Notifier<RealState> {
       await _store.setString(k, null);
     }
     _handled.clear();
+    _laterFeedback.clear();
     _answering.clear();
     _givingUp.clear();
     _waitingSince.clear();
@@ -1840,9 +1845,8 @@ class RealController extends Notifier<RealState> {
           } else if (now.difference(agreedAt) < const Duration(hours: 12)) {
             // The call happened while the app was closed (e.g. answered
             // from the notification): still ask "when to suggest X again?".
-            state = state.copyWith(
-              callStage: CallStage.feedback,
-              call: RealCall(
+            _askFeedback(
+              RealCall(
                 offerId: o.id,
                 other: other,
                 role: CallRole.inApp,
@@ -2190,6 +2194,14 @@ class RealController extends Notifier<RealState> {
   /// "yes"): they dial me, or — after a restart — I still have to dial.
   Future<void> _beginCall(RealOffer offer, RealProfile other) async {
     if (!_callIdle(state)) return;
+    // "How was it?" for the last call, not answered yet: asked after this one.
+    final unanswered = state.call;
+    if (state.callStage == CallStage.feedback &&
+        unanswered != null &&
+        unanswered.offerId != offer.id &&
+        !_laterFeedback.any((c) => c.offerId == unanswered.offerId)) {
+      _laterFeedback.add(unanswered);
+    }
     if (offer.quick && offer.caller == null) {
       await _beginQuick(offer, other);
       return;
@@ -2436,6 +2448,7 @@ class RealController extends Notifier<RealState> {
   Future<void> afterCall(int days, {bool talked = true}) async {
     final call = state.call;
     state = state.copyWith(callStage: CallStage.none, call: null);
+    _nextFeedback();
     if (call == null) return;
     try {
       await _backend.afterCall(call.offerId, days: days, talked: talked);
@@ -2448,9 +2461,33 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  /// "When to suggest X again?" now — or after the one already on screen.
+  void _askFeedback(RealCall call) {
+    final shown = state.call;
+    if (state.callStage == CallStage.feedback &&
+        shown != null &&
+        shown.offerId != call.offerId) {
+      if (!_laterFeedback.any((c) => c.offerId == call.offerId)) {
+        _laterFeedback.add(call);
+      }
+      return;
+    }
+    state = state.copyWith(callStage: CallStage.feedback, call: call);
+  }
+
+  /// The next call waiting for "when again?" (several in one drive).
+  void _nextFeedback() {
+    if (_laterFeedback.isEmpty || state.callStage != CallStage.none) return;
+    state = state.copyWith(
+      callStage: CallStage.feedback,
+      call: _laterFeedback.removeAt(0),
+    );
+  }
+
   void skipFeedback() {
     final call = state.call;
     state = state.copyWith(callStage: CallStage.none, call: null);
+    _nextFeedback();
     if (call != null) unawaited(_quietly(() => _backend.endCall(call.offerId)));
   }
 

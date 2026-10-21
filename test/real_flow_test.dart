@@ -278,6 +278,50 @@ void main() {
     expect(await me.c.shouldAskMissingPermissions(), isFalse);
   });
 
+  test('two calls in one drive: "when again?" is asked for each', () async {
+    await connect();
+    final dana = Phone(server, clock);
+    await dana.boot();
+    await dana.c.signIn('דנה', Gender.female, phone: '0543333333');
+    final msg = await me.c.createInviteMessage();
+    dana.c.openInviteText(msg!);
+    await pump();
+    await dana.c.acceptInvite();
+    await yoni.c.startAvailability(AvailabilityMode.free, 60);
+    await dana.c.startAvailability(AvailabilityMode.free, 60);
+    await me.c.startAvailability(AvailabilityMode.free, 60);
+    final names = <String>[];
+    for (var i = 0; i < 2; i++) {
+      await me.c.refresh();
+      await pump();
+      final o = currentOffer(me.s, now)!;
+      final other = o.otherId(me.backend.userId!) == yoni.backend.userId
+          ? yoni
+          : dana;
+      await me.c.respond(o, accept: true);
+      await other.c.refresh();
+      await other.c.respond(currentOffer(other.s, now)!, accept: true);
+      now = now.add(const Duration(seconds: 16));
+      await me.c.refresh();
+      await pump();
+      expect(me.s.callStage, CallStage.waitingForTheirCall);
+      names.add(me.s.call!.other.name);
+      // The call ends; "when again?" left unanswered while driving on.
+      me.c.finishCall();
+      await pump();
+      now = now.add(const Duration(minutes: 7));
+    }
+    expect(names.toSet(), {'יוני', 'דנה'});
+    expect(me.s.callStage, CallStage.feedback);
+    expect(me.s.call!.other.name, names[1]);
+    await me.c.afterCall(3);
+    expect(me.s.callStage, CallStage.feedback, reason: 'the first one too');
+    expect(me.s.call!.other.name, names[0]);
+    me.c.skipFeedback();
+    expect(me.s.callStage, CallStage.none);
+    dana.dispose();
+  });
+
   test('first steps: all the permissions at once ("allow all")', () async {
     await connect();
     me.driving.notifications = false;
