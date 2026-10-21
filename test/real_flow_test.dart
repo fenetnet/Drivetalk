@@ -249,25 +249,33 @@ void main() {
     expect(me.driving.routinesJson, contains('"hour":7,"minute":30'));
   });
 
-  test('a new version with a permission missing: Home asks once', () async {
+  test('a NEW permission missing after an update: Home asks once', () async {
     await connect();
     while (me.s.firstRun != null) {
       me.c.firstRunNext();
     }
     me.driving.fullScreen = false;
+    me.driving.background = false;
     expect(
       await me.c.shouldAskMissingPermissions(),
       isFalse,
-      reason: 'just asked in the first steps',
+      reason: 'all were just asked in the first steps',
     );
-    // An update (this phone last asked on build 9) that needs "full screen".
-    me.store.setString('real.permAsk.v1', '9');
+    // A phone from before "full screen" existed (asked about four).
+    me.store.setString('real.permAsk.v2', null);
     expect(await me.c.shouldAskMissingPermissions(), isTrue);
     expect(
       await me.c.shouldAskMissingPermissions(),
       isFalse,
-      reason: 'once per version, not on every opening',
+      reason: 'once, not on every update',
     );
+  });
+
+  test('an update with no new permission: nothing pops up', () async {
+    await connect();
+    me.store.setString('real.permAsk.v2', null);
+    me.driving.background = false; // missing, but asked about before
+    expect(await me.c.shouldAskMissingPermissions(), isFalse);
   });
 
   test('first steps: all the permissions at once ("allow all")', () async {

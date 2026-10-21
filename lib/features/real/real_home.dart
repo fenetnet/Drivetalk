@@ -1889,8 +1889,8 @@ class _HowFriendsSeeMe extends ConsumerWidget {
   }
 }
 
-/// Opening Home on a new version with a phone permission missing: the list
-/// with "allow all", once per version (owner: right after an update).
+/// An update needs a new phone permission and it's missing: the list with
+/// "allow all", once (D-136). Not on every update.
 class _MissingPermissions extends ConsumerStatefulWidget {
   const _MissingPermissions();
 

@@ -999,8 +999,8 @@ class RealController extends Notifier<RealState> {
     // Past the permissions step: no "before we start…" note again later.
     if (state.firstRun == FirstRunStep.permissions) {
       markPermissionIntroShown();
-      // Just asked: not again on Home for this version.
-      _store.setString(_permAskKey, '${ref.read(appBuildProvider)}');
+      // Just asked about all of them: not again on Home.
+      _markPermsAsked();
     }
     _firstRunAdvance();
   }
@@ -3278,20 +3278,35 @@ class RealController extends Notifier<RealState> {
 
   void markPermissionIntroShown() => _store.setString(_permIntroKey, 'shown');
 
-  static const _permAskKey = 'real.permAsk.v1';
+  static const _permAskKey = 'real.permAsk.v2';
 
-  /// Once per app version (e.g. right after an update that needs a new
-  /// one): is a phone permission missing? Then Home shows the list with
-  /// "allow all" (owner: don't make people hunt for it in Settings).
+  /// Permissions this phone was already asked about (the first steps, or
+  /// this note). Before this was kept: the four of the first steps.
+  Set<String> get _permsAsked =>
+      _store.getString(_permAskKey)?.split(',').toSet() ??
+      {'notifications', 'calls', 'mic', 'background'};
+
+  void _markPermsAsked() => _store.setString(
+    _permAskKey,
+    PhonePermission.values.map((p) => p.name).join(','),
+  );
+
+  /// An update that needs a NEW permission (e.g. "full screen", D-130) and
+  /// it's missing: Home shows the list with "allow all", once. Not on every
+  /// update (owner, D-136).
   Future<bool> shouldAskMissingPermissions() async {
     if (state.firstRun != null) return false;
-    final mark = '${ref.read(appBuildProvider)}';
-    if (_store.getString(_permAskKey) == mark) return false;
-    final p = await phonePermissions();
-    if (!p.supported || !PhonePermission.values.any((k) => !p.has(k))) {
+    final asked = _permsAsked;
+    if (PhonePermission.values.every((k) => asked.contains(k.name))) {
       return false;
     }
-    _store.setString(_permAskKey, mark);
+    final p = await phonePermissions();
+    if (!p.supported) return false;
+    final fresh = PhonePermission.values.where(
+      (k) => !asked.contains(k.name) && !p.has(k),
+    );
+    if (fresh.isEmpty) return false;
+    _markPermsAsked();
     return true;
   }
 
