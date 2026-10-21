@@ -754,10 +754,10 @@ void main() {
     });
     final offer = waitingOffer(me.read(realProvider), now)!;
     await _show(t, me, RealWaitingScreen(offer: offer, dark: false));
-    expect(find.text('עוד 25 שניות'), findsOneWidget);
+    expect(find.text('עוד 30 שניות'), findsOneWidget);
     now = now.add(const Duration(seconds: 10));
     await t.pump(const Duration(seconds: 1));
-    expect(find.text('עוד 15 שניות'), findsOneWidget);
+    expect(find.text('עוד 20 שניות'), findsOneWidget);
     // Each step (D-129): sent, then it reached their phone.
     expect(find.text('✓ נשלח ליונתן־אלכסנדר'), findsOneWidget);
     await t.runAsync(() async {

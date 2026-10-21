@@ -271,7 +271,7 @@ class MemoryServer {
     return saidNo ? 'not_now' : 'ok';
   }
 
-  /// A question ended without an answer from someone (after 25 seconds):
+  /// A question ended without an answer from someone (after 30 seconds):
   /// they get no more questions and look not free until "still free".
   void _ended(_Offer o) {
     if (o.quick) return;
@@ -575,8 +575,9 @@ class MemoryServer {
       var until = mine.expiresAt.isBefore(theirs.expiresAt)
           ? mine.expiresAt
           : theirs.expiresAt;
-      // A question waits 2 minutes for answers, then it's over.
-      final answerBy = since.add(const Duration(minutes: 2));
+      // A question waits 30 seconds for answers, then it's over (D-139;
+      // 5 more on the server, so the asker's own "no answer" comes first).
+      final answerBy = since.add(const Duration(seconds: 35));
       if (!quick && answerBy.isBefore(until)) until = answerBy;
       offers[id] =
           _Offer(
@@ -1899,7 +1900,7 @@ class MemoryRealBackend implements RealBackend {
     var until = mine.expiresAt.isBefore(theirs.expiresAt)
         ? mine.expiresAt
         : theirs.expiresAt;
-    final answerBy = now.add(const Duration(minutes: 2));
+    final answerBy = now.add(const Duration(seconds: 35));
     if (answerBy.isBefore(until)) until = answerBy;
     server.offers[id] =
         _Offer(

@@ -1815,9 +1815,10 @@ Future<void> main() async {
   await phoneFormatsAndCheck();
   await widgetFreeFriends();
   await sweepFixes();
+  await questionThirtySeconds();
 
   check(
-    await eve.rpc('schema_version') == 56,
+    await eve.rpc('schema_version') == 57,
     'the server says its version (41)',
   );
 
@@ -3752,4 +3753,27 @@ Future<void> sweepFixes() async {
     found.isEmpty && added.isEmpty && hers == 'blocked' && his == 'not_user',
     'blocked stays blocked after a reinstall; nobody learns who blocked them (D-134)',
   );
+}
+
+Future<void> questionThirtySeconds() async {
+  final qa = await newUser('קרן', 'female');
+  final qb = await newUser('קובי', 'male');
+  await befriend(qa, qb);
+  await skipQuietGap();
+  await free(qa);
+  await free(qb);
+  final o = (await rows(
+    qa,
+    'match_offers',
+  )).firstWhere((x) => x['status'] == 'pending');
+  final open = DateTime.parse(
+    o['expires_at'] as String,
+  ).difference(DateTime.parse(o['created_at'] as String));
+  check(
+    open <= const Duration(seconds: 36),
+    'a question is open about 30 seconds, not 2 minutes (D-139)',
+  );
+  for (final c in [qa, qb]) {
+    await c.rpc('clear_availability');
+  }
 }

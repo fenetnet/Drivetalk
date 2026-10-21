@@ -171,7 +171,7 @@ void main() {
     expect(me.s.myPhone, isNull);
   });
 
-  test('no answer within 25 seconds → stop waiting, gently', () async {
+  test('no answer within 30 seconds → stop waiting, gently', () async {
     await connect(yoniPhone: '050-123-4567');
     await me.c.startAvailability(AvailabilityMode.free, 30);
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
@@ -180,12 +180,12 @@ void main() {
     await me.c.respond(offer, accept: true);
     expect(waitingOffer(me.s, now)?.id, offer.id);
 
-    now = now.add(const Duration(seconds: 10));
+    now = now.add(const Duration(seconds: 26));
     me.c.checkWaiting();
     await pump();
     expect(waitingOffer(me.s, now)?.id, offer.id, reason: 'still waiting');
 
-    now = now.add(const Duration(seconds: 16));
+    now = now.add(const Duration(seconds: 5));
     me.c.checkWaiting();
     await pump(20);
     expect(waitingOffer(me.s, now), isNull);
@@ -886,18 +886,17 @@ void main() {
     },
   );
 
-  test('driving: no answer → asked again, 3 times in all', () async {
+  test('driving: no answer → asked once more, twice in all', () async {
     await connect();
     await me.c.startAvailability(AvailabilityMode.driving, 30);
     me.voice
-      ..simulateAnswer(VoiceAnswer.none)
       ..simulateAnswer(VoiceAnswer.none)
       ..simulateAnswer(VoiceAnswer.yes);
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
     await me.c.refresh();
     await pump(50);
-    expect(me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?').length, 3);
-    expect(waitingOffer(me.s, now), isNotNull, reason: 'the third "yes"');
+    expect(me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?').length, 2);
+    expect(waitingOffer(me.s, now), isNotNull, reason: 'the second "yes"');
   });
 
   test('after a call: quick connect still works; my pause shows and can be '

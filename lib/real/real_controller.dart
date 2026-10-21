@@ -724,7 +724,7 @@ class RealController extends Notifier<RealState> {
   void debugTick() => _onTick();
 
   /// How long I wait for the other side after my "yes" before giving up.
-  static const waitLimit = Duration(seconds: 25);
+  static const waitLimit = Duration(seconds: 30);
 
   /// A quick connect whose countdown ended this long ago without a call
   /// doesn't start any more (same as the server).
@@ -2163,7 +2163,7 @@ class RealController extends Notifier<RealState> {
       if (ref.mounted) await refresh();
     }
 
-    // No answer: asked again right away, 3 times in all (D-112) — only
+    // No answer: asked once more right away (D-112, D-139) — only
     // while the app is on screen.
     _askingSeq = seq;
     try {
@@ -2172,7 +2172,7 @@ class RealController extends Notifier<RealState> {
         await voice.speak(question);
         if (seq != _voiceSeq || !ref.mounted || !_foreground) return;
         state = state.copyWith(listening: true);
-        final heard = await voice.listenYesNo(timeout: _askListen);
+        final heard = await voice.listenYesNo(timeout: _askListen[i]);
         if (seq != _voiceSeq || !ref.mounted) return;
         state = state.copyWith(listening: false);
         if (!stillOpen()) return;
@@ -2209,10 +2209,11 @@ class RealController extends Notifier<RealState> {
   int? _askingSeq;
   bool get _voiceAsking => _askingSeq != null;
 
-  /// The question, up to 3 times; 12 seconds to answer each time — time
-  /// to take it in and reply (owner, D-138).
-  static const _askTimes = 3;
-  static const _askListen = Duration(seconds: 12);
+  /// The question twice at most: 10 seconds to take it in and answer,
+  /// then once more with 6 — about 22 seconds in all, inside the
+  /// question's 30, and music paused as little as possible (owner, D-139).
+  static const _askTimes = 2;
+  static const _askListen = [Duration(seconds: 10), Duration(seconds: 6)];
 
   void _speak(String text) {
     // Never speak into an open mic: a question being asked stops first.
