@@ -259,16 +259,24 @@ class MemoryServer {
       (o) =>
           o.a == pair[0] &&
           o.b == pair[1] &&
-          ((o.status == OfferStatus.accepted &&
-                  o.acceptedAt != null &&
-                  !(o.endedA && o.endedB) &&
-                  t.difference(o.acceptedAt!) < const Duration(minutes: 30)) ||
-              // They already said no to us this time.
-              (o.status == OfferStatus.declined &&
-                  _answerOf(o, user) == false &&
-                  !o.createdAt.isBefore(theirs.startedAt))),
+          // They already said no to us this time.
+          o.status == OfferStatus.declined &&
+          _answerOf(o, user) == false &&
+          !o.createdAt.isBefore(theirs.startedAt),
     );
-    return saidNo ? 'not_now' : 'ok';
+    if (saidNo) return 'not_now';
+    // Our call is still on: over once either of us closed it (D-142).
+    final callOpen = offers.values.any(
+      (o) =>
+          o.a == pair[0] &&
+          o.b == pair[1] &&
+          o.status == OfferStatus.accepted &&
+          o.acceptedAt != null &&
+          !o.endedA &&
+          !o.endedB &&
+          t.difference(o.acceptedAt!) < const Duration(minutes: 30),
+    );
+    return callOpen ? 'call_open' : 'ok';
   }
 
   /// A question ended without an answer from someone (after 30 seconds):
@@ -455,7 +463,10 @@ class MemoryServer {
             o.caller == null &&
             o.notBefore != null &&
             now().difference(o.notBefore!) > const Duration(minutes: 2)) &&
-        ((o.a == u && !o.endedA) || (o.b == u && !o.endedB)),
+        (o.a == u || o.b == u) &&
+        // Over once either of us closed it (D-142).
+        !o.endedA &&
+        !o.endedB,
   );
 
   DateTime? _lastTalk(String x, String y) {
@@ -550,8 +561,9 @@ class MemoryServer {
                         const Duration(minutes: 2)) ||
                 (o.status == OfferStatus.accepted &&
                     o.acceptedAt != null &&
+                    // After talking: an hour before suggested again (D-142).
                     since.difference(o.acceptedAt!) <
-                        const Duration(minutes: 30)) ||
+                        const Duration(minutes: 60)) ||
                 // Once per trip / free window for the same pair.
                 (_endedWithoutCall(o) && !o.createdAt.isBefore(windowStart))),
       );
@@ -1878,6 +1890,13 @@ class MemoryRealBackend implements RealBackend {
       'message': message,
       'stack': stack,
     });
+  }
+
+  @override
+  Future<String> askWhy(String userId) async {
+    final me = _uid;
+    if (!server.connected(me, userId)) return 'not_free';
+    return server.askCheck(me, userId, meFree: false);
   }
 
   @override

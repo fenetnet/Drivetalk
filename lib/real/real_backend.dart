@@ -199,6 +199,10 @@ abstract class RealBackend {
   /// me_not_free / not_free / busy / not_now / no_number / rate_limited.
   Future<String> askFriend(String userId);
 
+  /// Why a free friend can't be asked right now (ok / call_open / not_now /
+  /// busy / not_free / …) — for the note on the grey circle (D-142).
+  Future<String> askWhy(String userId);
+
   /// "Still free" after a question I didn't answer.
   Future<bool> stillFree();
 

@@ -876,16 +876,30 @@ Future<void> askFreeFriend(
 /// (it may be their own choice).
 /// If it's because of me (they added me and I haven't kept them yet),
 /// I can undo it right there.
-Future<void> _notNowNote(BuildContext context, WidgetRef ref, RealProfile p) {
+Future<void> _notNowNote(
+  BuildContext context,
+  WidgetRef ref,
+  RealProfile p,
+) async {
   final l = context.l10n;
   final c = ref.read(realProvider.notifier);
   final mine =
       ref.read(realProvider).snapshot?.status.pending.contains(p.id) ?? false;
+  // Why, when it's about the two of us (D-142); otherwise the general
+  // note — it may be their own choice.
+  final why = mine ? null : await c.askWhy(p);
+  if (!context.mounted) return;
+  final body = switch (why) {
+    _ when mine => l.freeNotNowMine(p.name),
+    'call_open' => l.askCallOpen(p.name),
+    'not_now' => l.askNotNow(p.name),
+    _ => l.freeNotNowBody,
+  };
   return showDialog<void>(
     context: context,
     builder: (d) => AlertDialog(
       title: Text(l.freeNotNowTitle(p.name)),
-      content: Text(mine ? l.freeNotNowMine(p.name) : l.freeNotNowBody),
+      content: Text(body),
       actions: [
         if (mine) ...[
           TextButton(onPressed: () => Navigator.pop(d), child: Text(l.close)),

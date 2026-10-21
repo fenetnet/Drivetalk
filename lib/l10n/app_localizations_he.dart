@@ -1681,6 +1681,11 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String askCallOpen(String name) {
+    return 'השיחה האחרונה שלך עם $name עוד לא נסגרה. ברגע שאחד מכם עונה \"איך היה?\" או שהשיחה מתנתקת, אפשר לפנות שוב.';
+  }
+
+  @override
   String get askNoNumber =>
       'אי אפשר להתקשר: לאף אחד מכם אין מספר טלפון באפליקציה.';
 
@@ -2551,7 +2556,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get whyRemoved =>
-      'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. אפשר לשלוח לו הזמנה.';
+      'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. מי שהסיר יכול להחזיר: האנשים שלי ← אנשים שהסרתי ← להחזיר.';
 
   @override
   String get whyBlocked => 'יש חסימה ביניכם, ולכן הוא לא מופיע.';

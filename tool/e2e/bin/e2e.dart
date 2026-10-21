@@ -1817,9 +1817,10 @@ Future<void> main() async {
   await sweepFixes();
   await questionThirtySeconds();
   await removedPerAccount();
+  await callOverEitherSide();
 
   check(
-    await eve.rpc('schema_version') == 58,
+    await eve.rpc('schema_version') == 59,
     'the server says its version (41)',
   );
 
@@ -3812,4 +3813,41 @@ Future<void> removedPerAccount() async {
     found.any((f) => f['user_id'] == uid(rb2)),
     "removing someone's old account doesn't hide their new one (D-141)",
   );
+}
+
+Future<void> callOverEitherSide() async {
+  final ea = await newUser('אלה', 'female');
+  final eb = await newUser('אלון', 'male');
+  await befriend(ea, eb);
+  await skipQuietGap();
+  await free(ea);
+  await free(eb);
+  final offer = (await rows(
+    ea,
+    'match_offers',
+  )).firstWhere((o) => o['status'] == 'pending');
+  for (final c in [ea, eb]) {
+    await c.rpc(
+      'answer_offer',
+      params: {'p_offer': offer['id'], 'p_accept': true},
+    );
+  }
+  final during = await eb.rpc('ask_why', params: {'p_user': uid(ea)});
+  // Only she closes the call ("how was it?"); he never does.
+  await ea.rpc('end_call', params: {'p_offer': offer['id']});
+  final hisWhy = await ea.rpc('ask_why', params: {'p_user': uid(eb)});
+  final hisRow = (await rows(
+    ea,
+    'availability',
+  )).where((a) => a['user_id'] == uid(eb));
+  check(
+    during != 'ok' &&
+        hisWhy == 'ok' &&
+        hisRow.isNotEmpty &&
+        hisRow.single['call_until'] == null,
+    'a call is over once either side closed it; she can ask him again (D-142)',
+  );
+  for (final c in [ea, eb]) {
+    await c.rpc('clear_availability');
+  }
 }

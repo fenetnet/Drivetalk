@@ -135,6 +135,7 @@ class RealRoot extends ConsumerWidget {
         'not_free' => l.askNotFree(n.name ?? ''),
         'busy' => l.askBusy(n.name ?? ''),
         'not_now' => l.askNotNow(n.name ?? ''),
+        'call_open' => l.askCallOpen(n.name ?? ''),
         'no_number' => l.askNoNumber,
         'me_not_free' => l.askMeNotFree,
         _ => l.askFailed,

@@ -976,6 +976,18 @@ class SupabaseRealBackend implements RealBackend {
   });
 
   @override
+  Future<String> askWhy(String userId) async {
+    try {
+      return await _guard(
+        () async =>
+            await _c.rpc('ask_why', params: {'p_user': userId}) as String,
+      );
+    } on RealBackendException {
+      return 'unknown'; // an older server: the general note
+    }
+  }
+
+  @override
   Future<String> askFriend(String userId) => _guard(
     () async =>
         await _c.rpc('ask_friend', params: {'p_user': userId}) as String,

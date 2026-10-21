@@ -3010,6 +3010,15 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------- calm & private (D-106)
 
+  /// Why [friend] (free) can't be asked right now — null when unknown.
+  Future<String?> askWhy(RealProfile friend) async {
+    try {
+      return await _backend.askWhy(friend.id);
+    } on RealBackendException {
+      return null;
+    }
+  }
+
   /// Tap a free friend: ask them now (my tap is my yes). True if asked.
   Future<bool> askFriend(RealProfile friend) async {
     _stopVoice();

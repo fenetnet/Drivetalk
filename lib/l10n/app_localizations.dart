@@ -2860,6 +2860,12 @@ abstract class AppLocalizations {
   /// **'כבר שאלנו את {name} הפעם. נחכה לפעם הבאה.'**
   String askNotNow(String name);
 
+  /// No description provided for @askCallOpen.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה האחרונה שלך עם {name} עוד לא נסגרה. ברגע שאחד מכם עונה \"איך היה?\" או שהשיחה מתנתקת, אפשר לפנות שוב.'**
+  String askCallOpen(String name);
+
   /// No description provided for @askNoNumber.
   ///
   /// In he, this message translates to:
@@ -4255,7 +4261,7 @@ abstract class AppLocalizations {
   /// No description provided for @whyRemoved.
   ///
   /// In he, this message translates to:
-  /// **'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. אפשר לשלוח לו הזמנה.'**
+  /// **'אחד מכם הסיר את השני בעבר, ולכן הוא לא חוזר מאנשי הקשר. מי שהסיר יכול להחזיר: האנשים שלי ← אנשים שהסרתי ← להחזיר.'**
   String get whyRemoved;
 
   /// No description provided for @whyBlocked.

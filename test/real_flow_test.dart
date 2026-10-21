@@ -1739,6 +1739,27 @@ void main() {
     dad.dispose();
   });
 
+  test('after a call: once I closed it, I can ask her again (D-142)', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    await me.c.startAvailability(AvailabilityMode.free, 60);
+    await yoni.c.startAvailability(AvailabilityMode.free, 60);
+    await me.c.refresh();
+    await me.c.respond(currentOffer(me.s, now)!, accept: true);
+    await yoni.c.refresh();
+    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+    await me.c.refresh();
+    await pump();
+    final y = me.s.snapshot!.friends.single;
+    expect(await me.c.askWhy(y), 'busy', reason: 'mid-call: in a call');
+    // I answer "how was it? — any time"; Yoni never does.
+    me.c.finishCall();
+    await me.c.afterCall(0);
+    now = now.add(const Duration(minutes: 3));
+    await me.c.refresh();
+    expect(await me.c.askWhy(y), 'ok');
+    expect(await me.c.askFriend(y), isTrue);
+  });
+
   test(
     '"we didn\'t talk" takes it back; "in a week" pauses the pair',
     () async {
@@ -1761,7 +1782,7 @@ void main() {
 
       await talk(0, talked: false);
       expect(me.s.snapshot!.weekAt(now), (0, 0), reason: 'two yeses ≠ a talk');
-      now = now.add(const Duration(minutes: 31));
+      now = now.add(const Duration(minutes: 61));
       await talk(7);
       expect(me.s.snapshot!.weekAt(now), (1, 1));
       // An hour later both are free again: not offered (paused for a while).
