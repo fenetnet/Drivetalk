@@ -1474,6 +1474,30 @@ Future<void> main() async {
     notes.any((n) => n['body'] == 'נראה טוב' && n['display_name'] == 'אבי'),
     'the owner sees the feedback and who sent it',
   );
+  // "Report a problem" carries the app's details; "why is X grey?" (D-143).
+  await avi.rpc(
+    'send_feedback',
+    params: {'p_body': 'לא עבד', 'p_build': 170, 'p_diag': 'live: error'},
+  );
+  final detailed = List<Map<String, dynamic>>.from(
+    await avi.rpc('owner_feedback_details'),
+  );
+  final looked = List<Map<String, dynamic>>.from(
+    await avi.rpc('owner_lookup', params: {'p_query': 'אבי'}),
+  );
+  var strangerLooked = true;
+  try {
+    await noa.rpc('owner_lookup', params: {'p_query': 'אבי'});
+  } on PostgrestException {
+    strangerLooked = false;
+  }
+  check(
+    detailed.any((n) => n['body'] == 'לא עבד' && n['diag'] == 'live: error') &&
+        looked.any((r) => r['user_id'] == uid(avi)) &&
+        looked.every((r) => !r.keys.any((k) => k.contains('phone_number'))) &&
+        !strangerLooked,
+    'problem reports with details; the owner (only) looks someone up (D-143)',
+  );
 
   try {
     final leakedNotes = await eve.from('feedback_notes').select();
@@ -1820,7 +1844,7 @@ Future<void> main() async {
   await callOverEitherSide();
 
   check(
-    await eve.rpc('schema_version') == 59,
+    await eve.rpc('schema_version') == 60,
     'the server says its version (41)',
   );
 

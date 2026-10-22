@@ -2984,6 +2984,43 @@ class RealController extends Notifier<RealState> {
     return ok;
   }
 
+  /// "Report a problem" (owner): the note plus what the test tab shows —
+  /// versions, states, the phone's log; no friends' names, no numbers,
+  /// never words from the voice (D-143).
+  Future<bool> reportProblem(String text) async {
+    if (text.trim().isEmpty) return false;
+    await _loadDriving();
+    final p = await phonePermissions();
+    final details = [
+      diagnostics(forReport: true),
+      'permissions: '
+          '${[for (final k in PhonePermission.values) '${k.name}=${p.has(k) ? 'ok' : 'NO'}'].join(', ')}',
+    ].join('\n');
+    final ok = await _run(
+      () => _backend.sendFeedback(
+        text.trim(),
+        build: ref.read(appBuildProvider),
+        details: details,
+      ),
+    );
+    if (ok) _notify(RealNoticeKind.feedbackThanks);
+    return ok;
+  }
+
+  /// Owner only: people by name or phone number, with their state on the
+  /// server (null = couldn't load / not owner). A number is hashed here.
+  Future<List<Map<String, Object?>>?> ownerLookup(String query) async {
+    final q = query.trim();
+    final digits = q.replaceAll(RegExp(r'[^0-9+]'), '');
+    final hash = digits.length >= 9 ? hashPhone(q) : null;
+    try {
+      return await _backend.ownerLookup(hash ?? q);
+    } on RealBackendException catch (e) {
+      _notOwner(e);
+      return null;
+    }
+  }
+
   /// Owner only: feedback and reports (null = couldn't load / not owner).
   Future<List<OwnerNote>?> ownerNotes({required bool reports}) async {
     try {
@@ -3624,7 +3661,7 @@ class RealController extends Notifier<RealState> {
   /// The phone's own state (and log), fresh — before copying the test info.
   Future<void> reloadDriving() => _loadDriving();
 
-  String diagnostics() {
+  String diagnostics({bool forReport = false}) {
     final s = state;
     final now = _now();
     final snap = s.snapshot;
@@ -3663,7 +3700,8 @@ class RealController extends Notifier<RealState> {
           '${s.driving.permission ? '' : ' (no permission)'}'
           '${s.driving.inVehicle ? ', in vehicle' : ''}',
       'my phone in a call now: ${s.driving.inCallNow ? 'yes' : 'no'}',
-      'friends in a call: ${_busyLine(s, now, time)}',
+      // Friends' names stay on this phone (a report goes to the owner).
+      if (!forReport) 'friends in a call: ${_busyLine(s, now, time)}',
       'last refresh: ${time(snap?.fetchedAt)}',
       if (_refreshing) 'refreshing since: ${time(_refreshStarted)}',
       'last error: ${s.lastError ?? '—'}${s.lastErrorAt == null ? '' : ' at ${time(s.lastErrorAt)}'}',

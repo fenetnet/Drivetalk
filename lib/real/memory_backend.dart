@@ -46,6 +46,7 @@ class MemoryServer {
   /// When each user last opened the app; feedback notes to the owner.
   final lastSeen = <String, DateTime>{};
   final feedbackNotes = <String>[];
+  final feedbackDetails = <String?>[];
   final owners = <String>{};
 
   /// The owner's code on this test server (the real one lives only in the
@@ -2067,8 +2068,32 @@ class MemoryRealBackend implements RealBackend {
   Future<void> touchSeen() async => server.lastSeen[_uid] = server.now();
 
   @override
-  Future<void> sendFeedback(String text, {int? build}) async =>
-      server.feedbackNotes.add(text);
+  Future<void> sendFeedback(String text, {int? build, String? details}) async {
+    server.feedbackNotes.add(text);
+    server.feedbackDetails.add(details);
+  }
+
+  @override
+  Future<List<Map<String, Object?>>> ownerLookup(String query) async {
+    if (!server.owners.contains(_uid)) {
+      throw const RealBackendException('not_owner');
+    }
+    final q = query.trim();
+    if (q.length < 2) return const [];
+    return [
+      for (final e in server.profiles.entries)
+        if (e.value.name.contains(q))
+          {
+            'user_id': e.key,
+            'display_name': e.value.name,
+            'free_mode': server.availability[e.key]?.mode.name,
+            'free_until': server.availability[e.key]?.expiresAt
+                .toIso8601String(),
+            'in_call': server._inCall(e.key),
+            'can_be_asked': server.canBeAsked(e.key),
+          },
+    ];
+  }
 
   @override
   Future<void> logEvent(String name, {int? ms}) async =>

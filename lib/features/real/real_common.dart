@@ -798,7 +798,13 @@ Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
 }
 
 /// "Send feedback": a short note to the owner (no names or numbers added).
-Future<void> openFeedbackDialog(BuildContext context, WidgetRef ref) async {
+/// [problem]: "report a problem" — the app's technical details go along
+/// (D-143), and the dialog says so.
+Future<void> openFeedbackDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  bool problem = false,
+}) async {
   final l = context.l10n;
   // Read before the dialog: the screen may be gone when it closes.
   final c = ref.read(realProvider.notifier);
@@ -806,14 +812,27 @@ Future<void> openFeedbackDialog(BuildContext context, WidgetRef ref) async {
   final send = await showDialog<bool>(
     context: context,
     builder: (d) => AlertDialog(
-      title: Text(l.feedbackTitle),
-      content: TextField(
-        controller: text,
-        autofocus: true,
-        maxLength: 1000,
-        minLines: 3,
-        maxLines: 6,
-        decoration: InputDecoration(hintText: l.feedbackHint),
+      title: Text(problem ? l.problemTitle : l.feedbackTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: text,
+            autofocus: true,
+            maxLength: 1000,
+            minLines: 3,
+            maxLines: 6,
+            decoration: InputDecoration(
+              hintText: problem ? l.problemHint : l.feedbackHint,
+            ),
+          ),
+          if (problem)
+            Text(
+              l.problemDetails,
+              style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
+            ),
+        ],
       ),
       actions: [
         TextButton(
@@ -827,6 +846,8 @@ Future<void> openFeedbackDialog(BuildContext context, WidgetRef ref) async {
       ],
     ),
   );
-  if (send ?? false) await c.sendFeedback(text.text);
+  if (send ?? false) {
+    await (problem ? c.reportProblem(text.text) : c.sendFeedback(text.text));
+  }
   text.dispose();
 }

@@ -726,10 +726,13 @@ Set<AvailabilityMode>? modesFromKeys(Object? keys) =>
 
 /// A note for the owner: feedback or a report.
 class OwnerNote {
-  const OwnerNote(this.at, this.title, this.body);
+  const OwnerNote(this.at, this.title, this.body, {this.details});
   final DateTime at;
 
   /// Who sent it (feedback) / "reporter → reported" (report).
   final String title;
   final String body;
+
+  /// "Report a problem": the app's technical details (D-143).
+  final String? details;
 }

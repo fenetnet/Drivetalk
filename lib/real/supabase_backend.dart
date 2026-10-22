@@ -938,13 +938,19 @@ class SupabaseRealBackend implements RealBackend {
 
   @override
   Future<List<OwnerNote>> ownerFeedback() => _guard(() async {
-    final rows = await _c.rpc('owner_feedback') as List;
+    List rows;
+    try {
+      rows = await _c.rpc('owner_feedback_details') as List;
+    } on PostgrestException {
+      rows = await _c.rpc('owner_feedback') as List; // an older server
+    }
     return [
       for (final r in rows.cast<Map>())
         OwnerNote(
           _time(r['created_at']),
           '${r['display_name']}${r['app_build'] == null ? '' : ' · ${r['app_build']}'}',
           r['body'] as String,
+          details: r['diag'] as String?,
         ),
     ];
   });
@@ -1081,9 +1087,21 @@ class SupabaseRealBackend implements RealBackend {
   }
 
   @override
-  Future<void> sendFeedback(String text, {int? build}) => _guard(
-    () => _c.rpc('send_feedback', params: {'p_body': text, 'p_build': build}),
-  ).whenComplete(_kickPush);
+  Future<void> sendFeedback(String text, {int? build, String? details}) =>
+      _guard(
+        () => _c.rpc(
+          'send_feedback',
+          params: {'p_body': text, 'p_build': build, 'p_diag': ?details},
+        ),
+      ).whenComplete(_kickPush);
+
+  @override
+  Future<List<Map<String, Object?>>> ownerLookup(String query) =>
+      _guard(() async {
+        final rows =
+            await _c.rpc('owner_lookup', params: {'p_query': query}) as List;
+        return [for (final r in rows.cast<Map>()) r.cast<String, Object?>()];
+      });
 
   @override
   Future<void> logEvent(String name, {int? ms}) async {

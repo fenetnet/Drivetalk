@@ -289,6 +289,22 @@ void main() {
     expect(await me.c.healthIssue(), isNot(PhonePermission.notifications));
   });
 
+  test('report a problem: the details go along, without friends\' names; '
+      'the owner looks someone up (D-143)', () async {
+    await connect();
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    expect(await me.c.reportProblem('לא עבד'), isTrue);
+    final details = server.feedbackDetails.last!;
+    expect(details, contains('permissions:'));
+    expect(details, isNot(contains('יוני')));
+    expect(await me.c.ownerLookup('יוני'), isNull, reason: 'owner only');
+    expect(await me.c.unlockAdmin('test-owner-code'), isTrue);
+    await pump();
+    final rows = await me.c.ownerLookup('יוני');
+    expect(rows!.single['display_name'], 'יוני');
+    expect(rows.single['free_mode'], 'free');
+  });
+
   test('an update with no new permission: nothing pops up', () async {
     await connect();
     me.store.setString('real.permAsk.v2', null);

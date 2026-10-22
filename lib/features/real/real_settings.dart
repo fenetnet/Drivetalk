@@ -240,6 +240,12 @@ class RealSettingsScreen extends ConsumerWidget {
                 subtitle: Text(l.feedbackBody),
                 onTap: () => openFeedbackDialog(context, ref),
               ),
+              ListTile(
+                leading: const Icon(Icons.bug_report_rounded),
+                title: Text(l.problemTitle),
+                subtitle: Text(l.problemBody),
+                onTap: () => openFeedbackDialog(context, ref, problem: true),
+              ),
             ],
           ),
           if (s.admin)

@@ -85,6 +85,16 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                 }),
               ),
               const SizedBox(height: 12),
+              ListTile(
+                leading: const Icon(Icons.person_search_rounded),
+                title: Text(l.ownerLookupTitle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const _OwnerLookupScreen(),
+                  ),
+                ),
+              ),
               row(l.statsUsers, l.statsUsersHint, 'users'),
               row(l.statsNewUsers, l.statsNewUsersHint, 'new_users'),
               row(l.statsActiveUsers, l.statsActiveUsersHint, 'active_users'),
@@ -253,6 +263,19 @@ class _NotesScreen extends ConsumerWidget {
                           body(notes[i]),
                           style: const TextStyle(fontSize: 16),
                         ),
+                        if (notes[i].details != null) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            l.ownerDetails,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 4),
+                          SelectableText(
+                            notes[i].details!,
+                            textDirection: TextDirection.ltr,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -267,6 +290,101 @@ class _NotesScreen extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Owner: someone's state on the server, by name or number — "why is X
+/// grey?" (D-143). Never a number shown.
+class _OwnerLookupScreen extends ConsumerStatefulWidget {
+  const _OwnerLookupScreen();
+
+  @override
+  ConsumerState<_OwnerLookupScreen> createState() => _OwnerLookupState();
+}
+
+class _OwnerLookupState extends ConsumerState<_OwnerLookupScreen> {
+  final _query = TextEditingController();
+  List<Map<String, Object?>>? _rows;
+  var _busy = false;
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  Future<void> _search() async {
+    setState(() => _busy = true);
+    final r = await ref.read(realProvider.notifier).ownerLookup(_query.text);
+    if (!mounted) return;
+    setState(() {
+      _rows = r ?? const [];
+      _busy = false;
+    });
+  }
+
+  String _time(Object? v) {
+    final t = v is String ? DateTime.tryParse(v)?.toLocal() : null;
+    if (t == null) return '—';
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${t.day}/${t.month} ${two(t.hour)}:${two(t.minute)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final rows = _rows;
+    return Scaffold(
+      appBar: AppBar(title: Text(l.ownerLookupTitle)),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextField(
+            controller: _query,
+            textInputAction: TextInputAction.search,
+            onSubmitted: (_) => _search(),
+            decoration: InputDecoration(
+              hintText: l.ownerLookupHint,
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.search_rounded),
+                onPressed: _busy ? null : _search,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_busy) const Center(child: CircularProgressIndicator()),
+          if (!_busy && rows != null && rows.isEmpty) Text(l.ownerLookupNone),
+          if (!_busy && rows != null)
+            for (final r in rows)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: SelectableText(
+                    [
+                      '${r['display_name']}  (${'${r['user_id']}'.substring(0, 6)})',
+                      'last seen: ${_time(r['last_seen_at'])}',
+                      'accounts with this number: ${r['same_number_accounts'] ?? '—'}',
+                      'friends: ${r['friends'] ?? '—'}',
+                      'free: ${r['free_mode'] ?? 'no'}'
+                          '${r['free_mode'] == null ? '' : ' until ${_time(r['free_until'])} (${r['free_source']})'}',
+                      'missed a question: ${r['missed_at'] == null ? 'no' : _time(r['missed_at'])}',
+                      'quiet until: ${_time(r['quiet_until'])}',
+                      'in an app call: ${r['in_call']}',
+                      'on the phone: ${r['on_phone']}',
+                      'open question: ${r['open_question']}',
+                      'asked enough this time: ${r['asked_enough'] ?? '—'}',
+                      'can be asked now: ${r['can_be_asked']}',
+                      'background (device token): ${r['auto_driving']}',
+                      'last question: ${r['last_offer'] ?? '—'}',
+                    ].join('\n'),
+                    textDirection: TextDirection.ltr,
+                    style: const TextStyle(fontSize: 13, height: 1.4),
+                  ),
+                ),
+              ),
+        ],
       ),
     );
   }

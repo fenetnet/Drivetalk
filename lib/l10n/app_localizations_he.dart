@@ -2603,4 +2603,30 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get whatsNewBody =>
       '• \"כן\" בקול: צפצוף כשמקשיבים, יותר זמן לענות, ואישור בקול\n• אחרי שיחה אפשר לפנות שוב מיד\n• ווידג\'ט למסך הבית: מי פנוי עכשיו';
+
+  @override
+  String get problemTitle => 'דיווח על בעיה';
+
+  @override
+  String get problemBody =>
+      'משהו לא עבד? כתבו מה קרה, ונקבל גם את הפרטים הטכניים.';
+
+  @override
+  String get problemHint => 'מה קרה? בערך מתי?';
+
+  @override
+  String get problemDetails =>
+      'יחד עם ההודעה יישלחו פרטים טכניים מהטלפון (גרסה, מצב, יומן). בלי שמות של חברים, בלי מספרים ובלי שום דבר מהקול.';
+
+  @override
+  String get ownerLookupTitle => 'מצב של משתמש בשרת';
+
+  @override
+  String get ownerLookupHint => 'שם או מספר טלפון';
+
+  @override
+  String get ownerLookupNone => 'לא נמצא אף אחד.';
+
+  @override
+  String get ownerDetails => 'פרטים טכניים';
 }

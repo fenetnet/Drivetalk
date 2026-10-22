@@ -4341,6 +4341,54 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'• \"כן\" בקול: צפצוף כשמקשיבים, יותר זמן לענות, ואישור בקול\n• אחרי שיחה אפשר לפנות שוב מיד\n• ווידג\'ט למסך הבית: מי פנוי עכשיו'**
   String get whatsNewBody;
+
+  /// No description provided for @problemTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'דיווח על בעיה'**
+  String get problemTitle;
+
+  /// No description provided for @problemBody.
+  ///
+  /// In he, this message translates to:
+  /// **'משהו לא עבד? כתבו מה קרה, ונקבל גם את הפרטים הטכניים.'**
+  String get problemBody;
+
+  /// No description provided for @problemHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מה קרה? בערך מתי?'**
+  String get problemHint;
+
+  /// No description provided for @problemDetails.
+  ///
+  /// In he, this message translates to:
+  /// **'יחד עם ההודעה יישלחו פרטים טכניים מהטלפון (גרסה, מצב, יומן). בלי שמות של חברים, בלי מספרים ובלי שום דבר מהקול.'**
+  String get problemDetails;
+
+  /// No description provided for @ownerLookupTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מצב של משתמש בשרת'**
+  String get ownerLookupTitle;
+
+  /// No description provided for @ownerLookupHint.
+  ///
+  /// In he, this message translates to:
+  /// **'שם או מספר טלפון'**
+  String get ownerLookupHint;
+
+  /// No description provided for @ownerLookupNone.
+  ///
+  /// In he, this message translates to:
+  /// **'לא נמצא אף אחד.'**
+  String get ownerLookupNone;
+
+  /// No description provided for @ownerDetails.
+  ///
+  /// In he, this message translates to:
+  /// **'פרטים טכניים'**
+  String get ownerDetails;
 }
 
 class _AppLocalizationsDelegate

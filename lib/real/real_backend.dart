@@ -179,7 +179,11 @@ abstract class RealBackend {
   Future<List<OwnerNote>> ownerReports();
 
   /// A short note to the owner ("Send feedback").
-  Future<void> sendFeedback(String text, {int? build});
+  Future<void> sendFeedback(String text, {int? build, String? details});
+
+  /// Owner only: people by name (or a number's hash) and their state on
+  /// the server — why they're grey (D-143). Never a number.
+  Future<List<Map<String, Object?>>> ownerLookup(String query);
 
   Future<void> block(String userId);
 

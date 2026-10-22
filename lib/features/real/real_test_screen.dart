@@ -194,6 +194,12 @@ class RealTestScreen extends ConsumerWidget {
               label: Text(l.realCopyDiagnostics),
             ),
             const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => openFeedbackDialog(context, ref, problem: true),
+              icon: const Icon(Icons.bug_report_rounded),
+              label: Text(l.problemTitle),
+            ),
+            const SizedBox(height: 8),
             // "Why isn't X here?" — contacts, step by step (D-132).
             const _WhyNotShown(),
             const SizedBox(height: 8),
