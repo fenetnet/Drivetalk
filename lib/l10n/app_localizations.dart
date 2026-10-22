@@ -4389,6 +4389,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'פרטים טכניים'**
   String get ownerDetails;
+
+  /// No description provided for @voiceAfterCall.
+  ///
+  /// In he, this message translates to:
+  /// **'איך היה עם {name}? להציע לכם לדבר שוב בקרוב?'**
+  String voiceAfterCall(String name);
+
+  /// No description provided for @voiceAfterCallYes.
+  ///
+  /// In he, this message translates to:
+  /// **'מעולה. נציע שוב בהזדמנות.'**
+  String get voiceAfterCallYes;
 }
 
 class _AppLocalizationsDelegate
