@@ -138,7 +138,11 @@ void main() {
 
       // I become free → both are asked.
       // One tap on what I'm doing (no extra "I have time" step).
-      await t.ensureVisible(find.text('סתם זמן פנוי'));
+      await t.scrollUntilVisible(
+        find.text('סתם זמן פנוי'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       await pumpFor(t, 300);
       await t.tap(find.text('סתם זמן פנוי'));
       await pumpFor(t, 500);

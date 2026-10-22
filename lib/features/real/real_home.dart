@@ -280,6 +280,11 @@ class RealHomeScreen extends ConsumerWidget {
                     icon: Icons.system_update_alt_rounded,
                   ),
                 ],
+                const _HealthLine(),
+                if (c.showWhatsNew) ...[
+                  const SizedBox(height: 12),
+                  _WhatsNewCard(onClose: c.dismissWhatsNew),
+                ],
                 if (isRealDriving(s, now)) ...[
                   const SizedBox(height: 12),
                   FilledButton.icon(
@@ -1936,4 +1941,140 @@ class _MissingPermissionsState extends ConsumerState<_MissingPermissions> {
 
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
+/// "Is everything OK?": a phone setting that stops DriveBond from working
+/// (notifications, running in the background, calls, the microphone) —
+/// one line with a fix, until it's fixed or hidden for a week (owner).
+class _HealthLine extends ConsumerStatefulWidget {
+  const _HealthLine();
+
+  @override
+  ConsumerState<_HealthLine> createState() => _HealthLineState();
+}
+
+class _HealthLineState extends ConsumerState<_HealthLine> {
+  PhonePermission? _missing;
+  late final AppLifecycleListener _life;
+
+  @override
+  void initState() {
+    super.initState();
+    _life = AppLifecycleListener(onResume: _check);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _check());
+  }
+
+  @override
+  void dispose() {
+    _life.dispose();
+    super.dispose();
+  }
+
+  Future<void> _check() async {
+    final c = ref.read(realProvider.notifier);
+    final m = await c.healthIssue();
+    if (mounted && m != _missing) setState(() => _missing = m);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final m = _missing;
+    if (m == null) return const SizedBox.shrink();
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final what = switch (m) {
+      PhonePermission.notifications => l.permsNotifTitle,
+      PhonePermission.calls => l.permsCallTitle,
+      PhonePermission.mic => l.permsMicTitle,
+      PhonePermission.background => l.permsBgTitle,
+      PhonePermission.fullScreen => l.permsFullTitle,
+    };
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Material(
+        color: AppColors.terracotta.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 4, 6),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.terracotta,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  l.healthMissing(what),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await c.askPermission(m);
+                  await _check();
+                },
+                child: Text(l.healthFix),
+              ),
+              IconButton(
+                tooltip: l.close,
+                icon: const Icon(Icons.close_rounded, size: 20),
+                onPressed: () {
+                  c.hideHealthIssue(m);
+                  setState(() => _missing = null);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// "What's new" once after an update (owner): three short lines.
+class _WhatsNewCard extends StatelessWidget {
+  const _WhatsNewCard({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    return Card(
+      key: const ValueKey('whatsNew'),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppColors.terracotta,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l.whatsNewTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l.close,
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: onClose,
+                ),
+              ],
+            ),
+            Text(l.whatsNewBody, style: const TextStyle(height: 1.5)),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -2588,4 +2588,19 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get voiceNotHeard => 'לא שמעתי. אפשר ללחוץ על הכפתור.';
+
+  @override
+  String healthMissing(String what) {
+    return 'חסר אישור בטלפון: $what. בלעדיו DriveBond לא עובדת כמו שצריך.';
+  }
+
+  @override
+  String get healthFix => 'לתקן';
+
+  @override
+  String get whatsNewTitle => 'מה חדש בעדכון';
+
+  @override
+  String get whatsNewBody =>
+      '• \"כן\" בקול: צפצוף כשמקשיבים, יותר זמן לענות, ואישור בקול\n• אחרי שיחה אפשר לפנות שוב מיד\n• ווידג\'ט למסך הבית: מי פנוי עכשיו';
 }

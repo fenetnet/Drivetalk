@@ -1005,6 +1005,8 @@ class RealController extends Notifier<RealState> {
       markPermissionIntroShown();
       // Just asked about all of them: not again on Home.
       _markPermsAsked();
+      // New here: nothing is "new" yet.
+      _store.setString(_whatsNewKey, _whatsNewId);
     }
     _firstRunAdvance();
   }
@@ -3371,6 +3373,53 @@ class RealController extends Notifier<RealState> {
       state.driving.supported && _store.getString(_permIntroKey) == null;
 
   void markPermissionIntroShown() => _store.setString(_permIntroKey, 'shown');
+
+  /// "What's new" (owner): shown once to people who had the app before;
+  /// raise [_whatsNewId] when the lines in app_he.arb change.
+  static const _whatsNewId = '170';
+  static const _whatsNewKey = 'real.whatsNew.v1';
+
+  bool get showWhatsNew =>
+      state.firstRun == null && _store.getString(_whatsNewKey) != _whatsNewId;
+
+  void dismissWhatsNew() {
+    _store.setString(_whatsNewKey, _whatsNewId);
+    state = state.copyWith();
+  }
+
+  static const _healthHideKey = 'real.healthHide.v1';
+
+  /// A phone setting that stops the app working, or null (owner: one line
+  /// on Home with a fix). The microphone only when voice is on; hidden by
+  /// the user: not again for a week.
+  Future<PhonePermission?> healthIssue() async {
+    if (state.firstRun != null) return null;
+    final p = await phonePermissions();
+    if (!p.supported) return null;
+    final hidden = _store.getString(_healthHideKey)?.split('|');
+    final hiddenWhat = hidden != null && hidden.length == 2 ? hidden[0] : null;
+    final hiddenAt = hidden != null && hidden.length == 2
+        ? DateTime.tryParse(hidden[1])
+        : null;
+    for (final k in [
+      PhonePermission.notifications,
+      PhonePermission.background,
+      PhonePermission.calls,
+      if (state.prefs.voice) PhonePermission.mic,
+    ]) {
+      if (p.has(k)) continue;
+      if (hiddenWhat == k.name &&
+          hiddenAt != null &&
+          _now().difference(hiddenAt) < const Duration(days: 7)) {
+        continue;
+      }
+      return k;
+    }
+    return null;
+  }
+
+  void hideHealthIssue(PhonePermission p) =>
+      _store.setString(_healthHideKey, '${p.name}|${_now().toIso8601String()}');
 
   static const _permAskKey = 'real.permAsk.v2';
 

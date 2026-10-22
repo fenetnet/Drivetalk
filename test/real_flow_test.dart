@@ -271,6 +271,24 @@ void main() {
     );
   });
 
+  test('"what\'s new" once for people who had the app; a broken setting '
+      'shows one line until fixed or hidden', () async {
+    await connect();
+    while (me.s.firstRun != null) {
+      me.c.firstRunNext();
+    }
+    expect(me.c.showWhatsNew, isFalse, reason: 'new here: nothing is new');
+    me.store.setString('real.whatsNew.v1', null); // had an older version
+    expect(me.c.showWhatsNew, isTrue);
+    me.c.dismissWhatsNew();
+    expect(me.c.showWhatsNew, isFalse);
+
+    me.driving.notifications = false;
+    expect(await me.c.healthIssue(), PhonePermission.notifications);
+    me.c.hideHealthIssue(PhonePermission.notifications);
+    expect(await me.c.healthIssue(), isNot(PhonePermission.notifications));
+  });
+
   test('an update with no new permission: nothing pops up', () async {
     await connect();
     me.store.setString('real.permAsk.v2', null);

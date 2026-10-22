@@ -4317,6 +4317,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא שמעתי. אפשר ללחוץ על הכפתור.'**
   String get voiceNotHeard;
+
+  /// No description provided for @healthMissing.
+  ///
+  /// In he, this message translates to:
+  /// **'חסר אישור בטלפון: {what}. בלעדיו DriveBond לא עובדת כמו שצריך.'**
+  String healthMissing(String what);
+
+  /// No description provided for @healthFix.
+  ///
+  /// In he, this message translates to:
+  /// **'לתקן'**
+  String get healthFix;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מה חדש בעדכון'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewBody.
+  ///
+  /// In he, this message translates to:
+  /// **'• \"כן\" בקול: צפצוף כשמקשיבים, יותר זמן לענות, ואישור בקול\n• אחרי שיחה אפשר לפנות שוב מיד\n• ווידג\'ט למסך הבית: מי פנוי עכשיו'**
+  String get whatsNewBody;
 }
 
 class _AppLocalizationsDelegate
