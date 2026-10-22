@@ -2577,4 +2577,15 @@ class AppLocalizationsHe extends AppLocalizations {
   String widgetLeft(String m) {
     return 'עוד $m דק׳';
   }
+
+  @override
+  String voiceHeardYes(String name) {
+    return 'קיבלתי. מחברים אותך עם $name.';
+  }
+
+  @override
+  String get voiceHeardNo => 'בסדר, לא עכשיו.';
+
+  @override
+  String get voiceNotHeard => 'לא שמעתי. אפשר ללחוץ על הכפתור.';
 }

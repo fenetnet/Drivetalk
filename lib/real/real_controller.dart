@@ -1410,7 +1410,7 @@ class RealController extends Notifier<RealState> {
       final question = action.kind == 'direct'
           ? _l.voiceDirect(name)
           : _l.realVoiceOffer(name, 'other');
-      unawaited(_askAloud(action.offerId, question));
+      unawaited(_askAloud(action.offerId, question, name));
     }
     await refresh();
     // "Talk" on "X is on the way": my tap is my yes — ask them now (free
@@ -2136,13 +2136,13 @@ class RealController extends Notifier<RealState> {
     final question = direct
         ? _l.voiceDirect(p.name)
         : _l.realVoiceOffer(p.name, _genderKey(p.gender));
-    return _askAloud(offer.id, question);
+    return _askAloud(offer.id, question, p.name);
   }
 
   /// Ask [question] aloud and listen for yes / no. The question may not be
   /// loaded yet (opened from the notification): then the answer goes to
   /// the server directly.
-  Future<void> _askAloud(String offerId, String question) async {
+  Future<void> _askAloud(String offerId, String question, String name) async {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
     // Still open: the current question, or one not loaded yet.
@@ -2177,10 +2177,13 @@ class RealController extends Notifier<RealState> {
         state = state.copyWith(listening: false);
         if (!stillOpen()) return;
         switch (heard) {
+          // Said back, so the driver knows it was heard (owner).
           case VoiceAnswer.yes:
+            unawaited(voice.speak(_l.voiceHeardYes(name)));
             await answer(true);
             return;
           case VoiceAnswer.no:
+            unawaited(voice.speak(_l.voiceHeardNo));
             await answer(false);
             return;
           case VoiceAnswer.permissionDenied:
@@ -2195,6 +2198,10 @@ class RealController extends Notifier<RealState> {
           case VoiceAnswer.none:
             break; // nothing heard: ask again
         }
+      }
+      // Asked and nothing heard: the buttons still work — say so once.
+      if (seq == _voiceSeq && ref.mounted && _foreground && stillOpen()) {
+        await voice.speak(_l.voiceNotHeard);
       }
     } finally {
       if (_askingSeq == seq) _askingSeq = null;

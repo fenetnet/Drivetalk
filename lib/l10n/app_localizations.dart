@@ -4299,6 +4299,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'עוד {m} דק׳'**
   String widgetLeft(String m);
+
+  /// No description provided for @voiceHeardYes.
+  ///
+  /// In he, this message translates to:
+  /// **'קיבלתי. מחברים אותך עם {name}.'**
+  String voiceHeardYes(String name);
+
+  /// No description provided for @voiceHeardNo.
+  ///
+  /// In he, this message translates to:
+  /// **'בסדר, לא עכשיו.'**
+  String get voiceHeardNo;
+
+  /// No description provided for @voiceNotHeard.
+  ///
+  /// In he, this message translates to:
+  /// **'לא שמעתי. אפשר ללחוץ על הכפתור.'**
+  String get voiceNotHeard;
 }
 
 class _AppLocalizationsDelegate

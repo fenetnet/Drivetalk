@@ -1784,5 +1784,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "voiceHeardYes": "קיבלתי. מחברים אותך עם {name}.",
+  "@voiceHeardYes": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "voiceHeardNo": "בסדר, לא עכשיו.",
+  "voiceNotHeard": "לא שמעתי. אפשר ללחוץ על הכפתור."
 }

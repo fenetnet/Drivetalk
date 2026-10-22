@@ -878,11 +878,16 @@ void main() {
       await pump(50);
       expect(me.voice.spoken.first, 'ליוני יש זמן. לדבר?');
       expect(
-        me.voice.spoken.where((x) => x.contains('יוני')),
+        me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?'),
         hasLength(1),
         reason: 'asked once, not again after loading',
       );
       expect(waitingOffer(me.s, now)?.id, id, reason: '"yes" answered it');
+      expect(
+        me.voice.spoken,
+        contains('קיבלתי. מחברים אותך עם יוני.'),
+        reason: 'the "yes" is said back',
+      );
     },
   );
 
