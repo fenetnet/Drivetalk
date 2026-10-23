@@ -1842,9 +1842,10 @@ Future<void> main() async {
   await questionThirtySeconds();
   await removedPerAccount();
   await callOverEitherSide();
+  await tapperCalls();
 
   check(
-    await eve.rpc('schema_version') == 60,
+    await eve.rpc('schema_version') == 61,
     'the server says its version (41)',
   );
 
@@ -3872,6 +3873,50 @@ Future<void> callOverEitherSide() async {
     'a call is over once either side closed it; she can ask him again (D-142)',
   );
   for (final c in [ea, eb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> tapperCalls() async {
+  final ta = await newUser('טל', 'female');
+  final tb = await newUser('תומר', 'male');
+  for (final (c, d) in [(ta, 5551), (tb, 5552)]) {
+    await c.from('phone_numbers').upsert({
+      'user_id': uid(c),
+      'phone': '+97250${DateTime.now().millisecondsSinceEpoch % 10000}$d',
+    });
+  }
+  await befriend(ta, tb);
+  await skipQuietGap();
+  await free(tb);
+  await free(ta);
+  // Any question the app made by itself goes first.
+  for (final o in await rows(ta, 'match_offers')) {
+    if (o['status'] == 'pending') {
+      await ta.rpc(
+        'answer_offer',
+        params: {'p_offer': o['id'], 'p_accept': false},
+      );
+    }
+  }
+  final asked = await ta.rpc('ask_friend', params: {'p_user': uid(tb)});
+  final o = (await rows(tb, 'match_offers')).firstWhere(
+    (x) => x['status'] == 'pending',
+    orElse: () => <String, dynamic>{},
+  );
+  final r = o.isEmpty
+      ? null
+      : Map<String, dynamic>.from(
+          await tb.rpc(
+            'answer_offer',
+            params: {'p_offer': o['id'], 'p_accept': true},
+          ),
+        );
+  check(
+    asked == 'asked' && r != null && r['i_call'] == false,
+    'whoever taps calls: the one who was asked is called (D-145) [$asked]',
+  );
+  for (final c in [ta, tb]) {
     await c.rpc('clear_availability');
   }
 }

@@ -1244,11 +1244,15 @@ class MemoryRealBackend implements RealBackend {
         return OfferAnswer(o.status);
       }
       final other = o.a == me ? o.b : o.a;
-      final onlyIShare =
-          !server.phones.containsKey(other) && server.phones.containsKey(me);
+      // Whoever tapped calls (D-145): in a tap the asker's yes came first,
+      // so the one answering now is the one who was asked.
+      final pref = o.direct ? other : me;
+      final callee = pref == o.a ? o.b : o.a;
+      final onlyCallerShares =
+          !server.phones.containsKey(callee) && server.phones.containsKey(pref);
       o
         ..status = OfferStatus.accepted
-        ..caller = onlyIShare ? other : me
+        ..caller = onlyCallerShares ? callee : pref
         ..acceptedAt = server.now()
         ..notBefore = server.now();
       server._accepted(o);

@@ -2247,6 +2247,27 @@ void main() {
       expect(yoni.s.callStage, isNot(CallStage.none));
     });
 
+    test('whoever taps calls (D-145)', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await refreshBoth();
+      if (currentOffer(me.s, now) case final o?) {
+        await me.c.cancelWaiting(o);
+      }
+      await refreshBoth();
+      final friend = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      expect(await me.c.askFriend(friend), isTrue);
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await pump(20);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.s.call?.role, CallRole.iCall, reason: 'I tapped: I call');
+      expect(me.dialer.dialed, ['0532222222']);
+      expect(yoni.dialer.dialed, isEmpty);
+    });
+
     test('only friends I can really ask are listed (D-107)', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);
