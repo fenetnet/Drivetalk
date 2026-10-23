@@ -4303,19 +4303,19 @@ abstract class AppLocalizations {
   /// No description provided for @voiceHeardYes.
   ///
   /// In he, this message translates to:
-  /// **'קיבלתי. מחברים אותך עם {name}.'**
-  String voiceHeardYes(String name);
+  /// **'קיבלתי, מחברים.'**
+  String get voiceHeardYes;
 
   /// No description provided for @voiceHeardNo.
   ///
   /// In he, this message translates to:
-  /// **'בסדר, לא עכשיו.'**
+  /// **'בסדר.'**
   String get voiceHeardNo;
 
   /// No description provided for @voiceNotHeard.
   ///
   /// In he, this message translates to:
-  /// **'לא שמעתי. אפשר ללחוץ על הכפתור.'**
+  /// **'לא שמעתי. אפשר ללחוץ.'**
   String get voiceNotHeard;
 
   /// No description provided for @healthMissing.

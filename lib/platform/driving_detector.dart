@@ -409,10 +409,12 @@ class FakeDrivingDetector implements DrivingDetector {
   String? token;
   DateTime? availableUntil;
   LaunchAction? pendingAction;
+  var inCallNow = false;
   final _events = StreamController<String>.broadcast(sync: true);
 
   @override
   Future<DrivingStatus> status() async => DrivingStatus(
+    inCallNow: inCallNow,
     supported: supported,
     permission: grantPermission,
     enabled: enabled,

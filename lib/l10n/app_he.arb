@@ -1785,16 +1785,9 @@
       }
     }
   },
-  "voiceHeardYes": "קיבלתי. מחברים אותך עם {name}.",
-  "@voiceHeardYes": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "voiceHeardNo": "בסדר, לא עכשיו.",
-  "voiceNotHeard": "לא שמעתי. אפשר ללחוץ על הכפתור.",
+  "voiceHeardYes": "קיבלתי, מחברים.",
+  "voiceHeardNo": "בסדר.",
+  "voiceNotHeard": "לא שמעתי. אפשר ללחוץ.",
   "healthMissing": "חסר אישור בטלפון: {what}. בלעדיו DriveBond לא עובדת כמו שצריך.",
   "@healthMissing": {
     "placeholders": {

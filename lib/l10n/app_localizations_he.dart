@@ -2579,15 +2579,13 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String voiceHeardYes(String name) {
-    return 'קיבלתי. מחברים אותך עם $name.';
-  }
+  String get voiceHeardYes => 'קיבלתי, מחברים.';
 
   @override
-  String get voiceHeardNo => 'בסדר, לא עכשיו.';
+  String get voiceHeardNo => 'בסדר.';
 
   @override
-  String get voiceNotHeard => 'לא שמעתי. אפשר ללחוץ על הכפתור.';
+  String get voiceNotHeard => 'לא שמעתי. אפשר ללחוץ.';
 
   @override
   String healthMissing(String what) {

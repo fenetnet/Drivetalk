@@ -602,7 +602,21 @@ void main() {
       expect(me.s.callStage, CallStage.dialed);
       expect(yoni.dialer.dialed, isEmpty);
 
-      me.c.finishCall();
+      // The phone's call screen brings the app back for a moment before
+      // the call starts: not "how was it?" yet (owner).
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      expect(me.s.callStage, CallStage.dialed);
+      // Back while still on the phone: not yet either.
+      now = now.add(const Duration(minutes: 2));
+      me.driving.inCallNow = true;
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      expect(me.s.callStage, CallStage.dialed);
+      // The call is over and the app is back: now.
+      me.driving.inCallNow = false;
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
       expect(me.s.callStage, CallStage.feedback);
       await me.c.afterCall(0);
       expect(me.s.callStage, CallStage.none);
@@ -919,7 +933,7 @@ void main() {
       expect(waitingOffer(me.s, now)?.id, id, reason: '"yes" answered it');
       expect(
         me.voice.spoken,
-        contains('קיבלתי. מחברים אותך עם יוני.'),
+        contains('קיבלתי, מחברים.'),
         reason: 'the "yes" is said back',
       );
     },

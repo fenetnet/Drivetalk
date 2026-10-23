@@ -830,11 +830,7 @@ class RealController extends Notifier<RealState> {
     unawaited(checkForUpdate());
     if (state.phase != RealPhase.ready) return;
     // Back from the phone call → ask how it went (and I'm free again).
-    if (state.callStage == CallStage.dialed) {
-      state = state.copyWith(callStage: CallStage.feedback);
-      final id = state.call?.offerId;
-      if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
-    }
+    if (state.callStage == CallStage.dialed) unawaited(_backFromCall());
     if (state.myPhone == null) unawaited(_loadPhone());
     unawaited(_refreshAndRewatch());
     unawaited(_backend.touchSeen());
@@ -1412,7 +1408,7 @@ class RealController extends Notifier<RealState> {
       final question = action.kind == 'direct'
           ? _l.voiceDirect(name)
           : _l.realVoiceOffer(name, 'other');
-      unawaited(_askAloud(action.offerId, question, name));
+      unawaited(_askAloud(action.offerId, question));
     }
     await refresh();
     // "Talk" on "X is on the way": my tap is my yes — ask them now (free
@@ -2138,13 +2134,13 @@ class RealController extends Notifier<RealState> {
     final question = direct
         ? _l.voiceDirect(p.name)
         : _l.realVoiceOffer(p.name, _genderKey(p.gender));
-    return _askAloud(offer.id, question, p.name);
+    return _askAloud(offer.id, question);
   }
 
   /// Ask [question] aloud and listen for yes / no. The question may not be
   /// loaded yet (opened from the notification): then the answer goes to
   /// the server directly.
-  Future<void> _askAloud(String offerId, String question, String name) async {
+  Future<void> _askAloud(String offerId, String question) async {
     final seq = ++_voiceSeq;
     final voice = ref.read(voiceServiceProvider);
     // Still open: the current question, or one not loaded yet.
@@ -2181,7 +2177,7 @@ class RealController extends Notifier<RealState> {
         switch (heard) {
           // Said back, so the driver knows it was heard (owner).
           case VoiceAnswer.yes:
-            unawaited(voice.speak(_l.voiceHeardYes(name)));
+            unawaited(voice.speak(_l.voiceHeardYes));
             await answer(true);
             return;
           case VoiceAnswer.no:
@@ -2420,10 +2416,45 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  /// When the phone was told to dial (the call may take a moment to start).
+  DateTime? _dialedAt;
+
+  /// The app is back after dialing. Only when the phone call is really
+  /// over: "how was it?" (and I'm free again). The phone opening its call
+  /// screen can bring the app back for a moment before the call even
+  /// starts — that's not the end of it (owner).
+  Future<void> _backFromCall() async {
+    final id = state.call?.offerId;
+    bool stillDialed() =>
+        ref.mounted &&
+        state.callStage == CallStage.dialed &&
+        state.call?.offerId == id;
+    Future<bool> onPhone() async {
+      try {
+        return (await ref.read(drivingDetectorProvider).status()).inCallNow;
+      } catch (_) {
+        return false;
+      }
+    }
+
+    final at = _dialedAt;
+    // Seconds after dialing: the call is still starting (the screen keeps
+    // its "finished" button; the phone's "call over" also ends it).
+    if (at != null && _now().difference(at) < const Duration(seconds: 10)) {
+      return;
+    }
+    if (!stillDialed() || !_foreground) return;
+    if (await onPhone()) return; // still talking: asked when it ends
+    if (!stillDialed()) return;
+    state = state.copyWith(callStage: CallStage.feedback);
+    if (id != null) unawaited(_quietly(() => _backend.endCall(id)));
+  }
+
   Future<void> _dial() async {
     final call = state.call;
     if (call == null || call.phone == null) return;
     if (state.callStage != CallStage.connecting) return;
+    _dialedAt = _now();
     state = state.copyWith(callStage: CallStage.dialed);
     final since = _bothYesAt;
     _bothYesAt = null;
