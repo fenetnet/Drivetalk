@@ -1813,14 +1813,5 @@
   "ownerLookupTitle": "מצב של משתמש בשרת",
   "ownerLookupHint": "שם או מספר טלפון",
   "ownerLookupNone": "לא נמצא אף אחד.",
-  "ownerDetails": "פרטים טכניים",
-  "voiceAfterCall": "איך היה עם {name}? להציע לכם לדבר שוב בקרוב?",
-  "@voiceAfterCall": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "voiceAfterCallYes": "מעולה. נציע שוב בהזדמנות."
+  "ownerDetails": "פרטים טכניים"
 }

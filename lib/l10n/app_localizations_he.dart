@@ -2629,12 +2629,4 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get ownerDetails => 'פרטים טכניים';
-
-  @override
-  String voiceAfterCall(String name) {
-    return 'איך היה עם $name? להציע לכם לדבר שוב בקרוב?';
-  }
-
-  @override
-  String get voiceAfterCallYes => 'מעולה. נציע שוב בהזדמנות.';
 }

@@ -551,16 +551,6 @@ class RealController extends Notifier<RealState> {
     _photoCache = ref.watch(photoCacheProvider);
     _now = ref.watch(realClockProvider);
     ref.onDispose(_dispose);
-    // "How was it?" by voice in the car (owner, D-144).
-    listenSelf((prev, next) {
-      final call = next.call;
-      if (next.callStage == CallStage.feedback &&
-          call != null &&
-          (prev?.callStage != CallStage.feedback ||
-              prev?.call?.offerId != call.offerId)) {
-        unawaited(_feedbackByVoice(call));
-      }
-    });
 
     var prefs = const RealPrefs();
     try {
@@ -2218,53 +2208,6 @@ class RealController extends Notifier<RealState> {
     } finally {
       if (_askingSeq == seq) _askingSeq = null;
       // Stopped from elsewhere mid-listen: the "listening" line goes too.
-      if (ref.mounted && state.listening && _askingSeq == null) {
-        state = state.copyWith(listening: false);
-      }
-    }
-  }
-
-  String? _feedbackAsked;
-
-  /// Driving, after a call: "talk with X again soon?" aloud — yes: any
-  /// time, no: the usual 3 days. Nothing heard: the screen waits for later
-  /// (owner, D-144). Never on the screen's own while parked.
-  Future<void> _feedbackByVoice(RealCall call) async {
-    if (_feedbackAsked == call.offerId) return;
-    // Let the phone call's sound go first.
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-    if (!ref.mounted ||
-        !_foreground ||
-        !_driving(_now()) ||
-        _voiceAsking ||
-        state.callStage != CallStage.feedback ||
-        state.call?.offerId != call.offerId) {
-      return;
-    }
-    _feedbackAsked = call.offerId;
-    final seq = ++_voiceSeq;
-    _askingSeq = seq;
-    final voice = ref.read(voiceServiceProvider);
-    try {
-      await voice.speak(_l.voiceAfterCall(call.other.name));
-      if (seq != _voiceSeq || !ref.mounted || !_foreground) return;
-      state = state.copyWith(listening: true);
-      final heard = await voice.listenYesNo(timeout: _askListen.first);
-      if (seq != _voiceSeq || !ref.mounted) return;
-      state = state.copyWith(listening: false);
-      if (state.call?.offerId != call.offerId) return;
-      switch (heard) {
-        case VoiceAnswer.yes:
-          unawaited(voice.speak(_l.voiceAfterCallYes));
-          await afterCall(0);
-        case VoiceAnswer.no:
-          unawaited(voice.speak(_l.voiceHeardNo));
-          await afterCall(3);
-        default:
-          break;
-      }
-    } finally {
-      if (_askingSeq == seq) _askingSeq = null;
       if (ref.mounted && state.listening && _askingSeq == null) {
         state = state.copyWith(listening: false);
       }

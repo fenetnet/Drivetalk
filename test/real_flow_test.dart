@@ -925,27 +925,6 @@ void main() {
     },
   );
 
-  test('driving: "how was it?" by voice after the call (D-144)', () async {
-    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-    await me.c.startAvailability(AvailabilityMode.driving, 30);
-    me.voice.simulateAnswer(VoiceAnswer.yes); // the question
-    await yoni.c.startAvailability(AvailabilityMode.free, 30);
-    await me.c.refresh();
-    await pump(50);
-    await yoni.c.refresh();
-    await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
-    await me.c.refresh();
-    await pump(50);
-    me.voice.simulateAnswer(VoiceAnswer.yes); // "talk again soon?"
-    me.c.finishCall();
-    await pump(1700);
-    expect(
-      me.voice.spoken,
-      contains('איך היה עם יוני? להציע לכם לדבר שוב בקרוב?'),
-    );
-    expect(me.s.callStage, CallStage.none, reason: 'answered by voice');
-  });
-
   test('driving: no answer → asked once more, twice in all', () async {
     await connect();
     await me.c.startAvailability(AvailabilityMode.driving, 30);
