@@ -1,0 +1,853 @@
+import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../app/theme.dart';
+import '../../domain/models.dart';
+import '../../l10n/app_localizations.dart';
+import '../../real/backend_config.dart';
+import '../../real/real_controller.dart';
+import '../../real/real_models.dart';
+import '../common/labels.dart';
+import '../../domain/hebrew_text.dart';
+
+/// "Now" for real-mode screens, refreshed every second.
+final realNowProvider = NotifierProvider<RealNow, DateTime>(RealNow.new);
+
+class RealNow extends Notifier<DateTime> {
+  @override
+  DateTime build() {
+    final clock = ref.watch(realClockProvider);
+    final t = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => state = clock(),
+    );
+    ref.onDispose(t.cancel);
+    return clock();
+  }
+}
+
+/// Simple words for an error code. Never shows technical details.
+String realErrorText(AppLocalizations l, String code) => switch (code) {
+  'offline' => l.realErrorOffline,
+  'anonymous_disabled' => l.realErrorAnonymousDisabled,
+  'bad_key' => l.realErrorGeneric('bad_key — המפתח הציבורי לא תקין'),
+  'schema_missing' => l.realErrorSchema,
+  'invalid_phone' => l.realErrorInvalidPhone,
+  'invalid_name' => l.realErrorInvalidName,
+  'rate_limited' => l.realErrorRateLimited,
+  'too_many_open_invitations' => l.realErrorTooManyInvites,
+  _ => l.realErrorGeneric(code),
+};
+
+String inviteProblemText(AppLocalizations l, String? code) => switch (code) {
+  'used' => l.realInviteProblemUsed,
+  'expired' => l.realInviteProblemExpired,
+  'own' => l.realInviteProblemOwn,
+  _ => l.realInviteProblemNotFound,
+};
+
+String offerStatusText(AppLocalizations l, OfferStatus s) => switch (s) {
+  OfferStatus.pending => l.realOfferPending,
+  OfferStatus.accepted => l.realOfferAccepted,
+  OfferStatus.declined => l.realOfferDeclined,
+  OfferStatus.expired => l.realOfferExpired,
+  OfferStatus.cancelled => l.realOfferCancelled,
+};
+
+/// Color moods of the full-screen moments (see the approved design).
+enum MomentStyle { light, coral, green, dark }
+
+extension MomentColors on MomentStyle {
+  Color get background => switch (this) {
+    MomentStyle.light => AppColors.cream,
+    MomentStyle.coral => AppColors.terracotta,
+    MomentStyle.green => AppColors.sageDark,
+    MomentStyle.dark => AppColors.driverBg,
+  };
+
+  /// Two soft rings behind the picture.
+  (Color, Color) get rings => switch (this) {
+    MomentStyle.light => (AppColors.blush, AppColors.blushDeep),
+    MomentStyle.coral => (const Color(0xFF1866BA), const Color(0xFF1A6FC4)),
+    MomentStyle.green => (const Color(0xFF367A63), const Color(0xFF3F8A70)),
+    MomentStyle.dark => (const Color(0xFF1B1F2D), const Color(0xFF1F2434)),
+  };
+
+  Color get text => this == MomentStyle.light ? AppColors.ink : Colors.white;
+  Color get softText => switch (this) {
+    MomentStyle.light => AppColors.inkSoft,
+    MomentStyle.dark => const Color(0xFFC9CCDA),
+    _ => Colors.white.withValues(alpha: 0.9),
+  };
+  bool get onColor => this != MomentStyle.light;
+}
+
+/// Round avatar with a white rim; [online] adds the green "free" ring + dot.
+class RealAvatar extends StatelessWidget {
+  const RealAvatar({
+    super.key,
+    required this.person,
+    this.size = 64,
+    this.online = false,
+    this.rim = Colors.white,
+  });
+  final Person person;
+  final double size;
+  final bool online;
+  final Color rim;
+
+  @override
+  Widget build(BuildContext context) {
+    final dot = size * 0.25;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(person.avatarColor),
+              border: Border.all(color: rim, width: size * 0.05),
+              boxShadow: [
+                if (online)
+                  BoxShadow(color: AppColors.sage, spreadRadius: size * 0.035),
+              ],
+              image: person.photo == null
+                  ? null
+                  : DecorationImage(
+                      image: MemoryImage(person.photo!),
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            child: person.photo != null
+                ? null
+                : Text(
+                    person.initial,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: size * 0.4,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+          ),
+          if (online)
+            PositionedDirectional(
+              bottom: size * 0.02,
+              end: size * 0.02,
+              child: Container(
+                width: dot,
+                height: dot,
+                decoration: BoxDecoration(
+                  color: AppColors.sage,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: dot * 0.18),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The big avatar of a moment, inside a white ring with a soft shadow.
+class HeroAvatar extends StatelessWidget {
+  const HeroAvatar({
+    super.key,
+    required this.person,
+    this.size = 168,
+    this.ring = Colors.white,
+  });
+  final Person person;
+  final double size;
+  final Color ring;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: ring,
+        shape: BoxShape.circle,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x470D2A4A),
+            blurRadius: 40,
+            offset: Offset(0, 20),
+          ),
+        ],
+      ),
+      child: RealAvatar(
+        person: person,
+        size: size - 16,
+        rim: Colors.transparent,
+      ),
+    );
+  }
+}
+
+/// Main action of a moment: a big pill. On a colored background it is white
+/// with the background's color as text; on cream it is coral.
+class PrimaryPill extends StatelessWidget {
+  const PrimaryPill({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.icon,
+    this.style = MomentStyle.light,
+    this.height = 76,
+    this.color,
+  });
+  final String label;
+  final IconData? icon;
+  final VoidCallback? onTap;
+  final MomentStyle style;
+  final double height;
+
+  /// Override (e.g. the driver's green "yes").
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg =
+        color ??
+        switch (style) {
+          MomentStyle.light => AppColors.terracotta,
+          MomentStyle.dark => AppColors.sage,
+          _ => Colors.white,
+        };
+    final fg = color != null
+        ? Colors.white
+        : switch (style) {
+            MomentStyle.coral => AppColors.coralDeep,
+            MomentStyle.green => AppColors.sageDark,
+            _ => Colors.white,
+          };
+    final big = height >= 100;
+    return SizedBox(
+      height: height,
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: bg,
+          foregroundColor: fg,
+          elevation: style.onColor ? 6 : 2,
+          shadowColor: const Color(0x550D2A4A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(height / 2.2),
+          ),
+          textStyle: TextStyle(
+            fontFamily: 'Rubik',
+            fontSize: big ? 32 : 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        onPressed: onTap,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: big ? 40 : 28),
+              const SizedBox(width: 12),
+            ],
+            // Never "…": a long label gets smaller instead (small phones).
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label, maxLines: 1),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Secondary action: an outlined pill (on color) or a dark slab (driving).
+class SecondaryPill extends StatelessWidget {
+  const SecondaryPill({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.style = MomentStyle.light,
+    this.height = 60,
+  });
+  final String label;
+  final VoidCallback? onTap;
+  final MomentStyle style;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = TextStyle(
+      fontFamily: 'Rubik',
+      fontSize: height >= 80 ? 26 : 19,
+      fontWeight: FontWeight.w700,
+    );
+    if (style == MomentStyle.dark) {
+      return SizedBox(
+        height: height,
+        child: FilledButton(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.driverCard,
+            foregroundColor: Colors.white,
+            textStyle: text,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+            ),
+          ),
+          onPressed: onTap,
+          child: Text(label),
+        ),
+      );
+    }
+    final fg = style.onColor ? Colors.white : AppColors.ink;
+    return SizedBox(
+      height: height,
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: fg,
+          textStyle: text,
+          side: BorderSide(
+            color: style.onColor
+                ? Colors.white.withValues(alpha: 0.7)
+                : const Color(0xFFD6E4F0),
+            width: 2,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(height / 2),
+          ),
+        ),
+        onPressed: onTap,
+        child: Text(label),
+      ),
+    );
+  }
+}
+
+/// Kept for screens that still use it (big icon button).
+class BigActionButton extends StatelessWidget {
+  const BigActionButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.color = AppColors.sageDark,
+    this.dark = false,
+    this.height = 84,
+  });
+  final String label;
+  final IconData icon;
+  final VoidCallback? onTap;
+  final Color color;
+  final bool dark;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) => PrimaryPill(
+    label: label,
+    icon: icon,
+    onTap: onTap,
+    color: color,
+    height: height,
+  );
+}
+
+/// A small rounded label on a colored moment ("Yoni · driving · 25 min").
+class MomentChip extends StatelessWidget {
+  const MomentChip({
+    super.key,
+    required this.text,
+    this.style = MomentStyle.light,
+    this.icon,
+    this.dot,
+  });
+  final String text;
+  final MomentStyle style;
+  final IconData? icon;
+  final Color? dot;
+
+  @override
+  Widget build(BuildContext context) {
+    final fg = switch (style) {
+      MomentStyle.dark => const Color(0xFF9CD9BE),
+      MomentStyle.light => AppColors.sageDark,
+      _ => Colors.white,
+    };
+    final bg = switch (style) {
+      MomentStyle.dark => AppColors.sage.withValues(alpha: 0.16),
+      MomentStyle.light => AppColors.mint,
+      _ => Colors.white.withValues(alpha: 0.18),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (dot != null) ...[
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 8),
+          ],
+          if (icon != null) ...[
+            Icon(icon, size: 16, color: fg),
+            const SizedBox(width: 6),
+          ],
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: fg,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen layout for the moments that matter (offer, waiting, call):
+/// a colored ground with soft rings, one picture, a line or two, and up to
+/// three big buttons at the bottom.
+class MomentLayout extends ConsumerWidget {
+  const MomentLayout({
+    super.key,
+    required this.top,
+    required this.actions,
+    this.style = MomentStyle.light,
+    this.footer,
+    this.header,
+  });
+  final Widget top;
+  final List<Widget> actions;
+  final MomentStyle style;
+  final String? footer;
+
+  /// Optional chip at the very top.
+  final Widget? header;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final st = style;
+    final listening = ref.watch(realProvider.select((s) => s.listening));
+    final (r1, r2) = st.rings;
+    return Scaffold(
+      backgroundColor: st.background,
+      body: Stack(
+        children: [
+          // Soft decorative rings, centered behind the picture.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Align(
+                alignment: const Alignment(0, -0.38),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 430,
+                      height: 430,
+                      decoration: BoxDecoration(
+                        color: r1,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Container(
+                      width: 320,
+                      height: 320,
+                      decoration: BoxDecoration(
+                        color: r2,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (header != null) Center(child: header),
+                  Expanded(
+                    child: Center(child: SingleChildScrollView(child: top)),
+                  ),
+                  if (listening)
+                    // "Listening now": big and clear, from a glance (D-138).
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: st.onColor
+                              ? AppColors.sand
+                              : AppColors.terracotta,
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.mic_rounded,
+                              size: 34,
+                              color: st.onColor
+                                  ? AppColors.terracotta
+                                  : Colors.white,
+                            ),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                l.driverListening,
+                                style: TextStyle(
+                                  color: st.onColor
+                                      ? AppColors.terracotta
+                                      : Colors.white,
+                                  fontSize: 21,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  for (final a in actions) ...[a, const SizedBox(height: 14)],
+                  if (footer != null)
+                    Text(
+                      footer!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: st.softText, fontSize: 13),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MomentText extends StatelessWidget {
+  const MomentText(
+    this.text, {
+    super.key,
+    this.size = 26,
+    this.style = MomentStyle.light,
+    this.soft = false,
+  });
+  final String text;
+  final double size;
+  final MomentStyle style;
+  final bool soft;
+
+  @override
+  Widget build(BuildContext context) {
+    final st = style;
+    return Text(
+      joinHebrewPrefixes(text),
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: soft ? st.softText : st.text,
+        fontSize: size,
+        fontWeight: soft ? FontWeight.w500 : FontWeight.w800,
+        height: 1.15,
+      ),
+    );
+  }
+}
+
+/// A white rounded card of settings rows with a small title above.
+class SettingsGroup extends StatelessWidget {
+  const SettingsGroup({super.key, this.title, required this.children});
+  final String? title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (title != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 8, 8),
+              child: Text(
+                title!,
+                style: const TextStyle(
+                  color: AppColors.inkSoft,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < children.length; i++) ...[
+                  if (i > 0)
+                    const Divider(
+                      height: 1,
+                      indent: 16,
+                      endIndent: 16,
+                      color: Color(0xFFE1ECF5),
+                    ),
+                  children[i],
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Download the newest APK in the browser; Android then offers to install
+/// it over this version.
+Future<void> openAppUpdate() async {
+  try {
+    await launchUrl(
+      Uri.parse(BackendConfig.apkUrl),
+      mode: LaunchMode.externalApplication,
+    );
+  } catch (_) {
+    // No browser: nothing else to do.
+  }
+}
+
+/// My picture: from the gallery or the camera (or remove it). True = saved.
+Future<bool> editMyPhoto(
+  BuildContext context,
+  WidgetRef ref, {
+  required bool hasPhoto,
+}) async {
+  final l = AppLocalizations.of(context);
+  final choice = await showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (sheet) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.photo_library_rounded),
+            title: Text(l.photoFromGallery),
+            onTap: () => Navigator.pop(sheet, 'gallery'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_camera_rounded),
+            title: Text(l.photoFromCamera),
+            onTap: () => Navigator.pop(sheet, 'camera'),
+          ),
+          if (hasPhoto)
+            ListTile(
+              leading: const Icon(Icons.delete_outline_rounded),
+              title: Text(l.photoRemove),
+              onTap: () => Navigator.pop(sheet, 'remove'),
+            ),
+          const SizedBox(height: 8),
+        ],
+      ),
+    ),
+  );
+  if (choice == null || !context.mounted) return false; // Dismissed.
+  final messenger = ScaffoldMessenger.of(context);
+  final c = ref.read(realProvider.notifier);
+  Uint8List? bytes;
+  if (choice != 'remove') {
+    try {
+      final file = await ImagePicker().pickImage(
+        source: choice == 'camera' ? ImageSource.camera : ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 80,
+      );
+      if (file == null) return false;
+      bytes = await file.readAsBytes();
+    } catch (_) {
+      return false; // Camera/gallery unavailable.
+    }
+  }
+  final error = await c.setPhoto(bytes);
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        error != null
+            ? realErrorText(l, error)
+            : bytes == null
+            ? l.realPhotoRemoved
+            : l.realPhotoSaved,
+      ),
+    ),
+  );
+  return error == null && bytes != null;
+}
+
+/// A friend's status with a small picture: 🚗 driving, ☕ break, 📞 in a call…
+class StatusLine extends StatelessWidget {
+  const StatusLine({
+    super.key,
+    required this.icon,
+    required this.text,
+    required this.color,
+    this.bold = false,
+    this.size = 14,
+    this.center = false,
+  });
+  final IconData icon;
+  final String text;
+  final Color color;
+  final bool bold;
+  final double size;
+  final bool center;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: center ? MainAxisSize.min : MainAxisSize.max,
+    mainAxisAlignment: center
+        ? MainAxisAlignment.center
+        : MainAxisAlignment.start,
+    children: [
+      Icon(icon, size: size + 3, color: color),
+      const SizedBox(width: 4),
+      Flexible(
+        child: Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: size,
+            color: color,
+            fontWeight: bold ? FontWeight.w600 : null,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+/// "My number": add, change or remove it (shared only after both say yes).
+Future<void> editMyPhone(BuildContext context, WidgetRef ref) async {
+  // Read before the dialog: the card that opened it may be gone after.
+  final c = ref.read(realProvider.notifier);
+  final l = context.l10n;
+  final phone = TextEditingController(
+    text: ref.read(realProvider).myPhone ?? '',
+  );
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(l.realMyNumber),
+      content: TextField(
+        controller: phone,
+        keyboardType: TextInputType.phone,
+        textDirection: TextDirection.ltr,
+        decoration: InputDecoration(
+          labelText: l.realPhoneLabel,
+          helperText: l.realPhoneHelp,
+          helperMaxLines: 5,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.save),
+        ),
+      ],
+    ),
+  );
+  if (ok ?? false) await c.setMyPhone(phone.text);
+}
+
+/// "Send feedback": a short note to the owner (no names or numbers added).
+/// [problem]: "report a problem" — the app's technical details go along
+/// (D-143), and the dialog says so.
+Future<void> openFeedbackDialog(
+  BuildContext context,
+  WidgetRef ref, {
+  bool problem = false,
+}) async {
+  final l = context.l10n;
+  // Read before the dialog: the screen may be gone when it closes.
+  final c = ref.read(realProvider.notifier);
+  final text = TextEditingController();
+  final send = await showDialog<bool>(
+    context: context,
+    builder: (d) => AlertDialog(
+      title: Text(problem ? l.problemTitle : l.feedbackTitle),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: text,
+            autofocus: true,
+            maxLength: 1000,
+            minLines: 3,
+            maxLines: 6,
+            decoration: InputDecoration(
+              hintText: problem ? l.problemHint : l.feedbackHint,
+            ),
+          ),
+          if (problem)
+            Text(
+              l.problemDetails,
+              style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(d, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(d, true),
+          child: Text(l.feedbackSend),
+        ),
+      ],
+    ),
+  );
+  if (send ?? false) {
+    await (problem ? c.reportProblem(text.text) : c.sendFeedback(text.text));
+  }
+  text.dispose();
+}

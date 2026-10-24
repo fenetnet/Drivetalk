@@ -1,0 +1,591 @@
+package app.drivetalk.drivetalk
+
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import android.os.Bundle
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
+
+class MainActivity : FlutterActivity() {
+    companion object {
+        const val EXTRA_OFFER = "drivetalk_offer"
+        const val EXTRA_ACCEPT = "drivetalk_accept"
+        const val EXTRA_WAKE = "drivetalk_wake"
+        const val EXTRA_NAME = "drivetalk_name"
+        const val EXTRA_KIND = "drivetalk_kind"
+        const val EXTRA_WIDGET_ASK = "drivetalk_widget_ask"
+        /** "Talk" on "X is on the way": ask this friend (D-119). */
+        const val EXTRA_ASK = "drivetalk_ask"
+
+        /** The app is on screen: it reads questions aloud itself (and
+         *  listens for yes/no), so the background service stays quiet. */
+        @Volatile var onScreen = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        onScreen = true
+    }
+
+    override fun onPause() {
+        onScreen = false
+        super.onPause()
+    }
+
+    private val callPermissionRequest = 4711
+    private val drivingPermissionRequest = 4712
+    private val contactsPermissionRequest = 4713
+    private val notificationPermissionRequest = 4714
+    private val bluetoothPermissionRequest = 4715
+    private var pendingBluetoothResult: MethodChannel.Result? = null
+    private var pendingNotificationResult: MethodChannel.Result? = null
+    private var pendingContactsResult: MethodChannel.Result? = null
+    private var pendingResult: MethodChannel.Result? = null
+    private var pendingDrivingResult: MethodChannel.Result? = null
+
+    /** "Talk now" / tap from a driving notification, waiting for the app. */
+    private var launchAction: Map<String, Any>? = null
+    /** Opened by a question while driving (full screen): ask aloud at once. */
+    private var woke = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        wakeFor(intent)
+        readLaunchAction(intent)
+        // Android can drop the detection registration (an update, clearing
+        // Play services data): arm it again whenever the app opens.
+        if (DrivingStore(this).enabled) DrivingDetection.register(this)
+    }
+
+    /** Android 14+: "full-screen notifications" may be switched off. */
+    private fun fullScreenAllowed(): Boolean =
+        Build.VERSION.SDK_INT < 34 ||
+            getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+
+    private fun openFullScreenSettings() {
+        if (Build.VERSION.SDK_INT < 34) return
+        try {
+            startActivity(
+                Intent(android.provider.Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                    .setData(android.net.Uri.parse("package:$packageName")),
+            )
+        } catch (e: Exception) {
+            openNotificationSettings()
+        }
+    }
+
+    /** Opened by a question while driving: show over the lock screen. */
+    private fun wakeFor(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_WAKE, false) != true) return
+        intent.removeExtra(EXTRA_WAKE)
+        woke = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Only for that one question: next time the lock screen stays.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(false)
+            setTurnScreenOn(false)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        wakeFor(intent)
+        if (readLaunchAction(intent)) DrivingEvents.send("action")
+    }
+
+    private fun readLaunchAction(intent: Intent?): Boolean {
+        if (intent == null) return false
+        // A friend tapped on the "who's free" widget (D-133): ask them.
+        val fromWidget = intent.getStringExtra(EXTRA_WIDGET_ASK)
+        if (fromWidget != null) {
+            intent.removeExtra(EXTRA_WIDGET_ASK)
+            if (!FreeWidget.shows(this, fromWidget)) return false
+            launchAction = mapOf("ask" to fromWidget)
+            return true
+        }
+        val ask = intent.getStringExtra(EXTRA_ASK)
+        if (ask != null) {
+            intent.removeExtra(EXTRA_ASK)
+            DrivingNotifications.cancelTrip(this, ask)
+            // Only for a notification this phone really showed.
+            if (!DrivingStore(this).wasShown("trip:$ask")) return false
+            launchAction = mapOf("ask" to ask)
+            return true
+        }
+        val offer = intent.getStringExtra(EXTRA_OFFER) ?: return false
+        // "Talk now" counts only for an offer this phone really showed
+        // (another app could send the same intent; then it only opens).
+        val accept = intent.getBooleanExtra(EXTRA_ACCEPT, false) &&
+            DrivingStore(this).wasShown(offer)
+        val wake = woke && DrivingStore(this).wasShown(offer)
+        woke = false
+        launchAction = buildMap {
+            put("offerId", offer)
+            put("accept", accept)
+            if (wake) {
+                put("wake", true)
+                intent.getStringExtra(EXTRA_NAME)?.let { put("name", it) }
+                intent.getStringExtra(EXTRA_KIND)?.let { put("kind", it) }
+            }
+        }
+        intent.removeExtra(EXTRA_OFFER)
+        DrivingNotifications.cancelOffer(this, offer)
+        return true
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        configureDriving(flutterEngine)
+        configureContacts(flutterEngine)
+        // Regular phone call through the phone's own dialer.
+        // With the CALL_PHONE permission: one tap (ACTION_CALL).
+        // Without it: the dialer opens with the number filled in (ACTION_DIAL).
+        // Returns "calling", "dialer" or "failed".
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/phone")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    // Never asks for a permission here: the call starts at once,
+                    // directly if allowed, otherwise in the dialer.
+                    "call" -> {
+                        val number = call.argument<String>("number")
+                        if (number.isNullOrBlank()) {
+                            result.success("failed")
+                        } else {
+                            // "direct" false: the user turned instant calls off.
+                            val allow = call.argument<Boolean>("direct") ?: true
+                            result.success(place(number, direct = allow && hasCallPermission()))
+                        }
+                    }
+                    "canCallDirectly" -> result.success(hasCallPermission())
+                    // Asked ahead, on a calm screen (not during an offer).
+                    "requestDirectCall" -> {
+                        if (hasCallPermission() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                            result.success(hasCallPermission())
+                        } else {
+                            pendingResult = result
+                            requestPermissions(
+                                arrayOf(Manifest.permission.CALL_PHONE),
+                                callPermissionRequest,
+                            )
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    // Automatic driving availability (opt-in). See DrivingDetection.kt.
+    private fun notificationsAllowed(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return true
+        val nm = getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+        return nm.areNotificationsEnabled()
+    }
+
+    /** The phone's notification settings for this app (turn on / off). */
+    private fun openNotificationSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                .putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, packageName)
+        } else {
+            Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                .setData(Uri.parse("package:$packageName"))
+        }
+        try {
+            startActivity(intent)
+        } catch (e: Exception) {
+            // Nothing to open on this phone.
+        }
+    }
+
+    /** Not stopped by battery saving (true on Android before 6). */
+    private fun backgroundAllowed(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        val pm = getSystemService(POWER_SERVICE) as android.os.PowerManager
+        return pm.isIgnoringBatteryOptimizations(packageName)
+    }
+
+    /** The system "allow running in background?" question (one tap);
+     *  if a phone doesn't offer it, its battery settings list. */
+    private fun askAllowBackground(): Boolean {
+        if (backgroundAllowed()) return true
+        return try {
+            startActivity(
+                Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .setData(Uri.parse("package:$packageName")),
+            )
+            true
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                true
+            } catch (e2: Exception) {
+                false
+            }
+        }
+    }
+
+    private fun configureDriving(flutterEngine: FlutterEngine) {
+        val messenger = flutterEngine.dartExecutor.binaryMessenger
+        EventChannel(messenger, "app.drivetalk/driving/events").setStreamHandler(DrivingEvents)
+        MethodChannel(messenger, "app.drivetalk/driving").setMethodCallHandler { call, result ->
+            val store = DrivingStore(this)
+            when (call.method) {
+                "status" -> result.success(
+                    mapOf(
+                        "supported" to true,
+                        "permission" to DrivingDetection.hasPermission(this),
+                        "enabled" to store.enabled,
+                        "inVehicle" to store.inVehicle,
+                        "configured" to store.configured,
+                        "carName" to store.carName,
+                        "background" to backgroundAllowed(),
+                        "notifications" to notificationsAllowed(),
+                        "watching" to DrivingService.watching,
+                        "log" to store.eventLog,
+                        "fullScreen" to fullScreenAllowed(),
+                        "friendsWidget" to FreeWidget.installed(this),
+                        "inCallNow" to PhoneState.inCall(this),
+                    ),
+                )
+                // Battery saving must not stop the background service.
+                "allowBackground" -> result.success(askAllowBackground())
+                "openNotificationSettings" -> {
+                    openNotificationSettings()
+                    result.success(true)
+                }
+                "requestPermission" -> requestDrivingPermissions(result)
+                "enable" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val texts = (call.argument<Map<String, String>>("texts") ?: emptyMap())
+                    store.save(
+                        url = call.argument<String>("url") ?: "",
+                        key = call.argument<String>("key") ?: "",
+                        token = call.argument<String>("token") ?: "",
+                        minutes = call.argument<Int>("minutes") ?: 120,
+                        texts = texts,
+                    )
+                    DrivingNotifications.ensureChannels(this)
+                    DrivingDetection.register(this) { ok ->
+                        if (!ok) store.enabled = false
+                        runOnUiThread { result.success(ok) }
+                    }
+                }
+                "disable" -> {
+                    // Detection off; the device token stays for "I'm free"
+                    // notifications.
+                    DrivingDetection.unregister(this)
+                    if (store.inVehicle) DrivingService.end(this)
+                    store.enabled = false
+                    store.inVehicle = false
+                    result.success(true)
+                }
+                "configure" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    store.configure(
+                        url = call.argument<String>("url") ?: "",
+                        key = call.argument<String>("key") ?: "",
+                        token = call.argument<String>("token") ?: "",
+                        texts = call.argument<Map<String, String>>("texts") ?: emptyMap(),
+                    )
+                    DrivingNotifications.ensureChannels(this)
+                    Routines.schedule(this)
+                    QuickFree.refreshAll(this)
+                    result.success(true)
+                }
+                "forget" -> {
+                    DrivingDetection.unregister(this)
+                    DrivingService.quietEnd(this)
+                    store.clear()
+                    QuickFree.refreshAll(this)
+                    result.success(true)
+                }
+                "startAvailable" -> {
+                    if (!store.configured) {
+                        result.success(false)
+                    } else {
+                        store.availableUntil = (call.argument<Number>("until") ?: 0).toLong()
+                        store.endWithTrip = call.argument<Boolean>("endWithTrip") == true
+                        store.manualDriving = call.argument<Boolean>("driving") == true
+                        DrivingService.startManual(this)
+                        QuickFree.refreshAll(this)
+                        result.success(true)
+                    }
+                }
+                "stopAvailable" -> {
+                    store.availableUntil = 0L
+                    store.endWithTrip = false
+                    DrivingService.quietEnd(this)
+                    QuickFree.refreshAll(this)
+                    result.success(true)
+                }
+                "bondedDevices" -> withBluetooth(result) {
+                    val adapter = (getSystemService(BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager)?.adapter
+                    val list = try {
+                        adapter?.bondedDevices?.map {
+                            mapOf("name" to (it.name ?: it.address), "address" to it.address)
+                        } ?: emptyList()
+                    } catch (e: SecurityException) {
+                        emptyList()
+                    }
+                    result.success(list)
+                }
+                "setNames" -> {
+                    store.names = call.argument<String>("json") ?: "{}"
+                    result.success(true)
+                }
+                "setRoutines" -> {
+                    store.routines = call.argument<String>("json") ?: "[]"
+                    Routines.schedule(this)
+                    result.success(true)
+                }
+                // While driving, a question opens the app over the lock
+                // screen, so "yes" can be said aloud (D-130).
+                "allowFullScreen" -> {
+                    openFullScreenSettings()
+                    result.success(true)
+                }
+                // The app's list for the "who's free" widget (D-133).
+                "widgetFriends" -> {
+                    FreeWidget.setFromApp(this, call.argument<String>("json") ?: "[]")
+                    result.success(true)
+                }
+                // The car's microphone while listening for "yes" / "no".
+                "carMic" -> result.success(CarMic.set(this, call.argument<Boolean>("on") == true))
+                // A line for the test tab's log (D-140).
+                "log" -> {
+                    call.argument<String>("line")?.let { DrivingStore(this).log(it.take(120)) }
+                    result.success(true)
+                }
+                // A short beep: the microphone is listening now.
+                "beep" -> {
+                    try {
+                        val tone = android.media.ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 80)
+                        tone.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 150)
+                        android.os.Handler(mainLooper).postDelayed({ tone.release() }, 400)
+                    } catch (e: Exception) {
+                        // No beep: the screen still shows "listening".
+                    }
+                    result.success(true)
+                }
+                "setCar" -> {
+                    store.carAddress = call.argument<String>("address") ?: ""
+                    store.carName = call.argument<String>("name") ?: ""
+                    result.success(true)
+                }
+                "notificationPermission" -> requestNotificationPermission(result)
+                "texts" -> {
+                    @Suppress("UNCHECKED_CAST")
+                    store.saveTexts(call.argument<Map<String, String>>("texts") ?: emptyMap())
+                    DrivingNotifications.ensureChannels(this)
+                    result.success(true)
+                }
+                // The app started this call itself: no "tap to call" later.
+                "callHandled" -> {
+                    call.argument<String>("offer")?.let { store.markShown("call:$it") }
+                    result.success(true)
+                }
+                "simulate" -> {
+                    DrivingReceiver.onVehicle(this, call.argument<Boolean>("enter") == true)
+                    result.success(true)
+                }
+                // This phone's push address (Firebase), or null without it.
+                "pushToken" -> pushToken(result)
+                // The server has this phone's push address (or lost it):
+                // the background service polls less only while it does.
+                "pushReady" -> {
+                    DrivingStore(this).pushReady = call.argument<Boolean>("on") == true
+                    result.success(true)
+                }
+                "takeLaunchAction" -> {
+                    result.success(launchAction)
+                    launchAction = null
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    // Friends from contacts: numbers only, hashed in the app before sending.
+    private fun pushToken(result: MethodChannel.Result) {
+        try {
+            if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
+                result.success(null)
+                return
+            }
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                .addOnCompleteListener { t ->
+                    val token = if (t.isSuccessful) t.result else null
+                    // pushReady is set by the app once the server saved it.
+                    result.success(token)
+                }
+        } catch (e: Exception) {
+            result.success(null)
+        }
+    }
+
+    private fun configureContacts(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/contacts")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "hasPermission" -> result.success(hasContactsPermission())
+                    "requestPermission" -> {
+                        if (hasContactsPermission() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                            result.success(hasContactsPermission())
+                        } else {
+                            pendingContactsResult = result
+                            requestPermissions(
+                                arrayOf(Manifest.permission.READ_CONTACTS),
+                                contactsPermissionRequest,
+                            )
+                        }
+                    }
+                    "contacts" -> {
+                        if (!hasContactsPermission()) {
+                            result.success(emptyList<Map<String, String>>())
+                        } else {
+                            Thread {
+                                val list = ContactsReader.contacts(this)
+                                runOnUiThread { result.success(list) }
+                            }.start()
+                        }
+                    }
+                    "phoneNumbers" -> {
+                        if (!hasContactsPermission()) {
+                            result.success(emptyList<String>())
+                        } else {
+                            Thread {
+                                val numbers = ContactsReader.phoneNumbers(this)
+                                runOnUiThread { result.success(numbers) }
+                            }.start()
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    private fun hasContactsPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+
+    private fun withBluetooth(result: MethodChannel.Result, body: () -> Unit) {
+        if (Build.VERSION.SDK_INT < 31 ||
+            checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+        ) {
+            body()
+            return
+        }
+        pendingBluetoothResult = result
+        pendingBluetoothBody = body
+        requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), bluetoothPermissionRequest)
+    }
+
+    private var pendingBluetoothBody: (() -> Unit)? = null
+
+    private fun requestNotificationPermission(result: MethodChannel.Result) {
+        if (Build.VERSION.SDK_INT < 33 ||
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        ) {
+            result.success(true)
+            return
+        }
+        pendingNotificationResult = result
+        requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), notificationPermissionRequest)
+    }
+
+    private fun requestDrivingPermissions(result: MethodChannel.Result) {
+        val wanted = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+            checkSelfPermission(Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED
+        ) {
+            wanted.add(Manifest.permission.ACTIVITY_RECOGNITION)
+        }
+        if (Build.VERSION.SDK_INT >= 33 &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            wanted.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        if (wanted.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            result.success(DrivingDetection.hasPermission(this))
+            return
+        }
+        pendingDrivingResult = result
+        requestPermissions(wanted.toTypedArray(), drivingPermissionRequest)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == bluetoothPermissionRequest) {
+            val r = pendingBluetoothResult
+            val body = pendingBluetoothBody
+            pendingBluetoothResult = null
+            pendingBluetoothBody = null
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                body?.invoke()
+            } else {
+                r?.success(emptyList<Map<String, String>>())
+            }
+            return
+        }
+        if (requestCode == notificationPermissionRequest) {
+            val r = pendingNotificationResult
+            pendingNotificationResult = null
+            r?.success(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            return
+        }
+        if (requestCode == contactsPermissionRequest) {
+            val r = pendingContactsResult
+            pendingContactsResult = null
+            r?.success(hasContactsPermission())
+            return
+        }
+        if (requestCode == drivingPermissionRequest) {
+            val r = pendingDrivingResult
+            pendingDrivingResult = null
+            r?.success(DrivingDetection.hasPermission(this))
+            return
+        }
+        if (requestCode != callPermissionRequest) return
+        val result = pendingResult
+        pendingResult = null
+        if (result == null) return
+        result.success(
+            grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED,
+        )
+    }
+
+    private fun hasCallPermission(): Boolean =
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
+            checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
+
+    private fun place(number: String, direct: Boolean): String = try {
+        if (!onScreen) {
+            // Behind another app Android silently drops the call: say so,
+            // so "tap to call" can be shown instead.
+            "failed"
+        } else {
+            val action = if (direct) Intent.ACTION_CALL else Intent.ACTION_DIAL
+            startActivity(Intent(action, Uri.parse("tel:$number")))
+            if (direct) "calling" else "dialer"
+        }
+    } catch (e: Exception) {
+        "failed"
+    }
+}
