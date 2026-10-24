@@ -131,3 +131,28 @@
   1. ב-Google Cloud: פרויקט, הפעלת "Google Play Android Developer API", חשבון שירות ומפתח JSON.
   2. ב-Play Console ← "משתמשים והרשאות": מזמינים את המייל של חשבון השירות עם הרשאת שחרור למסלולי בדיקה.
   3. ב-GitHub ← Settings ← Secrets and variables ← Actions: סוד בשם `PLAY_SERVICE_ACCOUNT_JSON` עם כל התוכן של קובץ ה-JSON.
+
+## בקשת גישה להפצה לכולם (Production access): תשובות מוכנות
+כותבים באנגלית. העובדות: בדיקה סגורה של 14 ימים, עם כ-20 בודקים.
+
+**How easy was it to recruit testers?** → Somewhat easy / Easy (friends, family and colleagues who commute).
+
+**Describe the engagement you received from testers:**
+> About 20 testers (friends, family and colleagues who drive or walk daily) used DriveBond during their commutes for the 14 days. They marked themselves free, received questions while driving, answered by voice or with the buttons, and made real calls with each other through the phone's dialer. Several testers used it daily and reported issues as they found them.
+
+**Summarize the feedback and how you collected it:**
+> We collected feedback through a WhatsApp group with the testers, the in-app "Send feedback" and "Report a problem" screens (which attach technical details, never personal content), and anonymous crash reports. Main feedback: the voice "yes" was sometimes not recognized; the question should appear immediately on screen while driving; questions stayed open too long; after a call it was sometimes not possible to reach the same friend again; contacts saved in different number formats were not matched; the person who taps a friend should be the one who calls.
+
+**Who is the intended audience?**
+> Adults who spend time commuting, driving or walking and want to stay in touch with friends and family, by voice, at moments when both sides are free.
+
+**How does your app provide value?**
+> DriveBond turns dead time (commutes, traffic, walks) into real conversations. When the user and a friend are both free at the same moment, it suggests a call; the call starts only if both say yes. It works hands-free while driving (questions read aloud, answered by voice), never records calls, and never shares location.
+
+**Expected installs in the first year:** → 0–10K (or the smallest option offered).
+
+**What changes did you make based on the closed test?**
+> We improved voice recognition (retry, longer listening, a beep when listening, a short spoken confirmation), opened the question full-screen while driving, shortened open questions to 30 seconds, fixed calls that stayed "in progress" after hanging up, matched contacts saved in different phone number formats, made the person who taps a friend the caller, added a test-drive practice screen, a home-screen widget, quiet hours per weekday, an in-app "report a problem", and a prompt when a needed permission is missing.
+
+**How did you decide the app is ready?**
+> Testers used it daily for two weeks; the main flows (marking free, being asked, answering by voice or buttons, calling, after-call) work reliably on several Android devices; crash reports are low; all issues raised by testers were fixed and verified in later builds; automated tests cover the main flows and the server.
