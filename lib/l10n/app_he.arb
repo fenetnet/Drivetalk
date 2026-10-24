@@ -1806,5 +1806,22 @@
   "ownerLookupTitle": "מצב של משתמש בשרת",
   "ownerLookupHint": "שם או מספר טלפון",
   "ownerLookupNone": "לא נמצא אף אחד.",
-  "ownerDetails": "פרטים טכניים"
+  "ownerDetails": "פרטים טכניים",
+  "testDriveTry": "לנסות נסיעת מבחן",
+  "testDriveTitle": "נסיעת מבחן",
+  "testDriveSettings": "ככה זה מרגיש ברכב. גם בדיקה שהמיקרופון עובד.",
+  "testDriveBody": "נדמה שחבר פנוי בזמן נסיעה. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, זה רק תרגול.",
+  "testDriveStart": "להתחיל",
+  "testDriveFriendInitial": "ד",
+  "testDriveQuestion": "לדני (לדוגמה) יש זמן. לדבר?",
+  "testDriveYes": "כן, לדבר",
+  "testDriveNo": "לא עכשיו",
+  "testDriveYesTitle": "מעולה, ככה זה עובד",
+  "testDriveYesBody": "בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. נשאר רק לדבר.",
+  "testDriveNoTitle": "גם זה בסדר",
+  "testDriveNoBody": "אפשר תמיד לסרב. נציע שוב בהזדמנות אחרת.",
+  "testDriveNotHeardTitle": "לא שמענו תשובה",
+  "testDriveNotHeardBody": "אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.",
+  "testDriveDone": "סיימתי",
+  "testDriveAgain": "לנסות שוב"
 }

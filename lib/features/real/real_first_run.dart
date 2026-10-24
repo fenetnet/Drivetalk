@@ -8,6 +8,7 @@ import '../common/widgets.dart';
 import 'real_common.dart';
 import 'real_permissions.dart';
 import 'real_people.dart';
+import 'real_test_drive.dart';
 
 /// Right after joining: get to at least one person DriveTalk can work with,
 /// then explain the idea in one sentence. Never a social-network screen.
@@ -176,6 +177,14 @@ class RealFirstRunScreen extends ConsumerWidget {
             label: l.firstRunMagicGo,
             style: MomentStyle.green,
             onTap: c.firstRunNext,
+          ),
+          // Practice once, as in the car (owner).
+          SecondaryPill(
+            label: l.testDriveTry,
+            style: MomentStyle.green,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const TestDriveScreen()),
+            ),
           ),
         ],
       ),

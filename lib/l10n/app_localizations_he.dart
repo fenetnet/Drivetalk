@@ -2627,4 +2627,60 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get ownerDetails => 'פרטים טכניים';
+
+  @override
+  String get testDriveTry => 'לנסות נסיעת מבחן';
+
+  @override
+  String get testDriveTitle => 'נסיעת מבחן';
+
+  @override
+  String get testDriveSettings =>
+      'ככה זה מרגיש ברכב. גם בדיקה שהמיקרופון עובד.';
+
+  @override
+  String get testDriveBody =>
+      'נדמה שחבר פנוי בזמן שאת/ה נוסע/ת. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, הכל רק תרגול.';
+
+  @override
+  String get testDriveStart => 'להתחיל';
+
+  @override
+  String get testDriveFriendInitial => 'ד';
+
+  @override
+  String get testDriveQuestion => 'לדני (לדוגמה) יש זמן. לדבר?';
+
+  @override
+  String get testDriveYes => 'כן, לדבר';
+
+  @override
+  String get testDriveNo => 'לא עכשיו';
+
+  @override
+  String get testDriveYesTitle => 'מעולה, ככה זה עובד';
+
+  @override
+  String get testDriveYesBody =>
+      'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. את/ה רק מדבר/ת.';
+
+  @override
+  String get testDriveNoTitle => 'גם זה בסדר';
+
+  @override
+  String get testDriveNoBody =>
+      'אפשר תמיד לסרב. החבר לא מקבל הודעה ש\"סירבת\", ונציע שוב בהזדמנות.';
+
+  @override
+  String get testDriveNotHeardTitle => 'לא שמענו תשובה';
+
+  @override
+  String get testDriveNotHeardBody =>
+      'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.';
+
+  @override
+  String get testDriveDone => 'סיימתי';
+
+  @override
+  String get testDriveAgain => 'לנסות שוב';
 }

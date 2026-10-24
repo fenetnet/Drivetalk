@@ -4389,6 +4389,108 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'פרטים טכניים'**
   String get ownerDetails;
+
+  /// No description provided for @testDriveTry.
+  ///
+  /// In he, this message translates to:
+  /// **'לנסות נסיעת מבחן'**
+  String get testDriveTry;
+
+  /// No description provided for @testDriveTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'נסיעת מבחן'**
+  String get testDriveTitle;
+
+  /// No description provided for @testDriveSettings.
+  ///
+  /// In he, this message translates to:
+  /// **'ככה זה מרגיש ברכב. גם בדיקה שהמיקרופון עובד.'**
+  String get testDriveSettings;
+
+  /// No description provided for @testDriveBody.
+  ///
+  /// In he, this message translates to:
+  /// **'נדמה שחבר פנוי בזמן שאת/ה נוסע/ת. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, הכל רק תרגול.'**
+  String get testDriveBody;
+
+  /// No description provided for @testDriveStart.
+  ///
+  /// In he, this message translates to:
+  /// **'להתחיל'**
+  String get testDriveStart;
+
+  /// No description provided for @testDriveFriendInitial.
+  ///
+  /// In he, this message translates to:
+  /// **'ד'**
+  String get testDriveFriendInitial;
+
+  /// No description provided for @testDriveQuestion.
+  ///
+  /// In he, this message translates to:
+  /// **'לדני (לדוגמה) יש זמן. לדבר?'**
+  String get testDriveQuestion;
+
+  /// No description provided for @testDriveYes.
+  ///
+  /// In he, this message translates to:
+  /// **'כן, לדבר'**
+  String get testDriveYes;
+
+  /// No description provided for @testDriveNo.
+  ///
+  /// In he, this message translates to:
+  /// **'לא עכשיו'**
+  String get testDriveNo;
+
+  /// No description provided for @testDriveYesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מעולה, ככה זה עובד'**
+  String get testDriveYesTitle;
+
+  /// No description provided for @testDriveYesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. את/ה רק מדבר/ת.'**
+  String get testDriveYesBody;
+
+  /// No description provided for @testDriveNoTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'גם זה בסדר'**
+  String get testDriveNoTitle;
+
+  /// No description provided for @testDriveNoBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר תמיד לסרב. החבר לא מקבל הודעה ש\"סירבת\", ונציע שוב בהזדמנות.'**
+  String get testDriveNoBody;
+
+  /// No description provided for @testDriveNotHeardTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא שמענו תשובה'**
+  String get testDriveNotHeardTitle;
+
+  /// No description provided for @testDriveNotHeardBody.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.'**
+  String get testDriveNotHeardBody;
+
+  /// No description provided for @testDriveDone.
+  ///
+  /// In he, this message translates to:
+  /// **'סיימתי'**
+  String get testDriveDone;
+
+  /// No description provided for @testDriveAgain.
+  ///
+  /// In he, this message translates to:
+  /// **'לנסות שוב'**
+  String get testDriveAgain;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
+import 'real_test_drive.dart';
 import 'real_home.dart';
 import 'real_permissions.dart';
 import 'real_quiet.dart';
@@ -67,6 +68,17 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsDriving,
             children: [
+              ListTile(
+                leading: const Icon(Icons.record_voice_over_rounded),
+                title: Text(l.testDriveTitle),
+                subtitle: Text(l.testDriveSettings),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const TestDriveScreen(),
+                  ),
+                ),
+              ),
               SwitchListTile(
                 secondary: const Icon(Icons.directions_car_rounded),
                 title: Text(l.realAutoDriving),

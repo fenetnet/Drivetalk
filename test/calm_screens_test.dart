@@ -13,6 +13,7 @@ import 'package:drivetalk/features/real/real_about.dart';
 import 'package:drivetalk/features/real/real_quiet.dart';
 import 'package:drivetalk/real/real_models.dart';
 import 'package:drivetalk/features/real/real_settings.dart';
+import 'package:drivetalk/features/real/real_test_drive.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
@@ -123,6 +124,24 @@ void main() {
     });
     return (me, friend);
   }
+
+  testWidgets('test drive: asked aloud, "yes" by voice, nothing sent', (
+    t,
+  ) async {
+    final c = _phone(server);
+    _open.add(c);
+    final voice = c.read(voiceServiceProvider) as SilentVoiceService;
+    voice.simulateAnswer(VoiceAnswer.yes);
+    await _show(t, c, const TestDriveScreen());
+    expect(find.text('נסיעת מבחן'), findsOneWidget);
+    await t.tap(find.text('להתחיל'));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(voice.spoken, contains('לדני (לדוגמה) יש זמן. לדבר?'));
+    expect(find.text('מעולה, ככה זה עובד'), findsOneWidget);
+    expect(voice.spoken.last, 'קיבלתי, מחברים.');
+    expect(server.offers, isEmpty, reason: 'nobody was asked');
+    await _close(t);
+  });
 
   testWidgets('"still free?" after a question I did not answer', (t) async {
     final (me, friend) = await twoFriends(t);
