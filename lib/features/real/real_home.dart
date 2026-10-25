@@ -871,10 +871,7 @@ Future<void> askFreeFriend(
     ),
   );
   if (go != true) return;
-  if (!meFree && !await c.startAvailability(AvailabilityMode.free, 30)) {
-    return;
-  }
-  await c.askFriend(friend);
+  await c.tapFriend(friend);
 }
 
 /// A free friend who can't be asked right now: say so gently, never why

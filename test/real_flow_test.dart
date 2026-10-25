@@ -2268,6 +2268,24 @@ void main() {
       expect(yoni.dialer.dialed, isEmpty);
     });
 
+    test('tapping a friend while not free: no second question', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await me.c.refresh();
+      final friend = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      expect(await me.c.tapFriend(friend), isTrue);
+      await pump(20);
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNull, reason: 'my tap was my yes');
+      await yoni.c.refresh();
+      await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+      await pump(20);
+      await me.c.refresh();
+      await pump(20);
+      expect(me.voice.spoken, isEmpty, reason: 'nothing read to me');
+      expect(me.s.call, isNotNull, reason: 'connected');
+    });
+
     test('only friends I can really ask are listed (D-107)', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);

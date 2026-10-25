@@ -1416,19 +1416,7 @@ class RealController extends Notifier<RealState> {
     if (action.askFriend case final id?) {
       final friend = state.snapshot?.friend(id);
       if (friend == null || !ref.mounted) return;
-      if (myActiveAvailability(state, _now()) == null &&
-          !await startAvailability(AvailabilityMode.free, 30)) {
-        return;
-      }
-      if (!ref.mounted) return;
-      // Both free now: quick connect may already be connecting us.
-      final already = state.snapshot?.offers.any(
-        (o) =>
-            o.otherId(state.myId ?? '') == id &&
-            (o.status == OfferStatus.pending ||
-                (o.status == OfferStatus.accepted && !o.callOver)),
-      );
-      if (already != true) await askFriend(friend);
+      await tapFriend(friend);
       return;
     }
     if (!action.accept || !ref.mounted) return;
@@ -1798,6 +1786,20 @@ class RealController extends Notifier<RealState> {
   void _react(RealSnapshot snap) {
     final me = snap.me.id;
     final now = _now();
+    // I just tapped this friend: the app's own question with them (made as
+    // I became free) is already my yes — never shown or read to me (owner).
+    final tapping = _tapping;
+    if (tapping != null) {
+      for (final o in snap.offers) {
+        if (o.status == OfferStatus.pending &&
+            !o.quick &&
+            o.otherId(me) == tapping &&
+            (state.localAnswers[o.id] ?? o.myAnswer(me)) == null) {
+          _tappedOffer = o.id;
+          unawaited(respond(o, accept: true));
+        }
+      }
+    }
     for (final o in snap.offers) {
       // The other side cancelled the quick connect during the 5 seconds.
       if (o.status == OfferStatus.cancelled &&
@@ -3093,6 +3095,42 @@ class RealController extends Notifier<RealState> {
       return await _backend.askWhy(friend.id);
     } on RealBackendException {
       return null;
+    }
+  }
+
+  /// The friend I'm tapping right now, and the question that became my yes.
+  String? _tapping;
+  String? _tappedOffer;
+
+  /// Tap a free friend (Home, the widget, "X is on the way"): I'm marked
+  /// free for 30 minutes if I'm not, and they're asked. A question with
+  /// them that appears as I become free is never shown: no second "talk?"
+  /// (owner).
+  Future<bool> tapFriend(RealProfile friend) async {
+    _tapping = friend.id;
+    _tappedOffer = null;
+    try {
+      final now = _now();
+      if (myActiveAvailability(state, now) == null) {
+        if (!await startAvailability(AvailabilityMode.free, 30)) return false;
+      } else {
+        _react(state.snapshot!);
+      }
+      if (!ref.mounted) return false;
+      if (_tappedOffer != null) return true;
+      // Quick connect may already be connecting us.
+      final connecting =
+          state.snapshot?.offers.any(
+            (o) =>
+                o.otherId(state.myId ?? '') == friend.id &&
+                o.status == OfferStatus.accepted &&
+                !o.callOver,
+          ) ??
+          false;
+      if (connecting) return true;
+      return await askFriend(friend);
+    } finally {
+      _tapping = null;
     }
   }
 
