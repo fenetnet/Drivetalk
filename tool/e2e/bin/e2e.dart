@@ -1843,9 +1843,10 @@ Future<void> main() async {
   await removedPerAccount();
   await callOverEitherSide();
   await tapperCalls();
+  await callBackWorks();
 
   check(
-    await eve.rpc('schema_version') == 61,
+    await eve.rpc('schema_version') == 62,
     'the server says its version (41)',
   );
 
@@ -3917,6 +3918,62 @@ Future<void> tapperCalls() async {
     'whoever taps calls: the one who was asked is called (D-145) [$asked]',
   );
   for (final c in [ta, tb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> callBackWorks() async {
+  final ca = await newUser('כרמל', 'female');
+  final cb = await newUser('כפיר', 'male');
+  for (final (c, d) in [(ca, 6661), (cb, 6662)]) {
+    await c.from('phone_numbers').upsert({
+      'user_id': uid(c),
+      'phone': '+97250${DateTime.now().millisecondsSinceEpoch % 10000}$d',
+    });
+  }
+  await befriend(ca, cb);
+  await skipQuietGap();
+  await free(cb);
+  await free(ca);
+  // The app's own question between us, unanswered: my tap replaces it.
+  final auto = (await rows(
+    ca,
+    'match_offers',
+  )).where((x) => x['status'] == 'pending');
+  final asked = await ca.rpc('ask_friend', params: {'p_user': uid(cb)});
+  final pending = (await rows(
+    cb,
+    'match_offers',
+  )).where((x) => x['status'] == 'pending');
+  check(
+    auto.isNotEmpty &&
+        asked == 'asked' &&
+        pending.length == 1 &&
+        pending.single['direct'] == true,
+    'a tap replaces the app\'s own question between us (D-147) [$asked]',
+  );
+  // Kfir says no; then Kfir asks Carmel himself; Carmel can ask back.
+  await cb.rpc(
+    'answer_offer',
+    params: {'p_offer': pending.single['id'], 'p_accept': false},
+  );
+  final again = await cb.rpc('ask_friend', params: {'p_user': uid(ca)});
+  final q = (await rows(ca, 'match_offers')).firstWhere(
+    (x) => x['status'] == 'pending',
+    orElse: () => <String, dynamic>{},
+  );
+  if (q.isNotEmpty) {
+    await ca.rpc(
+      'answer_offer',
+      params: {'p_offer': q['id'], 'p_accept': false},
+    );
+  }
+  final why = await ca.rpc('ask_why', params: {'p_user': uid(cb)});
+  check(
+    again == 'asked' && why != 'not_now',
+    'a "no" doesn\'t block a friend who asked me afterwards (D-148) [$again $why]',
+  );
+  for (final c in [ca, cb]) {
     await c.rpc('clear_availability');
   }
 }

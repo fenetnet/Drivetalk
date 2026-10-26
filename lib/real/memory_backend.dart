@@ -233,6 +233,13 @@ class MemoryServer {
             now().isBefore(busy));
   }
 
+  /// [u] is clearly here: a question they missed no longer hides them.
+  void clearMissed(String u) {
+    final a = availability[u];
+    if (a == null || !a.missed) return;
+    availability[u] = a.withMarks(missedAt: null, quietUntil: a.quietUntil);
+  }
+
   /// Why [me] can't ask [user] right now ('ok' = can; like ask_check).
   String askCheck(String me, String user, {required bool meFree}) {
     final t = now();
@@ -263,7 +270,16 @@ class MemoryServer {
           // They already said no to us this time.
           o.status == OfferStatus.declined &&
           _answerOf(o, user) == false &&
-          !o.createdAt.isBefore(theirs.startedAt),
+          !o.createdAt.isBefore(theirs.startedAt) &&
+          // …unless they asked us themselves after that "no" (D-148).
+          !offers.values.any(
+            (l) =>
+                l.a == pair[0] &&
+                l.b == pair[1] &&
+                l.id != o.id &&
+                !l.createdAt.isBefore(o.createdAt) &&
+                _answerOf(l, user) == true,
+          ),
     );
     if (saidNo) return 'not_now';
     // Our call is still on: over once either of us closed it (D-142).
@@ -1224,6 +1240,8 @@ class MemoryRealBackend implements RealBackend {
       return OfferAnswer(o.status);
     }
     server.autoMissed.remove(me);
+    // A yes says I'm here: a question I missed no longer hides me (D-148).
+    if (accept && !o.quick) server.clearMissed(me);
     // Withdrawing my yes (I stopped waiting) keeps it a yes (D-104).
     final withdrawn = !accept && MemoryServer._answerOf(o, me) == true;
     if (!withdrawn) {
@@ -1908,6 +1926,23 @@ class MemoryRealBackend implements RealBackend {
   Future<String> askFriend(String userId) async {
     final me = _uid;
     final now = server.now();
+    // I'm clearly here (D-148), and the app's own unanswered question
+    // between us gives way to my tap (D-147).
+    server.clearMissed(me);
+    final ends = MemoryServer._pair(me, userId).split('|');
+    for (final o in server.offers.values) {
+      if (o.status == OfferStatus.pending &&
+          !o.quick &&
+          !o.direct &&
+          o.a == ends[0] &&
+          o.b == ends[1] &&
+          o.aAccepted == null &&
+          o.bAccepted == null) {
+        o
+          ..status = OfferStatus.cancelled
+          ..updatedAt = now;
+      }
+    }
     final why = server.askCheck(me, userId, meFree: true);
     if (why != 'ok') return why;
     final mine = server.availability[me]!;

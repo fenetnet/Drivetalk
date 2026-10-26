@@ -1787,17 +1787,22 @@ class RealController extends Notifier<RealState> {
     final me = snap.me.id;
     final now = _now();
     // I just tapped this friend: the app's own question with them (made as
-    // I became free) is already my yes — never shown or read to me (owner).
+    // I became free) is never shown or read to me — my tap answers it
+    // (owner, D-147).
     final tapping = _tapping;
     if (tapping != null) {
-      for (final o in snap.offers) {
-        if (o.status == OfferStatus.pending &&
-            !o.quick &&
-            o.otherId(me) == tapping &&
-            (state.localAnswers[o.id] ?? o.myAnswer(me)) == null) {
-          _tappedOffer = o.id;
-          unawaited(respond(o, accept: true));
-        }
+      final hide = {
+        for (final o in snap.offers)
+          if (o.status == OfferStatus.pending &&
+              !o.quick &&
+              o.otherId(me) == tapping &&
+              (state.localAnswers[o.id] ?? o.myAnswer(me)) == null)
+            o.id,
+      };
+      if (hide.difference(state.dismissedOffers).isNotEmpty) {
+        state = state.copyWith(
+          dismissedOffers: {...state.dismissedOffers, ...hide},
+        );
       }
     }
     for (final o in snap.offers) {
@@ -3098,9 +3103,8 @@ class RealController extends Notifier<RealState> {
     }
   }
 
-  /// The friend I'm tapping right now, and the question that became my yes.
+  /// The friend I'm tapping right now.
   String? _tapping;
-  String? _tappedOffer;
 
   /// Tap a free friend (Home, the widget, "X is on the way"): I'm marked
   /// free for 30 minutes if I'm not, and they're asked. A question with
@@ -3108,7 +3112,6 @@ class RealController extends Notifier<RealState> {
   /// (owner).
   Future<bool> tapFriend(RealProfile friend) async {
     _tapping = friend.id;
-    _tappedOffer = null;
     try {
       final now = _now();
       if (myActiveAvailability(state, now) == null) {
@@ -3117,7 +3120,29 @@ class RealController extends Notifier<RealState> {
         _react(state.snapshot!);
       }
       if (!ref.mounted) return false;
-      if (_tappedOffer != null) return true;
+      final me = state.myId ?? '';
+      final auto = state.snapshot?.offers
+          .where(
+            (o) =>
+                o.status == OfferStatus.pending &&
+                !o.quick &&
+                o.otherId(me) == friend.id &&
+                _myAnswer(state, o) == null,
+          )
+          .firstOrNull;
+      // They already said yes to it: my yes connects us (and I call).
+      if (auto != null && auto.myAnswer(friend.id) == true) {
+        await respond(auto, accept: true);
+        return true;
+      }
+      if (auto != null) {
+        // The server replaces it with my direct ask (server 62)…
+        if (await askFriend(friend, quiet: true)) return true;
+        if (!ref.mounted) return false;
+        // …an older server says "busy": the question itself takes my yes.
+        await respond(auto, accept: true);
+        return true;
+      }
       // Quick connect may already be connecting us.
       final connecting =
           state.snapshot?.offers.any(
@@ -3135,7 +3160,7 @@ class RealController extends Notifier<RealState> {
   }
 
   /// Tap a free friend: ask them now (my tap is my yes). True if asked.
-  Future<bool> askFriend(RealProfile friend) async {
+  Future<bool> askFriend(RealProfile friend, {bool quiet = false}) async {
     _stopVoice();
     // My own open question gives way — once the server really asked (it
     // cancels mine then); otherwise I keep waiting for it as before.
@@ -3145,7 +3170,7 @@ class RealController extends Notifier<RealState> {
       result = await _backend.askFriend(friend.id);
     });
     if (w != null && result == 'asked') _markHandled(w.id);
-    if (ok && result != 'asked' && ref.mounted) {
+    if (ok && result != 'asked' && !quiet && ref.mounted) {
       _notify(
         RealNoticeKind.askFailed,
         name: friend.name,

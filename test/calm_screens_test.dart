@@ -467,7 +467,10 @@ void main() {
     expect(t.takeException(), isNull);
     // It went on all the same: I'm free now, and the two of us are asked.
     expect(server.availability[me.read(realProvider).myId], isNotNull);
-    expect(server.offers, hasLength(1));
+    expect(
+      server.offers.values.where((o) => o.status == OfferStatus.pending),
+      hasLength(1),
+    );
     await _close(t);
   });
 

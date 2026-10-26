@@ -2283,7 +2283,48 @@ void main() {
       await me.c.refresh();
       await pump(20);
       expect(me.voice.spoken, isEmpty, reason: 'nothing read to me');
-      expect(me.s.call, isNotNull, reason: 'connected');
+      expect(me.s.call?.role, CallRole.iCall, reason: 'I tapped: I call');
+      expect(me.dialer.dialed, ['0532222222']);
+    });
+
+    Future<String> whyNot(Phone p, Phone o) async =>
+        await p.backend.askWhy(o.backend.userId!);
+
+    test('calling back after my "no", then my own tap (D-148)', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await refreshBoth();
+      // The app asks me about Yoni; I say no, then change my mind and tap.
+      await me.c.respond(currentOffer(me.s, now)!, accept: false);
+      await refreshBoth();
+      final f = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      expect(await me.c.tapFriend(f), isTrue);
+      // Yoni misses it, then calls me back.
+      now = now.add(const Duration(minutes: 2));
+      await refreshBoth();
+      expect(await whyNot(yoni, me), 'ok');
+      final back = yoni.s.snapshot!.friend(me.backend.userId!)!;
+      expect(await yoni.c.tapFriend(back), isTrue);
+    });
+
+    test('a question I missed no longer hides me once I tap (D-148)', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.startAvailability(AvailabilityMode.free, 60);
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await refreshBoth();
+      // Neither of us answers the app's question.
+      now = now.add(const Duration(seconds: 40));
+      await refreshBoth();
+      expect(myActiveAvailability(me.s, now)?.missed, isTrue);
+      final f = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      await me.c.tapFriend(f); // Yoni missed it too: not asked
+      await refreshBoth();
+      expect(await whyNot(yoni, me), 'ok', reason: 'Yoni can call me back');
+      final back = yoni.s.snapshot!.friend(me.backend.userId!)!;
+      expect(await yoni.c.tapFriend(back), isTrue);
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNotNull);
     });
 
     test('only friends I can really ask are listed (D-107)', () async {
