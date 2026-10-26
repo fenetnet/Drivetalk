@@ -280,6 +280,10 @@ class RealHomeScreen extends ConsumerWidget {
                     icon: Icons.system_update_alt_rounded,
                   ),
                 ],
+                if (s.cached) ...[
+                  const SizedBox(height: 10),
+                  MomentChip(text: l.homeUpdating, icon: Icons.sync_rounded),
+                ],
                 const _HealthLine(),
                 if (c.showWhatsNew) ...[
                   const SizedBox(height: 12),

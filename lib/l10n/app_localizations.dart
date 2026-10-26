@@ -4411,7 +4411,7 @@ abstract class AppLocalizations {
   /// No description provided for @testDriveBody.
   ///
   /// In he, this message translates to:
-  /// **'נדמה שחבר פנוי בזמן שאת/ה נוסע/ת. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, הכל רק תרגול.'**
+  /// **'נדמה שחבר פנוי בזמן נסיעה. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, זה רק תרגול.'**
   String get testDriveBody;
 
   /// No description provided for @testDriveStart.
@@ -4453,7 +4453,7 @@ abstract class AppLocalizations {
   /// No description provided for @testDriveYesBody.
   ///
   /// In he, this message translates to:
-  /// **'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. את/ה רק מדבר/ת.'**
+  /// **'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. נשאר רק לדבר.'**
   String get testDriveYesBody;
 
   /// No description provided for @testDriveNoTitle.
@@ -4465,7 +4465,7 @@ abstract class AppLocalizations {
   /// No description provided for @testDriveNoBody.
   ///
   /// In he, this message translates to:
-  /// **'אפשר תמיד לסרב. החבר לא מקבל הודעה ש\"סירבת\", ונציע שוב בהזדמנות.'**
+  /// **'אפשר תמיד לסרב. נציע שוב בהזדמנות אחרת.'**
   String get testDriveNoBody;
 
   /// No description provided for @testDriveNotHeardTitle.
@@ -4491,6 +4491,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לנסות שוב'**
   String get testDriveAgain;
+
+  /// No description provided for @homeUpdating.
+  ///
+  /// In he, this message translates to:
+  /// **'מתעדכן…'**
+  String get homeUpdating;
+
+  /// Loading screen lines, separated by |, shown one after another.
+  ///
+  /// In he, this message translates to:
+  /// **'מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…'**
+  String get startingLines;
 }
 
 class _AppLocalizationsDelegate

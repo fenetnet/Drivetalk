@@ -1823,5 +1823,10 @@
   "testDriveNotHeardTitle": "לא שמענו תשובה",
   "testDriveNotHeardBody": "אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.",
   "testDriveDone": "סיימתי",
-  "testDriveAgain": "לנסות שוב"
+  "testDriveAgain": "לנסות שוב",
+  "homeUpdating": "מתעדכן…",
+  "startingLines": "מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…",
+  "@startingLines": {
+    "description": "Loading screen lines, separated by |, shown one after another."
+  }
 }

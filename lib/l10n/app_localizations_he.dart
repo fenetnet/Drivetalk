@@ -2640,7 +2640,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get testDriveBody =>
-      'נדמה שחבר פנוי בזמן שאת/ה נוסע/ת. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, הכל רק תרגול.';
+      'נדמה שחבר פנוי בזמן נסיעה. האפליקציה תשאל בקול, ואפשר לענות \"כן\" או \"לא\" בקול או בכפתור. אף אחד לא מקבל שאלה, זה רק תרגול.';
 
   @override
   String get testDriveStart => 'להתחיל';
@@ -2662,14 +2662,13 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get testDriveYesBody =>
-      'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. את/ה רק מדבר/ת.';
+      'בנסיעה אמיתית, אחרי שגם החבר אומר כן, הטלפון מחייג לבד. נשאר רק לדבר.';
 
   @override
   String get testDriveNoTitle => 'גם זה בסדר';
 
   @override
-  String get testDriveNoBody =>
-      'אפשר תמיד לסרב. החבר לא מקבל הודעה ש\"סירבת\", ונציע שוב בהזדמנות.';
+  String get testDriveNoBody => 'אפשר תמיד לסרב. נציע שוב בהזדמנות אחרת.';
 
   @override
   String get testDriveNotHeardTitle => 'לא שמענו תשובה';
@@ -2683,4 +2682,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get testDriveAgain => 'לנסות שוב';
+
+  @override
+  String get homeUpdating => 'מתעדכן…';
+
+  @override
+  String get startingLines =>
+      'מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…';
 }

@@ -94,6 +94,28 @@ class SupabaseRealBackend implements RealBackend {
   }
 
   @override
+  String? slowest;
+
+  /// All of a refresh's requests at once; remembers the slowest (shown in
+  /// the test info, to tell a slow server from a slow phone).
+  Future<List<T>> _timed<T>(List<String> names, List<Future<T>> all) async {
+    final watch = Stopwatch()..start();
+    final took = List<int>.filled(all.length, 0);
+    final results = await Future.wait([
+      for (var k = 0; k < all.length; k++)
+        all[k].whenComplete(() => took[k] = watch.elapsedMilliseconds),
+    ]);
+    var worst = 0;
+    for (var k = 1; k < took.length; k++) {
+      if (took[k] > took[worst]) worst = k;
+    }
+    slowest = took.isEmpty
+        ? null
+        : '${worst < names.length ? names[worst] : '#$worst'} ${took[worst]}ms';
+    return results;
+  }
+
+  @override
   Future<RealSnapshot> fetchSnapshot() => _guard(() async {
     final me = userId;
     if (me == null) throw const RealBackendException('not_authenticated');
@@ -101,159 +123,178 @@ class SupabaseRealBackend implements RealBackend {
         .toUtc()
         .subtract(const Duration(hours: 12))
         .toIso8601String();
-    final results = await Future.wait([
-      _c
-          .from('profiles')
-          .select('id, display_name, gender, photo_version')
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            // Older server (before photos).
-            onError: _ifOlder(
-              () => _c.from('profiles').select('id, display_name, gender'),
+    final results = await _timed(
+      const [
+        'profiles',
+        'availability',
+        'offers',
+        'talks',
+        'intents',
+        'circles',
+        'ratings',
+        'friends_activity',
+        'my_profile',
+        'others_visibility',
+        'askable_friends',
+        'my_status',
+        'quick_status',
+        'my_pauses',
+        'my_availability_details',
+      ],
+      [
+        _c
+            .from('profiles')
+            .select('id, display_name, gender, photo_version')
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              // Older server (before photos).
+              onError: _ifOlder(
+                () => _c.from('profiles').select('id, display_name, gender'),
+              ),
             ),
-          ),
-      _c
-          .from('availability')
-          // Friends' start time and group aren't sent (D-118); mine come
-          // from my_availability_details below.
-          .select(
-            'user_id, mode, expires_at, source, '
-            'call_until, phone_until, missed_at, quiet_until',
-          )
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            // Older server (before D-104).
-            onError: _ifOlder(
-              () => _c
-                  .from('availability')
-                  .select(
-                    'user_id, mode, started_at, expires_at, circle_id, source, '
-                    'call_until, phone_until',
-                  ),
+        _c
+            .from('availability')
+            // Friends' start time and group aren't sent (D-118); mine come
+            // from my_availability_details below.
+            .select(
+              'user_id, mode, expires_at, source, '
+              'call_until, phone_until, missed_at, quiet_until',
+            )
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              // Older server (before D-104).
+              onError: _ifOlder(
+                () => _c
+                    .from('availability')
+                    .select(
+                      'user_id, mode, started_at, expires_at, circle_id, source, '
+                      'call_until, phone_until',
+                    ),
+              ),
             ),
-          ),
-      _c
-          .from('match_offers')
-          .select()
-          .gt('updated_at', since)
-          .order('updated_at', ascending: false)
-          .limit(50),
-      // Talk history: only real talks (someone said "we talked").
-      _c
-          .from('match_offers')
-          .select('user_a, user_b, updated_at')
-          .eq('status', 'accepted')
-          .eq('talked', true)
-          .order('updated_at', ascending: false)
-          .limit(300)
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            // Older server (no "talked" yet): both said yes.
-            onError: _ifOlder(
-              () => _c
-                  .from('match_offers')
-                  .select('user_a, user_b, updated_at')
-                  .eq('status', 'accepted')
-                  .order('updated_at', ascending: false)
-                  .limit(300),
+        _c
+            .from('match_offers')
+            .select()
+            .gt('updated_at', since)
+            .order('updated_at', ascending: false)
+            .limit(50),
+        // Talk history: only real talks (someone said "we talked").
+        _c
+            .from('match_offers')
+            .select('user_a, user_b, updated_at')
+            .eq('status', 'accepted')
+            .eq('talked', true)
+            .order('updated_at', ascending: false)
+            .limit(300)
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              // Older server (no "talked" yet): both said yes.
+              onError: _ifOlder(
+                () => _c
+                    .from('match_offers')
+                    .select('user_a, user_b, updated_at')
+                    .eq('status', 'accepted')
+                    .order('updated_at', ascending: false)
+                    .limit(300),
+              ),
             ),
-          ),
-      // "I'd like to talk" (mine only); optional on an older server.
-      _c
-          .from('talk_intents')
-          .select('to_user, expires_at')
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // Circles are optional: an older server without them still works.
-      _c
-          .from('circles')
-          .select('id, name, quick, show_modes, circle_members(member)')
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // My ratings (optional on an older server).
-      _c
-          .from('friend_ratings')
-          .select('friend, rating')
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // Friends' days since last seen (optional on an older server).
-      _c
-          .rpc('friends_activity')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // Do I hide my status? (optional on an older server)
-      _c
-          .from('profiles')
-          .select('hide_status')
-          .eq('id', me)
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // "Everyone else": who sees that I'm free (mine only).
-      _c
-          .from('others_visibility')
-          .select('show_modes')
-          .then<List<Map<String, dynamic>>>(
-            (r) => r,
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // Free friends I can really ask (optional on an older server).
-      _c
-          .rpc('askable_friends')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [
-              for (final x in r as List) {'id': '$x'},
-            ],
-            onError: _ifOlder(
-              () => [
-                {'old': true},
+        // "I'd like to talk" (mine only); optional on an older server.
+        _c
+            .from('talk_intents')
+            .select('to_user, expires_at')
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // Circles are optional: an older server without them still works.
+        _c
+            .from('circles')
+            .select('id, name, quick, show_modes, circle_members(member)')
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // My ratings (optional on an older server).
+        _c
+            .from('friend_ratings')
+            .select('friend, rating')
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // Friends' days since last seen (optional on an older server).
+        _c
+            .rpc('friends_activity')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // Do I hide my status? (optional on an older server)
+        _c
+            .from('profiles')
+            .select('hide_status')
+            .eq('id', me)
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // "Everyone else": who sees that I'm free (mine only).
+        _c
+            .from('others_visibility')
+            .select('show_modes')
+            .then<List<Map<String, dynamic>>>(
+              (r) => r,
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // Free friends I can really ask (optional on an older server).
+        _c
+            .rpc('askable_friends')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [
+                for (final x in r as List) {'id': '$x'},
               ],
+              onError: _ifOlder(
+                () => [
+                  {'old': true},
+                ],
+              ),
             ),
-          ),
-      // My private settings and counts (optional on an older server).
-      _c
-          .rpc('my_status')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [Map<String, dynamic>.from(r as Map)],
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // Quick connect per friend (optional on an older server).
-      _c
-          .rpc('quick_status')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // My pauses after calls (optional on an older server).
-      _c
-          .rpc('my_pauses')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            onError: _ifOlder(() => <Map<String, dynamic>>[]),
-          ),
-      // When my own free time started and for which group (D-118).
-      _c
-          .rpc('my_availability_details')
-          .then<List<Map<String, dynamic>>>(
-            (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
-            // Older server: friends' rows still carry them.
-            onError: _ifOlder(
-              () => _c
-                  .from('availability')
-                  .select('started_at, circle_id')
-                  .eq('user_id', me),
+        // My private settings and counts (optional on an older server).
+        _c
+            .rpc('my_status')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [Map<String, dynamic>.from(r as Map)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
             ),
-          ),
-    ]);
+        // Quick connect per friend (optional on an older server).
+        _c
+            .rpc('quick_status')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // My pauses after calls (optional on an older server).
+        _c
+            .rpc('my_pauses')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
+        // When my own free time started and for which group (D-118).
+        _c
+            .rpc('my_availability_details')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+              // Older server: friends' rows still carry them.
+              onError: _ifOlder(
+                () => _c
+                    .from('availability')
+                    .select('started_at, circle_id')
+                    .eq('user_id', me),
+              ),
+            ),
+      ],
+    );
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
     ];

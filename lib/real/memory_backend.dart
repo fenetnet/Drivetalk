@@ -926,6 +926,9 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
+  String? get slowest => null;
+
+  @override
   Future<RealSnapshot> fetchSnapshot() async {
     final me = _uid;
     final now = server.now();

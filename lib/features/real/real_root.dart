@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -203,24 +206,128 @@ class _RealShellState extends ConsumerState<RealShell> {
   }
 }
 
-class _Starting extends StatelessWidget {
+/// Opening (first time, or nothing saved yet): a small car on a moving
+/// road, and a line that changes every two seconds (owner, option C).
+class _Starting extends StatefulWidget {
   const _Starting();
 
   @override
+  State<_Starting> createState() => _StartingState();
+}
+
+class _StartingState extends State<_Starting>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _road = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  )..repeat();
+  Timer? _next;
+  var _line = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _next = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (mounted) setState(() => _line++);
+    });
+  }
+
+  @override
+  void dispose() {
+    _next?.cancel();
+    _road.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final lines = context.l10n.startingLines.split('|');
+    final text = lines[_line % lines.length];
     return Scaffold(
+      backgroundColor: AppColors.terracotta,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const CircularProgressIndicator(),
-            const SizedBox(height: 16),
-            Text(context.l10n.realStarting),
+            SizedBox(
+              width: 220,
+              height: 90,
+              child: AnimatedBuilder(
+                animation: _road,
+                builder: (_, _) {
+                  final bob = math.sin(_road.value * 2 * math.pi) * 2;
+                  return Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 14,
+                        child: CustomPaint(
+                          size: const Size(220, 6),
+                          painter: _RoadPainter(_road.value),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 22 + bob,
+                        child: const Icon(
+                          Icons.directions_car_rounded,
+                          size: 64,
+                          color: AppColors.sand,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 18),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              child: Text(
+                text,
+                key: ValueKey(_line % lines.length),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+/// Road dashes moving under the car (RTL: the car drives to the left).
+class _RoadPainter extends CustomPainter {
+  _RoadPainter(this.t);
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.7)
+      ..strokeWidth = size.height
+      ..strokeCap = StrokeCap.round;
+    const dash = 22.0, gap = 18.0;
+    final shift = t * (dash + gap);
+    for (var x = -dash + shift; x < size.width; x += dash + gap) {
+      final a = x.clamp(0.0, size.width), b = (x + dash).clamp(0.0, size.width);
+      if (b > a) {
+        canvas.drawLine(
+          Offset(a, size.height / 2),
+          Offset(b, size.height / 2),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RoadPainter old) => old.t != t;
 }
 
 class _NotConfigured extends ConsumerWidget {

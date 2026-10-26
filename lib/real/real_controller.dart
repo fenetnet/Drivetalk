@@ -235,6 +235,7 @@ class RealState {
     this.myPhone,
     this.localAnswers = const {},
     this.dismissedOffers = const {},
+    this.cached = false,
     this.listening = false,
     this.driving = const DrivingStatus(),
     this.routines = const [],
@@ -298,6 +299,10 @@ class RealState {
 
   /// Offers I said "not now" to (hidden immediately).
   final Set<String> dismissedOffers;
+
+  /// The screen shows what this phone saved last time (friends, no one
+  /// free) until the server answers — the app opens at once.
+  final bool cached;
   final bool listening;
 
   /// Automatic driving availability on this phone.
@@ -322,6 +327,7 @@ class RealState {
     Object? myPhone = _keep,
     Map<String, bool>? localAnswers,
     Set<String>? dismissedOffers,
+    bool? cached,
     bool? listening,
     DrivingStatus? driving,
     List<Routine>? routines,
@@ -353,6 +359,7 @@ class RealState {
     myPhone: identical(myPhone, _keep) ? this.myPhone : myPhone as String?,
     localAnswers: localAnswers ?? this.localAnswers,
     dismissedOffers: dismissedOffers ?? this.dismissedOffers,
+    cached: cached ?? this.cached,
     listening: listening ?? this.listening,
     driving: driving ?? this.driving,
     routines: routines ?? this.routines,
@@ -485,6 +492,7 @@ const _adminKey = 'real.admin.v1';
 /// SHA-256 of "drivetalk-admin:<code>" — the code itself is not in the app.
 /// It only hides the owner's tools from friends; it protects no data.
 const _handledKey = 'real.handledOffers.v1';
+const _snapCacheKey = 'real.snapCache.v1';
 
 class RealController extends Notifier<RealState> {
   late RealBackend _backend;
@@ -651,6 +659,7 @@ class RealController extends Notifier<RealState> {
       // No binding (pure unit tests).
     }
 
+    _startWatch = Stopwatch()..start();
     try {
       await _backend.start();
     } on RealBackendException catch (e) {
@@ -661,15 +670,27 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(phase: RealPhase.signedOut);
       return;
     }
+    // Open at once with what this phone saved last time; the server's
+    // answer replaces it (owner: the loading screen took too long).
+    final saved = _loadSnapCache(_backend.userId!);
+    if (saved != null) {
+      state = state.copyWith(
+        snapshot: saved,
+        cached: true,
+        phase: RealPhase.ready,
+      );
+    }
     await refresh();
     if (!ref.mounted) return;
-    if (state.snapshot == null && state.lastError == 'no_profile') {
-      state = state.copyWith(phase: RealPhase.signedOut);
+    if (state.lastError == 'no_profile' &&
+        (state.snapshot == null || state.cached)) {
+      _store.setString(_snapCacheKey, null);
+      state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
       return;
     }
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
-    unawaited(_backend.touchSeen());
+    unawaited(_backend.touchSeen().catchError((Object _) {}));
     unawaited(flushCrashes());
     if (state.serverSchema == null) unawaited(_checkSchema());
     unawaited(_loadPhone());
@@ -833,7 +854,7 @@ class RealController extends Notifier<RealState> {
     if (state.callStage == CallStage.dialed) unawaited(_backFromCall());
     if (state.myPhone == null) unawaited(_loadPhone());
     unawaited(_refreshAndRewatch());
-    unawaited(_backend.touchSeen());
+    unawaited(_backend.touchSeen().catchError((Object _) {}));
     unawaited(_handleLaunchAction());
     unawaited(_ensurePushToken());
     // New people from my contacts (at most twice a day).
@@ -1548,6 +1569,7 @@ class RealController extends Notifier<RealState> {
       _routinesKey,
       _contactsSyncKey,
       _localNamesKey,
+      _snapCacheKey,
       _contactsOffKey,
       _freeLogKey,
       _hintNoKey,
@@ -1660,9 +1682,17 @@ class RealController extends Notifier<RealState> {
       state = state.copyWith(
         snapshot: snap,
         localAnswers: answers,
+        cached: false,
         // It worked: a network or sign-in hiccup is over.
         lastError: _passing(prev.lastError) ? null : prev.lastError,
       );
+      final watch = _startWatch;
+      if (watch != null) {
+        _startWatch = null;
+        _startMs = watch.elapsedMilliseconds;
+        _startSlowest = _backend.slowest;
+      }
+      _saveSnapCache(snap);
       _react(snap);
       unawaited(_loadPhotos(snap));
       unawaited(_checkPending(snap));
@@ -1680,6 +1710,62 @@ class RealController extends Notifier<RealState> {
           again.complete();
         }
       }
+    }
+  }
+
+  // ---------------------------------------------------- saved screen
+
+  Stopwatch? _startWatch;
+  int? _startMs;
+  String? _startSlowest;
+  String? _savedSnap;
+
+  /// Me and my friends (ids, names, photo versions) — what the screen needs
+  /// to open at once. Nothing about anyone's time, place or number.
+  void _saveSnapCache(RealSnapshot snap) {
+    Map<String, Object> p(RealProfile x) => {
+      'id': x.id,
+      'name': x.name,
+      'gender': genderToKey(x.gender),
+      'photo': x.photoVersion,
+    };
+    final raw = jsonEncode({
+      'me': p(snap.me),
+      // Stays on this phone (as shown, also by my contacts' names).
+      'friends': [for (final f in snap.friends) p(f)],
+    });
+    if (raw == _savedSnap) return;
+    _savedSnap = raw;
+    _store.setString(_snapCacheKey, raw);
+  }
+
+  RealSnapshot? _loadSnapCache(String me) {
+    try {
+      final raw = _store.getString(_snapCacheKey);
+      if (raw == null) return null;
+      final m = jsonDecode(raw) as Map<String, dynamic>;
+      RealProfile p(Map<String, dynamic> x) => RealProfile(
+        id: x['id'] as String,
+        name: x['name'] as String,
+        gender: genderFromKey(x['gender'] as String?),
+        photoVersion: (x['photo'] as num?)?.toInt() ?? 0,
+      );
+      final mine = p(m['me'] as Map<String, dynamic>);
+      if (mine.id != me) return null;
+      _savedSnap = raw;
+      return _withPhotos(
+        RealSnapshot(
+          me: mine,
+          friends: [
+            for (final f in m['friends'] as List) p(f as Map<String, dynamic>),
+          ],
+          availability: const {},
+          offers: const [],
+          fetchedAt: _now(),
+        ),
+      ).withLocalNames(_localNames);
+    } catch (_) {
+      return null;
     }
   }
 
@@ -3797,6 +3883,9 @@ class RealController extends Notifier<RealState> {
       // Friends' names stay on this phone (a report goes to the owner).
       if (!forReport) 'friends in a call: ${_busyLine(s, now, time)}',
       'last refresh: ${time(snap?.fetchedAt)}',
+      'opened in: ${_startMs == null ? (s.cached ? 'waiting (saved screen)' : '—') : '${(_startMs! / 1000).toStringAsFixed(1)}s'}'
+          '${_startSlowest == null ? '' : ', slowest: $_startSlowest'}',
+      if (_backend.slowest != null) 'last refresh slowest: ${_backend.slowest}',
       if (_refreshing) 'refreshing since: ${time(_refreshStarted)}',
       'last error: ${s.lastError ?? '—'}${s.lastErrorAt == null ? '' : ' at ${time(s.lastErrorAt)}'}',
       'now: ${now.toIso8601String()}',

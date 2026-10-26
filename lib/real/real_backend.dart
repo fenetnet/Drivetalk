@@ -21,6 +21,9 @@ abstract class RealBackend {
 
   Future<RealSnapshot> fetchSnapshot();
 
+  /// The slowest request of the last refresh ("askable_friends 820ms").
+  String? get slowest => null;
+
   /// Fires when something relevant may have changed (realtime events).
   Stream<void> get changes;
   Stream<LiveStatus> get liveStatus;

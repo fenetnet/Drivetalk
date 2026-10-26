@@ -41,8 +41,13 @@ class RecordingDialer extends PhoneDialer {
 }
 
 class Phone {
-  Phone(this.server, DateTime Function() clock) {
-    backend = MemoryRealBackend(server);
+  Phone(
+    this.server,
+    DateTime Function() clock, {
+    MemoryRealBackend? sameBackend,
+    MemoryLocalStore? sameStore,
+  }) : store = sameStore ?? MemoryLocalStore() {
+    backend = sameBackend ?? MemoryRealBackend(server);
     container = ProviderContainer(
       overrides: [
         realBackendProvider.overrideWithValue(backend),
@@ -66,7 +71,7 @@ class Phone {
   final MemoryServer server;
   late final MemoryRealBackend backend;
   late final ProviderContainer container;
-  final store = MemoryLocalStore();
+  final MemoryLocalStore store;
   final voice = SilentVoiceService();
   final dialer = RecordingDialer();
 
@@ -2325,6 +2330,31 @@ void main() {
       expect(await yoni.c.tapFriend(back), isTrue);
       await me.c.refresh();
       expect(currentOffer(me.s, now), isNotNull);
+    });
+
+    test('opens at once with the saved screen, then the server', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 30);
+      await me.c.refresh();
+      expect(freeFriends(me.s, now), hasLength(1));
+      // The app is opened again while the server doesn't answer yet.
+      me.backend.offline = true;
+      final again = Phone(
+        server,
+        clock,
+        sameBackend: me.backend,
+        sameStore: me.store,
+      );
+      addTearDown(again.dispose);
+      await again.boot();
+      expect(again.s.phase, RealPhase.ready);
+      expect(again.s.cached, isTrue);
+      expect(again.s.snapshot!.friends.single.name, 'יוני');
+      expect(freeFriends(again.s, now), isEmpty, reason: 'unknown yet: grey');
+      me.backend.offline = false;
+      await again.c.refresh();
+      expect(again.s.cached, isFalse);
+      expect(freeFriends(again.s, now), hasLength(1));
     });
 
     test('only friends I can really ask are listed (D-107)', () async {
