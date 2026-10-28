@@ -19,12 +19,16 @@ import 'photo_cache.dart';
 import 'real_backend.dart';
 import 'real_models.dart';
 import 'routine_suggest.dart';
+import '../platform/google_auth.dart';
 import 'supabase_backend.dart';
 import 'update_checker.dart';
 
 final realBackendProvider = Provider<RealBackend>(
   (ref) => SupabaseRealBackend(),
 );
+
+/// "Continue with Google" on this phone.
+final googleAuthProvider = Provider<GoogleAuth>((ref) => DeviceGoogleAuth());
 
 /// "Now" for real mode (tests use fake time).
 final realClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
@@ -493,6 +497,8 @@ const _adminKey = 'real.admin.v1';
 /// It only hides the owner's tools from friends; it protects no data.
 const _handledKey = 'real.handledOffers.v1';
 const _snapCacheKey = 'real.snapCache.v1';
+const _googleKey = 'real.google.v1';
+const _googleCardKey = 'real.googleCard.v1';
 
 class RealController extends Notifier<RealState> {
   late RealBackend _backend;
@@ -690,6 +696,12 @@ class RealController extends Notifier<RealState> {
     }
     // Known account but offline: still show the app (it retries).
     state = state.copyWith(phase: RealPhase.ready);
+    _afterReady();
+  }
+
+  /// Everything that follows a known account on this phone (opening the
+  /// app, or coming back with Google).
+  void _afterReady() {
     unawaited(_backend.touchSeen().catchError((Object _) {}));
     unawaited(flushCrashes());
     if (state.serverSchema == null) unawaited(_checkSchema());
@@ -1501,6 +1513,123 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  // ------------------------------------------------------------ Google
+
+  GoogleAuth get _google => ref.read(googleAuthProvider);
+
+  /// "Continue with Google" can be offered on this phone.
+  bool get googleAvailable => _google.available;
+
+  /// The Google account this DriveBond account is kept with (this phone
+  /// only shows it), or null.
+  String? get googleEmail =>
+      _store.getString(_googleKey) ?? _backend.googleEmail;
+
+  /// Home: a one-time card "keep your account with Google".
+  bool get showGoogleCard =>
+      googleAvailable &&
+      state.phase == RealPhase.ready &&
+      state.firstRun == null &&
+      googleEmail == null &&
+      _store.getString(_googleCardKey) == null;
+
+  void dismissGoogleCard() {
+    _store.setString(_googleCardKey, 'no');
+    state = state.copyWith();
+  }
+
+  GoogleToken? _pendingGoogle;
+
+  Future<GoogleToken?> _askGoogle() async {
+    try {
+      return await _google.signIn();
+    } catch (_) {
+      if (ref.mounted) _setError('google_failed', show: true);
+      return null;
+    }
+  }
+
+  /// Keep this account with Google (Settings / the Home card): same
+  /// account, same friends. 'linked', 'taken' (that Google account already
+  /// has a DriveBond account — [switchToGoogle] moves there), or null
+  /// (closed / failed).
+  Future<String?> connectGoogle() async {
+    final t = await _askGoogle();
+    if (t == null || !ref.mounted) return null;
+    String? result;
+    final ok = await _run(() async {
+      result = await _backend.linkGoogle(t.idToken);
+    });
+    if (!ok || !ref.mounted) return null;
+    if (result == 'linked') {
+      if (t.email != null) _store.setString(_googleKey, t.email);
+      _store.setString(_googleCardKey, 'done');
+      _event('google_linked');
+      _notify(RealNoticeKind.saved);
+    } else {
+      _pendingGoogle = t;
+    }
+    state = state.copyWith();
+    return result;
+  }
+
+  /// Move this phone to the DriveBond account of that Google account (the
+  /// one here is left, like signing out).
+  Future<void> switchToGoogle() async {
+    final t = _pendingGoogle;
+    _pendingGoogle = null;
+    if (t == null) return;
+    try {
+      await _backend.revokeDeviceTokens();
+      final push = _store.getString(_pushKey)?.split('|').first;
+      if (push != null) await _backend.forgetPushToken(push);
+    } on RealBackendException {
+      // Moving anyway.
+    }
+    await _clearLocal();
+    if (!ref.mounted) return;
+    state = RealState(phase: RealPhase.starting, prefs: state.prefs);
+    await _googleIn(t);
+  }
+
+  /// Sign-up screen: "Continue with Google". Coming back → the app opens
+  /// with everything; new → returns the name to fill in (they finish
+  /// joining as usual).
+  Future<String?> googleStart() async {
+    final t = await _askGoogle();
+    if (t == null || !ref.mounted) return null;
+    return _googleIn(t);
+  }
+
+  Future<String?> _googleIn(GoogleToken t) async {
+    state = state.copyWith(busy: true);
+    try {
+      final known = await _backend.signInWithGoogle(t.idToken);
+      if (!ref.mounted) return null;
+      if (t.email != null) _store.setString(_googleKey, t.email);
+      _store.setString(_googleCardKey, 'done');
+      if (!known) {
+        state = state.copyWith(phase: RealPhase.signedOut, busy: false);
+        return t.name ?? '';
+      }
+      _event('google_back');
+      state = state.copyWith(phase: RealPhase.ready, busy: false);
+      await refresh();
+      if (!ref.mounted) return null;
+      _phoneKnown = false;
+      _afterReady();
+      return null;
+    } on RealBackendException catch (e) {
+      if (!ref.mounted) return null;
+      state = state.copyWith(
+        busy: false,
+        phase: _backend.userId == null ? RealPhase.signedOut : state.phase,
+      );
+      _setError(e.code, show: true);
+      return null;
+    }
+  }
+
   Future<void> updateProfile(String name, Gender gender) async {
     await _run(() async {
       await _backend.updateProfile(name, gender);
@@ -1549,6 +1678,7 @@ class RealController extends Notifier<RealState> {
       // Signing out anyway.
     }
     await _backend.signOut();
+    await _google.signOut();
     // A new account starts clean (groups, routines, tips, lists).
     await _clearLocal();
     if (!ref.mounted) return;
@@ -1570,6 +1700,8 @@ class RealController extends Notifier<RealState> {
       _contactsSyncKey,
       _localNamesKey,
       _snapCacheKey,
+      _googleKey,
+      _googleCardKey,
       _contactsOffKey,
       _freeLogKey,
       _hintNoKey,
@@ -1612,6 +1744,7 @@ class RealController extends Notifier<RealState> {
       if (ref.mounted) state = state.copyWith(busy: false);
       return e.code;
     }
+    await _google.signOut();
     await _clearLocal();
     if (!ref.mounted) return null;
     state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);

@@ -21,6 +21,18 @@ abstract class RealBackend {
 
   Future<RealSnapshot> fetchSnapshot();
 
+  /// The Google account this login is tied to (its email), if any.
+  String? get googleEmail => null;
+
+  /// Tie this account to Google: same account, same friends, and it comes
+  /// back on a new phone. 'linked', or 'taken' (that Google account already
+  /// belongs to another DriveBond account).
+  Future<String> linkGoogle(String idToken);
+
+  /// Sign in with Google (a new phone, or a new person). True if that
+  /// account already has a profile (welcome back).
+  Future<bool> signInWithGoogle(String idToken);
+
   /// The slowest request of the last refresh ("askable_friends 820ms").
   String? get slowest => null;
 

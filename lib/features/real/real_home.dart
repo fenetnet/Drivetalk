@@ -285,6 +285,10 @@ class RealHomeScreen extends ConsumerWidget {
                   MomentChip(text: l.homeUpdating, icon: Icons.sync_rounded),
                 ],
                 const _HealthLine(),
+                if (c.showGoogleCard) ...[
+                  const SizedBox(height: 12),
+                  _GoogleCard(onClose: c.dismissGoogleCard),
+                ],
                 if (c.showWhatsNew) ...[
                   const SizedBox(height: 12),
                   _WhatsNewCard(onClose: c.dismissWhatsNew),
@@ -2073,6 +2077,65 @@ class _WhatsNewCard extends StatelessWidget {
               ],
             ),
             Text(l.whatsNewBody, style: const TextStyle(height: 1.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Once, on Home: keep the account with Google (owner: no lost friends on
+/// a new phone).
+class _GoogleCard extends ConsumerWidget {
+  const _GoogleCard({required this.onClose});
+
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    return Card(
+      key: const ValueKey('googleCard'),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.shield_rounded, color: AppColors.terracotta),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l.googleCardTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l.close,
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: onClose,
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12),
+              child: Text(
+                l.googleCardBody,
+                style: const TextStyle(height: 1.5),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 12),
+              child: GoogleButton(
+                label: l.googleCardAction,
+                onTap: () => connectGoogleFlow(context, ref),
+              ),
+            ),
           ],
         ),
       ),

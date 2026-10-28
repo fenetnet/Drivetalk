@@ -94,6 +94,54 @@ class SupabaseRealBackend implements RealBackend {
   }
 
   @override
+  String? get googleEmail {
+    final u = _client?.auth.currentUser;
+    for (final i in u?.identities ?? const <UserIdentity>[]) {
+      if (i.provider == 'google') {
+        return (i.identityData?['email'] as String?) ?? u?.email;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<String> linkGoogle(String idToken) => _guard(() async {
+    try {
+      await _c.auth.linkIdentityWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+      );
+      return 'linked';
+    } on AuthException catch (e) {
+      final m = '${e.code} ${e.message}'.toLowerCase();
+      if (m.contains('identity_already_exists') ||
+          m.contains('already linked') ||
+          m.contains('already exists')) {
+        return 'taken';
+      }
+      rethrow;
+    }
+  });
+
+  @override
+  Future<bool> signInWithGoogle(String idToken) => _guard(() async {
+    await _unsubscribe();
+    await _c.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+    );
+    _subscribe();
+    final me = userId;
+    if (me == null) return false;
+    final row = await _c
+        .from('profiles')
+        .select('id')
+        .eq('id', me)
+        .maybeSingle();
+    return row != null;
+  }).whenComplete(_kickPush);
+
+  @override
   String? slowest;
 
   /// All of a refresh's requests at once; remembers the slowest (shown in

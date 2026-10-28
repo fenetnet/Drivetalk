@@ -4,6 +4,7 @@ import 'dart:convert';
 // in-memory copy of the server rules.
 import 'dart:typed_data';
 
+import 'package:drivetalk/platform/google_auth.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
@@ -61,9 +62,11 @@ class Phone {
         photoCacheProvider.overrideWithValue(photos),
         appBuildProvider.overrideWithValue(10),
         updateCheckerProvider.overrideWithValue(updates),
+        googleAuthProvider.overrideWithValue(google),
       ],
     );
   }
+  final google = FakeGoogleAuth();
   final photos = MemoryPhotoCache();
   final updates = FakeUpdateChecker();
   final driving = FakeDrivingDetector();
@@ -2330,6 +2333,59 @@ void main() {
       expect(await yoni.c.tapFriend(back), isTrue);
       await me.c.refresh();
       expect(currentOffer(me.s, now), isNotNull);
+    });
+
+    test('Google: keep my account, then get it back on a new phone', () async {
+      await connect();
+      final myId = me.backend.userId;
+      me.google.token = const GoogleToken('g-natan', email: 'n@gmail.com');
+      expect(await me.c.connectGoogle(), 'linked');
+      expect(me.c.googleEmail, 'n@gmail.com');
+      expect(me.c.showGoogleCard, isFalse);
+      // A new phone: "Continue with Google" brings the same account back.
+      final fresh = Phone(server, clock);
+      addTearDown(fresh.dispose);
+      await fresh.boot();
+      expect(fresh.s.phase, RealPhase.signedOut);
+      fresh.google.token = const GoogleToken('g-natan', email: 'n@gmail.com');
+      expect(await fresh.c.googleStart(), isNull, reason: 'welcome back');
+      expect(fresh.s.phase, RealPhase.ready);
+      expect(fresh.backend.userId, myId);
+      expect(fresh.s.snapshot!.friends.single.name, 'יוני');
+    });
+
+    test('Google: a new person joins with Google', () async {
+      me.google.token = const GoogleToken(
+        'g-dana',
+        email: 'd@gmail.com',
+        name: 'דנה',
+      );
+      await me.boot();
+      expect(await me.c.googleStart(), 'דנה', reason: 'the name to fill in');
+      expect(me.s.phase, RealPhase.signedOut);
+      await me.c.signIn('דנה', Gender.female, phone: '0541234567');
+      expect(me.s.phase, RealPhase.ready);
+      final id = me.backend.userId;
+      final fresh = Phone(server, clock);
+      addTearDown(fresh.dispose);
+      await fresh.boot();
+      fresh.google.token = const GoogleToken('g-dana');
+      expect(await fresh.c.googleStart(), isNull);
+      expect(fresh.backend.userId, id);
+      expect(fresh.s.snapshot!.me.name, 'דנה');
+    });
+
+    test('Google: that Google account already has DriveBond → move', () async {
+      await connect();
+      // Yoni keeps his account with Google; my phone tries the same one.
+      yoni.google.token = const GoogleToken('g-yoni');
+      expect(await yoni.c.connectGoogle(), 'linked');
+      me.google.token = const GoogleToken('g-yoni');
+      expect(await me.c.connectGoogle(), 'taken');
+      await me.c.switchToGoogle();
+      expect(me.backend.userId, yoni.backend.userId);
+      expect(me.s.phase, RealPhase.ready);
+      expect(me.s.snapshot!.me.name, 'יוני');
     });
 
     test('opens at once with the saved screen, then the server', () async {

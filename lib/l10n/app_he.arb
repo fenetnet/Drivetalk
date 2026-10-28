@@ -1828,5 +1828,24 @@
   "startingLines": "מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…",
   "@startingLines": {
     "description": "Loading screen lines, separated by |, shown one after another."
-  }
+  },
+  "googleContinue": "המשך עם Google",
+  "googleOr": "או בלי Google",
+  "googleConnected": "מחובר עם Google: {email}",
+  "@googleConnected": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "googleCardTitle": "לשמור את החשבון עם Google",
+  "googleCardBody": "ככה החברים שלך יחזרו אליך גם בטלפון חדש או אחרי התקנה מחדש.",
+  "googleCardAction": "חיבור ל-Google",
+  "googleSettingsTitle": "חשבון Google",
+  "googleSettingsOff": "לא מחובר. כדאי, כדי שהחשבון יחזור בטלפון חדש",
+  "googleTakenTitle": "לחשבון Google הזה כבר יש חשבון DriveBond",
+  "googleTakenBody": "כנראה מטלפון אחר. אפשר לעבור אליו, והחברים שלו יופיעו כאן. החשבון שפתוח עכשיו בטלפון הזה ינותק ממנו.",
+  "googleSwitch": "לעבור לחשבון הזה",
+  "realErrorGoogle": "לא הצלחנו להתחבר עם Google. אפשר לנסות שוב."
 }

@@ -11,6 +11,9 @@ import 'real_models.dart';
 /// supabase/migrations (visibility, mutual acceptance, 15-minute cooldown
 /// after a decline, blocks). Used by tests to run "two phones" in one process.
 class MemoryServer {
+  /// Google accounts (the test token stands for the account) → user id.
+  final Map<String, String> google = {};
+
   MemoryServer({DateTime Function()? now, Random? random})
     : now = now ?? DateTime.now,
       _random = random ?? Random.secure();
@@ -891,6 +894,34 @@ class MemoryRealBackend implements RealBackend {
   @override
   Future<void> start() async {
     if (_me != null) _live.add(LiveStatus.connected);
+  }
+
+  @override
+  @override
+  String? get googleEmail {
+    final me = _me;
+    if (me == null) return null;
+    for (final e in server.google.entries) {
+      if (e.value == me) return '${e.key}@gmail.com';
+    }
+    return null;
+  }
+
+  @override
+  Future<String> linkGoogle(String idToken) async {
+    final me = _uid;
+    final owner = server.google[idToken];
+    if (owner != null && owner != me) return 'taken';
+    server.google[idToken] = me;
+    return 'linked';
+  }
+
+  @override
+  Future<bool> signInWithGoogle(String idToken) async {
+    if (offline) throw const RealBackendException('offline');
+    _me = server.google[idToken] ??= server._newId('user');
+    _live.add(LiveStatus.connected);
+    return server.profiles.containsKey(_me);
   }
 
   @override

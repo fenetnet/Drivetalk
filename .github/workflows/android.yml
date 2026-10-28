@@ -106,12 +106,14 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           INVITE_BASE_URL: ${{ vars.INVITE_BASE_URL }}
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
         run: >
           flutter build apk --release --dart-define=DEV_TOOLS=true
           --build-number=${{ github.run_number }}
           --dart-define="SUPABASE_URL=$SUPABASE_URL"
           --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
           --dart-define="INVITE_BASE_URL=$INVITE_BASE_URL"
+          --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
 
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk drivetalk-prototype.apk
@@ -126,6 +128,7 @@ jobs:
           SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
           INVITE_BASE_URL: ${{ vars.INVITE_BASE_URL }}
+          GOOGLE_WEB_CLIENT_ID: ${{ vars.GOOGLE_WEB_CLIENT_ID }}
         run: >
           flutter build appbundle --release
           --build-number=${{ github.run_number }}
@@ -133,6 +136,7 @@ jobs:
           --dart-define="SUPABASE_URL=$SUPABASE_URL"
           --dart-define="SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
           --dart-define="INVITE_BASE_URL=$INVITE_BASE_URL"
+          --dart-define="GOOGLE_WEB_CLIENT_ID=$GOOGLE_WEB_CLIENT_ID"
           && mv build/app/outputs/bundle/release/app-release.aab drivetalk.aab
 
       - uses: actions/upload-artifact@v4

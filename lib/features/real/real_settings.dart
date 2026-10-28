@@ -63,6 +63,32 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : () => _editProfile(context, ref, me.photo != null),
               ),
+              if (c.googleAvailable)
+                ListTile(
+                  leading: const Text(
+                    'G',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF4285F4),
+                    ),
+                  ),
+                  title: Text(l.googleSettingsTitle),
+                  subtitle: Text(
+                    c.googleEmail == null
+                        ? l.googleSettingsOff
+                        : l.googleConnected(c.googleEmail!),
+                  ),
+                  trailing: c.googleEmail == null
+                      ? const Icon(Icons.chevron_right_rounded)
+                      : const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.sage,
+                        ),
+                  onTap: c.googleEmail != null || s.busy
+                      ? null
+                      : () => connectGoogleFlow(context, ref),
+                ),
             ],
           ),
           SettingsGroup(

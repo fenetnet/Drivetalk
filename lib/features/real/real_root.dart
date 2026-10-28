@@ -465,6 +465,35 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                     icon: Icons.mail_rounded,
                   ),
                 ],
+                if (c.googleAvailable) ...[
+                  const SizedBox(height: 24),
+                  if (c.googleEmail case final email?)
+                    MomentChip(
+                      text: l.googleConnected(email),
+                      icon: Icons.check_circle_rounded,
+                    )
+                  else ...[
+                    GoogleButton(
+                      label: l.googleContinue,
+                      onTap: s.busy
+                          ? null
+                          : () async {
+                              final name = await c.googleStart();
+                              if (name != null &&
+                                  mounted &&
+                                  _name.text.trim().isEmpty) {
+                                setState(() => _name.text = name);
+                              }
+                            },
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      l.googleOr,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.inkSoft),
+                    ),
+                  ],
+                ],
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),

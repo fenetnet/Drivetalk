@@ -2689,4 +2689,45 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get startingLines =>
       'מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…';
+
+  @override
+  String get googleContinue => 'המשך עם Google';
+
+  @override
+  String get googleOr => 'או בלי Google';
+
+  @override
+  String googleConnected(String email) {
+    return 'מחובר עם Google: $email';
+  }
+
+  @override
+  String get googleCardTitle => 'לשמור את החשבון עם Google';
+
+  @override
+  String get googleCardBody =>
+      'ככה החברים שלך יחזרו אליך גם בטלפון חדש או אחרי התקנה מחדש.';
+
+  @override
+  String get googleCardAction => 'חיבור ל-Google';
+
+  @override
+  String get googleSettingsTitle => 'חשבון Google';
+
+  @override
+  String get googleSettingsOff =>
+      'לא מחובר. כדאי, כדי שהחשבון יחזור בטלפון חדש';
+
+  @override
+  String get googleTakenTitle => 'לחשבון Google הזה כבר יש חשבון DriveBond';
+
+  @override
+  String get googleTakenBody =>
+      'כנראה מטלפון אחר. אפשר לעבור אליו, והחברים שלו יופיעו כאן. החשבון שפתוח עכשיו בטלפון הזה ינותק ממנו.';
+
+  @override
+  String get googleSwitch => 'לעבור לחשבון הזה';
+
+  @override
+  String get realErrorGoogle => 'לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.';
 }

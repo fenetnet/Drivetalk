@@ -138,3 +138,37 @@ https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnr
 
 ## מה הבנייה עושה עם הערכים
 ה-APK מקבל בזמן הבנייה את `SUPABASE_URL`, `SUPABASE_ANON_KEY` ו-`INVITE_BASE_URL` מה-Variables של GitHub. אין צורך לשנות קוד. כדי להחליף שרת, משנים את הערך ובונים מחדש.
+
+## כניסה עם Google (D-151)
+
+חינם. בערך 20 דקות. **ה-Client Secret נכנס רק ל-Supabase. לא שולחים אותו לאף אחד ולא מכניסים אותו ל-GitHub.**
+
+### א. Google Cloud
+1. נכנסים ל-https://console.cloud.google.com עם אותו חשבון של Google Play.
+2. למעלה בוחרים פרויקט, ואז **New project**. שם: DriveBond. **Create**.
+3. תפריט ← **APIs & Services** ← **OAuth consent screen**, שנקרא גם **Google Auth Platform**. לוחצים **Get started**:
+   - App name: DriveBond. Support email: האימייל שלך.
+   - Audience: **External**.
+   - Contact email: האימייל שלך. מסכימים ולוחצים **Create**.
+4. **Audience** ← **Publish app**, כדי שזה יעבוד לכולם ולא רק לבודקים.
+5. **Clients** ← **Create client**:
+   - Application type: **Web application**. Name: DriveBond Supabase.
+   - Authorized redirect URIs ← **Add URI**: `https://isjgrdiiawhyxzvzdkva.supabase.co/auth/v1/callback`
+   - **Create**. מעתיקים את ה-**Client ID** (ציבורי) ואת ה-**Client secret** (סודי).
+6. **Clients** ← **Create client** שוב:
+   - Application type: **Android**. Package name: `app.drivetalk.drivetalk`.
+   - SHA-1: מ-Play Console ← **בדיקה ופרסום** ← **תקינות האפליקציה** (App integrity) ← **חתימת אפליקציות** ← "App signing key certificate" ← SHA-1.
+   - **Create**.
+7. חוזרים על שלב 6 פעם נוספת, עם ה-SHA-1 של "Upload key certificate" מאותו מסך. זה בשביל הגרסה שמותקנת מ-GitHub.
+
+### ב. Supabase
+1. **Authentication** ← **Sign In / Providers** ← **Google** ← מפעילים (Enable).
+2. Client IDs: מדביקים את ה-**Client ID** מסעיף א.5.
+3. Client Secret: מדביקים את ה-**Client secret** מסעיף א.5.
+4. מסמנים **Skip nonce checks**. **Save**.
+5. באותו מסך, בחלק העליון (User Signups), מפעילים **Allow manual linking**. **Save**.
+
+### ג. GitHub
+- Settings ← Secrets and variables ← Actions ← **Variables** ← New repository variable.
+- Name: `GOOGLE_WEB_CLIENT_ID`. Value: ה-Client ID מסעיף א.5 (הציבורי).
+- הבנייה הבאה כבר תכלול את הכפתור.

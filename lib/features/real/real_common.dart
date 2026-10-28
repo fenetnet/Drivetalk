@@ -41,6 +41,7 @@ String realErrorText(AppLocalizations l, String code) => switch (code) {
   'invalid_name' => l.realErrorInvalidName,
   'rate_limited' => l.realErrorRateLimited,
   'too_many_open_invitations' => l.realErrorTooManyInvites,
+  'google_failed' => l.realErrorGoogle,
   _ => l.realErrorGeneric(code),
 };
 
@@ -850,4 +851,73 @@ Future<void> openFeedbackDialog(
     await (problem ? c.reportProblem(text.text) : c.sendFeedback(text.text));
   }
   text.dispose();
+}
+
+/// "Keep my account with Google" (Settings, Home card). When that Google
+/// account already has a DriveBond account: ask before moving there.
+Future<void> connectGoogleFlow(BuildContext context, WidgetRef ref) async {
+  final c = ref.read(realProvider.notifier);
+  final l = AppLocalizations.of(context);
+  final result = await c.connectGoogle();
+  if (result != 'taken' || !context.mounted) return;
+  final move = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(l.googleTakenTitle),
+      content: Text(l.googleTakenBody),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(l.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(l.googleSwitch),
+        ),
+      ],
+    ),
+  );
+  if (move ?? false) await c.switchToGoogle();
+}
+
+/// The "G" button (sign-up, Settings, Home card).
+class GoogleButton extends StatelessWidget {
+  const GoogleButton({super.key, required this.label, this.onTap});
+
+  final String label;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 58,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: AppColors.ink,
+          side: const BorderSide(color: Color(0xFFDADCE0)),
+          shape: const StadiumBorder(),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'G',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF4285F4),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

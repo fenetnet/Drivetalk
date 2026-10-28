@@ -4503,6 +4503,78 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מחפשים מי פנוי לדבר…|בודקים מי בדרך…|מכינים את החברים שלך…|עוד רגע…'**
   String get startingLines;
+
+  /// No description provided for @googleContinue.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך עם Google'**
+  String get googleContinue;
+
+  /// No description provided for @googleOr.
+  ///
+  /// In he, this message translates to:
+  /// **'או בלי Google'**
+  String get googleOr;
+
+  /// No description provided for @googleConnected.
+  ///
+  /// In he, this message translates to:
+  /// **'מחובר עם Google: {email}'**
+  String googleConnected(String email);
+
+  /// No description provided for @googleCardTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לשמור את החשבון עם Google'**
+  String get googleCardTitle;
+
+  /// No description provided for @googleCardBody.
+  ///
+  /// In he, this message translates to:
+  /// **'ככה החברים שלך יחזרו אליך גם בטלפון חדש או אחרי התקנה מחדש.'**
+  String get googleCardBody;
+
+  /// No description provided for @googleCardAction.
+  ///
+  /// In he, this message translates to:
+  /// **'חיבור ל-Google'**
+  String get googleCardAction;
+
+  /// No description provided for @googleSettingsTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חשבון Google'**
+  String get googleSettingsTitle;
+
+  /// No description provided for @googleSettingsOff.
+  ///
+  /// In he, this message translates to:
+  /// **'לא מחובר. כדאי, כדי שהחשבון יחזור בטלפון חדש'**
+  String get googleSettingsOff;
+
+  /// No description provided for @googleTakenTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לחשבון Google הזה כבר יש חשבון DriveBond'**
+  String get googleTakenTitle;
+
+  /// No description provided for @googleTakenBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כנראה מטלפון אחר. אפשר לעבור אליו, והחברים שלו יופיעו כאן. החשבון שפתוח עכשיו בטלפון הזה ינותק ממנו.'**
+  String get googleTakenBody;
+
+  /// No description provided for @googleSwitch.
+  ///
+  /// In he, this message translates to:
+  /// **'לעבור לחשבון הזה'**
+  String get googleSwitch;
+
+  /// No description provided for @realErrorGoogle.
+  ///
+  /// In he, this message translates to:
+  /// **'לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.'**
+  String get realErrorGoogle;
 }
 
 class _AppLocalizationsDelegate

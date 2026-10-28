@@ -1,11 +1,12 @@
 # DriveBond — מדיניות פרטיות / Privacy Policy
 
-_עודכן: 18 באוקטובר 2026_
+_עודכן: 28 באוקטובר 2026_
 
 DriveBond היא אפליקציה שמחברת בין חברים לשיחה כששניהם פנויים. זו גרסת ניסיון.
 
 ## מה נשמר בשרת
 - **שם** שבחרת.
+- **חשבון Google (רשות):** אם בחרת "המשך עם Google", נשמרים כתובת האימייל ומזהה החשבון שלך ב-Google, רק כדי שתוכל/י לחזור לאותו חשבון בטלפון חדש. החברים לא רואים אותם.
 - **מספר הטלפון** שלך. הוא נמסר לחבר רק אחרי ששניכם אמרתם "כן" לשיחה, כדי שאחד מכם יוכל להתקשר.
 - **מי החברים שלך באפליקציה.**
 - **תמונת פרופיל** (רשות). רק אתה והחברים שלך יכולים לראות אותה.
@@ -76,6 +77,7 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 ---
 
 **English summary:** DriveBond stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, an optional profile photo (visible only to your friends), and whether you are currently available (mode and expiry, deleted automatically).
+- **Google account (optional):** with "Continue with Google", your Google email and account ID are stored, only so you can get the same account back on a new phone. Friends never see them.
 - **Privacy settings:** "available without my name" (friends see only how many friends are free, not who), "hide when I'm in a call", quiet hours (hours, chosen days and your time zone), and "tell friends when I set off". Only you see them.
 - **Crash notes:** if the app crashes, a short technical note (error type, message, code location) and the app version are sent to the app's owner (also when Android reports the app froze) — no names, numbers or content.
 - **"In a call" (yes/no):** while you are available, friends see whether you are currently in a call, so you aren't offered another one. The phone only checks whether a call is in progress (no number, no who, no duration, no permission needed); it clears itself when the call ends (at most 3 minutes after the last update).
