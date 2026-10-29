@@ -2897,14 +2897,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get intro1Title => 'שוב תקוע בפקק?';
 
   @override
-  String get intro1Body => 'הזמן הזה בדרך יכול להיות הרבה יותר מעניין.';
+  String get intro1Body => 'אולי זה דווקא זמן טוב לדבר עם חבר.';
 
   @override
-  String get intro2Title => 'גם החברים שלך\nבדיוק בדרכים לפעמים.';
+  String get intro2Title => 'גם לחבר שלך\nיש זמן עכשיו.';
 
   @override
-  String get intro2Body =>
-      'חבר יוצא לנסיעה ויש לו זמן? DriveBond מציעה לכם לדבר.';
+  String get intro2Body => 'DriveBond מזהה כששניכם פנויים ומציעה לכם לדבר.';
 
   @override
   String get introStart => 'בואו נתחיל';
@@ -2925,9 +2924,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get onbGoogleName => 'השם שיופיע לחברים';
 
   @override
-  String get intro3Title => 'פתאום הדרך\nעוברת בכיף.';
+  String get intro3Title => 'פתאום הפקק\nעובר בכיף.';
 
   @override
-  String get intro3Body =>
-      'עונים \"כן\" בקול, בלי לגעת בטלפון, ומדברים בדיבורית.';
+  String get intro3Body => 'שניכם מאשרים קולית ומתחילה שיחת טלפון רגילה.';
+
+  @override
+  String get intro2Badge => 'DriveBond זיהתה: שניכם פנויים עכשיו';
 }

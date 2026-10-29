@@ -4837,19 +4837,19 @@ abstract class AppLocalizations {
   /// No description provided for @intro1Body.
   ///
   /// In he, this message translates to:
-  /// **'הזמן הזה בדרך יכול להיות הרבה יותר מעניין.'**
+  /// **'אולי זה דווקא זמן טוב לדבר עם חבר.'**
   String get intro1Body;
 
   /// No description provided for @intro2Title.
   ///
   /// In he, this message translates to:
-  /// **'גם החברים שלך\nבדיוק בדרכים לפעמים.'**
+  /// **'גם לחבר שלך\nיש זמן עכשיו.'**
   String get intro2Title;
 
   /// No description provided for @intro2Body.
   ///
   /// In he, this message translates to:
-  /// **'חבר יוצא לנסיעה ויש לו זמן? DriveBond מציעה לכם לדבר.'**
+  /// **'DriveBond מזהה כששניכם פנויים ומציעה לכם לדבר.'**
   String get intro2Body;
 
   /// No description provided for @introStart.
@@ -4891,14 +4891,20 @@ abstract class AppLocalizations {
   /// No description provided for @intro3Title.
   ///
   /// In he, this message translates to:
-  /// **'פתאום הדרך\nעוברת בכיף.'**
+  /// **'פתאום הפקק\nעובר בכיף.'**
   String get intro3Title;
 
   /// No description provided for @intro3Body.
   ///
   /// In he, this message translates to:
-  /// **'עונים \"כן\" בקול, בלי לגעת בטלפון, ומדברים בדיבורית.'**
+  /// **'שניכם מאשרים קולית ומתחילה שיחת טלפון רגילה.'**
   String get intro3Body;
+
+  /// No description provided for @intro2Badge.
+  ///
+  /// In he, this message translates to:
+  /// **'DriveBond זיהתה: שניכם פנויים עכשיו'**
+  String get intro2Badge;
 }
 
 class _AppLocalizationsDelegate

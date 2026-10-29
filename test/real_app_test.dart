@@ -69,10 +69,11 @@ void main() {
       );
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);
-      expect(find.text('גם החברים שלך\nבדיוק בדרכים לפעמים.'), findsOneWidget);
+      expect(find.text('גם לחבר שלך\nיש זמן עכשיו.'), findsOneWidget);
+      expect(find.text('DriveBond זיהתה: שניכם פנויים עכשיו'), findsOneWidget);
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);
-      expect(find.text('פתאום הדרך\nעוברת בכיף.'), findsOneWidget);
+      expect(find.text('פתאום הפקק\nעובר בכיף.'), findsOneWidget);
       await t.tap(find.text('בואו נתחיל'));
       await pumpFor(t, 300);
       expect(find.text('הזמן בדרך –\nעם האנשים שלך.'), findsOneWidget);
