@@ -2434,6 +2434,73 @@ void main() {
       expect(await yoni.c.tapFriend(back), isTrue, reason: 'he can call back');
     });
 
+    group('yes automatically while driving (D-153)', () {
+      Future<void> yoniDrivingAutoYes() async {
+        await yoni.c.setAutoYes(on: true, min: 3);
+        await yoni.c.startAvailability(AvailabilityMode.driving, 60);
+      }
+
+      test('I tap Yoni: connected at once, I call, he is not asked', () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        await yoniDrivingAutoYes();
+        await me.c.startAvailability(AvailabilityMode.walking, 60);
+        // The app's own first question goes; then I tap.
+        await refreshBoth();
+        if (currentOffer(me.s, now) case final o?) await me.c.cancelWaiting(o);
+        await refreshBoth();
+        expect(me.s.snapshot!.instant, {yoni.backend.userId});
+        final f = me.s.snapshot!.friend(yoni.backend.userId!)!;
+        expect(await me.c.tapFriend(f), isTrue);
+        await pump(20);
+        await refreshBoth();
+        await pump(20);
+        expect(me.s.call?.role, CallRole.iCall);
+        expect(me.dialer.dialed, ['0532222222']);
+        expect(yoni.dialer.dialed, isEmpty, reason: 'his phone just rings');
+        expect(yoni.s.call?.role, CallRole.theyCall);
+      });
+
+      test('the app asks me, I say yes: connected, I call', () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        await yoniDrivingAutoYes();
+        await me.c.startAvailability(AvailabilityMode.walking, 60);
+        await refreshBoth();
+        final q = currentOffer(me.s, now)!;
+        expect(currentOffer(yoni.s, now), isNotNull, reason: 'asked as usual');
+        await me.c.respond(q, accept: true);
+        await pump(20);
+        await refreshBoth();
+        await pump(20);
+        expect(me.s.call?.role, CallRole.iCall);
+        expect(me.dialer.dialed, ['0532222222']);
+      });
+
+      test('fewer stars than his level, or not driving: a question', () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        await yoni.c.setAutoYes(on: true, min: 4);
+        await yoni.c.startAvailability(AvailabilityMode.driving, 60);
+        await me.c.startAvailability(AvailabilityMode.walking, 60);
+        await refreshBoth();
+        expect(me.s.snapshot!.instant, isEmpty, reason: '3 stars < 4');
+        await yoni.c.setAutoYes(min: 3);
+        await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+        await me.c.refresh();
+        expect(me.s.snapshot!.instant, isEmpty, reason: 'walking');
+      });
+
+      test('both on for each other: connects by itself, 5 seconds', () async {
+        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+        await yoniDrivingAutoYes();
+        await me.c.setAutoYes(on: true);
+        await me.c.startAvailability(AvailabilityMode.driving, 60);
+        await refreshBoth();
+        final o = server.offers.values.single;
+        expect(o.quick, isTrue);
+        expect(o.status, OfferStatus.accepted);
+        expect(currentOffer(me.s, now), isNull, reason: 'nobody is asked');
+      });
+    });
+
     test('only friends I can really ask are listed (D-107)', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);

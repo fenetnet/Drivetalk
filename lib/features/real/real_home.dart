@@ -556,7 +556,21 @@ class _FreeNowCard extends ConsumerWidget {
                             : () => askFreeFriend(context, ref, p),
                         child: Column(
                           children: [
-                            RealAvatar(person: p.toPerson(), online: !inCall),
+                            InstantRing(
+                              on:
+                                  !inCall &&
+                                  !faded &&
+                                  (ref
+                                          .watch(realProvider)
+                                          .snapshot
+                                          ?.instant
+                                          .contains(p.id) ??
+                                      false),
+                              child: RealAvatar(
+                                person: p.toPerson(),
+                                online: !inCall,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             Text(
                               p.name,
@@ -1459,14 +1473,26 @@ class RealDriverHome extends ConsumerWidget {
       );
     }
     final free = friendsToShow(s, now);
+    final autoYes = s.snapshot?.autoYes ?? false;
     return MomentLayout(
       style: MomentStyle.dark,
       footer: l.driverSafety,
-      header: MomentChip(
-        text: l.realNotifChannelStatus,
-        style: MomentStyle.dark,
-        dot: AppColors.sage,
-      ),
+      // "Yes automatically" on: said here, one tap turns it off (D-153).
+      header: autoYes
+          ? InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: s.busy ? null : () => c.setAutoYes(on: false),
+              child: MomentChip(
+                text: l.autoYesOn,
+                style: MomentStyle.dark,
+                dot: AppColors.sage,
+              ),
+            )
+          : MomentChip(
+              text: l.realNotifChannelStatus,
+              style: MomentStyle.dark,
+              dot: AppColors.sage,
+            ),
       top: Column(
         children: [
           if (free.isEmpty) ...[
@@ -1501,7 +1527,8 @@ class RealDriverHome extends ConsumerWidget {
                     child: _DriverFriend(
                       friend: p,
                       label: modeLabel(l, a.mode),
-                      onTap: s.busy ? null : () => c.askFriend(p),
+                      instant: snapInstant(s, p.id),
+                      onTap: s.busy ? null : () => c.tapFriend(p),
                     ),
                   ),
               ],
@@ -1559,10 +1586,14 @@ class _DriverFriend extends StatelessWidget {
     required this.friend,
     required this.label,
     required this.onTap,
+    this.instant = false,
   });
   final RealProfile friend;
   final String label;
   final VoidCallback? onTap;
+
+  /// They'd say yes to me at once (D-153): a double ring.
+  final bool instant;
 
   @override
   Widget build(BuildContext context) {
@@ -1573,10 +1604,13 @@ class _DriverFriend extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Column(
           children: [
-            HeroAvatar(
-              person: friend.toPerson(),
-              size: 88,
-              ring: AppColors.driverRing,
+            InstantRing(
+              on: instant,
+              child: HeroAvatar(
+                person: friend.toPerson(),
+                size: 84,
+                ring: AppColors.driverRing,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
@@ -2142,3 +2176,7 @@ class _GoogleCard extends ConsumerWidget {
     );
   }
 }
+
+/// They'd say yes to me at once (D-153).
+bool snapInstant(RealState s, String id) =>
+    s.snapshot?.instant.contains(id) ?? false;

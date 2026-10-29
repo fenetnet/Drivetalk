@@ -142,6 +142,10 @@ class SupabaseRealBackend implements RealBackend {
   }).whenComplete(_kickPush);
 
   @override
+  Future<void> setAutoYes({bool? on, int? min}) =>
+      _guard(() => _c.rpc('set_auto_yes', params: {'p_on': on, 'p_min': min}));
+
+  @override
   String? slowest;
 
   /// All of a refresh's requests at once; remembers the slowest (shown in
@@ -188,6 +192,7 @@ class SupabaseRealBackend implements RealBackend {
         'quick_status',
         'my_pauses',
         'my_availability_details',
+        'auto_yes_status',
       ],
       [
         _c
@@ -341,8 +346,16 @@ class SupabaseRealBackend implements RealBackend {
                     .eq('user_id', me),
               ),
             ),
+        // "Yes automatically while driving" (optional on an older server).
+        _c
+            .rpc('auto_yes_status')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [Map<String, dynamic>.from(r as Map)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
       ],
     );
+    final autoYes = results[15].firstOrNull;
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
     ];
@@ -430,6 +443,9 @@ class SupabaseRealBackend implements RealBackend {
         for (final r in results[12])
           if (r['theirs'] == true) r['user_id'] as String,
       },
+      autoYes: autoYes?['on'] == true,
+      autoYesMin: (autoYes?['min'] as num?)?.toInt() ?? 3,
+      instant: {for (final x in autoYes?['instant'] as List? ?? const []) '$x'},
       pauses: {
         for (final r in results[13])
           r['user_id'] as String: (

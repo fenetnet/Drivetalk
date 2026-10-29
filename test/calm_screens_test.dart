@@ -3,6 +3,7 @@
 import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
+import 'package:drivetalk/features/real/real_common.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
 import 'package:drivetalk/features/real/real_people.dart';
@@ -241,6 +242,33 @@ void main() {
     expect(find.text('מי פנוי עכשיו'), findsOneWidget);
     expect(find.text('יונתן־אלכסנדר'), findsOneWidget);
     expect(find.text('לוחצים על חבר, ונשאל אותו.'), findsOneWidget);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('a friend who says yes at once: double ring (D-153)', (t) async {
+    final (me, friend) = await twoFriends(t);
+    await t.runAsync(() async {
+      final f = friend.read(realProvider.notifier);
+      await f.setAutoYes(on: true);
+      await f.startAvailability(AvailabilityMode.driving, 60);
+      final c = me.read(realProvider.notifier);
+      await c.startAvailability(AvailabilityMode.driving, 60);
+      await c.refresh();
+      // The app's own question about him: not now (so he's on the screen).
+      if (currentOffer(me.read(realProvider), now) case final o?) {
+        await c.respond(o, accept: false);
+      }
+      await c.refresh();
+    });
+    await _show(t, me, const RealDriverHome());
+    Finder ring() => find.byWidgetPredicate((w) => w is InstantRing && w.on);
+    expect(ring(), findsOneWidget);
+    await t.runAsync(() => me.read(realProvider.notifier).setAutoYes(on: true));
+    await t.pump();
+    expect(find.text('כן אוטומטי פועל'), findsOneWidget);
+    await _show(t, me, const RealHomeScreen());
+    expect(ring(), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });

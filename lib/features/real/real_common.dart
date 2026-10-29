@@ -921,3 +921,37 @@ class GoogleButton extends StatelessWidget {
     );
   }
 }
+
+/// A friend who'd say yes to me at once (D-153, owner: a double ring):
+/// a second, softly glowing ring around their picture.
+class InstantRing extends StatelessWidget {
+  const InstantRing({
+    super.key,
+    required this.on,
+    required this.child,
+    this.color = AppColors.sage,
+  });
+
+  final bool on;
+  final Widget child;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!on) return child;
+    return Semantics(
+      label: AppLocalizations.of(context).instantFriend,
+      child: Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: color, width: 2.5),
+          boxShadow: [
+            BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 12),
+          ],
+        ),
+        child: child,
+      ),
+    );
+  }
+}

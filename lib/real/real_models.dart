@@ -378,7 +378,16 @@ class RealSnapshot {
     this.quickMine = const {},
     this.quickTheirs = const {},
     this.pauses = const {},
+    this.autoYes = false,
+    this.autoYesMin = 3,
+    this.instant = const {},
   });
+
+  /// "Yes automatically while driving" (D-153): mine on, from how many
+  /// stars, and the friends who'd say yes to me right now (double ring).
+  final bool autoYes;
+  final int autoYesMin;
+  final Set<String> instant;
 
   /// Free friends I can really ask now (D-107). null = unknown (an older
   /// server): nobody is filtered out.
@@ -485,6 +494,9 @@ class RealSnapshot {
     quickMine: quickMine,
     quickTheirs: quickTheirs,
     pauses: pauses,
+    autoYes: autoYes,
+    autoYesMin: autoYesMin,
+    instant: instant,
   );
 
   /// Same snapshot with downloaded photos filled in (by user id).

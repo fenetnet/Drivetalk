@@ -1845,9 +1845,10 @@ Future<void> main() async {
   await tapperCalls();
   await callBackWorks();
   await askerNotBusy();
+  await autoYesDriving();
 
   check(
-    await eve.rpc('schema_version') == 63,
+    await eve.rpc('schema_version') == 64,
     'the server says its version (41)',
   );
 
@@ -4013,6 +4014,78 @@ Future<void> askerNotBusy() async {
     'my own unanswered asks never make me "busy" (D-152) [$why]',
   );
   for (final c in [ka, kb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> autoYesDriving() async {
+  final da = await newUser('דורית', 'female');
+  final db = await newUser('דוד', 'male');
+  for (final (c, d) in [(da, 8881), (db, 8882)]) {
+    await c.from('phone_numbers').upsert({
+      'user_id': uid(c),
+      'phone': '+97250${DateTime.now().millisecondsSinceEpoch % 10000}$d',
+    });
+  }
+  await befriend(da, db);
+  await skipQuietGap();
+  // Dorit: yes automatically while driving, from 3 stars (David has 3).
+  await da.rpc('set_auto_yes', params: {'p_on': true, 'p_min': 3});
+  await da.rpc(
+    'set_availability',
+    params: {'p_mode': 'driving', 'p_minutes': 30},
+  );
+  await db.rpc(
+    'set_availability',
+    params: {'p_mode': 'walking', 'p_minutes': 30},
+  );
+  final st = Map<String, dynamic>.from(await db.rpc('auto_yes_status') as Map);
+  check(
+    (st['instant'] as List).contains(uid(da)),
+    'David sees Dorit "connects at once" (double ring) (D-153)',
+  );
+  // The app's own question first: David gives way by tapping.
+  final asked = await db.rpc('ask_friend', params: {'p_user': uid(da)});
+  final o = (await rows(db, 'match_offers')).firstWhere(
+    (x) => x['status'] == 'accepted',
+    orElse: () => <String, dynamic>{},
+  );
+  check(
+    asked == 'asked' && o.isNotEmpty && o['caller'] == uid(db),
+    'tapping a friend with "yes automatically" connects at once; the tapper calls (D-153) [$asked]',
+  );
+  for (final c in [da, db]) {
+    await c.rpc('clear_availability');
+  }
+  // Both on for each other, both driving: connects by itself (quick).
+  // (A new pair: after a call, the app pauses suggestions for a while.)
+  final ea = await newUser('עדי', 'female');
+  final eb = await newUser('עומר', 'male');
+  for (final (c, d) in [(ea, 9991), (eb, 9992)]) {
+    await c.from('phone_numbers').upsert({
+      'user_id': uid(c),
+      'phone': '+97250${DateTime.now().millisecondsSinceEpoch % 10000}$d',
+    });
+  }
+  await befriend(ea, eb);
+  await skipQuietGap();
+  for (final c in [ea, eb]) {
+    await c.rpc('set_auto_yes', params: {'p_on': true});
+    await c.rpc(
+      'set_availability',
+      params: {'p_mode': 'driving', 'p_minutes': 30},
+    );
+  }
+  final q = (await rows(
+    ea,
+    'match_offers',
+  )).where((x) => x['status'] == 'accepted' && x['quick'] == true);
+  check(
+    q.isNotEmpty,
+    'both on, both driving: connects by itself, 5 seconds (D-153)',
+  );
+  for (final c in [da, db, ea, eb]) {
+    await c.rpc('set_auto_yes', params: {'p_on': false});
     await c.rpc('clear_availability');
   }
 }

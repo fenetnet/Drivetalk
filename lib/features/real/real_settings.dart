@@ -118,6 +118,30 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : (v) => setAutoDriving(context, ref, v),
               ),
+              SwitchListTile(
+                secondary: const Icon(Icons.bolt_rounded),
+                title: Text(l.autoYesTitle),
+                subtitle: Text(l.autoYesBody),
+                isThreeLine: true,
+                value: s.snapshot?.autoYes ?? false,
+                onChanged: s.busy ? null : (v) => c.setAutoYes(on: v),
+              ),
+              if (s.snapshot?.autoYes ?? false)
+                Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
+                  child: SegmentedButton<int>(
+                    segments: [
+                      ButtonSegment(value: 3, label: Text(l.autoYesStars3)),
+                      ButtonSegment(value: 4, label: Text(l.autoYesStars4)),
+                      ButtonSegment(value: 5, label: Text(l.autoYesStars5)),
+                    ],
+                    selected: {(s.snapshot?.autoYesMin ?? 3).clamp(3, 5)},
+                    showSelectedIcon: false,
+                    onSelectionChanged: s.busy
+                        ? null
+                        : (v) => c.setAutoYes(min: v.first),
+                  ),
+                ),
               ListTile(
                 leading: const Icon(Icons.schedule_rounded),
                 title: Text(l.routinesTitle),

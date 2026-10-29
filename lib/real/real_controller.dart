@@ -1513,6 +1513,16 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  // ---------------------------------------------- yes automatically
+
+  /// "Yes automatically while driving" (owner, D-153): friends with at
+  /// least [min] stars who tap me (or say yes to me) are connected at once.
+  Future<void> setAutoYes({bool? on, int? min}) async {
+    await _run(() => _backend.setAutoYes(on: on, min: min));
+    if (on != null) _event(on ? 'auto_yes_on' : 'auto_yes_off');
+    await refresh();
+  }
+
   // ------------------------------------------------------------ Google
 
   GoogleAuth get _google => ref.read(googleAuthProvider);

@@ -4575,6 +4575,60 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.'**
   String get realErrorGoogle;
+
+  /// No description provided for @autoYesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'כן אוטומטי בנסיעה'**
+  String get autoYesTitle;
+
+  /// No description provided for @autoYesBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בזמן נסיעה, חבר שנתת לו מספיק כוכבים ולוחץ עליך מתחבר מיד, בלי שאלה. הוא מתקשר, והטלפון שלך פשוט מצלצל. אם גם הוא הפעיל את זה בשבילך, מתחברים לבד אחרי 5 שניות שאפשר לבטל.'**
+  String get autoYesBody;
+
+  /// No description provided for @autoYesFrom.
+  ///
+  /// In he, this message translates to:
+  /// **'ממי'**
+  String get autoYesFrom;
+
+  /// No description provided for @autoYesStars3.
+  ///
+  /// In he, this message translates to:
+  /// **'3 כוכבים ומעלה'**
+  String get autoYesStars3;
+
+  /// No description provided for @autoYesStars4.
+  ///
+  /// In he, this message translates to:
+  /// **'4 ומעלה'**
+  String get autoYesStars4;
+
+  /// No description provided for @autoYesStars5.
+  ///
+  /// In he, this message translates to:
+  /// **'רק 5'**
+  String get autoYesStars5;
+
+  /// No description provided for @autoYesOn.
+  ///
+  /// In he, this message translates to:
+  /// **'כן אוטומטי פועל'**
+  String get autoYesOn;
+
+  /// No description provided for @autoYesOff.
+  ///
+  /// In he, this message translates to:
+  /// **'כן אוטומטי כבוי'**
+  String get autoYesOff;
+
+  /// No description provided for @instantFriend.
+  ///
+  /// In he, this message translates to:
+  /// **'מתחבר מיד'**
+  String get instantFriend;
 }
 
 class _AppLocalizationsDelegate

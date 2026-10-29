@@ -236,6 +236,27 @@ class MemoryServer {
             now().isBefore(busy));
   }
 
+  /// "Yes automatically while driving" (D-153): on, and the star level.
+  final Set<String> autoYes = {};
+  final Map<String, int> autoYesMin = {};
+
+  /// Would [user] say yes to [from] by themselves right now?
+  bool autoYesFor(String user, String from) {
+    final a = availability[user];
+    return autoYes.contains(user) &&
+        a != null &&
+        now().isBefore(a.expiresAt) &&
+        a.mode == AvailabilityMode.driving &&
+        !a.missed &&
+        ratingOf(user, from) >= (autoYesMin[user] ?? 3) &&
+        phones[user] != null &&
+        connected(user, from) &&
+        !blockedBetween(user, from) &&
+        !_inCall(user) &&
+        !_onPhone(user) &&
+        !inQuietHours(user);
+  }
+
   /// [u] is clearly here: a question they missed no longer hides them.
   void clearMissed(String u) {
     final a = availability[u];
@@ -592,15 +613,16 @@ class MemoryServer {
         (o) => o.quick && (o.a == u || o.b == u) && !o.createdAt.isBefore(from),
       );
       final quick =
+          (autoYesFor(user, other) && autoYesFor(other, user)) ||
           mutualQuick(other) &&
-          !offers.values.any(
-            (o) =>
-                samePair(o) &&
-                o.quick &&
-                since.difference(o.createdAt) < const Duration(days: 1),
-          ) &&
-          !quickInWindow(user, mine.startedAt) &&
-          !quickInWindow(other, theirs.startedAt);
+              !offers.values.any(
+                (o) =>
+                    samePair(o) &&
+                    o.quick &&
+                    since.difference(o.createdAt) < const Duration(days: 1),
+              ) &&
+              !quickInWindow(user, mine.startedAt) &&
+              !quickInWindow(other, theirs.startedAt);
       // The automatic pause lets only quick connect through (D-113).
       if (!quick && _snoozed(user, other)) continue;
       final id = _newId('offer');
@@ -907,6 +929,16 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   @override
+  Future<void> setAutoYes({bool? on, int? min}) async {
+    if (offline) throw const RealBackendException('offline');
+    final me = _uid;
+    if (on == true) server.autoYes.add(me);
+    if (on == false) server.autoYes.remove(me);
+    if (min != null && min >= 1 && min <= 5) server.autoYesMin[me] = min;
+    server._changed();
+  }
+
+  @override
   String? get googleEmail {
     final me = _me;
     if (me == null) return null;
@@ -1010,6 +1042,12 @@ class MemoryRealBackend implements RealBackend {
       quickTheirs: {
         for (final f in friends)
           if (server._isQuick(f.id, me)) f.id,
+      },
+      autoYes: server.autoYes.contains(me),
+      autoYesMin: server.autoYesMin[me] ?? 3,
+      instant: {
+        for (final f in friends)
+          if (server.autoYesFor(f.id, me)) f.id,
       },
       pauses: {
         for (final f in friends)
@@ -1249,12 +1287,12 @@ class MemoryRealBackend implements RealBackend {
   }
 
   @override
-  Future<OfferAnswer> answerOffer(
-    String offerId, {
-    required bool accept,
-  }) async {
-    final me = _uid;
+  Future<OfferAnswer> answerOffer(String offerId, {required bool accept}) {
     if (offline) throw const RealBackendException('offline');
+    return _answerAs(_uid, offerId, accept);
+  }
+
+  Future<OfferAnswer> _answerAs(String me, String offerId, bool accept) async {
     final o = server.offers[offerId];
     if (o == null || (o.a != me && o.b != me)) {
       throw const RealBackendException('not_found');
@@ -1292,6 +1330,19 @@ class MemoryRealBackend implements RealBackend {
         o.aAccepted = accept;
       } else {
         o.bAccepted = accept;
+      }
+    }
+    // Yes automatically while driving (D-153): their yes for me is a yes
+    // now, and I call.
+    if (accept) {
+      final other = o.a == me ? o.b : o.a;
+      if (MemoryServer._answerOf(o, other) == null &&
+          server.autoYesFor(other, me)) {
+        if (other == o.a) {
+          o.aAccepted = true;
+        } else {
+          o.bAccepted = true;
+        }
       }
     }
     if (!accept) {
@@ -2021,6 +2072,8 @@ class MemoryRealBackend implements RealBackend {
     } else {
       server.offers[id]!.bAccepted = true;
     }
+    // They said yes ahead of time for me while driving: connected now.
+    if (server.autoYesFor(userId, me)) await _answerAs(userId, id, true);
     server._changed();
     return 'asked';
   }

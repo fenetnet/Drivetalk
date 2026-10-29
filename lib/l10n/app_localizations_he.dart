@@ -2730,4 +2730,32 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realErrorGoogle => 'לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.';
+
+  @override
+  String get autoYesTitle => 'כן אוטומטי בנסיעה';
+
+  @override
+  String get autoYesBody =>
+      'בזמן נסיעה, חבר שנתת לו מספיק כוכבים ולוחץ עליך מתחבר מיד, בלי שאלה. הוא מתקשר, והטלפון שלך פשוט מצלצל. אם גם הוא הפעיל את זה בשבילך, מתחברים לבד אחרי 5 שניות שאפשר לבטל.';
+
+  @override
+  String get autoYesFrom => 'ממי';
+
+  @override
+  String get autoYesStars3 => '3 כוכבים ומעלה';
+
+  @override
+  String get autoYesStars4 => '4 ומעלה';
+
+  @override
+  String get autoYesStars5 => 'רק 5';
+
+  @override
+  String get autoYesOn => 'כן אוטומטי פועל';
+
+  @override
+  String get autoYesOff => 'כן אוטומטי כבוי';
+
+  @override
+  String get instantFriend => 'מתחבר מיד';
 }
