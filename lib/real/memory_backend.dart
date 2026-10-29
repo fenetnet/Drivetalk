@@ -654,20 +654,29 @@ class MemoryServer {
       o.status == OfferStatus.expired ||
       o.status == OfferStatus.cancelled;
 
-  /// 3 questions for a free time; on an automatic trip one I didn't say
-  /// yes to is enough.
+  /// 3 questions for a free time; on an automatic trip one is enough —
+  /// only questions they did NOT say yes to, since their last yes or tap
+  /// (the one who asks is never "busy" because of it, D-152).
   bool _askedEnough(String user, DateTime since) {
-    final ended = offers.values.where(
+    var from = since;
+    for (final o in offers.values) {
+      if ((o.a == user || o.b == user) &&
+          !o.quick &&
+          !o.createdAt.isBefore(since) &&
+          _answerOf(o, user) == true) {
+        final t = o.updatedAt.isAfter(o.createdAt) ? o.updatedAt : o.createdAt;
+        if (t.isAfter(from)) from = t;
+      }
+    }
+    final unanswered = offers.values.where(
       (o) =>
           (o.a == user || o.b == user) &&
           !o.quick &&
-          !o.createdAt.isBefore(since) &&
-          _endedWithoutCall(o),
+          !o.createdAt.isBefore(from) &&
+          _endedWithoutCall(o) &&
+          _answerOf(o, user) != true,
     );
-    if (autoSet.contains(user)) {
-      return ended.any((o) => _answerOf(o, user) != true);
-    }
-    return ended.length >= 3;
+    return unanswered.length >= (autoSet.contains(user) ? 1 : 3);
   }
 
   /// 5 quiet minutes — only for whoever didn't say yes (D-104).

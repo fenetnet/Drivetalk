@@ -2413,6 +2413,27 @@ void main() {
       expect(freeFriends(again.s, now), hasLength(1));
     });
 
+    test('my own unanswered asks never make me "busy" (D-152)', () async {
+      await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+      await me.c.startAvailability(AvailabilityMode.free, 120);
+      await yoni.c.startAvailability(AvailabilityMode.walking, 120);
+      await refreshBoth();
+      final f = me.s.snapshot!.friend(yoni.backend.userId!)!;
+      // With the app's own first question: three that ended without a call.
+      for (var k = 0; k < 2; k++) {
+        // I ask; Yoni doesn't answer; later he's "still free" again.
+        expect(await me.c.tapFriend(f), isTrue, reason: 'ask $k');
+        now = now.add(const Duration(seconds: 40));
+        await refreshBoth();
+        await yoni.c.stillFree();
+        now = now.add(const Duration(minutes: 6));
+        await refreshBoth();
+      }
+      expect(await yoni.backend.askWhy(me.backend.userId!), 'ok');
+      final back = yoni.s.snapshot!.friend(me.backend.userId!)!;
+      expect(await yoni.c.tapFriend(back), isTrue, reason: 'he can call back');
+    });
+
     test('only friends I can really ask are listed (D-107)', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);

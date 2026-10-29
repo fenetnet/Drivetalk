@@ -1844,9 +1844,10 @@ Future<void> main() async {
   await callOverEitherSide();
   await tapperCalls();
   await callBackWorks();
+  await askerNotBusy();
 
   check(
-    await eve.rpc('schema_version') == 62,
+    await eve.rpc('schema_version') == 63,
     'the server says its version (41)',
   );
 
@@ -3974,6 +3975,44 @@ Future<void> callBackWorks() async {
     'a "no" doesn\'t block a friend who asked me afterwards (D-148) [$again $why]',
   );
   for (final c in [ca, cb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> askerNotBusy() async {
+  final ka = await newUser('קרן', 'female');
+  final kb = await newUser('קובי', 'male');
+  for (final (c, d) in [(ka, 7771), (kb, 7772)]) {
+    await c.from('phone_numbers').upsert({
+      'user_id': uid(c),
+      'phone': '+97250${DateTime.now().millisecondsSinceEpoch % 10000}$d',
+    });
+  }
+  await befriend(ka, kb);
+  await skipQuietGap();
+  await free(kb);
+  await free(ka);
+  // Keren asks twice and gives up waiting (with the app's own first
+  // question: three that ended without a call). She said yes to all.
+  for (var k = 0; k < 2; k++) {
+    final asked = await ka.rpc('ask_friend', params: {'p_user': uid(kb)});
+    final o = (await rows(ka, 'match_offers')).firstWhere(
+      (x) => x['status'] == 'pending',
+      orElse: () => <String, dynamic>{},
+    );
+    if (asked != 'asked' || o.isEmpty) break;
+    await ka.rpc(
+      'answer_offer',
+      params: {'p_offer': o['id'], 'p_accept': false},
+    );
+    await skipQuietGap();
+  }
+  final why = await kb.rpc('ask_why', params: {'p_user': uid(ka)});
+  check(
+    why != 'busy',
+    'my own unanswered asks never make me "busy" (D-152) [$why]',
+  );
+  for (final c in [ka, kb]) {
     await c.rpc('clear_availability');
   }
 }
