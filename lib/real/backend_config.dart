@@ -24,12 +24,18 @@ class BackendConfig {
       _key.trim().isEmpty ? _defaultKey : _key.trim();
 
   /// "Continue with Google": the app's PUBLIC Google web client id (the
-  /// server checks Google's answer against it). Empty → no Google button.
+  /// server checks Google's answer against it).
   /// The client SECRET lives only in the Supabase dashboard.
-  static const googleWebClientId = String.fromEnvironment(
-    'GOOGLE_WEB_CLIENT_ID',
-    defaultValue: '79818495787-lsjov9mddtc24eo4rde0aoq1ou38uuit.apps.googleusercontent.com',
-  );
+  /// (The build passes an empty value when its variable isn't set — an
+  /// empty value must not hide the app's own id.)
+  static String get googleWebClientId {
+    final v = _googleId.trim();
+    return v.isEmpty ? _defaultGoogleId : v;
+  }
+
+  static const _googleId = String.fromEnvironment('GOOGLE_WEB_CLIENT_ID');
+  static const _defaultGoogleId =
+      '79818495787-lsjov9mddtc24eo4rde0aoq1ou38uuit.apps.googleusercontent.com';
 
   /// Base of the invitation link, e.g. https://drivetalk-test.pages.dev
   /// (empty → the share message falls back to "download + code").
