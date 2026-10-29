@@ -69,7 +69,6 @@ class _IntroTourState extends State<IntroTour> {
           children: [
             // The photo fills the top, behind the status bar.
             Expanded(
-              flex: 13,
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   bottom: Radius.circular(28),
@@ -172,33 +171,35 @@ class _IntroTourState extends State<IntroTour> {
                   ),
               ],
             ),
-            Expanded(
-              flex: 5,
-              child: SafeArea(
-                top: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                MomentText(title, size: 28),
-                                const SizedBox(height: 10),
-                                MomentText(body, size: 16, soft: true),
-                              ],
-                            ),
-                          ),
+            // The words always fit in full; the photo takes what's left
+            // (small phones, large text: the words scroll at most).
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.4,
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            MomentText(title, size: 28),
+                            const SizedBox(height: 10),
+                            MomentText(body, size: 16, soft: true),
+                          ],
                         ),
                       ),
-                      PrimaryPill(
-                        label: last ? widget.doneLabel ?? l.introStart : l.next,
-                        onTap: _next,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 18),
+                    PrimaryPill(
+                      label: last ? widget.doneLabel ?? l.introStart : l.next,
+                      onTap: _next,
+                    ),
+                  ],
                 ),
               ),
             ),

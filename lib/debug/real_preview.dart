@@ -15,6 +15,7 @@ import '../domain/models.dart';
 import '../features/real/real_root.dart';
 import '../platform/contacts_reader.dart';
 import '../platform/driving_detector.dart';
+import '../platform/phone_dialer.dart';
 import '../platform/google_auth.dart';
 import '../platform/voice_service.dart';
 import '../real/deep_links.dart';
@@ -125,7 +126,11 @@ Future<void> main() async {
     overrides: [
       realBackendProvider.overrideWithValue(me),
       localStoreProvider.overrideWithValue(store),
-      voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+      voiceServiceProvider.overrideWithValue(
+        SilentVoiceService()..prepared = 1,
+      ),
+      // Calls allowed, as on a set-up phone (no warning line in pictures).
+      phoneDialerProvider.overrideWithValue(_ReadyDialer()),
       drivingDetectorProvider.overrideWithValue(
         FakeDrivingDetector()..enabled = true,
       ),
@@ -161,4 +166,13 @@ Future<void> main() async {
       child: const DriveTalkApp(),
     ),
   );
+}
+
+class _ReadyDialer extends PhoneDialer {
+  @override
+  Future<DialResult> call(String number, {bool direct = true}) async =>
+      DialResult.unsupported;
+
+  @override
+  Future<bool> canCallDirectly() async => true;
 }
