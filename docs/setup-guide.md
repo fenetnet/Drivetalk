@@ -168,7 +168,5 @@ https://raw.githubusercontent.com/fenetnet/Drivetalk/claude/social-voice-app-mnr
 4. מסמנים **Skip nonce checks**. **Save**.
 5. באותו מסך, בחלק העליון (User Signups), מפעילים **Allow manual linking**. **Save**.
 
-### ג. GitHub
-- Settings ← Secrets and variables ← Actions ← **Variables** ← New repository variable.
-- Name: `GOOGLE_WEB_CLIENT_ID`. Value: ה-Client ID מסעיף א.5 (הציבורי).
-- הבנייה הבאה כבר תכלול את הכפתור.
+### ג. GitHub (לא חובה)
+- ה-Client ID של DriveBond כבר בתוך האפליקציה (ציבורי). משתנה `GOOGLE_WEB_CLIENT_ID` ב-GitHub צריך רק כדי להחליף אותו.

@@ -28,6 +28,7 @@ class BackendConfig {
   /// The client SECRET lives only in the Supabase dashboard.
   static const googleWebClientId = String.fromEnvironment(
     'GOOGLE_WEB_CLIENT_ID',
+    defaultValue: '79818495787-lsjov9mddtc24eo4rde0aoq1ou38uuit.apps.googleusercontent.com',
   );
 
   /// Base of the invitation link, e.g. https://drivetalk-test.pages.dev
