@@ -4831,38 +4831,26 @@ abstract class AppLocalizations {
   /// No description provided for @intro1Title.
   ///
   /// In he, this message translates to:
-  /// **'תקועים בפקק?\nמדברים עם מי שחשוב.'**
+  /// **'הנסיעה הבאה שלך –\nעם חבר על הקו.'**
   String get intro1Title;
 
   /// No description provided for @intro1Body.
   ///
   /// In he, this message translates to:
-  /// **'כששניכם פנויים באותו רגע, DriveBond מחברת ביניכם. בלי לתאם מראש ובלי \"נדבר מתישהו\".'**
+  /// **'רואים מי מהחברים פנוי לדבר בדיוק עכשיו, ומתחברים לשיחה בלחיצה אחת.'**
   String get intro1Body;
 
   /// No description provided for @intro2Title.
   ///
   /// In he, this message translates to:
-  /// **'שיחה רק כששניכם\nאומרים \"כן\".'**
+  /// **'מדברים בלי\nלגעת בטלפון.'**
   String get intro2Title;
 
   /// No description provided for @intro2Body.
   ///
   /// In he, this message translates to:
-  /// **'אף אחד לא מתקשר אליכם בהפתעה. גם כשמזוהה נסיעה, זה רק אומר שיש לכם זמן.'**
+  /// **'הטלפון מקריא מי פנוי. אומרים \"כן\" – והשיחה מתחילה.'**
   String get intro2Body;
-
-  /// No description provided for @intro3Title.
-  ///
-  /// In he, this message translates to:
-  /// **'בנסיעה,\nבלי לגעת בטלפון.'**
-  String get intro3Title;
-
-  /// No description provided for @intro3Body.
-  ///
-  /// In he, this message translates to:
-  /// **'הטלפון מקריא מי פנוי, ועונים \"כן\" או \"לא\" בקול. בלי הקלדה ובלי רשימות לגלול.'**
-  String get intro3Body;
 
   /// No description provided for @introStart.
   ///

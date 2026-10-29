@@ -380,13 +380,13 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   // No gender question (owner decision D-044).
   final _gender = Gender.unspecified;
 
-  /// First three short "what is DriveBond" pages (owner), then:
+  /// First two short "what is DriveBond" pages (owner), then:
   /// how to join (Google or a name), then the number (required).
   var _intro = 0;
   var _phoneStep = false;
   var _viaGoogle = false;
 
-  static const _introPages = 3;
+  static const _introPages = 2;
 
   @override
   void dispose() {
@@ -617,13 +617,12 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     );
   }
 
-  /// One of the three "what is DriveBond" pages. Swipe or tap to go on.
+  /// One of the two "what is DriveBond" pages. Swipe or tap to go on.
   Widget _introPage(BuildContext context) {
     final l = context.l10n;
     final (icon, title, body) = switch (_intro) {
       0 => (Icons.directions_car_rounded, l.intro1Title, l.intro1Body),
-      1 => (Icons.handshake_rounded, l.intro2Title, l.intro2Body),
-      _ => (Icons.record_voice_over_rounded, l.intro3Title, l.intro3Body),
+      _ => (Icons.record_voice_over_rounded, l.intro2Title, l.intro2Body),
     };
     final last = _intro == _introPages - 1;
     return GestureDetector(

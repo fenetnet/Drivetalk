@@ -60,18 +60,16 @@ void main() {
       );
       await pumpFor(t, 300);
 
-      // Three short "what is it" pages (owner), then a name, then the
+      // Two short "what is it" pages (owner), then a name, then the
       // number (required).
-      expect(find.text('תקועים בפקק?\nמדברים עם מי שחשוב.'), findsOneWidget);
+      expect(find.text('הנסיעה הבאה שלך –\nעם חבר על הקו.'), findsOneWidget);
       expect(
         Directionality.of(t.element(find.byType(Scaffold).first)),
         TextDirection.rtl,
       );
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);
-      expect(find.text('שיחה רק כששניכם\nאומרים "כן".'), findsOneWidget);
-      await t.tap(find.text('הבא'));
-      await pumpFor(t, 300);
+      expect(find.text('מדברים בלי\nלגעת בטלפון.'), findsOneWidget);
       await t.tap(find.text('בואו נתחיל'));
       await pumpFor(t, 300);
       expect(find.text('הזמן בדרך –\nעם האנשים שלך.'), findsOneWidget);
