@@ -4831,25 +4831,25 @@ abstract class AppLocalizations {
   /// No description provided for @intro1Title.
   ///
   /// In he, this message translates to:
-  /// **'הנסיעה הבאה שלך –\nעם חבר על הקו.'**
+  /// **'שוב תקוע בפקק?'**
   String get intro1Title;
 
   /// No description provided for @intro1Body.
   ///
   /// In he, this message translates to:
-  /// **'רואים מי מהחברים פנוי לדבר בדיוק עכשיו, ומתחברים לשיחה בלחיצה אחת.'**
+  /// **'הזמן הזה בדרך יכול להיות הרבה יותר מעניין.'**
   String get intro1Body;
 
   /// No description provided for @intro2Title.
   ///
   /// In he, this message translates to:
-  /// **'מדברים בלי\nלגעת בטלפון.'**
+  /// **'גם החברים שלך\nבדיוק בדרכים לפעמים.'**
   String get intro2Title;
 
   /// No description provided for @intro2Body.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מקריא מי פנוי. אומרים \"כן\" – והשיחה מתחילה.'**
+  /// **'חבר יוצא לנסיעה ויש לו זמן? DriveBond מציעה לכם לדבר.'**
   String get intro2Body;
 
   /// No description provided for @introStart.
@@ -4887,6 +4887,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'השם שיופיע לחברים'**
   String get onbGoogleName;
+
+  /// No description provided for @intro3Title.
+  ///
+  /// In he, this message translates to:
+  /// **'פתאום הדרך\nעוברת בכיף.'**
+  String get intro3Title;
+
+  /// No description provided for @intro3Body.
+  ///
+  /// In he, this message translates to:
+  /// **'עונים \"כן\" בקול, בלי לגעת בטלפון, ומדברים בדיבורית.'**
+  String get intro3Body;
 }
 
 class _AppLocalizationsDelegate

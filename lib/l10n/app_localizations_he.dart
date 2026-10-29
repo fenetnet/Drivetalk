@@ -2894,18 +2894,17 @@ class AppLocalizationsHe extends AppLocalizations {
       'מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה.';
 
   @override
-  String get intro1Title => 'הנסיעה הבאה שלך –\nעם חבר על הקו.';
+  String get intro1Title => 'שוב תקוע בפקק?';
 
   @override
-  String get intro1Body =>
-      'רואים מי מהחברים פנוי לדבר בדיוק עכשיו, ומתחברים לשיחה בלחיצה אחת.';
+  String get intro1Body => 'הזמן הזה בדרך יכול להיות הרבה יותר מעניין.';
 
   @override
-  String get intro2Title => 'מדברים בלי\nלגעת בטלפון.';
+  String get intro2Title => 'גם החברים שלך\nבדיוק בדרכים לפעמים.';
 
   @override
   String get intro2Body =>
-      'הטלפון מקריא מי פנוי. אומרים \"כן\" – והשיחה מתחילה.';
+      'חבר יוצא לנסיעה ויש לו זמן? DriveBond מציעה לכם לדבר.';
 
   @override
   String get introStart => 'בואו נתחיל';
@@ -2924,4 +2923,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get onbGoogleName => 'השם שיופיע לחברים';
+
+  @override
+  String get intro3Title => 'פתאום הדרך\nעוברת בכיף.';
+
+  @override
+  String get intro3Body =>
+      'עונים \"כן\" בקול, בלי לגעת בטלפון, ומדברים בדיבורית.';
 }

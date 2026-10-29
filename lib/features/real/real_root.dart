@@ -380,13 +380,13 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   // No gender question (owner decision D-044).
   final _gender = Gender.unspecified;
 
-  /// First two short "what is DriveBond" pages (owner), then:
+  /// First three short photo pages (owner), then:
   /// how to join (Google or a name), then the number (required).
   var _intro = 0;
   var _phoneStep = false;
   var _viaGoogle = false;
 
-  static const _introPages = 2;
+  static const _introPages = 3;
 
   @override
   void dispose() {
@@ -617,65 +617,132 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     );
   }
 
-  /// One of the two "what is DriveBond" pages. Swipe or tap to go on.
+  /// One of the three photo pages. Swipe or tap to go on.
   Widget _introPage(BuildContext context) {
     final l = context.l10n;
-    final (icon, title, body) = switch (_intro) {
-      0 => (Icons.directions_car_rounded, l.intro1Title, l.intro1Body),
-      _ => (Icons.record_voice_over_rounded, l.intro2Title, l.intro2Body),
+    // Each photo keeps its point in view (the offer on the phone is low).
+    final (photo, focus, title, body) = switch (_intro) {
+      0 => (
+        'assets/intro/1-traffic.jpg',
+        Alignment.center,
+        l.intro1Title,
+        l.intro1Body,
+      ),
+      1 => (
+        'assets/intro/2-friend.jpg',
+        const Alignment(0, 0.75),
+        l.intro2Title,
+        l.intro2Body,
+      ),
+      _ => (
+        'assets/intro/3-talk.jpg',
+        Alignment.center,
+        l.intro3Title,
+        l.intro3Body,
+      ),
     };
     final last = _intro == _introPages - 1;
-    return GestureDetector(
-      // RTL: a swipe to the right goes on, to the left goes back.
-      onHorizontalDragEnd: (d) {
-        final v = d.primaryVelocity ?? 0;
-        if (v > 200) _introNext();
-        if (v < -200 && _intro > 0) setState(() => _intro--);
-      },
-      child: MomentLayout(
-        header: Row(
+    return Scaffold(
+      body: GestureDetector(
+        // RTL: a swipe to the right goes on, to the left goes back.
+        onHorizontalDragEnd: (d) {
+          final v = d.primaryVelocity ?? 0;
+          if (v > 200) _introNext();
+          if (v < -200 && _intro > 0) setState(() => _intro--);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (var i = 0; i < _introPages; i++)
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                margin: const EdgeInsetsDirectional.only(end: 6),
-                width: i == _intro ? 22 : 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: i == _intro
-                      ? AppColors.terracotta
-                      : AppColors.terracotta.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(4),
+            // The photo fills the top, behind the status bar.
+            Expanded(
+              flex: 13,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(28),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: Image.asset(
+                        photo,
+                        key: ValueKey(photo),
+                        fit: BoxFit.cover,
+                        alignment: focus,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+                    if (!last)
+                      PositionedDirectional(
+                        top: MediaQuery.paddingOf(context).top + 8,
+                        start: 12,
+                        child: TextButton(
+                          onPressed: () => setState(() => _intro = _introPages),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.black38,
+                            shape: const StadiumBorder(),
+                          ),
+                          child: Text(l.skip),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            const Spacer(),
-            if (!last)
-              TextButton(
-                onPressed: () => setState(() => _intro = _introPages),
-                child: Text(l.skip),
-              ),
-          ],
-        ),
-        top: Column(
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: const BoxDecoration(
-                color: AppColors.terracotta,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: Colors.white, size: 60),
             ),
-            const SizedBox(height: 32),
-            MomentText(title, size: 28),
-            const SizedBox(height: 12),
-            MomentText(body, size: 16, soft: true),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (var i = 0; i < _introPages; i++)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: i == _intro ? 22 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: i == _intro
+                          ? AppColors.terracotta
+                          : AppColors.terracotta.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+              ],
+            ),
+            Expanded(
+              flex: 5,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                MomentText(title, size: 28),
+                                const SizedBox(height: 10),
+                                MomentText(body, size: 16, soft: true),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      PrimaryPill(
+                        label: last ? l.introStart : l.next,
+                        onTap: _introNext,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-        actions: [
-          PrimaryPill(label: last ? l.introStart : l.next, onTap: _introNext),
-        ],
       ),
     );
   }
