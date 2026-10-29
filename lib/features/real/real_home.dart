@@ -243,7 +243,20 @@ class RealHomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    if (me != null) RealAvatar(person: me.toPerson(), size: 42),
+                    if (me != null)
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          RealAvatar(person: me.toPerson(), size: 42),
+                          // "Yes automatically" is on (D-153).
+                          if (snap?.autoYes ?? false)
+                            const PositionedDirectional(
+                              bottom: -4,
+                              start: -4,
+                              child: BoltBadge(size: 20),
+                            ),
+                        ],
+                      ),
                     // "About DriveBond": what's special, the permissions.
                     IconButton(
                       key: const ValueKey('about'),
@@ -334,6 +347,9 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
+                // "Yes automatically while driving": on/off at hand (D-153).
+                const SizedBox(height: 16),
+                const _AutoYesCard(),
                 // A friend turned quick connect on for me (D-112): its
                 // own place, never hidden behind another card.
                 if (c.quickAsk case final f?) ...[
@@ -763,6 +779,11 @@ class _MyStatus extends ConsumerWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: _HowFriendsSeeMe(mine: mine, now: now),
         ),
+        if (ref.watch(realProvider).snapshot?.autoYes ?? false)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: MomentChip(text: l.autoYesOn, dot: instantGold),
+          ),
         // Friends free that I can ask: say I may tap them. Nobody free: the
         // card above already says so — nothing more here.
         if (askableFriends(ref.watch(realProvider), now).isNotEmpty) ...[
@@ -1477,22 +1498,16 @@ class RealDriverHome extends ConsumerWidget {
     return MomentLayout(
       style: MomentStyle.dark,
       footer: l.driverSafety,
-      // "Yes automatically" on: said here, one tap turns it off (D-153).
-      header: autoYes
-          ? InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: s.busy ? null : () => c.setAutoYes(on: false),
-              child: MomentChip(
-                text: l.autoYesOn,
-                style: MomentStyle.dark,
-                dot: AppColors.sage,
-              ),
-            )
-          : MomentChip(
-              text: l.realNotifChannelStatus,
-              style: MomentStyle.dark,
-              dot: AppColors.sage,
-            ),
+      // "Yes automatically": always here, one tap turns it on/off (D-153).
+      header: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: s.busy ? null : () => c.setAutoYes(on: !autoYes),
+        child: MomentChip(
+          text: autoYes ? l.autoYesOn : l.autoYesOff,
+          style: MomentStyle.dark,
+          dot: autoYes ? instantGold : AppColors.inkSoft,
+        ),
+      ),
       top: Column(
         children: [
           if (free.isEmpty) ...[
@@ -1606,6 +1621,8 @@ class _DriverFriend extends StatelessWidget {
           children: [
             InstantRing(
               on: instant,
+              // Nothing moving on the driver screen.
+              animate: false,
               child: HeroAvatar(
                 person: friend.toPerson(),
                 size: 84,
@@ -2180,3 +2197,40 @@ class _GoogleCard extends ConsumerWidget {
 /// They'd say yes to me at once (D-153).
 bool snapInstant(RealState s, String id) =>
     s.snapshot?.instant.contains(id) ?? false;
+
+/// Home: "yes automatically while driving", on/off in one tap (D-153).
+class _AutoYesCard extends ConsumerWidget {
+  const _AutoYesCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final s = ref.watch(realProvider);
+    final c = ref.read(realProvider.notifier);
+    final on = s.snapshot?.autoYes ?? false;
+    return Card(
+      key: const ValueKey('autoYes'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: on
+            ? const BorderSide(color: instantGold, width: 2)
+            : BorderSide.none,
+      ),
+      child: SwitchListTile(
+        value: on,
+        onChanged: s.busy || s.snapshot == null
+            ? null
+            : (v) => c.setAutoYes(on: v),
+        title: Text(
+          l.homeAutoYesTitle,
+          style: const TextStyle(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text(
+          on
+              ? l.homeAutoYesOnBody(s.snapshot?.autoYesMin ?? 3)
+              : l.homeAutoYesOffBody,
+        ),
+      ),
+    );
+  }
+}

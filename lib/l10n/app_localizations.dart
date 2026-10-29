@@ -4615,13 +4615,13 @@ abstract class AppLocalizations {
   /// No description provided for @autoYesOn.
   ///
   /// In he, this message translates to:
-  /// **'כן אוטומטי פועל'**
+  /// **'⚡ כן אוטומטי פועל'**
   String get autoYesOn;
 
   /// No description provided for @autoYesOff.
   ///
   /// In he, this message translates to:
-  /// **'כן אוטומטי כבוי'**
+  /// **'⚡ כן אוטומטי כבוי'**
   String get autoYesOff;
 
   /// No description provided for @instantFriend.
@@ -4629,6 +4629,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מתחבר מיד'**
   String get instantFriend;
+
+  /// No description provided for @homeAutoYesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'⚡ כן אוטומטי בנסיעה'**
+  String get homeAutoYesTitle;
+
+  /// No description provided for @homeAutoYesOnBody.
+  ///
+  /// In he, this message translates to:
+  /// **'חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.'**
+  String homeAutoYesOnBody(int stars);
+
+  /// No description provided for @homeAutoYesOffBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.'**
+  String get homeAutoYesOffBody;
 }
 
 class _AppLocalizationsDelegate

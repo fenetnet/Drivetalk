@@ -922,36 +922,112 @@ class GoogleButton extends StatelessWidget {
   }
 }
 
-/// A friend who'd say yes to me at once (D-153, owner: a double ring):
-/// a second, softly glowing ring around their picture.
-class InstantRing extends StatelessWidget {
+/// "Connects at once" gold (D-153, owner).
+const instantGold = Color(0xFFF5A524);
+
+/// A friend who'd say yes to me at once (D-153, owner): a gold ring that
+/// softly grows and fades, and a small ⚡. [animate] false on the driver
+/// screen (nothing moving while driving) and when the phone asks for less
+/// motion.
+class InstantRing extends StatefulWidget {
   const InstantRing({
     super.key,
     required this.on,
     required this.child,
-    this.color = AppColors.sage,
+    this.animate = true,
   });
 
   final bool on;
   final Widget child;
-  final Color color;
+  final bool animate;
+
+  @override
+  State<InstantRing> createState() => _InstantRingState();
+}
+
+class _InstantRingState extends State<InstantRing>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  );
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (!on) return child;
+    if (!widget.on) {
+      if (_pulse.isAnimating) _pulse.stop();
+      return widget.child;
+    }
+    final moving =
+        widget.animate &&
+        !(MediaQuery.maybeDisableAnimationsOf(context) ?? false);
+    if (moving && !_pulse.isAnimating) {
+      _pulse.repeat();
+    } else if (!moving && _pulse.isAnimating) {
+      _pulse.stop();
+    }
+    final ring = Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: instantGold, width: 3),
+      ),
+      child: widget.child,
+    );
     return Semantics(
       label: AppLocalizations.of(context).instantFriend,
-      child: Container(
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: color, width: 2.5),
-          boxShadow: [
-            BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 12),
-          ],
-        ),
-        child: child,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          if (moving)
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _pulse,
+                builder: (_, _) => Transform.scale(
+                  scale: 1 + 0.3 * _pulse.value,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: instantGold.withValues(
+                          alpha: 0.7 * (1 - _pulse.value),
+                        ),
+                        width: 3,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ring,
+          const PositionedDirectional(bottom: 0, start: 0, child: BoltBadge()),
+        ],
       ),
     );
   }
+}
+
+/// The small gold ⚡ ("connects at once").
+class BoltBadge extends StatelessWidget {
+  const BoltBadge({super.key, this.size = 22});
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      color: instantGold,
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.white, width: 2),
+    ),
+    child: Icon(Icons.bolt_rounded, color: Colors.white, size: size * 0.7),
+  );
 }

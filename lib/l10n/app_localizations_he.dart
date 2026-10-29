@@ -2751,11 +2751,23 @@ class AppLocalizationsHe extends AppLocalizations {
   String get autoYesStars5 => 'רק 5';
 
   @override
-  String get autoYesOn => 'כן אוטומטי פועל';
+  String get autoYesOn => '⚡ כן אוטומטי פועל';
 
   @override
-  String get autoYesOff => 'כן אוטומטי כבוי';
+  String get autoYesOff => '⚡ כן אוטומטי כבוי';
 
   @override
   String get instantFriend => 'מתחבר מיד';
+
+  @override
+  String get homeAutoYesTitle => '⚡ כן אוטומטי בנסיעה';
+
+  @override
+  String homeAutoYesOnBody(int stars) {
+    return 'חברים עם $stars כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.';
+  }
+
+  @override
+  String get homeAutoYesOffBody =>
+      'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.';
 }

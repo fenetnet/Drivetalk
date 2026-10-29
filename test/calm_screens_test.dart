@@ -264,11 +264,20 @@ void main() {
     await _show(t, me, const RealDriverHome());
     Finder ring() => find.byWidgetPredicate((w) => w is InstantRing && w.on);
     expect(ring(), findsOneWidget);
+    expect(find.text('⚡ כן אוטומטי כבוי'), findsOneWidget);
     await t.runAsync(() => me.read(realProvider.notifier).setAutoYes(on: true));
     await t.pump();
-    expect(find.text('כן אוטומטי פועל'), findsOneWidget);
+    expect(find.text('⚡ כן אוטומטי פועל'), findsOneWidget);
     await _show(t, me, const RealHomeScreen());
     expect(ring(), findsOneWidget);
+    // Mine on: the ⚡ on my picture, and the switch on Home.
+    expect(find.byType(BoltBadge), findsWidgets);
+    await t.scrollUntilVisible(
+      find.text('⚡ כן אוטומטי בנסיעה'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('⚡ כן אוטומטי בנסיעה'), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });

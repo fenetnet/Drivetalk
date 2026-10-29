@@ -1854,7 +1854,17 @@
   "autoYesStars3": "3 כוכבים ומעלה",
   "autoYesStars4": "4 ומעלה",
   "autoYesStars5": "רק 5",
-  "autoYesOn": "כן אוטומטי פועל",
-  "autoYesOff": "כן אוטומטי כבוי",
-  "instantFriend": "מתחבר מיד"
+  "autoYesOn": "⚡ כן אוטומטי פועל",
+  "autoYesOff": "⚡ כן אוטומטי כבוי",
+  "instantFriend": "מתחבר מיד",
+  "homeAutoYesTitle": "⚡ כן אוטומטי בנסיעה",
+  "homeAutoYesOnBody": "חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.",
+  "@homeAutoYesOnBody": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "homeAutoYesOffBody": "כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה."
 }
