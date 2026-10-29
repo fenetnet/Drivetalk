@@ -76,6 +76,8 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
         child: Center(child: CircularProgressIndicator()),
       );
     }
+    // The full "why" (as in About), also at sign-up: people allow what
+    // they understand (owner).
     Widget row(PhonePermission kind, IconData icon, String title, String body) {
       final ok = p.has(kind);
       return ListTile(
@@ -110,33 +112,33 @@ class PermissionsListState extends ConsumerState<PermissionsList> {
             PhonePermission.notifications,
             Icons.notifications_rounded,
             l.permsNotifTitle,
-            l.permsNotifBody,
+            l.aboutPermNotifBody,
           ),
         row(
           PhonePermission.calls,
           Icons.call_rounded,
           l.permsCallTitle,
-          l.permsCallBody,
+          l.aboutPermCallBody,
         ),
         row(
           PhonePermission.mic,
           Icons.mic_rounded,
           l.permsMicTitle,
-          l.permsMicBody,
+          l.aboutPermMicBody,
         ),
         if (p.supported)
           row(
             PhonePermission.fullScreen,
             Icons.fullscreen_rounded,
             l.permsFullTitle,
-            l.permsFullBody,
+            l.aboutPermFullBody,
           ),
         if (p.supported)
           row(
             PhonePermission.background,
             Icons.battery_charging_full_rounded,
             l.permsBgTitle,
-            l.permsBgBody,
+            l.aboutPermBgBody,
           ),
         // Opt-in, off by default (it is a choice, not a permission).
         if (p.supported && widget.showAuto)
