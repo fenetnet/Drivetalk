@@ -1848,7 +1848,7 @@ Future<void> main() async {
   await autoYesDriving();
 
   check(
-    await eve.rpc('schema_version') == 64,
+    await eve.rpc('schema_version') == 65,
     'the server says its version (41)',
   );
 
