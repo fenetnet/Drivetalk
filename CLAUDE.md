@@ -37,7 +37,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   Exception (owner, D-153): "yes automatically while driving" — a person's
   own opt-in switch (off by default) is a standing yes for friends with
   enough stars, no daily limit; when both have it, the 5s countdown stays.
-  Automatic availability ≠ automatic call consent.
+  Automatic availability ≠ automatic call consent. Quick connect left the
+  app (D-161, step 1; the server still honors old pairs until step 2).
+  New users: ⚡ auto-yes opens after their first talk.
 - Calls go through the phone's regular dialer when numbers may be shared
   (connections; friends-of-friends/groups only if BOTH allow it). Otherwise the
   call stays inside the app so numbers remain private. Never read the call log.
@@ -45,7 +47,10 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   Nothing recorded or stored. Buttons always work as a fallback.
 - Fake people's numbers are never dialed. Real dialing in the prototype only
   to a test number the owner enters in the developer screen.
-- Automatic driving availability is **opt-in, off by default**.
+- Automatic driving availability (owner, D-161): **on by default at
+  sign-up** (a switch the user can turn off on that screen; Android still
+  asks its own permission), then the car's Bluetooth. Existing users who
+  turned it off stay off.
 - Never claim the user is "the driver" — only "the device is probably in a vehicle".
 - No continuous GPS for driving detection. No background GPS without explaining
   why there is no alternative and getting explicit owner approval.
@@ -155,7 +160,7 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Versions (D-160)
 
-`version:` in `pubspec.yaml` is what users see (now 1.0.0). The build
+`version:` in `pubspec.yaml` is what users see (now 1.1.0). The build
 number is the GitHub run number (always rising). Bug fixes: 1.0.1, 1.0.2…;
 new features: 1.1.0, 1.2.0…; 2.0.0 only with owner approval. Raise it in the
 same commit as the change. CI uploads to Internal testing only.

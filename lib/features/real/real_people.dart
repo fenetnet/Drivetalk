@@ -177,15 +177,6 @@ class RealPeopleScreen extends ConsumerWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
-            if (snap.quickBoth(f.id))
-              const Padding(
-                padding: EdgeInsetsDirectional.only(start: 4),
-                child: Icon(
-                  Icons.bolt_rounded,
-                  size: 18,
-                  color: AppColors.terracotta,
-                ),
-              ),
           ],
         ),
         subtitle: Column(
@@ -219,15 +210,6 @@ class RealPeopleScreen extends ConsumerWidget {
                 icon: Icons.pause_circle_rounded,
                 text: l.pauseChip(pauseWhen(l, p.until, now)),
                 color: AppColors.inkSoft,
-              ),
-            // They turned quick connect on for me; I haven't (D-112).
-            if (snap.quickTheirs.contains(f.id) &&
-                !snap.quickMine.contains(f.id))
-              StatusLine(
-                icon: Icons.bolt_rounded,
-                text: l.quickTheyWantChip,
-                color: AppColors.terracotta,
-                bold: true,
               ),
           ],
         ),
@@ -390,8 +372,6 @@ class RealPeopleScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(f.name, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 8),
-                // The easiest way to talk while driving (D-112): up front.
-                QuickSwitch(friend: f),
                 PauseTile(friend: f),
                 const Divider(),
                 // Saved in place: the card stays open (like the groups).

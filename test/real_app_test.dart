@@ -41,6 +41,7 @@ void main() {
 
       final server = MemoryServer();
       final store = MemoryLocalStore();
+      final detector = FakeDrivingDetector();
       await t.pumpWidget(
         ProviderScope(
           overrides: [
@@ -53,7 +54,7 @@ void main() {
             contactsReaderProvider.overrideWithValue(
               FakeContactsReader(numbers: ['053-222-2222']),
             ),
-            drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+            drivingDetectorProvider.overrideWithValue(detector),
           ],
           child: const DriveTalkApp(),
         ),
@@ -116,6 +117,15 @@ void main() {
       expect(find.text('כדי שזה יעבוד גם בנסיעה'), findsOneWidget);
       await t.tap(find.text('אחר כך'));
       await pumpFor(t, 300);
+      // Automatic availability: on unless I turn it off, then the car
+      // (owner, D-161).
+      expect(find.text('זמין אוטומטית בכל נסיעה'), findsOneWidget);
+      await t.tap(find.text('Car Audio'));
+      await pumpFor(t, 100);
+      await t.tap(find.text('הבא'));
+      await pumpFor(t, 500);
+      expect(detector.enabled, isTrue);
+      expect(detector.cars.single.$2, 'Car Audio');
       expect(find.text('ככה זה עובד'), findsOneWidget);
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 300);

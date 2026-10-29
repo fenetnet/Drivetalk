@@ -6,6 +6,7 @@ import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
 import 'real_common.dart';
 import 'real_intro.dart';
+import 'real_test_drive.dart';
 
 /// "About DriveBond" (from Settings): what's special, every phone permission
 /// with what was allowed and why it's needed, and what we never do.
@@ -168,6 +169,19 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
                   ],
                 ),
               ),
+            ),
+          ),
+          // Practice once, as in the car (moved here from Settings, D-161).
+          ListTile(
+            leading: const Icon(
+              Icons.record_voice_over_rounded,
+              color: AppColors.terracotta,
+            ),
+            title: Text(l.testDriveTitle),
+            subtitle: Text(l.testDriveSettings),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const TestDriveScreen()),
             ),
           ),
           Padding(

@@ -172,7 +172,7 @@
   "photoFromCamera": "צילום",
   "photoRemove": "הסרה",
   "settingsVoiceReadout": "הקראה בקול בנסיעה",
-  "settingsVoiceReadoutBody": "בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.",
+  "settingsVoiceReadoutBody": "הטלפון אומר מי פנוי, ועונים בקול.",
   "routinesTitle": "השגרה שלי",
   "routinesCount": "{count, plural, =0{עוד לא הוגדרו זמנים קבועים} =1{זמן קבוע אחד} other{{count} זמנים קבועים}}",
   "@routinesCount": {
@@ -1027,9 +1027,9 @@
   "offerFirstTalk": "זו תהיה השיחה הראשונה שלכם כאן",
   "waitOther": "לדבר עם מישהו אחר",
   "settingsAnonymous": "להופיע בלי שם כשיש לי זמן",
-  "settingsAnonymousHint": "החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.",
+  "settingsAnonymousHint": "החברים רואים רק כמה פנויים, לא מי.",
   "settingsHideInCall": "להסתיר כשאני בשיחה",
-  "settingsHideInCallHint": "בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.",
+  "settingsHideInCallHint": "בזמן שיחה החברים לא יראו שאתה זמין.",
   "settingsQuietHours": "שעות שקטות",
   "settingsQuietOff": "בלי שעות שקטות. בנסיעה שמזוהה לבד, אפשר לקבל הצעות בכל שעה.",
   "settingsQuietOn": "בין השעה {from} לשעה {to}, בנסיעה שמזוהה לבד לא נסמן אותך פנוי.",
@@ -1489,9 +1489,9 @@
   "@tripNotifBody": {},
   "tripNotifTalk": "לדבר",
   "@tripNotifTalk": {},
-  "settingsTripNotify": "להודיע לחברים עם חיבור מהיר כשיוצאים לדרך",
+  "settingsTripNotify": "להודיע כשאני יוצא לדרך",
   "@settingsTripNotify": {},
-  "settingsTripNotifyBody": "רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.",
+  "settingsTripNotifyBody": "לחברים שהפעילו בשבילך ⚡ כן אוטומטי. פעם ביום לכל היותר.",
   "@settingsTripNotifyBody": {},
   "pushTestButton": "שליחת התראת בדיקה אליי",
   "@pushTestButton": {},
@@ -1848,7 +1848,7 @@
   "googleSwitch": "לעבור לחשבון הזה",
   "realErrorGoogle": "לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.",
   "autoYesTitle": "כן אוטומטי בנסיעה",
-  "autoYesBody": "בזמן נסיעה, חבר שנתת לו מספיק כוכבים ולוחץ עליך מתחבר מיד, בלי שאלה. הוא מתקשר, והטלפון שלך פשוט מצלצל. אם גם הוא הפעיל את זה בשבילך, מתחברים לבד אחרי 5 שניות שאפשר לבטל.",
+  "autoYesBody": "חברים עם מספיק כוכבים מתחברים אליך מיד בנסיעה. מכמה כוכבים:",
   "autoYesFrom": "ממי",
   "autoYesStars3": "3 כוכבים ומעלה",
   "autoYesStars4": "4 ומעלה",
@@ -1986,5 +1986,13 @@
         "type": "int"
       }
     }
-  }
+  },
+  "firstRunCarTitle": "זמין אוטומטית בכל נסיעה",
+  "firstRunCarBody": "כשהטלפון מזהה שהוא כנראה ברכב, החברים רואים שיש לך זמן. בסוף הנסיעה זה נכבה לבד. בלי מיקום.",
+  "firstRunCarSwitch": "זיהוי נסיעה אוטומטי",
+  "firstRunCarPick": "הרכב שלך בבלוטות׳ – לזיהוי מהיר יותר",
+  "autoYesLockedBody": "🔒 נפתח אחרי השיחה הראשונה שלך",
+  "milestoneUnlockedBody": "🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. חברים קרובים יתחברו אליך מיד, בלי לשאול.",
+  "feedbackOrProblem": "משוב או בעיה",
+  "feedbackOrProblemBody": "רעיון, או משהו שלא עבד – זה מגיע ישר אלינו."
 }

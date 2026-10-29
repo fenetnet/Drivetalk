@@ -87,7 +87,7 @@ enum CallRole {
 }
 
 /// After joining: find people from contacts → result → how it works.
-enum FirstRunStep { photo, contacts, result, routine, permissions, magic }
+enum FirstRunStep { photo, contacts, result, routine, permissions, car, magic }
 
 /// The phone permissions asked for at the start (and in Settings).
 enum PhonePermission { notifications, calls, mic, background, fullScreen }
@@ -1040,7 +1040,10 @@ class RealController extends Notifier<RealState> {
     FirstRunStep.contacts => FirstRunStep.result,
     FirstRunStep.result => FirstRunStep.routine,
     FirstRunStep.routine => FirstRunStep.permissions,
-    FirstRunStep.permissions => FirstRunStep.magic,
+    // Automatic availability on by default, then the car (owner, D-161).
+    FirstRunStep.permissions =>
+      state.driving.supported ? FirstRunStep.car : FirstRunStep.magic,
+    FirstRunStep.car => FirstRunStep.magic,
     _ => null,
   });
 
@@ -1398,6 +1401,21 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
+  /// Sign-up: automatic availability (on unless declined) and the cars
+  /// (owner, D-161), then on.
+  Future<void> firstRunCar({
+    required bool auto,
+    List<(String, String)> cars = const [],
+  }) async {
+    if (auto && !state.driving.enabled) {
+      final ok = await enableAutoDriving();
+      if (ok && cars.isNotEmpty) await setCars(cars);
+    } else if (auto && cars.isNotEmpty) {
+      await setCars(cars);
+    }
+    if (ref.mounted) firstRunNext();
+  }
+
   /// Paired Bluetooth devices, to pick the cars.
   Future<List<(String, String)>> carCandidates() =>
       ref.read(drivingDetectorProvider).bondedDevices();
@@ -1489,6 +1507,8 @@ class RealController extends Notifier<RealState> {
       if (!ref.mounted) return;
       // First: a picture (optional), then my people.
       await _store.setString(_firstRunKey, FirstRunStep.photo.name);
+      // New here: ⚡ auto-yes opens after the first talk (owner, D-161).
+      await _store.setString(_autoYesLockKey, 'locked');
       _event('onboarding_started');
       state = state.copyWith(
         phase: RealPhase.ready,
@@ -1782,6 +1802,8 @@ class RealController extends Notifier<RealState> {
       _bgTipKey,
       _usedFreeKey,
       _milestoneKey,
+      _autoYesLockKey,
+      _quickOffKey,
       _micTipKey,
       _presetsKey,
       _permIntroKey,
@@ -3836,6 +3858,16 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith();
   }
 
+  static const _autoYesLockKey = 'real.autoYesLock.v1';
+
+  /// ⚡ auto-yes waits for the first talk — for people who joined with this
+  /// version only (nothing is taken from anyone).
+  bool get autoYesLocked =>
+      _store.getString(_autoYesLockKey) != null && talkCount == 0;
+
+  /// The first party says "unlocked" (it was locked for me).
+  bool get autoYesWasLocked => _store.getString(_autoYesLockKey) != null;
+
   /// "Your first talk" in 3 steps on Home, until the first talk.
   bool get showJourney =>
       state.firstRun == null && state.snapshot != null && talkCount == 0;
@@ -3845,7 +3877,24 @@ class RealController extends Notifier<RealState> {
       _store.getString(_usedFreeKey) != null ||
       myActiveAvailability(state, _now()) != null;
 
+  static const _quickOffKey = 'real.quickOff.v1';
+
+  /// Quick connect is gone (owner, D-161): my old ones are turned off once,
+  /// so nothing happens that I can no longer see or change.
+  Future<void> _quickOff(RealSnapshot snap) async {
+    if (_store.getString(_quickOffKey) != null) return;
+    try {
+      for (final id in snap.quickMine) {
+        await _backend.setQuick(id, false);
+      }
+      _store.setString(_quickOffKey, 'done');
+    } on RealBackendException {
+      // Next time.
+    }
+  }
+
   void _noteProgress(RealSnapshot snap) {
+    unawaited(_quickOff(snap));
     if (_store.getString(_milestoneKey) == null) {
       final n = snap.talks.length;
       _store.setString(

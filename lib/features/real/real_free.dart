@@ -562,6 +562,7 @@ class AutoCard extends ConsumerWidget {
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
     final yes = s.snapshot?.autoYes ?? false;
+    final locked = c.autoYesLocked && !yes;
     return Card(
       key: const ValueKey('autoCard'),
       shape: RoundedRectangleBorder(
@@ -593,14 +594,17 @@ class AutoCard extends ConsumerWidget {
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
             subtitle: Text(
-              yes
+              locked
+                  ? l.autoYesLockedBody
+                  : yes
                   ? l.homeAutoYesOnBody(s.snapshot?.autoYesMin ?? 3)
                   : l.homeAutoYesOffBody,
             ),
             activeThumbColor: Colors.white,
             activeTrackColor: instantGold,
             value: yes,
-            onChanged: s.busy || s.snapshot == null
+            // New here: opens after the first talk (owner, D-161).
+            onChanged: s.busy || s.snapshot == null || locked
                 ? null
                 : (v) => c.setAutoYes(on: v),
           ),

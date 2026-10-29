@@ -16,7 +16,6 @@ import '../common/labels.dart';
 import 'real_about.dart';
 import 'real_common.dart';
 import 'real_free.dart';
-import 'real_quick.dart';
 import 'real_people.dart';
 
 /// "I'm driving" / "I have time" on Home (D-156): one tap, 30 minutes, to
@@ -329,12 +328,6 @@ class RealHomeScreen extends ConsumerWidget {
                 // The two automatic switches, together (owner).
                 const SizedBox(height: 16),
                 AutoCard(onAutoDriving: (v) => setAutoDriving(context, ref, v)),
-                // A friend turned quick connect on for me (D-112): its
-                // own place, never hidden behind another card.
-                if (c.quickAsk case final f?) ...[
-                  const SizedBox(height: 16),
-                  QuickAskCard(friend: f),
-                ],
                 // At most ONE small card at a time (the most useful one).
                 if (_tipCard(s, c, now, snap) case final tip?) ...[
                   const SizedBox(height: 16),
@@ -372,7 +365,6 @@ Widget? _tipCard(
   if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
   if (c.newFriend case final f?) return _NewFriendCard(friend: f);
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
-  if (c.showQuickIntro) return const QuickIntroCard();
   if (c.showAddNumber) return const _AddNumberCard();
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
@@ -1329,7 +1321,11 @@ class _MilestonePartyState extends ConsumerState<_MilestoneParty> {
           textAlign: TextAlign.center,
         ),
         content: Text(
-          first ? l.milestoneFirstBody : l.milestoneBody(n),
+          first
+              ? (c.autoYesWasLocked
+                    ? l.milestoneUnlockedBody
+                    : l.milestoneFirstBody)
+              : l.milestoneBody(n),
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 16),
         ),

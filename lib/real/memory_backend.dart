@@ -380,8 +380,10 @@ class MemoryServer {
       if (f == owner) continue;
       final last = tripPushes['$owner|$f'];
       final theirs = availability[f];
-      if (_isQuick(owner, f) &&
-          _isQuick(f, owner) &&
+      // Friends whose ⚡ auto-yes covers me, or old quick pairs (D-161).
+      final covers =
+          autoYes.contains(f) && ratingOf(f, owner) >= (autoYesMin[f] ?? 3);
+      if ((covers || (_isQuick(owner, f) && _isQuick(f, owner))) &&
           seesFree(f, owner) &&
           !anonymous.contains(f) &&
           !inQuietHours(f) &&

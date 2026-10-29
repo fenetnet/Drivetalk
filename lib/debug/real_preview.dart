@@ -68,6 +68,8 @@ Future<void> main() async {
     }
     store.values['real.whatsNew.v1'] = '170';
     store.values['real.googleCard.v1'] = 'no';
+    // Joined with this version: ⚡ auto-yes waits for the first talk.
+    store.values['real.autoYesLock.v1'] = 'locked';
   } else if (screen != 'onboarding') {
     await me.signIn('נתנאל', Gender.male);
     await me.setMyPhone('0521111111');

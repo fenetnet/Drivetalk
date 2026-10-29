@@ -14,9 +14,6 @@ import '../common/widgets.dart';
 import '../settings/routines_screen.dart';
 import 'real_circles.dart';
 import 'real_common.dart';
-import 'real_test_drive.dart';
-import 'real_home.dart';
-import 'real_permissions.dart';
 import 'real_quiet.dart';
 import 'real_stats.dart';
 
@@ -94,54 +91,28 @@ class RealSettingsScreen extends ConsumerWidget {
           SettingsGroup(
             title: l.settingsDriving,
             children: [
+              // The switches themselves live on Home (owner): here only
+              // "from how many stars" for ⚡ auto-yes.
               ListTile(
-                leading: const Icon(Icons.record_voice_over_rounded),
-                title: Text(l.testDriveTitle),
-                subtitle: Text(l.testDriveSettings),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const TestDriveScreen(),
-                  ),
-                ),
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.directions_car_rounded),
-                title: Text(l.realAutoDriving),
-                subtitle: Text(
-                  s.driving.supported
-                      ? l.realAutoDrivingBody
-                      : l.realAutoDrivingUnsupported,
-                ),
-                value: s.driving.enabled,
-                onChanged: !s.driving.supported || s.busy
-                    ? null
-                    : (v) => setAutoDriving(context, ref, v),
-              ),
-              SwitchListTile(
-                secondary: const Icon(Icons.bolt_rounded),
+                leading: const Icon(Icons.bolt_rounded, color: instantGold),
                 title: Text(l.autoYesTitle),
                 subtitle: Text(l.autoYesBody),
-                isThreeLine: true,
-                value: s.snapshot?.autoYes ?? false,
-                onChanged: s.busy ? null : (v) => c.setAutoYes(on: v),
               ),
-              if (s.snapshot?.autoYes ?? false)
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
-                  child: SegmentedButton<int>(
-                    segments: [
-                      ButtonSegment(value: 3, label: Text(l.autoYesStars3)),
-                      ButtonSegment(value: 4, label: Text(l.autoYesStars4)),
-                      ButtonSegment(value: 5, label: Text(l.autoYesStars5)),
-                    ],
-                    selected: {(s.snapshot?.autoYesMin ?? 3).clamp(3, 5)},
-                    showSelectedIcon: false,
-                    onSelectionChanged: s.busy
-                        ? null
-                        : (v) => c.setAutoYes(min: v.first),
-                  ),
+              Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 12),
+                child: SegmentedButton<int>(
+                  segments: [
+                    ButtonSegment(value: 3, label: Text(l.autoYesStars3)),
+                    ButtonSegment(value: 4, label: Text(l.autoYesStars4)),
+                    ButtonSegment(value: 5, label: Text(l.autoYesStars5)),
+                  ],
+                  selected: {(s.snapshot?.autoYesMin ?? 3).clamp(3, 5)},
+                  showSelectedIcon: false,
+                  onSelectionChanged: s.busy || s.snapshot == null
+                      ? null
+                      : (v) => c.setAutoYes(min: v.first),
                 ),
+              ),
               ListTile(
                 leading: const Icon(Icons.schedule_rounded),
                 title: Text(l.routinesTitle),
@@ -174,7 +145,7 @@ class RealSettingsScreen extends ConsumerWidget {
                 value: s.prefs.voice,
                 onChanged: (v) => c.setPrefs(s.prefs.copyWith(voice: v)),
               ),
-              // "X is on the way" to my quick-connect friends (D-119).
+              // "X is on the way" to friends with ⚡ auto-yes for me (D-161).
               SwitchListTile(
                 secondary: const Icon(Icons.campaign_rounded),
                 title: Text(l.settingsTripNotify),
@@ -260,17 +231,6 @@ class RealSettingsScreen extends ConsumerWidget {
             title: l.settingsGeneral,
             children: [
               ListTile(
-                leading: const Icon(Icons.app_settings_alt_rounded),
-                title: Text(l.permsSettings),
-                subtitle: Text(l.permsSettingsBody),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const PermissionsScreen(),
-                  ),
-                ),
-              ),
-              ListTile(
                 leading: const Icon(Icons.system_update_rounded),
                 title: Text(l.updateCheck),
                 subtitle: Text(
@@ -296,16 +256,11 @@ class RealSettingsScreen extends ConsumerWidget {
                   }
                 },
               ),
+              // One row for both (owner): the technical details help either way.
               ListTile(
                 leading: const Icon(Icons.rate_review_rounded),
-                title: Text(l.feedbackTitle),
-                subtitle: Text(l.feedbackBody),
-                onTap: () => openFeedbackDialog(context, ref),
-              ),
-              ListTile(
-                leading: const Icon(Icons.bug_report_rounded),
-                title: Text(l.problemTitle),
-                subtitle: Text(l.problemBody),
+                title: Text(l.feedbackOrProblem),
+                subtitle: Text(l.feedbackOrProblemBody),
                 onTap: () => openFeedbackDialog(context, ref, problem: true),
               ),
             ],

@@ -1686,6 +1686,8 @@ void main() {
           me.c.firstRunNext();
         }
         expect(me.c.showJourney, isTrue);
+        // New here: ⚡ auto-yes opens after the first talk (D-161).
+        expect(me.c.autoYesLocked, isTrue);
         expect(me.c.wasFree, isFalse);
         expect(me.c.milestoneDue, isNull);
         await me.c.startAvailability(AvailabilityMode.free, 30);
@@ -1696,6 +1698,8 @@ void main() {
         await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
         await me.c.refresh();
         expect(me.c.talkCount, 1);
+        expect(me.c.autoYesLocked, isFalse);
+        expect(me.c.autoYesWasLocked, isTrue);
         expect(me.c.showJourney, isFalse);
         expect(me.c.milestoneDue, 1);
         me.c.milestoneSeen(1);
@@ -3214,6 +3218,21 @@ void main() {
         hasLength(1),
       );
       expect(yoni.s.notice?.kind, isNot(RealNoticeKind.askFailed));
+    });
+
+    test('a friend with ⚡ auto-yes for me is told (D-161)', () async {
+      await connect();
+      yoni.driving.push = 'yoni-push-token-0123456789';
+      yoni.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, isEmpty, reason: 'no auto-yes yet');
+      await me.c.stopAvailability();
+      await yoni.c.setAutoYes(on: true, min: 3);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await pump();
+      expect(me.backend.lastTripTold, [yoni.backend.userId]);
     });
 
     test('the switch off, or not quick both ways: nobody is told', () async {

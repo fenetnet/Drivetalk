@@ -631,7 +631,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsVoiceReadoutBody.
   ///
   /// In he, this message translates to:
-  /// **'בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.'**
+  /// **'הטלפון אומר מי פנוי, ועונים בקול.'**
   String get settingsVoiceReadoutBody;
 
   /// No description provided for @routinesTitle.
@@ -3067,7 +3067,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAnonymousHint.
   ///
   /// In he, this message translates to:
-  /// **'החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.'**
+  /// **'החברים רואים רק כמה פנויים, לא מי.'**
   String get settingsAnonymousHint;
 
   /// No description provided for @settingsHideInCall.
@@ -3079,7 +3079,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHideInCallHint.
   ///
   /// In he, this message translates to:
-  /// **'בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.'**
+  /// **'בזמן שיחה החברים לא יראו שאתה זמין.'**
   String get settingsHideInCallHint;
 
   /// No description provided for @settingsQuietHours.
@@ -3715,13 +3715,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsTripNotify.
   ///
   /// In he, this message translates to:
-  /// **'להודיע לחברים עם חיבור מהיר כשיוצאים לדרך'**
+  /// **'להודיע כשאני יוצא לדרך'**
   String get settingsTripNotify;
 
   /// No description provided for @settingsTripNotifyBody.
   ///
   /// In he, this message translates to:
-  /// **'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.'**
+  /// **'לחברים שהפעילו בשבילך ⚡ כן אוטומטי. פעם ביום לכל היותר.'**
   String get settingsTripNotifyBody;
 
   /// No description provided for @pushTestButton.
@@ -4579,7 +4579,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoYesBody.
   ///
   /// In he, this message translates to:
-  /// **'בזמן נסיעה, חבר שנתת לו מספיק כוכבים ולוחץ עליך מתחבר מיד, בלי שאלה. הוא מתקשר, והטלפון שלך פשוט מצלצל. אם גם הוא הפעיל את זה בשבילך, מתחברים לבד אחרי 5 שניות שאפשר לבטל.'**
+  /// **'חברים עם מספיק כוכבים מתחברים אליך מיד בנסיעה. מכמה כוכבים:'**
   String get autoYesBody;
 
   /// No description provided for @autoYesFrom.
@@ -4989,6 +4989,54 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'יאללה'**
   String get milestoneOk;
+
+  /// No description provided for @firstRunCarTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין אוטומטית בכל נסיעה'**
+  String get firstRunCarTitle;
+
+  /// No description provided for @firstRunCarBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כשהטלפון מזהה שהוא כנראה ברכב, החברים רואים שיש לך זמן. בסוף הנסיעה זה נכבה לבד. בלי מיקום.'**
+  String get firstRunCarBody;
+
+  /// No description provided for @firstRunCarSwitch.
+  ///
+  /// In he, this message translates to:
+  /// **'זיהוי נסיעה אוטומטי'**
+  String get firstRunCarSwitch;
+
+  /// No description provided for @firstRunCarPick.
+  ///
+  /// In he, this message translates to:
+  /// **'הרכב שלך בבלוטות׳ – לזיהוי מהיר יותר'**
+  String get firstRunCarPick;
+
+  /// No description provided for @autoYesLockedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'🔒 נפתח אחרי השיחה הראשונה שלך'**
+  String get autoYesLockedBody;
+
+  /// No description provided for @milestoneUnlockedBody.
+  ///
+  /// In he, this message translates to:
+  /// **'🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. חברים קרובים יתחברו אליך מיד, בלי לשאול.'**
+  String get milestoneUnlockedBody;
+
+  /// No description provided for @feedbackOrProblem.
+  ///
+  /// In he, this message translates to:
+  /// **'משוב או בעיה'**
+  String get feedbackOrProblem;
+
+  /// No description provided for @feedbackOrProblemBody.
+  ///
+  /// In he, this message translates to:
+  /// **'רעיון, או משהו שלא עבד – זה מגיע ישר אלינו.'**
+  String get feedbackOrProblemBody;
 }
 
 class _AppLocalizationsDelegate

@@ -355,21 +355,12 @@ void main() {
     // Privacy things together; the policy row isn't titled like the group.
     await t.scrollUntilVisible(find.text('מה נשמר עליי'), 200);
     expect(find.text('פרטיות'), findsOneWidget);
-    await t.scrollUntilVisible(find.text('הרשאות'), 200);
-    expect(t.takeException(), isNull);
-
-    // Permissions from Settings: the driving switch lives in "Driving".
-    await t.tap(find.text('הרשאות'));
-    await t.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await t.pump(const Duration(milliseconds: 500));
-    expect(find.text('זמינות אוטומטית בנסיעה (רשות)'), findsNothing);
-    await t.scrollUntilVisible(
-      find.text('הגדרות ההתראות בטלפון'),
-      200,
-      scrollable: find.byType(Scrollable).last,
-    );
+    // Shorter (owner, D-161): permissions and the test drive live in
+    // "About", the switches on Home; one row for feedback or a problem.
+    await t.scrollUntilVisible(find.text('משוב או בעיה'), 200);
+    expect(find.text('הרשאות'), findsNothing);
+    expect(find.text('נסיעת מבחן'), findsNothing);
+    expect(find.text('דיווח על בעיה'), findsNothing);
     expect(t.takeException(), isNull);
     await _close(t);
   });
@@ -552,52 +543,6 @@ void main() {
     await _close(t);
   });
 
-  testWidgets('quick connect: the switch, the ask card and the intro', (
-    t,
-  ) async {
-    final (me, friend) = await twoFriends(t);
-    await t.runAsync(() async {
-      final f = friend.read(realProvider.notifier);
-      await f.setQuick(
-        friend.read(realProvider).snapshot!.friends.single,
-        true,
-      );
-      await me.read(realProvider.notifier).refresh();
-    });
-    final c = me.read(realProvider.notifier);
-    final yoni = me.read(realProvider).snapshot!.friends.single;
-    expect(c.quickAsk?.id, yoni.id);
-    await _show(
-      t,
-      me,
-      SingleChildScrollView(
-        child: Column(
-          children: [
-            QuickAskCard(friend: yoni),
-            const QuickIntroCard(),
-            QuickSwitch(friend: yoni),
-          ],
-        ),
-      ),
-    );
-    expect(find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'), findsOneWidget);
-    expect(find.text('חדש: חיבור מהיר'), findsOneWidget);
-    expect(find.text('חיבור מהיר'), findsOneWidget);
-    expect(t.takeException(), isNull);
-    await t.ensureVisible(find.byType(Switch));
-    await t.tap(find.byType(Switch));
-    await t.pump(const Duration(milliseconds: 300));
-    expect(find.text('חיבור מהיר עם יונתן־אלכסנדר?'), findsOneWidget);
-    expect(t.takeException(), isNull);
-    await t.tap(find.text('להפעיל'));
-    await t.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 50)),
-    );
-    await t.pump(const Duration(milliseconds: 300));
-    expect(me.read(realProvider).snapshot!.quickBoth(yoni.id), isTrue);
-    await _close(t);
-  });
-
   testWidgets(
     'picking minutes after the screen behind changed does not crash',
     (t) async {
@@ -656,63 +601,6 @@ void main() {
     },
   );
 
-  testWidgets('quick connect from the friend card: the switch stays on', (
-    t,
-  ) async {
-    final (me, _) = await twoFriends(t);
-    await _show(t, me, const RealPeopleScreen());
-    await t.scrollUntilVisible(
-      find.text('יונתן־אלכסנדר'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    // A bit more, so the whole card is on screen (not under the edge).
-    await t.drag(find.byType(Scrollable).first, const Offset(0, -150));
-    await t.pumpAndSettle();
-    await t.tap(find.text('יונתן־אלכסנדר'));
-    await t.pumpAndSettle();
-    final sw = find.byType(Switch).first;
-    expect(t.widget<Switch>(sw).value, isFalse);
-    await t.tap(sw);
-    await t.pumpAndSettle();
-    await t.tap(find.text('להפעיל'));
-    await t.runAsync(
-      () => Future<void>.delayed(const Duration(milliseconds: 100)),
-    );
-    await t.pumpAndSettle();
-    expect(t.widget<Switch>(find.byType(Switch).first).value, isTrue);
-    expect(
-      find.text('מופעל אצלך. יעבוד כשזה יופעל גם אצל יונתן־אלכסנדר.'),
-      findsOneWidget,
-    );
-    expect(t.takeException(), isNull);
-    await _close(t);
-  });
-
-  testWidgets('a quick-connect request shows even with "update available"', (
-    t,
-  ) async {
-    final (me, friend) = await twoFriends(t, latestBuild: 999);
-    await t.runAsync(() async {
-      await friend
-          .read(realProvider.notifier)
-          .setQuick(friend.read(realProvider).snapshot!.friends.single, true);
-      final c = me.read(realProvider.notifier);
-      await c.checkForUpdate(force: true);
-      await c.refresh();
-    });
-    expect(me.read(realProvider).newBuild, 999);
-    await _show(t, me, const RealHomeScreen());
-    await t.scrollUntilVisible(
-      find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('יונתן־אלכסנדר רוצה חיבור מהיר איתך'), findsOneWidget);
-    expect(t.takeException(), isNull);
-    await _close(t);
-  });
-
   testWidgets('a friend card shows my pause, and "cancel" removes it', (
     t,
   ) async {
@@ -745,6 +633,8 @@ void main() {
     await _show(t, me, const RealHomeScreen());
     await t.scrollUntilVisible(find.byKey(const ValueKey('journey')), 200);
     expect(find.text('השיחה הראשונה שלך – 3 צעדים'), findsOneWidget);
+    await t.scrollUntilVisible(find.byKey(const ValueKey('autoYes')), 200);
+    expect(find.text('🔒 נפתח אחרי השיחה הראשונה שלך'), findsOneWidget);
     expect(find.byKey(const ValueKey('fire')), findsNothing);
     await t.runAsync(() async {
       final f = friend.read(realProvider.notifier);
@@ -764,15 +654,46 @@ void main() {
     await t.pump(const Duration(milliseconds: 300));
     expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsOneWidget);
     expect(find.text('להפעיל ⚡ כן אוטומטי'), findsOneWidget);
+    expect(find.textContaining('🔓 נפתח עכשיו'), findsOneWidget);
     await t.tap(find.text('אחר כך'));
     await t.pump(const Duration(milliseconds: 300));
     expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsNothing);
     expect(c.milestoneDue, isNull);
-    await t.drag(find.byType(Scrollable).first, const Offset(0, 2000));
-    await t.pump();
+    await t.scrollUntilVisible(
+      find.text('🔥 1'),
+      -200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('🔥 1'), findsOneWidget);
     expect(find.byKey(const ValueKey('journey')), findsNothing);
     expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
+  testWidgets('quick connect is gone (D-161): my old ones are turned off', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t);
+    final c = me.read(realProvider.notifier);
+    await t.runAsync(() async {
+      // Set before this version: both sides on.
+      final yoni = me.read(realProvider).snapshot!.friends.single;
+      await me.read(realBackendProvider).setQuick(yoni.id, true);
+      final f = friend.read(realProvider.notifier);
+      await f.setQuick(
+        friend.read(realProvider).snapshot!.friends.single,
+        true,
+      );
+      await me.read(localStoreProvider).setString('real.quickOff.v1', null);
+      await c.refresh();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await c.refresh();
+    });
+    final yoni = me.read(realProvider).snapshot!.friends.single;
+    expect(me.read(realProvider).snapshot!.quickMine, isEmpty);
+    expect(me.read(realProvider).snapshot!.quickBoth(yoni.id), isFalse);
+    await _show(t, me, const RealHomeScreen());
+    expect(find.textContaining('חיבור מהיר'), findsNothing);
     await _close(t);
   });
 

@@ -325,8 +325,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsVoiceReadout => 'הקראה בקול בנסיעה';
 
   @override
-  String get settingsVoiceReadoutBody =>
-      'בנסיעה הטלפון אומר בקול מי פנוי. כשהאפליקציה פתוחה עונים \"כן\" או \"לא\" בקול; אחרת — \"לדבר\" בהתראה.';
+  String get settingsVoiceReadoutBody => 'הטלפון אומר מי פנוי, ועונים בקול.';
 
   @override
   String get routinesTitle => 'השגרה שלי';
@@ -1818,15 +1817,13 @@ class AppLocalizationsHe extends AppLocalizations {
   String get settingsAnonymous => 'להופיע בלי שם כשיש לי זמן';
 
   @override
-  String get settingsAnonymousHint =>
-      'החברים רואים רק כמה חברים פנויים, לא מי. כך גם אצלך: רק כמה פנויים. בהצעה לדבר השם תמיד מופיע.';
+  String get settingsAnonymousHint => 'החברים רואים רק כמה פנויים, לא מי.';
 
   @override
   String get settingsHideInCall => 'להסתיר כשאני בשיחה';
 
   @override
-  String get settingsHideInCallHint =>
-      'בזמן שיחה החברים לא יראו שיש לך זמן. זה הדדי: גם לך לא יופיעו חברים שנמצאים בשיחה.';
+  String get settingsHideInCallHint => 'בזמן שיחה החברים לא יראו שאתה זמין.';
 
   @override
   String get settingsQuietHours => 'שעות שקטות';
@@ -2221,11 +2218,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get tripNotifTalk => 'לדבר';
 
   @override
-  String get settingsTripNotify => 'להודיע לחברים עם חיבור מהיר כשיוצאים לדרך';
+  String get settingsTripNotify => 'להודיע כשאני יוצא לדרך';
 
   @override
   String get settingsTripNotifyBody =>
-      'רק לחברים ששניכם הדלקתם חיבור מהיר, פעם ביום לכל היותר, ולא בשעות השקטות שלהם.';
+      'לחברים שהפעילו בשבילך ⚡ כן אוטומטי. פעם ביום לכל היותר.';
 
   @override
   String get pushTestButton => 'שליחת התראת בדיקה אליי';
@@ -2733,7 +2730,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get autoYesBody =>
-      'בזמן נסיעה, חבר שנתת לו מספיק כוכבים ולוחץ עליך מתחבר מיד, בלי שאלה. הוא מתקשר, והטלפון שלך פשוט מצלצל. אם גם הוא הפעיל את זה בשבילך, מתחברים לבד אחרי 5 שניות שאפשר לבטל.';
+      'חברים עם מספיק כוכבים מתחברים אליך מיד בנסיעה. מכמה כוכבים:';
 
   @override
   String get autoYesFrom => 'ממי';
@@ -2981,4 +2978,31 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get milestoneOk => 'יאללה';
+
+  @override
+  String get firstRunCarTitle => 'זמין אוטומטית בכל נסיעה';
+
+  @override
+  String get firstRunCarBody =>
+      'כשהטלפון מזהה שהוא כנראה ברכב, החברים רואים שיש לך זמן. בסוף הנסיעה זה נכבה לבד. בלי מיקום.';
+
+  @override
+  String get firstRunCarSwitch => 'זיהוי נסיעה אוטומטי';
+
+  @override
+  String get firstRunCarPick => 'הרכב שלך בבלוטות׳ – לזיהוי מהיר יותר';
+
+  @override
+  String get autoYesLockedBody => '🔒 נפתח אחרי השיחה הראשונה שלך';
+
+  @override
+  String get milestoneUnlockedBody =>
+      '🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. חברים קרובים יתחברו אליך מיד, בלי לשאול.';
+
+  @override
+  String get feedbackOrProblem => 'משוב או בעיה';
+
+  @override
+  String get feedbackOrProblemBody =>
+      'רעיון, או משהו שלא עבד – זה מגיע ישר אלינו.';
 }

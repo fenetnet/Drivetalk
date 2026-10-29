@@ -158,6 +158,7 @@ class RealFirstRunScreen extends ConsumerWidget {
       ),
       FirstRunStep.routine => const _RoutineStep(),
       FirstRunStep.permissions => const PermissionsStep(),
+      FirstRunStep.car => const _CarStep(),
       _ => MomentLayout(
         style: MomentStyle.green,
         top: Column(
@@ -326,6 +327,120 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
                 ),
         ),
         SecondaryPill(label: l.firstRunRoutineNone, onTap: c.firstRunNext),
+      ],
+    );
+  }
+}
+
+/// Automatic availability, on unless declined, then the car's Bluetooth
+/// (owner, D-161). Android still asks its own question.
+class _CarStep extends ConsumerStatefulWidget {
+  const _CarStep();
+
+  @override
+  ConsumerState<_CarStep> createState() => _CarStepState();
+}
+
+class _CarStepState extends ConsumerState<_CarStep> {
+  var _auto = true;
+  List<(String, String)>? _devices;
+  final _chosen = <String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(realProvider.notifier).carCandidates().then((d) {
+      if (mounted) setState(() => _devices = d);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final busy = ref.watch(realProvider.select((s) => s.busy));
+    final devices = _devices;
+    return MomentLayout(
+      top: Column(
+        children: [
+          Container(
+            width: 110,
+            height: 110,
+            decoration: const BoxDecoration(
+              color: AppColors.terracotta,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.directions_car_rounded,
+              color: Colors.white,
+              size: 56,
+            ),
+          ),
+          const SizedBox(height: 24),
+          MomentText(l.firstRunCarTitle, size: 28),
+          const SizedBox(height: 10),
+          MomentText(l.firstRunCarBody, size: 16, soft: true),
+          const SizedBox(height: 16),
+          Card(
+            child: Column(
+              children: [
+                SwitchListTile(
+                  title: Text(
+                    l.firstRunCarSwitch,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  value: _auto,
+                  onChanged: (v) => setState(() => _auto = v),
+                ),
+                if (_auto) ...[
+                  const Divider(height: 1),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(l.firstRunCarPick),
+                    ),
+                  ),
+                  if (devices != null && devices.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                      child: Text(
+                        l.realCarNoDevices,
+                        style: const TextStyle(color: AppColors.inkSoft),
+                      ),
+                    ),
+                  for (final (name, address)
+                      in devices ?? const <(String, String)>[])
+                    CheckboxListTile(
+                      secondary: const Icon(Icons.bluetooth_rounded),
+                      title: Text(name),
+                      value: _chosen.contains(address),
+                      onChanged: (on) => setState(
+                        () => on == true
+                            ? _chosen.add(address)
+                            : _chosen.remove(address),
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        PrimaryPill(
+          label: l.next,
+          onTap: busy
+              ? null
+              : () => c.firstRunCar(
+                  auto: _auto,
+                  cars: [
+                    for (final (name, address)
+                        in devices ?? const <(String, String)>[])
+                      if (_chosen.contains(address)) (address, name),
+                  ],
+                ),
+        ),
       ],
     );
   }

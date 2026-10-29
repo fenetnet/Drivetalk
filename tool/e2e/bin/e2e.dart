@@ -1849,7 +1849,7 @@ Future<void> main() async {
   await availableToGroups();
 
   check(
-    await eve.rpc('schema_version') == 66,
+    await eve.rpc('schema_version') == 67,
     'the server says its version (41)',
   );
 
@@ -3256,6 +3256,15 @@ Future<void> tripPush() async {
     'on the way: only a friend with quick connect both ways is told',
   );
   check((await claim()).isEmpty, 'once a day per friend');
+  await dbExec("delete from trip_pushes where owner = '${uid(ta)}'");
+  // Talia turns ⚡ auto-yes on: it covers me, so she is told too (D-161).
+  await tc.rpc('set_auto_yes', params: {'p_on': true, 'p_min': 3});
+  final both = await claim();
+  check(
+    both.toSet().containsAll({uid(tb), uid(tc)}) && both.length == 2,
+    'on the way: a friend with auto-yes for me is told too (D-161)',
+  );
+  await tc.rpc('set_auto_yes', params: {'p_on': false});
   await dbExec("delete from trip_pushes where owner = '${uid(ta)}'");
   await tb.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
   check(

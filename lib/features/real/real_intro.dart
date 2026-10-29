@@ -34,26 +34,10 @@ class _IntroTourState extends State<IntroTour> {
   @override
   Widget build(BuildContext context) {
     final l = context.l10n;
-    // Each photo keeps its point in view (the offer on the phone is low).
-    final (photo, focus, title, body) = switch (_intro) {
-      0 => (
-        'assets/intro/1-traffic.jpg',
-        Alignment.center,
-        l.intro1Title,
-        l.intro1Body,
-      ),
-      1 => (
-        'assets/intro/2-friend.jpg',
-        const Alignment(0, 0.75),
-        l.intro2Title,
-        l.intro2Body,
-      ),
-      _ => (
-        'assets/intro/3-talk.jpg',
-        Alignment.center,
-        l.intro3Title,
-        l.intro3Body,
-      ),
+    final (photo, title, body) = switch (_intro) {
+      0 => ('assets/intro/1-traffic.jpg', l.intro1Title, l.intro1Body),
+      1 => ('assets/intro/2-friend.jpg', l.intro2Title, l.intro2Body),
+      _ => ('assets/intro/3-talk.jpg', l.intro3Title, l.intro3Body),
     };
     final last = _intro == _pages - 1;
     return Scaffold(
@@ -67,88 +51,94 @@ class _IntroTourState extends State<IntroTour> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // The photo fills the top, behind the status bar.
+            // The whole picture, nothing cut off (owner): as large as fits.
             Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(28),
-                ),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Image.asset(
-                        photo,
-                        key: ValueKey(photo),
-                        fit: BoxFit.cover,
-                        alignment: focus,
-                        width: double.infinity,
-                        height: double.infinity,
-                      ),
-                    ),
-                    // The heart of it: the app noticed you're both free.
-                    if (_intro == 1)
-                      Positioned(
-                        left: 16,
-                        right: 16,
-                        bottom: 16,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x40000000),
-                                  blurRadius: 16,
-                                  offset: Offset(0, 4),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Stack(
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                child: Image.asset(
+                                  photo,
+                                  key: ValueKey(photo),
+                                  fit: BoxFit.contain,
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.auto_awesome_rounded,
-                                  color: AppColors.terracotta,
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    l.intro2Badge,
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.terracotta,
+                              ),
+                              // The heart of it: the app noticed you're both free.
+                              if (_intro == 1)
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  bottom: 16,
+                                  child: Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(30),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Color(0x40000000),
+                                            blurRadius: 16,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.auto_awesome_rounded,
+                                            color: AppColors.terracotta,
+                                            size: 22,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Flexible(
+                                            child: Text(
+                                              l.intro2Badge,
+                                              style: const TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.terracotta,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (!last)
+                        PositionedDirectional(
+                          top: 4,
+                          start: 4,
+                          child: TextButton(
+                            onPressed: () => widget.onDone(),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.black38,
+                              shape: const StadiumBorder(),
                             ),
+                            child: Text(l.skip),
                           ),
                         ),
-                      ),
-                    if (!last)
-                      PositionedDirectional(
-                        top: MediaQuery.paddingOf(context).top + 8,
-                        start: 12,
-                        child: TextButton(
-                          onPressed: () => widget.onDone(),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.black38,
-                            shape: const StadiumBorder(),
-                          ),
-                          child: Text(l.skip),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
