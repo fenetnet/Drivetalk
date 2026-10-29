@@ -92,6 +92,26 @@ Future<void> main() async {
     await me.saveCircle(
       RealCircle(id: '', name: 'חברים מהצבא', memberIds: {yoni.userId!}),
     );
+    // Talks behind me (D-159): the first one, or five — and the party.
+    if (screen == 'party' || screen == 'party5') {
+      final n = screen == 'party' ? 1 : 5;
+      for (var i = 0; i < n; i++) {
+        final f = [yoni, mom, dana, omer, shira][i];
+        await f.setAvailability(AvailabilityMode.free, 30);
+        await me.setAvailability(AvailabilityMode.free, 30);
+        await me.nudgeOffers();
+        final o = (await me.fetchSnapshot()).offers.firstWhere(
+          (o) => o.status == OfferStatus.pending,
+        );
+        await me.answerOffer(o.id, accept: true);
+        await f.answerOffer(o.id, accept: true);
+        await me.afterCall(o.id, days: 0, talked: true);
+        await f.afterCall(o.id, days: 0, talked: true);
+        await me.clearAvailability();
+        await f.clearAvailability();
+      }
+      store.values['real.milestone.v1'] = n == 1 ? '0' : '1';
+    }
     if (screen != 'driving') {
       // Home: three faces fit the card (driving, break, in a call).
       if (screen != 'home') {

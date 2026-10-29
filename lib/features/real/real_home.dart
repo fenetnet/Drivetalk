@@ -171,6 +171,7 @@ class RealHomeScreen extends ConsumerWidget {
     return Stack(
       children: [
         const _MissingPermissions(),
+        const _MilestoneParty(),
         // Soft decorative circles.
         const PositionedDirectional(
           top: -120,
@@ -199,6 +200,34 @@ class RealHomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    // 🔥 my talks through the app (owner, D-159).
+                    if (c.talkCount > 0)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(end: 8),
+                        child: Tooltip(
+                          message: l.fireTooltip(c.talkCount),
+                          triggerMode: TooltipTriggerMode.tap,
+                          child: Container(
+                            key: const ValueKey('fire'),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF1E0),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '🔥 ${c.talkCount}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFFE65100),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     // Mine on: the same gold ring friends see (owner, D-155).
                     if (me != null)
                       InstantRing(
@@ -291,6 +320,11 @@ class RealHomeScreen extends ConsumerWidget {
                     padding: const EdgeInsets.only(top: 8),
                     child: _HowFriendsSeeMe(mine: mine, now: now),
                   ),
+                ],
+                // Until the first talk: the way there, in 3 steps (D-159).
+                if (c.showJourney) ...[
+                  const SizedBox(height: 16),
+                  const _JourneyCard(),
                 ],
                 // The two automatic switches, together (owner).
                 const SizedBox(height: 16),
@@ -1174,6 +1208,153 @@ class _NoFriendsCard extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// "Your first talk in 3 steps" (owner, D-159): add a friend, say I'm
+/// free, talk. Shown until the first talk.
+class _JourneyCard extends ConsumerWidget {
+  const _JourneyCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final s = ref.watch(realProvider);
+    final c = ref.read(realProvider.notifier);
+    final friends = s.snapshot?.friends.isNotEmpty ?? false;
+    Widget step(int n, String text, bool done) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        children: [
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: done ? AppColors.terracotta : Colors.transparent,
+              border: Border.all(color: AppColors.terracotta, width: 2),
+            ),
+            child: done
+                ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                : Text(
+                    '$n',
+                    style: const TextStyle(
+                      color: AppColors.terracotta,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 16,
+                color: done ? AppColors.inkSoft : null,
+                decoration: done ? TextDecoration.lineThrough : null,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    return Card(
+      key: const ValueKey('journey'),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.journeyTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 8),
+            step(1, l.journeyStep1, friends),
+            step(2, l.journeyStep2, c.wasFree),
+            step(3, l.journeyStep3, false),
+            if (!friends) ...[
+              const SizedBox(height: 10),
+              OutlinedButton.icon(
+                onPressed: () => shareInvite(context, ref),
+                icon: const Icon(Icons.share_rounded),
+                label: Text(l.realInviteFriend),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The first talk, then 5 / 10 / 25 / 50 / 100: a small party, once each
+/// (owner, D-159). After the first: an offer to turn auto-yes on.
+class _MilestoneParty extends ConsumerStatefulWidget {
+  const _MilestoneParty();
+
+  @override
+  ConsumerState<_MilestoneParty> createState() => _MilestonePartyState();
+}
+
+class _MilestonePartyState extends ConsumerState<_MilestoneParty> {
+  var _showing = false;
+
+  @override
+  Widget build(BuildContext context) {
+    ref.watch(realProvider.select((s) => s.snapshot?.talks.length));
+    final due = ref.read(realProvider.notifier).milestoneDue;
+    if (due != null && !_showing) {
+      _showing = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _party(due));
+    }
+    return const SizedBox.shrink();
+  }
+
+  Future<void> _party(int n) async {
+    if (!mounted) return;
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    c.milestoneSeen(n);
+    final first = n == 1;
+    final offerAuto =
+        first && !(ref.read(realProvider).snapshot?.autoYes ?? true);
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        icon: Text(first ? '🎉' : '🔥', style: const TextStyle(fontSize: 56)),
+        title: Text(
+          first ? l.milestoneFirstTitle : l.milestoneTitle(n),
+          textAlign: TextAlign.center,
+        ),
+        content: Text(
+          first ? l.milestoneFirstBody : l.milestoneBody(n),
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 16),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actionsOverflowDirection: VerticalDirection.down,
+        actions: [
+          if (offerAuto) ...[
+            FilledButton(
+              onPressed: () => Navigator.pop(d, true),
+              child: Text(l.milestoneFirstGo),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(d, false),
+              child: Text(l.firstRunLater),
+            ),
+          ] else
+            FilledButton(
+              onPressed: () => Navigator.pop(d, false),
+              child: Text(l.milestoneOk),
+            ),
+        ],
+      ),
+    );
+    if (go == true) await c.setAutoYes(on: true);
+    if (mounted) setState(() => _showing = false);
   }
 }
 

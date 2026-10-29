@@ -734,6 +734,48 @@ void main() {
     await _close(t);
   });
 
+  testWidgets('first talk: 3 steps on home, then 🔥 1 and a party (D-159)', (
+    t,
+  ) async {
+    final (me, friend) = await twoFriends(t);
+    final c = me.read(realProvider.notifier);
+    while (me.read(realProvider).firstRun != null) {
+      c.firstRunNext();
+    }
+    await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(find.byKey(const ValueKey('journey')), 200);
+    expect(find.text('השיחה הראשונה שלך – 3 צעדים'), findsOneWidget);
+    expect(find.byKey(const ValueKey('fire')), findsNothing);
+    await t.runAsync(() async {
+      final f = friend.read(realProvider.notifier);
+      await c.startAvailability(AvailabilityMode.free, 60);
+      await f.startAvailability(AvailabilityMode.free, 60);
+      await f.refresh();
+      await c.refresh();
+      final now0 = server.now();
+      await c.respond(currentOffer(me.read(realProvider), now0)!, accept: true);
+      await f.respond(
+        currentOffer(friend.read(realProvider), now0)!,
+        accept: true,
+      );
+      await c.refresh();
+    });
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsOneWidget);
+    expect(find.text('להפעיל ⚡ כן אוטומטי'), findsOneWidget);
+    await t.tap(find.text('אחר כך'));
+    await t.pump(const Duration(milliseconds: 300));
+    expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsNothing);
+    expect(c.milestoneDue, isNull);
+    await t.drag(find.byType(Scrollable).first, const Offset(0, 2000));
+    await t.pump();
+    expect(find.text('🔥 1'), findsOneWidget);
+    expect(find.byKey(const ValueKey('journey')), findsNothing);
+    expect(t.takeException(), isNull);
+    await _close(t);
+  });
+
   testWidgets('during a call: to the main screen and back', (t) async {
     final (me, friend) = await twoFriends(t);
     await t.runAsync(() async {

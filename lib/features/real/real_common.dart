@@ -911,9 +911,18 @@ class GoogleButton extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            // Small phone, large text: shrink rather than overflow.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
           ],
         ),

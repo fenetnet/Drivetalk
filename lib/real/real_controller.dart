@@ -1781,6 +1781,7 @@ class RealController extends Notifier<RealState> {
       _widgetTipKey,
       _bgTipKey,
       _usedFreeKey,
+      _milestoneKey,
       _micTipKey,
       _presetsKey,
       _permIntroKey,
@@ -1897,6 +1898,7 @@ class RealController extends Notifier<RealState> {
         _startSlowest = _backend.slowest;
       }
       _saveSnapCache(snap);
+      _noteProgress(snap);
       _react(snap);
       unawaited(_loadPhotos(snap));
       unawaited(_checkPending(snap));
@@ -3806,6 +3808,51 @@ class RealController extends Notifier<RealState> {
   void dismissWhatsNew() {
     _store.setString(_whatsNewKey, _whatsNewId);
     state = state.copyWith();
+  }
+
+  // ------------------------------------------------- first call, 🔥 (D-159)
+
+  /// Talks through the app (both said yes and someone said "we talked").
+  int get talkCount => state.snapshot?.talks.length ?? 0;
+
+  /// Celebrated once each (owner): the first talk, then 5, 10, 25, 50, 100.
+  static const milestones = [1, 5, 10, 25, 50, 100];
+  static const _milestoneKey = 'real.milestone.v1';
+
+  /// A milestone reached and not celebrated yet, or null. People who had
+  /// talks before this version start from where they are (no old parties).
+  int? get milestoneDue {
+    final seen = int.tryParse(_store.getString(_milestoneKey) ?? '');
+    if (seen == null || state.firstRun != null) return null;
+    final reached = milestones.lastWhere(
+      (m) => m <= talkCount,
+      orElse: () => 0,
+    );
+    return reached > seen ? reached : null;
+  }
+
+  void milestoneSeen(int m) {
+    _store.setString(_milestoneKey, '$m');
+    state = state.copyWith();
+  }
+
+  /// "Your first talk" in 3 steps on Home, until the first talk.
+  bool get showJourney =>
+      state.firstRun == null && state.snapshot != null && talkCount == 0;
+
+  /// I was free at least once (step 2 of the journey; also a trip).
+  bool get wasFree =>
+      _store.getString(_usedFreeKey) != null ||
+      myActiveAvailability(state, _now()) != null;
+
+  void _noteProgress(RealSnapshot snap) {
+    if (_store.getString(_milestoneKey) == null) {
+      final n = snap.talks.length;
+      _store.setString(
+        _milestoneKey,
+        '${milestones.lastWhere((m) => m <= n, orElse: () => 0)}',
+      );
+    }
   }
 
   static const _healthHideKey = 'real.healthHide.v1';

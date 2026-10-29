@@ -205,6 +205,10 @@ void main() {
       // Friends don't see the test tab; the owner's code opens it.
       expect(find.text('בדיקה'), findsNothing);
       await pumpFor(t, 4500); // the "thanks" message goes away
+      // The first talk: a small party, and auto-yes offered (D-159).
+      expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsOneWidget);
+      await t.tap(find.text('אחר כך'));
+      await pumpFor(t, 400);
       await t.tap(find.text('הגדרות'));
       await pumpFor(t, 400);
       // No visible "admin" button: a long press on the update row asks.

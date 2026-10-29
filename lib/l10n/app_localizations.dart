@@ -4923,6 +4923,72 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'שמירה'**
   String get realCarSave;
+
+  /// No description provided for @journeyTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה הראשונה שלך – 3 צעדים'**
+  String get journeyTitle;
+
+  /// No description provided for @journeyStep1.
+  ///
+  /// In he, this message translates to:
+  /// **'להוסיף חבר'**
+  String get journeyStep1;
+
+  /// No description provided for @journeyStep2.
+  ///
+  /// In he, this message translates to:
+  /// **'ללחוץ \"אני בנסיעה\" או \"יש לי זמן\"'**
+  String get journeyStep2;
+
+  /// No description provided for @journeyStep3.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה ראשונה דרך DriveBond'**
+  String get journeyStep3;
+
+  /// No description provided for @fireTooltip.
+  ///
+  /// In he, this message translates to:
+  /// **'{n} שיחות דרך DriveBond'**
+  String fireTooltip(int n);
+
+  /// No description provided for @milestoneFirstTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השיחה הראשונה שלך\nב-DriveBond! 🎉'**
+  String get milestoneFirstTitle;
+
+  /// No description provided for @milestoneFirstBody.
+  ///
+  /// In he, this message translates to:
+  /// **'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה: חברים קרובים יתחברו אליך מיד, בלי לשאול.'**
+  String get milestoneFirstBody;
+
+  /// No description provided for @milestoneFirstGo.
+  ///
+  /// In he, this message translates to:
+  /// **'להפעיל ⚡ כן אוטומטי'**
+  String get milestoneFirstGo;
+
+  /// No description provided for @milestoneTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'יש! הגעת\nל-{n} שיחות 🔥'**
+  String milestoneTitle(int n);
+
+  /// No description provided for @milestoneBody.
+  ///
+  /// In he, this message translates to:
+  /// **'{n} שיחות טובות עם האנשים שלך. ככה ממשיכים.'**
+  String milestoneBody(int n);
+
+  /// No description provided for @milestoneOk.
+  ///
+  /// In he, this message translates to:
+  /// **'יאללה'**
+  String get milestoneOk;
 }
 
 class _AppLocalizationsDelegate

@@ -1678,6 +1678,35 @@ void main() {
   });
 
   group('talk history and the car', () {
+    test(
+      'first talk: the 3 steps, then a party once; 🔥 counts (D-159)',
+      () async {
+        await connect();
+        while (me.s.firstRun != null) {
+          me.c.firstRunNext();
+        }
+        expect(me.c.showJourney, isTrue);
+        expect(me.c.wasFree, isFalse);
+        expect(me.c.milestoneDue, isNull);
+        await me.c.startAvailability(AvailabilityMode.free, 30);
+        expect(me.c.wasFree, isTrue);
+        await yoni.c.startAvailability(AvailabilityMode.free, 30);
+        await me.c.refresh();
+        await me.c.respond(currentOffer(me.s, now)!, accept: true);
+        await yoni.c.respond(currentOffer(yoni.s, now)!, accept: true);
+        await me.c.refresh();
+        expect(me.c.talkCount, 1);
+        expect(me.c.showJourney, isFalse);
+        expect(me.c.milestoneDue, 1);
+        me.c.milestoneSeen(1);
+        expect(me.c.milestoneDue, isNull, reason: 'once');
+      },
+    );
+
+    test('people with talks before this version get no old parties', () {
+      expect(RealController.milestones, [1, 5, 10, 25, 50, 100]);
+    });
+
     test('talk history (for "longest without talking" first)', () async {
       await connect();
       final yoniId = me.s.snapshot!.friends.single.id;

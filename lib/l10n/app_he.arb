@@ -1954,5 +1954,37 @@
   "aboutTourOpen": "איך זה עובד – ב-3 תמונות",
   "aboutTourDone": "הבנתי",
   "realCarPickHint": "אפשר לסמן כמה רכבים, למשל רכב פרטי ורכב עבודה.",
-  "realCarSave": "שמירה"
+  "realCarSave": "שמירה",
+  "journeyTitle": "השיחה הראשונה שלך – 3 צעדים",
+  "journeyStep1": "להוסיף חבר",
+  "journeyStep2": "ללחוץ \"אני בנסיעה\" או \"יש לי זמן\"",
+  "journeyStep3": "שיחה ראשונה דרך DriveBond",
+  "fireTooltip": "{n} שיחות דרך DriveBond",
+  "milestoneFirstTitle": "השיחה הראשונה שלך\nב-DriveBond! 🎉",
+  "milestoneFirstBody": "עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה: חברים קרובים יתחברו אליך מיד, בלי לשאול.",
+  "milestoneFirstGo": "להפעיל ⚡ כן אוטומטי",
+  "milestoneTitle": "יש! הגעת\nל-{n} שיחות 🔥",
+  "milestoneBody": "{n} שיחות טובות עם האנשים שלך. ככה ממשיכים.",
+  "milestoneOk": "יאללה",
+  "@fireTooltip": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@milestoneTitle": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@milestoneBody": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

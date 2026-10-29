@@ -2941,4 +2941,44 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCarSave => 'שמירה';
+
+  @override
+  String get journeyTitle => 'השיחה הראשונה שלך – 3 צעדים';
+
+  @override
+  String get journeyStep1 => 'להוסיף חבר';
+
+  @override
+  String get journeyStep2 => 'ללחוץ \"אני בנסיעה\" או \"יש לי זמן\"';
+
+  @override
+  String get journeyStep3 => 'שיחה ראשונה דרך DriveBond';
+
+  @override
+  String fireTooltip(int n) {
+    return '$n שיחות דרך DriveBond';
+  }
+
+  @override
+  String get milestoneFirstTitle => 'השיחה הראשונה שלך\nב-DriveBond! 🎉';
+
+  @override
+  String get milestoneFirstBody =>
+      'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה: חברים קרובים יתחברו אליך מיד, בלי לשאול.';
+
+  @override
+  String get milestoneFirstGo => 'להפעיל ⚡ כן אוטומטי';
+
+  @override
+  String milestoneTitle(int n) {
+    return 'יש! הגעת\nל-$n שיחות 🔥';
+  }
+
+  @override
+  String milestoneBody(int n) {
+    return '$n שיחות טובות עם האנשים שלך. ככה ממשיכים.';
+  }
+
+  @override
+  String get milestoneOk => 'יאללה';
 }
