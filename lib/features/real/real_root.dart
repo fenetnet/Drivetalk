@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
+import 'real_about.dart';
 import 'real_common.dart';
 import 'real_first_run.dart';
 import 'real_home.dart';
@@ -379,6 +380,14 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   // No gender question (owner decision D-044).
   final _gender = Gender.unspecified;
 
+  /// First three short "what is DriveBond" pages (owner), then:
+  /// how to join (Google or a name), then the number (required).
+  var _intro = 0;
+  var _phoneStep = false;
+  var _viaGoogle = false;
+
+  static const _introPages = 3;
+
   @override
   void dispose() {
     _name.dispose();
@@ -386,15 +395,28 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     super.dispose();
   }
 
+  void _introNext() => setState(() => _intro++);
+
+  Future<void> _google() async {
+    final c = ref.read(realProvider.notifier);
+    final name = await c.googleStart();
+    // null: an existing account came back (or no answer) — nothing to ask.
+    if (name == null || !mounted) return;
+    setState(() {
+      if (_name.text.trim().isEmpty) _name.text = name;
+      _viaGoogle = true;
+      _phoneStep = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_intro < _introPages) return _introPage(context);
     final l = context.l10n;
     final s = ref.watch(realProvider);
     final c = ref.read(realProvider.notifier);
-    final canGo =
-        _name.text.trim().isNotEmpty &&
-        (_phone.text.trim().isEmpty || normalizePhone(_phone.text) != null) &&
-        !s.busy;
+    final hasName = _name.text.trim().isNotEmpty;
+    final phoneOk = normalizePhone(_phone.text) != null;
     return Scaffold(
       body: Stack(
         children: [
@@ -428,17 +450,36 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.forum_rounded,
+                      child: Icon(
+                        _phoneStep ? Icons.phone_rounded : Icons.forum_rounded,
                         color: Colors.white,
                         size: 32,
                       ),
                     ),
+                    const Spacer(),
+                    if (_phoneStep && !_viaGoogle)
+                      TextButton.icon(
+                        onPressed: s.busy
+                            ? null
+                            : () => setState(() => _phoneStep = false),
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        label: Text(l.onbBack),
+                      )
+                    else if (!_phoneStep)
+                      TextButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const AboutScreen(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.info_outline_rounded),
+                        label: Text(l.onbWhatIs),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  l.realWelcomeHeadline,
+                  _phoneStep ? l.onbPhoneTitle : l.realWelcomeHeadline,
                   style: const TextStyle(
                     fontSize: 38,
                     fontWeight: FontWeight.w800,
@@ -447,21 +488,21 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  l.realWelcomeSub,
+                  _phoneStep ? l.realPhoneRequiredHelp : l.realWelcomeSub,
                   style: const TextStyle(
                     color: AppColors.inkSoft,
                     fontSize: 17,
                     height: 1.4,
                   ),
                 ),
-                if (s.invite != null) ...[
+                if (s.invite != null && !_phoneStep) ...[
                   const SizedBox(height: 14),
                   MomentChip(
                     text: l.realInviteWaitingAfterJoin,
                     icon: Icons.mail_rounded,
                   ),
                 ],
-                if (c.googleAvailable) ...[
+                if (!_phoneStep && c.googleAvailable) ...[
                   const SizedBox(height: 24),
                   if (c.googleEmail case final email?)
                     MomentChip(
@@ -471,16 +512,7 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                   else ...[
                     GoogleButton(
                       label: l.googleContinue,
-                      onTap: s.busy
-                          ? null
-                          : () async {
-                              final name = await c.googleStart();
-                              if (name != null &&
-                                  mounted &&
-                                  _name.text.trim().isEmpty) {
-                                setState(() => _name.text = name);
-                              }
-                            },
+                      onTap: s.busy ? null : _google,
                     ),
                     const SizedBox(height: 14),
                     Text(
@@ -507,48 +539,62 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      TextField(
-                        controller: _name,
-                        maxLength: 40,
-                        textInputAction: TextInputAction.next,
-                        decoration: InputDecoration(
-                          counterText: '',
-                          labelText: l.onbNameLabel,
-                          prefixIcon: const Icon(Icons.person_rounded),
+                      // The name: typed here, or (after Google) shown on the
+                      // number step to check.
+                      if (!_phoneStep || _viaGoogle) ...[
+                        TextField(
+                          controller: _name,
+                          maxLength: 40,
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            counterText: '',
+                            labelText: _viaGoogle
+                                ? l.onbGoogleName
+                                : l.onbNameLabel,
+                            prefixIcon: const Icon(Icons.person_rounded),
+                          ),
+                          onChanged: (_) => setState(() {}),
                         ),
-                        onChanged: (_) => setState(() {}),
-                      ),
-                      const SizedBox(height: 6),
-                      TextField(
-                        controller: _phone,
-                        keyboardType: TextInputType.phone,
-                        textDirection: TextDirection.ltr,
-                        onChanged: (_) => setState(() {}),
-                        decoration: InputDecoration(
-                          labelText: l.realPhoneRequired,
-                          helperText: l.realPhoneRequiredHelp,
-                          helperMaxLines: 10,
-                          // Say why "let's go" is grey (e.g. a typo).
-                          errorText:
-                              _phone.text.trim().isNotEmpty &&
-                                  normalizePhone(_phone.text) == null
-                              ? l.realErrorInvalidPhone
-                              : null,
-                          errorMaxLines: 2,
-                          prefixIcon: const Icon(Icons.phone_rounded),
+                        const SizedBox(height: 6),
+                      ],
+                      if (_phoneStep)
+                        TextField(
+                          controller: _phone,
+                          autofocus: true,
+                          keyboardType: TextInputType.phone,
+                          textDirection: TextDirection.ltr,
+                          onChanged: (_) => setState(() {}),
+                          decoration: InputDecoration(
+                            labelText: l.realPhoneRequired,
+                            // Say why "let's go" is grey (e.g. a typo).
+                            errorText: _phone.text.trim().isNotEmpty && !phoneOk
+                                ? l.realErrorInvalidPhone
+                                : null,
+                            errorMaxLines: 2,
+                            prefixIcon: const Icon(Icons.phone_rounded),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
-                PrimaryPill(
-                  label: l.realJoin,
-                  height: 64,
-                  onTap: canGo
-                      ? () => c.signIn(_name.text, _gender, phone: _phone.text)
-                      : null,
-                ),
+                if (_phoneStep)
+                  PrimaryPill(
+                    label: l.realJoin,
+                    height: 64,
+                    onTap: hasName && phoneOk && !s.busy
+                        ? () =>
+                              c.signIn(_name.text, _gender, phone: _phone.text)
+                        : null,
+                  )
+                else
+                  PrimaryPill(
+                    label: l.onbContinue,
+                    height: 64,
+                    onTap: hasName && !s.busy
+                        ? () => setState(() => _phoneStep = true)
+                        : null,
+                  ),
                 if (s.busy)
                   const Padding(
                     padding: EdgeInsets.only(top: 12),
@@ -566,6 +612,70 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  /// One of the three "what is DriveBond" pages. Swipe or tap to go on.
+  Widget _introPage(BuildContext context) {
+    final l = context.l10n;
+    final (icon, title, body) = switch (_intro) {
+      0 => (Icons.directions_car_rounded, l.intro1Title, l.intro1Body),
+      1 => (Icons.handshake_rounded, l.intro2Title, l.intro2Body),
+      _ => (Icons.record_voice_over_rounded, l.intro3Title, l.intro3Body),
+    };
+    final last = _intro == _introPages - 1;
+    return GestureDetector(
+      // RTL: a swipe to the right goes on, to the left goes back.
+      onHorizontalDragEnd: (d) {
+        final v = d.primaryVelocity ?? 0;
+        if (v > 200) _introNext();
+        if (v < -200 && _intro > 0) setState(() => _intro--);
+      },
+      child: MomentLayout(
+        header: Row(
+          children: [
+            for (var i = 0; i < _introPages; i++)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsetsDirectional.only(end: 6),
+                width: i == _intro ? 22 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: i == _intro
+                      ? AppColors.terracotta
+                      : AppColors.terracotta.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            const Spacer(),
+            if (!last)
+              TextButton(
+                onPressed: () => setState(() => _intro = _introPages),
+                child: Text(l.skip),
+              ),
+          ],
+        ),
+        top: Column(
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: const BoxDecoration(
+                color: AppColors.terracotta,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 60),
+            ),
+            const SizedBox(height: 32),
+            MomentText(title, size: 28),
+            const SizedBox(height: 12),
+            MomentText(body, size: 16, soft: true),
+          ],
+        ),
+        actions: [
+          PrimaryPill(label: last ? l.introStart : l.next, onTap: _introNext),
         ],
       ),
     );

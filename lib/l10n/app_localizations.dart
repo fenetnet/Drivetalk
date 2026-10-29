@@ -2047,13 +2047,13 @@ abstract class AppLocalizations {
   /// No description provided for @realPhoneRequired.
   ///
   /// In he, this message translates to:
-  /// **'מספר טלפון (לא חובה)'**
+  /// **'מספר טלפון'**
   String get realPhoneRequired;
 
   /// No description provided for @realPhoneRequiredHelp.
   ///
   /// In he, this message translates to:
-  /// **'למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.'**
+  /// **'צריך את המספר כדי שחברים ששמרו אותו ימצאו אותך, וכדי שהשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".'**
   String get realPhoneRequiredHelp;
 
   /// No description provided for @realContactsTitle.
@@ -2167,7 +2167,7 @@ abstract class AppLocalizations {
   /// No description provided for @realWelcomeHeadline.
   ///
   /// In he, this message translates to:
-  /// **'זמן מת?\nשיחה טובה.'**
+  /// **'הזמן בדרך –\nעם האנשים שלך.'**
   String get realWelcomeHeadline;
 
   /// No description provided for @realWelcomeSub.
@@ -4827,6 +4827,78 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה.'**
   String get groupsNote;
+
+  /// No description provided for @intro1Title.
+  ///
+  /// In he, this message translates to:
+  /// **'תקועים בפקק?\nמדברים עם מי שחשוב.'**
+  String get intro1Title;
+
+  /// No description provided for @intro1Body.
+  ///
+  /// In he, this message translates to:
+  /// **'כששניכם פנויים באותו רגע, DriveBond מחברת ביניכם. בלי לתאם מראש ובלי \"נדבר מתישהו\".'**
+  String get intro1Body;
+
+  /// No description provided for @intro2Title.
+  ///
+  /// In he, this message translates to:
+  /// **'שיחה רק כששניכם\nאומרים \"כן\".'**
+  String get intro2Title;
+
+  /// No description provided for @intro2Body.
+  ///
+  /// In he, this message translates to:
+  /// **'אף אחד לא מתקשר אליכם בהפתעה. גם כשמזוהה נסיעה, זה רק אומר שיש לכם זמן.'**
+  String get intro2Body;
+
+  /// No description provided for @intro3Title.
+  ///
+  /// In he, this message translates to:
+  /// **'בנסיעה,\nבלי לגעת בטלפון.'**
+  String get intro3Title;
+
+  /// No description provided for @intro3Body.
+  ///
+  /// In he, this message translates to:
+  /// **'הטלפון מקריא מי פנוי, ועונים \"כן\" או \"לא\" בקול. בלי הקלדה ובלי רשימות לגלול.'**
+  String get intro3Body;
+
+  /// No description provided for @introStart.
+  ///
+  /// In he, this message translates to:
+  /// **'בואו נתחיל'**
+  String get introStart;
+
+  /// No description provided for @onbContinue.
+  ///
+  /// In he, this message translates to:
+  /// **'המשך'**
+  String get onbContinue;
+
+  /// No description provided for @onbBack.
+  ///
+  /// In he, this message translates to:
+  /// **'חזרה'**
+  String get onbBack;
+
+  /// No description provided for @onbWhatIs.
+  ///
+  /// In he, this message translates to:
+  /// **'מה זה DriveBond?'**
+  String get onbWhatIs;
+
+  /// No description provided for @onbPhoneTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מה המספר שלך?'**
+  String get onbPhoneTitle;
+
+  /// No description provided for @onbGoogleName.
+  ///
+  /// In he, this message translates to:
+  /// **'השם שיופיע לחברים'**
+  String get onbGoogleName;
 }
 
 class _AppLocalizationsDelegate

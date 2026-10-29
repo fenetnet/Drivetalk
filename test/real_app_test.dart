@@ -5,6 +5,7 @@ import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
+import 'package:drivetalk/platform/google_auth.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
 import 'package:drivetalk/real/deep_links.dart';
@@ -59,14 +60,32 @@ void main() {
       );
       await pumpFor(t, 300);
 
-      // Join: just a name.
-      expect(find.text('זמן מת?\nשיחה טובה.'), findsOneWidget);
+      // Three short "what is it" pages (owner), then a name, then the
+      // number (required).
+      expect(find.text('תקועים בפקק?\nמדברים עם מי שחשוב.'), findsOneWidget);
       expect(
         Directionality.of(t.element(find.byType(Scaffold).first)),
         TextDirection.rtl,
       );
+      await t.tap(find.text('הבא'));
+      await pumpFor(t, 300);
+      expect(find.text('שיחה רק כששניכם\nאומרים "כן".'), findsOneWidget);
+      await t.tap(find.text('הבא'));
+      await pumpFor(t, 300);
+      await t.tap(find.text('בואו נתחיל'));
+      await pumpFor(t, 300);
+      expect(find.text('הזמן בדרך –\nעם האנשים שלך.'), findsOneWidget);
+      expect(find.text('מה זה DriveBond?'), findsOneWidget);
       await t.enterText(find.byType(TextField).first, 'נתנאל');
-      await t.enterText(find.byType(TextField).at(1), '0521234567');
+      await t.pump();
+      await t.tap(find.text('המשך'));
+      await pumpFor(t, 300);
+      expect(find.text('מה המספר שלך?'), findsOneWidget);
+      // No number → can't join yet.
+      await t.tap(find.text('יאללה'));
+      await pumpFor(t, 300);
+      expect(find.text('מה המספר שלך?'), findsOneWidget);
+      await t.enterText(find.byType(TextField).first, '0521234567');
       await t.pump();
       await t.tap(find.text('יאללה'));
       await pumpFor(t, 500);
@@ -220,6 +239,56 @@ void main() {
       await t.pump(const Duration(seconds: 5));
     },
   );
+
+  testWidgets('with Google: the name comes from Google, only the number is '
+      'asked', (t) async {
+    t.view.physicalSize = const Size(1080, 2340);
+    t.view.devicePixelRatio = 2.6;
+    addTearDown(t.view.reset);
+    final server = MemoryServer();
+    await t.pumpWidget(
+      ProviderScope(
+        overrides: [
+          phoneDialerProvider.overrideWithValue(_NoPhone()),
+          voiceServiceProvider.overrideWithValue(SilentVoiceService()),
+          realBackendProvider.overrideWithValue(MemoryRealBackend(server)),
+          localStoreProvider.overrideWithValue(MemoryLocalStore()),
+          incomingLinksProvider.overrideWithValue(const Stream.empty()),
+          contactsReaderProvider.overrideWithValue(FakeContactsReader()),
+          drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
+          googleAuthProvider.overrideWithValue(
+            FakeGoogleAuth(
+              token: const GoogleToken(
+                'g-dana',
+                email: 'd@gmail.com',
+                name: 'דנה',
+              ),
+            ),
+          ),
+        ],
+        child: const DriveTalkApp(),
+      ),
+    );
+    await pumpFor(t, 300);
+    await t.tap(find.text('לדלג'));
+    await pumpFor(t, 300);
+    await t.tap(find.text('המשך עם Google'));
+    await pumpFor(t, 500);
+    expect(find.text('מה המספר שלך?'), findsOneWidget);
+    expect(find.text('השם שיופיע לחברים'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'דנה'), findsOneWidget);
+    await t.enterText(find.byType(TextField).last, '0521234567');
+    await t.pump();
+    await t.tap(find.text('יאללה'));
+    await pumpFor(t, 500);
+    expect(find.text('תמונה, כדי שיזהו אותך'), findsOneWidget);
+    final s = ProviderScope.containerOf(t.element(find.byType(Scaffold).first))
+        .read(realProvider);
+    expect(s.snapshot?.me.name, 'דנה');
+    expect(s.myPhone, isNotNull);
+    await t.pumpWidget(const SizedBox());
+    await t.pump(const Duration(seconds: 5));
+  });
 
   testWidgets('without a server: says so clearly', (t) async {
     final store = MemoryLocalStore();

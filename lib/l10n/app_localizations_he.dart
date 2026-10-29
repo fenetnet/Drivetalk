@@ -1185,11 +1185,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get permIntroGo => 'הבנתי, ממשיכים';
 
   @override
-  String get realPhoneRequired => 'מספר טלפון (לא חובה)';
+  String get realPhoneRequired => 'מספר טלפון';
 
   @override
   String get realPhoneRequiredHelp =>
-      'למה כדאי: חברים ששמרו את המספר שלך יוכלו למצוא ולהוסיף אותך, והשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\". אפשר גם להוסיף אחר כך.';
+      'צריך את המספר כדי שחברים ששמרו אותו ימצאו אותך, וכדי שהשיחה תהיה שיחת טלפון רגילה. החבר מקבל את המספר רק כששניכם אמרתם \"כן\".';
 
   @override
   String get realContactsTitle => 'חברים מאנשי הקשר';
@@ -1269,7 +1269,7 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realGroupAccount => 'החשבון שלי';
 
   @override
-  String get realWelcomeHeadline => 'זמן מת?\nשיחה טובה.';
+  String get realWelcomeHeadline => 'הזמן בדרך –\nעם האנשים שלך.';
 
   @override
   String get realWelcomeSub => 'כששניכם פנויים באותו רגע — נציע לכם לדבר.';
@@ -2892,4 +2892,43 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get groupsNote =>
       'מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה.';
+
+  @override
+  String get intro1Title => 'תקועים בפקק?\nמדברים עם מי שחשוב.';
+
+  @override
+  String get intro1Body =>
+      'כששניכם פנויים באותו רגע, DriveBond מחברת ביניכם. בלי לתאם מראש ובלי \"נדבר מתישהו\".';
+
+  @override
+  String get intro2Title => 'שיחה רק כששניכם\nאומרים \"כן\".';
+
+  @override
+  String get intro2Body =>
+      'אף אחד לא מתקשר אליכם בהפתעה. גם כשמזוהה נסיעה, זה רק אומר שיש לכם זמן.';
+
+  @override
+  String get intro3Title => 'בנסיעה,\nבלי לגעת בטלפון.';
+
+  @override
+  String get intro3Body =>
+      'הטלפון מקריא מי פנוי, ועונים \"כן\" או \"לא\" בקול. בלי הקלדה ובלי רשימות לגלול.';
+
+  @override
+  String get introStart => 'בואו נתחיל';
+
+  @override
+  String get onbContinue => 'המשך';
+
+  @override
+  String get onbBack => 'חזרה';
+
+  @override
+  String get onbWhatIs => 'מה זה DriveBond?';
+
+  @override
+  String get onbPhoneTitle => 'מה המספר שלך?';
+
+  @override
+  String get onbGoogleName => 'השם שיופיע לחברים';
 }
