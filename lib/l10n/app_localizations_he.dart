@@ -1286,21 +1286,18 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realQuickOn => 'יש לי זמן · לעצירה';
 
   @override
-  String get realCarTitle => 'הרכב שלי (בלוטות׳)';
+  String get realCarTitle => 'הרכבים שלי (בלוטות׳)';
 
   @override
   String get realCarBody =>
       'כשהטלפון מתחבר לבלוטות׳ של הרכב, זה סימן שהנסיעה התחילה. עוזר לזהות נסיעה מהר יותר.';
 
   @override
-  String get realCarPick => 'בחירת הרכב';
+  String get realCarPick => 'בחירת הרכבים';
 
   @override
   String get realCarNoDevices =>
       'לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.';
-
-  @override
-  String get realCarRemove => 'בלי רכב';
 
   @override
   String get realWeekTitle => 'השבוע שלך';
@@ -2937,4 +2934,11 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get aboutTourDone => 'הבנתי';
+
+  @override
+  String get realCarPickHint =>
+      'אפשר לסמן כמה רכבים, למשל רכב פרטי ורכב עבודה.';
+
+  @override
+  String get realCarSave => 'שמירה';
 }

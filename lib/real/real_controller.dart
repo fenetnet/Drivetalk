@@ -1398,18 +1398,18 @@ class RealController extends Notifier<RealState> {
     await refresh();
   }
 
-  /// Paired Bluetooth devices, to pick the car.
+  /// Paired Bluetooth devices, to pick the cars.
   Future<List<(String, String)>> carCandidates() =>
       ref.read(drivingDetectorProvider).bondedDevices();
 
-  /// The car's Bluetooth as an extra trip signal (turns automatic driving
-  /// availability on if it was off).
-  Future<void> setCar(String address, String name) async {
-    if (!state.driving.enabled && address.isNotEmpty) {
+  /// The cars' Bluetooth (address, name) as an extra trip signal; several
+  /// cars are fine (turns automatic driving availability on if it was off).
+  Future<void> setCars(List<(String, String)> cars) async {
+    if (!state.driving.enabled && cars.isNotEmpty) {
       final ok = await enableAutoDriving();
       if (!ok) return;
     }
-    await ref.read(drivingDetectorProvider).setCar(address, name);
+    await ref.read(drivingDetectorProvider).setCars(cars);
     await _loadDriving();
     _notify(RealNoticeKind.saved);
   }

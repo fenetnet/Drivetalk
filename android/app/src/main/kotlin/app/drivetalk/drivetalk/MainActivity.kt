@@ -251,6 +251,7 @@ class MainActivity : FlutterActivity() {
                         "inVehicle" to store.inVehicle,
                         "configured" to store.configured,
                         "carName" to store.carName,
+                        "carAddress" to store.carAddress,
                         "background" to backgroundAllowed(),
                         "notifications" to notificationsAllowed(),
                         "watching" to DrivingService.watching,

@@ -12,6 +12,7 @@ class DrivingStatus {
     this.inVehicle = false,
     this.configured = false,
     this.carName = '',
+    this.carAddresses = const [],
     this.background = true,
     this.notifications = true,
     this.watching = true,
@@ -44,8 +45,11 @@ class DrivingStatus {
   /// Battery saving won't stop the background service (Android).
   final bool background;
 
-  /// The car's Bluetooth the user picked ('' = none).
+  /// The cars' Bluetooth the user picked, names joined ('' = none).
   final String carName;
+
+  /// Their addresses (to show which are ticked).
+  final List<String> carAddresses;
   final bool supported;
 
   /// This phone has its background device token (for notifications).
@@ -137,9 +141,11 @@ abstract class DrivingDetector {
   /// notifications (stays on the phone).
   Future<void> setNames(Map<String, String> names);
 
-  /// Paired Bluetooth devices (name, address) — to pick the car.
+  /// Paired Bluetooth devices (name, address) — to pick the cars.
   Future<List<(String, String)>> bondedDevices();
-  Future<void> setCar(String address, String name);
+
+  /// The cars (address, name); empty = none. Some people have two cars.
+  Future<void> setCars(List<(String, String)> cars);
 
   /// Refresh the notification texts (after an app update).
   Future<void> updateTexts(Map<String, String> texts);
@@ -181,6 +187,10 @@ class AndroidDrivingDetector implements DrivingDetector {
         inVehicle: m?['inVehicle'] == true,
         configured: m?['configured'] == true,
         carName: '${m?['carName'] ?? ''}',
+        carAddresses: '${m?['carAddress'] ?? ''}'
+            .split(',')
+            .where((a) => a.isNotEmpty)
+            .toList(),
         background: m?['background'] != false,
         notifications: m?['notifications'] != false,
         watching: m?['watching'] != false,
@@ -285,8 +295,10 @@ class AndroidDrivingDetector implements DrivingDetector {
   }
 
   @override
-  Future<void> setCar(String address, String name) =>
-      _call('setCar', {'address': address, 'name': name});
+  Future<void> setCars(List<(String, String)> cars) => _call('setCar', {
+    'address': cars.map((c) => c.$1).join(','),
+    'name': cars.map((c) => c.$2).join(', '),
+  });
 
   @override
   Future<void> setRoutines(String json) => _call('setRoutines', {'json': json});
@@ -420,7 +432,8 @@ class FakeDrivingDetector implements DrivingDetector {
     enabled: enabled,
     inVehicle: inVehicle,
     configured: token != null,
-    carName: carName,
+    carName: cars.map((c) => c.$2).join(', '),
+    carAddresses: [for (final c in cars) c.$1],
     background: background,
     notifications: notifications,
     watching: watching,
@@ -544,13 +557,13 @@ class FakeDrivingDetector implements DrivingDetector {
   Future<bool> requestNotificationPermission() async => notifications = true;
 
   List<(String, String)> devices = const [('Car Audio', 'AA:BB')];
-  String carName = '';
+  List<(String, String)> cars = const [];
 
   @override
   Future<List<(String, String)>> bondedDevices() async => devices;
 
   @override
-  Future<void> setCar(String address, String name) async => carName = name;
+  Future<void> setCars(List<(String, String)> cars) async => this.cars = cars;
 
   String routinesJson = '[]';
   @override

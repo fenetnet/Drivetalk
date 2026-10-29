@@ -95,6 +95,9 @@ class DrivingStore(context: Context) {
     var carAddress: String
         get() = prefs.getString("carAddress", "") ?: ""
         set(v) = prefs.edit().putString("carAddress", v).apply()
+    /** Several cars (owner: some have two): addresses joined with ','. */
+    val carAddresses: List<String>
+        get() = carAddress.split(',').map { it.trim() }.filter { it.isNotEmpty() }
     var carName: String
         get() = prefs.getString("carName", "") ?: ""
         set(v) = prefs.edit().putString("carName", v).apply()

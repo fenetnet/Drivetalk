@@ -459,42 +459,60 @@ class RealSettingsScreen extends ConsumerWidget {
     );
   }
 
+  /// Tick the cars (several are fine: some people have two).
   Future<void> _pickCar(BuildContext context, WidgetRef ref) async {
     final l = context.l10n;
     final c = ref.read(realProvider.notifier);
     final devices = await c.carCandidates();
     if (!context.mounted) return;
-    final picked = await showModalBottomSheet<(String, String)>(
+    final chosen = {...ref.read(realProvider).driving.carAddresses};
+    final picked = await showModalBottomSheet<List<(String, String)>>(
       context: context,
       showDragHandle: true,
-      builder: (sheet) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          children: [
-            Text(l.realCarPick, style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            if (devices.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Text(l.realCarNoDevices),
+      isScrollControlled: true,
+      builder: (sheet) => StatefulBuilder(
+        builder: (sheet, setSheet) => SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            children: [
+              Text(
+                l.realCarPick,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-            for (final (name, address) in devices)
-              ListTile(
-                leading: const Icon(Icons.directions_car_rounded),
-                title: Text(name),
-                onTap: () => Navigator.pop(sheet, (address, name)),
+              const SizedBox(height: 4),
+              Text(l.realCarPickHint),
+              const SizedBox(height: 8),
+              if (devices.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(l.realCarNoDevices),
+                ),
+              for (final (name, address) in devices)
+                CheckboxListTile(
+                  secondary: const Icon(Icons.directions_car_rounded),
+                  title: Text(name),
+                  value: chosen.contains(address),
+                  onChanged: (on) => setSheet(
+                    () => on == true
+                        ? chosen.add(address)
+                        : chosen.remove(address),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => Navigator.pop(sheet, [
+                  for (final (name, address) in devices)
+                    if (chosen.contains(address)) (address, name),
+                ]),
+                child: Text(l.realCarSave),
               ),
-            ListTile(
-              leading: const Icon(Icons.close_rounded),
-              title: Text(l.realCarRemove),
-              onTap: () => Navigator.pop(sheet, ('', '')),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-    if (picked != null) await c.setCar(picked.$1, picked.$2);
+    if (picked != null) await c.setCars(picked);
   }
 
   /// Name / picture / number, from the one profile row.

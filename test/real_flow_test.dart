@@ -1703,10 +1703,23 @@ void main() {
       await connect();
       expect(me.s.driving.enabled, isFalse);
       final cars = await me.c.carCandidates();
-      await me.c.setCar(cars.single.$2, cars.single.$1);
+      await me.c.setCars([(cars.single.$2, cars.single.$1)]);
       expect(me.s.driving.enabled, isTrue);
       expect(me.s.driving.carName, 'Car Audio');
     });
+
+    test(
+      'two cars (a friend\'s idea): both are kept, and none clears',
+      () async {
+        await connect();
+        await me.c.setCars([('AA:BB', 'Car Audio'), ('CC:DD', 'Mazda')]);
+        expect(me.s.driving.carName, 'Car Audio, Mazda');
+        expect(me.s.driving.carAddresses, ['AA:BB', 'CC:DD']);
+        await me.c.setCars(const []);
+        expect(me.s.driving.carName, isEmpty);
+        expect(me.s.driving.enabled, isTrue, reason: 'only the cars go');
+      },
+    );
   });
 
   group('routines and the week', () {

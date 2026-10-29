@@ -2197,7 +2197,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCarTitle.
   ///
   /// In he, this message translates to:
-  /// **'הרכב שלי (בלוטות׳)'**
+  /// **'הרכבים שלי (בלוטות׳)'**
   String get realCarTitle;
 
   /// No description provided for @realCarBody.
@@ -2209,7 +2209,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCarPick.
   ///
   /// In he, this message translates to:
-  /// **'בחירת הרכב'**
+  /// **'בחירת הרכבים'**
   String get realCarPick;
 
   /// No description provided for @realCarNoDevices.
@@ -2217,12 +2217,6 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.'**
   String get realCarNoDevices;
-
-  /// No description provided for @realCarRemove.
-  ///
-  /// In he, this message translates to:
-  /// **'בלי רכב'**
-  String get realCarRemove;
 
   /// No description provided for @realWeekTitle.
   ///
@@ -4917,6 +4911,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הבנתי'**
   String get aboutTourDone;
+
+  /// No description provided for @realCarPickHint.
+  ///
+  /// In he, this message translates to:
+  /// **'אפשר לסמן כמה רכבים, למשל רכב פרטי ורכב עבודה.'**
+  String get realCarPickHint;
+
+  /// No description provided for @realCarSave.
+  ///
+  /// In he, this message translates to:
+  /// **'שמירה'**
+  String get realCarSave;
 }
 
 class _AppLocalizationsDelegate

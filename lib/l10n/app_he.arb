@@ -704,11 +704,10 @@
   },
   "realQuickOff": "יש לי זמן",
   "realQuickOn": "יש לי זמן · לעצירה",
-  "realCarTitle": "הרכב שלי (בלוטות׳)",
+  "realCarTitle": "הרכבים שלי (בלוטות׳)",
   "realCarBody": "כשהטלפון מתחבר לבלוטות׳ של הרכב, זה סימן שהנסיעה התחילה. עוזר לזהות נסיעה מהר יותר.",
-  "realCarPick": "בחירת הרכב",
+  "realCarPick": "בחירת הרכבים",
   "realCarNoDevices": "לא נמצאו מכשירי בלוטות׳ מחוברים. חברו את הטלפון לרכב פעם אחת ונסו שוב.",
-  "realCarRemove": "בלי רכב",
   "realWeekTitle": "השבוע שלך",
   "realWeekTalks": "{talks, plural, =0{עוד אין שיחות השבוע} =1{שיחה אחת} other{{talks} שיחות}}",
   "@realWeekTalks": {
@@ -1953,5 +1952,7 @@
   "intro3Body": "שניכם מאשרים קולית ומתחילה שיחת טלפון רגילה.",
   "intro2Badge": "DriveBond זיהתה: שניכם פנויים עכשיו",
   "aboutTourOpen": "איך זה עובד – ב-3 תמונות",
-  "aboutTourDone": "הבנתי"
+  "aboutTourDone": "הבנתי",
+  "realCarPickHint": "אפשר לסמן כמה רכבים, למשל רכב פרטי ורכב עבודה.",
+  "realCarSave": "שמירה"
 }
