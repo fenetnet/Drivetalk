@@ -4905,6 +4905,18 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'DriveBond זיהתה: שניכם פנויים עכשיו'**
   String get intro2Badge;
+
+  /// No description provided for @aboutTourOpen.
+  ///
+  /// In he, this message translates to:
+  /// **'איך זה עובד – ב-3 תמונות'**
+  String get aboutTourOpen;
+
+  /// No description provided for @aboutTourDone.
+  ///
+  /// In he, this message translates to:
+  /// **'הבנתי'**
+  String get aboutTourDone;
 }
 
 class _AppLocalizationsDelegate

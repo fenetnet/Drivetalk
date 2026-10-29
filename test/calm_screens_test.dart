@@ -383,6 +383,14 @@ void main() {
       () => Future<void>.delayed(const Duration(milliseconds: 50)),
     );
     await t.pump();
+    // The three photos from before joining open from here too (owner).
+    await t.tap(find.text('איך זה עובד – ב-3 תמונות'));
+    await t.pumpAndSettle();
+    expect(find.text('שוב תקוע בפקק?'), findsOneWidget);
+    await t.tap(find.text('לדלג'));
+    await t.pumpAndSettle();
+    expect(find.text('שוב תקוע בפקק?'), findsNothing);
+    await t.scrollUntilVisible(find.text('שיחה רק כששניכם רוצים'), 200);
     expect(find.text('שיחה רק כששניכם רוצים'), findsOneWidget);
     await t.scrollUntilVisible(find.text('אנשי קשר'), 200);
     expect(find.text('מאושר'), findsWidgets);

@@ -5,6 +5,7 @@ import '../../app/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../real/real_controller.dart';
 import 'real_common.dart';
+import 'real_intro.dart';
 
 /// "About DriveBond" (from Settings): what's special, every phone permission
 /// with what was allowed and why it's needed, and what we never do.
@@ -100,6 +101,75 @@ class _AboutScreenState extends ConsumerState<AboutScreen> {
       body: ListView(
         padding: const EdgeInsets.only(bottom: 24),
         children: [
+          // The same three photos as before joining (owner).
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Material(
+              clipBehavior: Clip.antiAlias,
+              borderRadius: BorderRadius.circular(24),
+              child: InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => IntroTour(
+                      doneLabel: l.aboutTourDone,
+                      onDone: () => Navigator.of(context).pop(),
+                    ),
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Ink.image(
+                      image: const AssetImage('assets/intro/3-talk.jpg'),
+                      fit: BoxFit.cover,
+                      alignment: const Alignment(0, -0.3),
+                      height: 190,
+                    ),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.65),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    PositionedDirectional(
+                      start: 16,
+                      end: 16,
+                      bottom: 14,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.play_circle_fill_rounded,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              l.aboutTourOpen,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
             child: Text(

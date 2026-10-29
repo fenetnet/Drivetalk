@@ -2931,4 +2931,10 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get intro2Badge => 'DriveBond זיהתה: שניכם פנויים עכשיו';
+
+  @override
+  String get aboutTourOpen => 'איך זה עובד – ב-3 תמונות';
+
+  @override
+  String get aboutTourDone => 'הבנתי';
 }
