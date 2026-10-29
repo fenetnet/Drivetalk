@@ -153,6 +153,13 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 - Only `main` and `claude/social-voice-app-mnrxc1` publish (Play, server,
   site — D-110). A new working branch must be added to the three workflows.
 
+## Versions (D-160)
+
+`version:` in `pubspec.yaml` is what users see (now 1.0.0). The build
+number is the GitHub run number (always rising). Bug fixes: 1.0.1, 1.0.2…;
+new features: 1.1.0, 1.2.0…; 2.0.0 only with owner approval. Raise it in the
+same commit as the change. CI uploads to Internal testing only.
+
 ## Work phases
 
 1. Interactive local prototype, fake data only  ✅ (removed, D-071)
