@@ -40,18 +40,15 @@ String tierDescription(AppLocalizations l, MatchTier t) => switch (t) {
   MatchTier.surpriseMe => l.tierSurpriseDesc,
 };
 
+/// Driving, or simply free (owner, D-156: walking / a break are "free").
 String modeLabel(AppLocalizations l, AvailabilityMode m) => switch (m) {
   AvailabilityMode.driving => l.modeDriving,
-  AvailabilityMode.walking => l.modeWalking,
-  AvailabilityMode.breakTime => l.modeBreak,
-  AvailabilityMode.free => l.modeFree,
+  _ => l.modeFreeShort,
 };
 
 IconData modeIcon(AvailabilityMode m) => switch (m) {
   AvailabilityMode.driving => Icons.directions_car_rounded,
-  AvailabilityMode.walking => Icons.directions_walk_rounded,
-  AvailabilityMode.breakTime => Icons.local_cafe_rounded,
-  AvailabilityMode.free => Icons.wb_sunny_rounded,
+  _ => Icons.local_cafe_rounded,
 };
 
 /// "5 חודשים", "יומיים", "יותר משנה".

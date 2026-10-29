@@ -1072,7 +1072,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realCirclesIntro =>
-      'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.';
+      'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. כשיש לך זמן, בוחרים \"זמין ל…\": רק לקבוצות מסוימות, או לכולם חוץ מקבוצות מסוימות.';
 
   @override
   String get circleSeesAll => 'רואים שיש לך זמן: בכל מצב';
@@ -2770,4 +2770,126 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get homeAutoYesOffBody =>
       'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.';
+
+  @override
+  String get modeFreeShort => 'פנוי';
+
+  @override
+  String get startDriving => 'אני בנסיעה';
+
+  @override
+  String get startFree => 'יש לי זמן';
+
+  @override
+  String get startHint => 'לחיצה אחת = 30 דקות. אפשר לשנות אחר כך.';
+
+  @override
+  String audienceLabel(String who) {
+    return 'זמין ל: $who';
+  }
+
+  @override
+  String get audienceAll => 'כולם';
+
+  @override
+  String audienceAllBut(String names) {
+    return 'כולם חוץ מ$names';
+  }
+
+  @override
+  String get audienceTitle => 'למי אני זמין?';
+
+  @override
+  String get audienceOnlyTab => 'רק לקבוצות שאסמן';
+
+  @override
+  String get audienceExceptTab => 'לכולם חוץ מ…';
+
+  @override
+  String get audienceOnlyNote =>
+      'רק מי שבקבוצות המסומנות יראה שיש לך זמן. בלי סימון: כולם.';
+
+  @override
+  String get audienceExceptNote =>
+      'כל החברים יראו שיש לך זמן, חוץ ממי שבקבוצות המסומנות.';
+
+  @override
+  String get audienceNoGroups =>
+      'עוד אין קבוצות. אפשר ליצור אותן בלשונית האנשים.';
+
+  @override
+  String audienceMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count אנשים',
+      one: 'אדם אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String meDrivingTitle(String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'את בנסיעה',
+      'male': 'אתה בנסיעה',
+      'other': 'בנסיעה',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String meFreeTitle(String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'יש לך זמן',
+      'male': 'יש לך זמן',
+      'other': 'יש לך זמן',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String timeLeftEdit(int minutes) {
+    return 'עוד $minutes דק׳';
+  }
+
+  @override
+  String get autoTripEnds => 'נסיעה אוטומטית · נגמרת לבד';
+
+  @override
+  String get timeTitle => 'לכמה זמן?';
+
+  @override
+  String get time15 => '15 דק׳';
+
+  @override
+  String get time30 => '30 דק׳';
+
+  @override
+  String get time45 => '45 דק׳';
+
+  @override
+  String get time60 => 'שעה';
+
+  @override
+  String get time90 => 'שעה וחצי';
+
+  @override
+  String get time120 => 'שעתיים';
+
+  @override
+  String get time180 => '3 שעות';
+
+  @override
+  String get timeUntil => 'עד שעה מסוימת';
+
+  @override
+  String get timeMaxNote => 'עד 3 שעות מתחילת הזמן הפנוי.';
+
+  @override
+  String get endFree => 'סיום';
+
+  @override
+  String get groupsNote =>
+      'מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה.';
 }

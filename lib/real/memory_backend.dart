@@ -11,6 +11,10 @@ import 'real_models.dart';
 /// supabase/migrations (visibility, mutual acceptance, 15-minute cooldown
 /// after a decline, blocks). Used by tests to run "two phones" in one process.
 class MemoryServer {
+  /// "Available to…" (D-156): each person's hidden audience circle.
+  final Set<String> hiddenCircles = {};
+  final Map<String, String?> audienceCircle = {};
+
   /// Google accounts (the test token stands for the account) → user id.
   final Map<String, String> google = {};
 
@@ -408,8 +412,11 @@ class MemoryServer {
   /// Does [viewer] see [owner] free in [mode]? (Like can_see on the server.)
   bool canSee(String viewer, String owner, AvailabilityMode mode) {
     final mine = [
-      for (final c in circles.values)
-        if (c.$1 == owner && c.$2.memberIds.contains(viewer)) c.$2,
+      for (final e in circles.entries)
+        if (e.value.$1 == owner &&
+            !hiddenCircles.contains(e.key) &&
+            e.value.$2.memberIds.contains(viewer))
+          e.value.$2,
     ];
     if (mine.isEmpty) {
       final o = othersModes[owner];
@@ -778,6 +785,8 @@ class MemoryServer {
       startedAt: start,
       expiresAt: until,
       auto: true,
+      // A trip is for the groups I last chose (D-156).
+      circleId: audienceCircle[me],
       // A new trip: 5 quiet minutes first (D-106).
       missedAt: renewing ? cur.missedAt : null,
       quietUntil: renewing
@@ -1032,8 +1041,9 @@ class MemoryRealBackend implements RealBackend {
           if (o.a == me || o.b == me) o.toReal(),
       ],
       circles: [
-        for (final c in server.circles.values)
-          if (c.$1 == me) c.$2,
+        for (final e in server.circles.entries)
+          if (e.value.$1 == me && !server.hiddenCircles.contains(e.key))
+            e.value.$2,
       ],
       quickMine: {
         for (final f in friends)
@@ -2110,6 +2120,74 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   Future<void> keepAuto() async => server.autoMissed.remove(_uid);
+
+  @override
+  Future<DateTime?> setUntil(DateTime until) async {
+    final me = _uid;
+    final a = server.availability[me];
+    if (a == null ||
+        server.autoSet.contains(me) ||
+        !server.now().isBefore(a.expiresAt)) {
+      return null;
+    }
+    final soonest = server.now().add(const Duration(minutes: 5));
+    final cap = a.startedAt.add(const Duration(hours: 3));
+    var t = until.isBefore(soonest) ? soonest : until;
+    if (t.isAfter(cap)) t = cap;
+    server.availability[me] = a.withMarks(
+      missedAt: a.missedAt,
+      quietUntil: a.quietUntil,
+      expiresAt: t,
+    );
+    server._changed();
+    return t;
+  }
+
+  @override
+  Future<String?> setAudience(
+    List<String> circleIds, {
+    bool except = false,
+  }) async {
+    final me = _uid;
+    final chosen = [
+      for (final id in circleIds)
+        if (server.circles[id]?.$1 == me && !server.hiddenCircles.contains(id))
+          id,
+    ];
+    String? aud;
+    if (chosen.isNotEmpty || except) {
+      aud = server.circles.entries
+          .where(
+            (e) => e.value.$1 == me && server.hiddenCircles.contains(e.key),
+          )
+          .map((e) => e.key)
+          .firstOrNull;
+      aud ??= server._newId('circle');
+      server.hiddenCircles.add(aud);
+      final inChosen = {
+        for (final id in chosen) ...server.circles[id]!.$2.memberIds,
+      };
+      final friends = {
+        for (final f in server.profiles.keys)
+          if (f != me && server.connected(me, f)) f,
+      };
+      server.circles[aud] = (
+        me,
+        RealCircle(
+          id: aud,
+          name: '·audience',
+          memberIds: except ? friends.difference(inChosen) : inChosen,
+        ),
+      );
+    }
+    server.audienceCircle[me] = aud;
+    final a = server.availability[me];
+    if (a != null && server.now().isBefore(a.expiresAt)) {
+      server.availability[me] = a.withCircle(aud);
+    }
+    server._changed();
+    return aud;
+  }
 
   @override
   Future<DateTime?> extendAvailability(int minutes) async {

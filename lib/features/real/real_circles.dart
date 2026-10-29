@@ -76,9 +76,41 @@ class RealCirclesSection extends ConsumerWidget {
       for (final f in friends)
         if (!circles.any((x) => x.memberIds.contains(f.id))) f,
     ];
+    // "Who sees me in each mode" left the groups (D-156): shown only where
+    // someone already set it (so it can still be seen and changed).
+    final legacy =
+        circles.any((x) => x.showModes != null) || snap?.othersModes != null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (c.showGroupsNote) ...[
+          Card(
+            color: const Color(0xFFFFF7E8),
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        l.groupsNote,
+                        style: const TextStyle(height: 1.5),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: l.close,
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: c.dismissGroupsNote,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
         Text(
           l.realCirclesIntro,
           style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
@@ -98,47 +130,52 @@ class RealCirclesSection extends ConsumerWidget {
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
               subtitle: Text(
-                '${l.realCircleCount(circle.memberIds.length)}'
-                '\n${circleRuleLine(l, ShowRule(circle.showModes))}',
+                circle.showModes == null
+                    ? l.realCircleCount(circle.memberIds.length)
+                    : '${l.realCircleCount(circle.memberIds.length)}'
+                          '\n${circleRuleLine(l, ShowRule(circle.showModes))}',
               ),
-              isThreeLine: true,
+              isThreeLine: circle.showModes != null,
               trailing: const Icon(Icons.edit_rounded),
               onTap: () => openCircleEditor(context, circle),
             ),
           ),
-        // Friends in no group: one rule for all of them.
-        Card(
-          clipBehavior: Clip.antiAlias,
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ListTile(
-            leading: const Icon(
-              Icons.people_outline_rounded,
-              color: AppColors.inkSoft,
+        // Friends in no group: one rule for all of them (only if set).
+        if (legacy)
+          Card(
+            clipBehavior: Clip.antiAlias,
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              leading: const Icon(
+                Icons.people_outline_rounded,
+                color: AppColors.inkSoft,
+              ),
+              title: Text(
+                l.whoSeesOthers,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                '${l.realCircleCount(inNone.length)}'
+                '\n${circleRuleLine(l, others)}',
+              ),
+              isThreeLine: true,
+              trailing: const Icon(Icons.edit_rounded),
+              onTap: snap == null
+                  ? null
+                  : () async {
+                      final r = await pickShowRule(
+                        context,
+                        title: l.othersRuleTitle,
+                        initial: others,
+                      );
+                      if (r != null) await c.setOthersRule(r);
+                    },
             ),
-            title: Text(
-              l.whoSeesOthers,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(
-              '${l.realCircleCount(inNone.length)}'
-              '\n${circleRuleLine(l, others)}',
-            ),
-            isThreeLine: true,
-            trailing: const Icon(Icons.edit_rounded),
-            onTap: snap == null
-                ? null
-                : () async {
-                    final r = await pickShowRule(
-                      context,
-                      title: l.othersRuleTitle,
-                      initial: others,
-                    );
-                    if (r != null) await c.setOthersRule(r);
-                  },
           ),
-        ),
-        Text(l.whoSeesTwo, style: const TextStyle(color: AppColors.inkSoft)),
-        const SizedBox(height: 12),
+        if (legacy) ...[
+          Text(l.whoSeesTwo, style: const TextStyle(color: AppColors.inkSoft)),
+          const SizedBox(height: 12),
+        ],
         OutlinedButton.icon(
           style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
           onPressed: friends.isEmpty
@@ -219,15 +256,18 @@ class _CircleEditorState extends ConsumerState<_CircleEditor> {
               ),
               onChanged: (_) => setState(() {}),
             ),
-            const SizedBox(height: 8),
-            Text(
-              l.circleRuleQuestion,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            ShowRulePicker(
-              rule: _rule,
-              onChanged: (r) => setState(() => _rule = r),
-            ),
+            // Only where a rule was already set (D-156).
+            if (widget.circle?.showModes != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                l.circleRuleQuestion,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              ShowRulePicker(
+                rule: _rule,
+                onChanged: (r) => setState(() => _rule = r),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               l.realCircleMembers,

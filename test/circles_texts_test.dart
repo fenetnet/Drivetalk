@@ -26,7 +26,7 @@ ProviderContainer _phone(MemoryServer server) => ProviderContainer(
 );
 
 void main() {
-  testWidgets('each group says clearly who sees me free', (t) async {
+  testWidgets('rules someone already set stay visible (D-156)', (t) async {
     // A small phone (320×568) with the text 30% larger.
     t.view.physicalSize = const Size(640, 1136);
     t.view.devicePixelRatio = 2;
@@ -83,12 +83,12 @@ void main() {
     );
     await t.pump(const Duration(milliseconds: 300));
 
-    expect(
-      find.textContaining('לכל קבוצה בוחרים מתי היא רואה שיש לך זמן'),
-      findsOneWidget,
-    );
-    // A group and "everyone else" (the default: always).
-    expect(find.textContaining('רואים שיש לך זמן: בכל מצב'), findsNWidgets(2));
+    expect(find.textContaining('בוחרים "זמין ל…"'), findsWidgets);
+    // Once, for someone who used the rules: what changed.
+    expect(find.textContaining('מה השתנה'), findsOneWidget);
+    // "Everyone else" (the default: always); groups without a rule say
+    // nothing about it.
+    expect(find.textContaining('רואים שיש לך זמן: בכל מצב'), findsOneWidget);
     expect(
       find.textContaining('רואים שיש לך זמן: בנסיעה, בהליכה'),
       findsOneWidget,
@@ -104,6 +104,8 @@ void main() {
     }
 
     // The group editor asks the question above the choices.
+    await t.ensureVisible(find.text('משפחה'));
+    await t.pump();
     await t.tap(find.text('משפחה'));
     await t.pump(const Duration(milliseconds: 500));
     expect(find.text('מתי חברי הקבוצה יראו שיש לך זמן?'), findsOneWidget);
@@ -111,7 +113,7 @@ void main() {
     expect(find.text('חיבור מהיר'), findsNothing);
     // The third choice is a whole sentence, not "רק כש…".
     expect(find.text('רק במצבים שמסומנים:'), findsOneWidget);
-    expect(find.textContaining('…'), findsNothing);
+    expect(find.textContaining('רק כש…'), findsNothing);
     expect(t.takeException(), isNull);
   });
 }

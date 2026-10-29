@@ -1846,9 +1846,10 @@ Future<void> main() async {
   await callBackWorks();
   await askerNotBusy();
   await autoYesDriving();
+  await availableToGroups();
 
   check(
-    await eve.rpc('schema_version') == 65,
+    await eve.rpc('schema_version') == 66,
     'the server says its version (41)',
   );
 
@@ -4086,6 +4087,115 @@ Future<void> autoYesDriving() async {
   );
   for (final c in [da, db, ea, eb]) {
     await c.rpc('set_auto_yes', params: {'p_on': false});
+    await c.rpc('clear_availability');
+  }
+}
+
+Future<void> availableToGroups() async {
+  final ga = await newUser('גלית', 'female');
+  final gb = await newUser('גיל', 'male');
+  await befriend(ga, gb);
+  await skipQuietGap();
+  Future<bool> gilSeesGalit() async =>
+      (await rows(gb, 'availability')).any((a) => a['user_id'] == uid(ga));
+  final family =
+      await ga.rpc(
+            'save_circle',
+            params: {
+              'p_id': null,
+              'p_name': 'משפחה בדיקה',
+              'p_quick': false,
+              'p_members': [uid(gb)],
+            },
+          )
+          as String;
+  final work =
+      await ga.rpc(
+            'save_circle',
+            params: {
+              'p_id': null,
+              'p_name': 'עבודה בדיקה',
+              'p_quick': false,
+              'p_members': <String>[],
+            },
+          )
+          as String;
+  // Only work: Gil doesn't see Galit.
+  final aud = await ga.rpc(
+    'set_audience',
+    params: {
+      'p_circles': [work],
+      'p_except': false,
+    },
+  );
+  await ga.rpc(
+    'set_availability',
+    params: {'p_mode': 'free', 'p_minutes': 30, 'p_circle': aud},
+  );
+  check(
+    !await gilSeesGalit(),
+    'available only to work: Gil (family) doesn\'t see (D-156)',
+  );
+  // Family + work: he does, in the same window.
+  await ga.rpc(
+    'set_audience',
+    params: {
+      'p_circles': [family, work],
+      'p_except': false,
+    },
+  );
+  check(await gilSeesGalit(), 'family and work: Gil sees, at once (D-156)');
+  // Everyone except family: not him.
+  await ga.rpc(
+    'set_audience',
+    params: {
+      'p_circles': [family],
+      'p_except': true,
+    },
+  );
+  check(
+    !await gilSeesGalit(),
+    'everyone except family: Gil doesn\'t see (D-156)',
+  );
+  // The hidden audience isn't among my groups.
+  final mine = await ga.from('circles').select('name');
+  check(
+    !mine.any((c) => c['name'] == '·audience'),
+    'the hidden audience never shows among my groups (D-156)',
+  );
+  // "Until when": exact, and shorter too (at least 5 minutes).
+  final until = DateTime.now().toUtc().add(const Duration(minutes: 100));
+  final t1 = DateTime.parse(
+    await ga.rpc('set_until', params: {'p_until': until.toIso8601String()})
+        as String,
+  );
+  final t2 = DateTime.parse(
+    await ga.rpc(
+          'set_until',
+          params: {'p_until': DateTime.now().toUtc().toIso8601String()},
+        )
+        as String,
+  );
+  check(
+    t1.difference(until).inSeconds.abs() < 5 &&
+        t2.difference(DateTime.now().toUtc()).inMinutes >= 4,
+    '"until when": exact, and at least 5 minutes from now (D-156)',
+  );
+  await ga.rpc('clear_availability');
+  // An automatic trip goes to the last choice (everyone except family).
+  final token = await ga.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  await bg.rpc('auto_start', params: {'p_token': token, 'p_minutes': 30});
+  check(
+    !await gilSeesGalit(),
+    'an automatic trip is for the groups chosen last (D-156)',
+  );
+  await ga.rpc(
+    'set_audience',
+    params: {'p_circles': <String>[], 'p_except': false},
+  );
+  check(await gilSeesGalit(), 'back to everyone: Gil sees the trip (D-156)');
+  for (final c in [ga, gb]) {
     await c.rpc('clear_availability');
   }
 }

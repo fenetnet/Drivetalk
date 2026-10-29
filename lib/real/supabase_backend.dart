@@ -1123,6 +1123,32 @@ class SupabaseRealBackend implements RealBackend {
   );
 
   @override
+  Future<DateTime?> setUntil(DateTime until) => _guard(
+    () async => _maybeTime(
+      await _c.rpc(
+        'set_until',
+        params: {'p_until': until.toUtc().toIso8601String()},
+      ),
+    ),
+  );
+
+  @override
+  Future<String?> setAudience(List<String> circleIds, {bool except = false}) =>
+      _guard(() async {
+        try {
+          final r = await _c.rpc(
+            'set_audience',
+            params: {'p_circles': circleIds, 'p_except': except},
+          );
+          return r as String?;
+        } on PostgrestException catch (e) {
+          // An older server: one group at a time (or everyone).
+          if (_codeFrom(e.message) != 'schema_missing') rethrow;
+          return !except && circleIds.length == 1 ? circleIds.single : null;
+        }
+      });
+
+  @override
   Future<void> setSettings({
     bool? anonymous,
     bool? hideInCall,

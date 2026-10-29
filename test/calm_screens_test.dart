@@ -4,6 +4,7 @@ import 'package:drivetalk/app/app.dart';
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/features/real/real_common.dart';
+import 'package:drivetalk/features/real/real_free.dart';
 import 'package:drivetalk/features/real/real_home.dart';
 import 'package:drivetalk/features/real/real_moments.dart';
 import 'package:drivetalk/features/real/real_people.dart';
@@ -207,7 +208,7 @@ void main() {
     await _close(t);
   });
 
-  testWidgets('a trip starts with quiet minutes (driver screen)', (t) async {
+  testWidgets('a trip starts with quiet minutes (on Home, D-156)', (t) async {
     final driving = FakeDrivingDetector();
     final (me, _) = await twoFriends(t, driving: driving);
     await t.runAsync(() async {
@@ -215,15 +216,22 @@ void main() {
       server.autoStart(driving.token!);
       await me.read(realProvider.notifier).refresh();
     });
-    await _show(t, me, const RealDriverHome());
-    expect(find.text('כמה דקות להתארגן'), findsOneWidget);
+    await _show(t, me, const RealHomeScreen());
+    await t.scrollUntilVisible(
+      find.text('לא בנסיעה הזו'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.textContaining('כמה דקות להתארגן'), findsOneWidget);
     expect(find.text('אפשר כבר עכשיו'), findsOneWidget);
     expect(find.text('לא בנסיעה הזו'), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });
 
-  testWidgets('driving: free friends as big circles, one tap asks', (t) async {
+  testWidgets('driving: the regular Home, "you\'re driving" (D-156)', (
+    t,
+  ) async {
     final driving = FakeDrivingDetector();
     final (me, friend) = await twoFriends(t, driving: driving);
     await t.runAsync(() async {
@@ -238,10 +246,12 @@ void main() {
           .startAvailability(AvailabilityMode.breakTime, 60);
       await c.refresh();
     });
-    await _show(t, me, const RealDriverHome());
-    expect(find.text('מי פנוי עכשיו'), findsOneWidget);
+    await _show(t, me, const RealHomeScreen());
     expect(find.text('יונתן־אלכסנדר'), findsOneWidget);
-    expect(find.text('לוחצים על חבר, ונשאל אותו.'), findsOneWidget);
+    await t.drag(find.byType(ListView).first, const Offset(0, -500));
+    await t.pump();
+    expect(find.byType(MyFreeCard), findsOneWidget);
+    expect(find.text('נסיעה אוטומטית · נגמרת לבד'), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });
@@ -261,23 +271,19 @@ void main() {
       }
       await c.refresh();
     });
-    await _show(t, me, const RealDriverHome());
+    await _show(t, me, const RealHomeScreen());
     Finder ring() => find.byWidgetPredicate((w) => w is InstantRing && w.on);
-    expect(ring(), findsOneWidget);
-    expect(find.text('⚡ כן אוטומטי כבוי'), findsOneWidget);
+    expect(ring(), findsOneWidget, reason: 'my friend');
     await t.runAsync(() => me.read(realProvider.notifier).setAutoYes(on: true));
     await t.pump();
-    expect(find.text('⚡ כן אוטומטי פועל'), findsOneWidget);
-    await _show(t, me, const RealHomeScreen());
-    expect(ring(), findsOneWidget);
-    // Mine on: the ⚡ on my picture, and the switch on Home.
-    expect(find.byType(BoltBadge), findsWidgets);
-    await t.scrollUntilVisible(
-      find.text('⚡ כן אוטומטי בנסיעה'),
-      300,
-      scrollable: find.byType(Scrollable).first,
+    // Mine on: the same gold ring on my own picture, too (owner).
+    expect(ring(), findsNWidgets(2));
+    await t.dragUntilVisible(
+      find.byKey(const ValueKey('autoCard')),
+      find.byType(ListView).first,
+      const Offset(0, -150),
     );
-    expect(find.text('⚡ כן אוטומטי בנסיעה'), findsOneWidget);
+    expect(find.byKey(const ValueKey('autoCard')), findsOneWidget);
     expect(t.takeException(), isNull);
     await _close(t);
   });

@@ -145,8 +145,9 @@ class _RoutineEditorState extends State<_RoutineEditor> {
                 for (final (name, mode, hour, minute) in [
                   (l.routineNameToWork, AvailabilityMode.driving, 7, 30),
                   (l.routineNameHome, AvailabilityMode.driving, 17, 0),
-                  (l.routineNameWalk, AvailabilityMode.walking, 19, 0),
-                  (l.routineNameBreak, AvailabilityMode.breakTime, 12, 30),
+                  // Driving, or simply free (D-156).
+                  (l.routineNameWalk, AvailabilityMode.free, 19, 0),
+                  (l.routineNameBreak, AvailabilityMode.free, 12, 30),
                 ])
                   ChoiceChip(
                     label: Text(name),
@@ -194,10 +195,16 @@ class _RoutineEditorState extends State<_RoutineEditor> {
             Wrap(
               spacing: 6,
               children: [
-                for (final m in AvailabilityMode.values)
+                for (final m in const [
+                  AvailabilityMode.driving,
+                  AvailabilityMode.free,
+                ])
                   ChoiceChip(
                     label: Text(modeLabel(l, m)),
-                    selected: _mode == m,
+                    selected:
+                        _mode == m ||
+                        (m == AvailabilityMode.free &&
+                            _mode != AvailabilityMode.driving),
                     onSelected: (_) => setState(() => _mode = m),
                   ),
               ],

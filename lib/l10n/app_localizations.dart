@@ -1849,7 +1849,7 @@ abstract class AppLocalizations {
   /// No description provided for @realCirclesIntro.
   ///
   /// In he, this message translates to:
-  /// **'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.'**
+  /// **'קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. כשיש לך זמן, בוחרים \"זמין ל…\": רק לקבוצות מסוימות, או לכולם חוץ מקבוצות מסוימות.'**
   String get realCirclesIntro;
 
   /// No description provided for @circleSeesAll.
@@ -4647,6 +4647,186 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.'**
   String get homeAutoYesOffBody;
+
+  /// No description provided for @modeFreeShort.
+  ///
+  /// In he, this message translates to:
+  /// **'פנוי'**
+  String get modeFreeShort;
+
+  /// No description provided for @startDriving.
+  ///
+  /// In he, this message translates to:
+  /// **'אני בנסיעה'**
+  String get startDriving;
+
+  /// No description provided for @startFree.
+  ///
+  /// In he, this message translates to:
+  /// **'יש לי זמן'**
+  String get startFree;
+
+  /// No description provided for @startHint.
+  ///
+  /// In he, this message translates to:
+  /// **'לחיצה אחת = 30 דקות. אפשר לשנות אחר כך.'**
+  String get startHint;
+
+  /// No description provided for @audienceLabel.
+  ///
+  /// In he, this message translates to:
+  /// **'זמין ל: {who}'**
+  String audienceLabel(String who);
+
+  /// No description provided for @audienceAll.
+  ///
+  /// In he, this message translates to:
+  /// **'כולם'**
+  String get audienceAll;
+
+  /// No description provided for @audienceAllBut.
+  ///
+  /// In he, this message translates to:
+  /// **'כולם חוץ מ{names}'**
+  String audienceAllBut(String names);
+
+  /// No description provided for @audienceTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'למי אני זמין?'**
+  String get audienceTitle;
+
+  /// No description provided for @audienceOnlyTab.
+  ///
+  /// In he, this message translates to:
+  /// **'רק לקבוצות שאסמן'**
+  String get audienceOnlyTab;
+
+  /// No description provided for @audienceExceptTab.
+  ///
+  /// In he, this message translates to:
+  /// **'לכולם חוץ מ…'**
+  String get audienceExceptTab;
+
+  /// No description provided for @audienceOnlyNote.
+  ///
+  /// In he, this message translates to:
+  /// **'רק מי שבקבוצות המסומנות יראה שיש לך זמן. בלי סימון: כולם.'**
+  String get audienceOnlyNote;
+
+  /// No description provided for @audienceExceptNote.
+  ///
+  /// In he, this message translates to:
+  /// **'כל החברים יראו שיש לך זמן, חוץ ממי שבקבוצות המסומנות.'**
+  String get audienceExceptNote;
+
+  /// No description provided for @audienceNoGroups.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד אין קבוצות. אפשר ליצור אותן בלשונית האנשים.'**
+  String get audienceNoGroups;
+
+  /// No description provided for @audienceMembers.
+  ///
+  /// In he, this message translates to:
+  /// **'{count, plural, =1{אדם אחד} other{{count} אנשים}}'**
+  String audienceMembers(int count);
+
+  /// No description provided for @meDrivingTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{את בנסיעה} male{אתה בנסיעה} other{בנסיעה}}'**
+  String meDrivingTitle(String gender);
+
+  /// No description provided for @meFreeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{יש לך זמן} male{יש לך זמן} other{יש לך זמן}}'**
+  String meFreeTitle(String gender);
+
+  /// No description provided for @timeLeftEdit.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד {minutes} דק׳'**
+  String timeLeftEdit(int minutes);
+
+  /// No description provided for @autoTripEnds.
+  ///
+  /// In he, this message translates to:
+  /// **'נסיעה אוטומטית · נגמרת לבד'**
+  String get autoTripEnds;
+
+  /// No description provided for @timeTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'לכמה זמן?'**
+  String get timeTitle;
+
+  /// No description provided for @time15.
+  ///
+  /// In he, this message translates to:
+  /// **'15 דק׳'**
+  String get time15;
+
+  /// No description provided for @time30.
+  ///
+  /// In he, this message translates to:
+  /// **'30 דק׳'**
+  String get time30;
+
+  /// No description provided for @time45.
+  ///
+  /// In he, this message translates to:
+  /// **'45 דק׳'**
+  String get time45;
+
+  /// No description provided for @time60.
+  ///
+  /// In he, this message translates to:
+  /// **'שעה'**
+  String get time60;
+
+  /// No description provided for @time90.
+  ///
+  /// In he, this message translates to:
+  /// **'שעה וחצי'**
+  String get time90;
+
+  /// No description provided for @time120.
+  ///
+  /// In he, this message translates to:
+  /// **'שעתיים'**
+  String get time120;
+
+  /// No description provided for @time180.
+  ///
+  /// In he, this message translates to:
+  /// **'3 שעות'**
+  String get time180;
+
+  /// No description provided for @timeUntil.
+  ///
+  /// In he, this message translates to:
+  /// **'עד שעה מסוימת'**
+  String get timeUntil;
+
+  /// No description provided for @timeMaxNote.
+  ///
+  /// In he, this message translates to:
+  /// **'עד 3 שעות מתחילת הזמן הפנוי.'**
+  String get timeMaxNote;
+
+  /// No description provided for @endFree.
+  ///
+  /// In he, this message translates to:
+  /// **'סיום'**
+  String get endFree;
+
+  /// No description provided for @groupsNote.
+  ///
+  /// In he, this message translates to:
+  /// **'מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה.'**
+  String get groupsNote;
 }
 
 class _AppLocalizationsDelegate

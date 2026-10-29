@@ -137,6 +137,20 @@ class RealAvailability {
         quietUntil: quietUntil,
       );
 
+  /// The same, for another audience ("available to…", D-156).
+  RealAvailability withCircle(String? id) => RealAvailability(
+    userId: userId,
+    mode: mode,
+    startedAt: startedAt,
+    expiresAt: expiresAt,
+    circleId: id,
+    auto: auto,
+    busyUntil: busyUntil,
+    phoneUntil: phoneUntil,
+    missedAt: missedAt,
+    quietUntil: quietUntil,
+  );
+
   /// The same, with these marks (null clears one).
   RealAvailability withMarks({
     required DateTime? missedAt,

@@ -471,13 +471,6 @@ RealOffer? waitingOffer(RealState s, DateTime now) {
 bool isRealDriving(RealState s, DateTime now) =>
     myActiveAvailability(s, now)?.mode == AvailabilityMode.driving;
 
-/// The big driver screen — unless I chose the regular one for this trip.
-bool showDriverScreen(RealState s, DateTime now) {
-  final mine = myActiveAvailability(s, now);
-  return mine?.mode == AvailabilityMode.driving &&
-      s.normalViewFor != mine!.startedAt;
-}
-
 // ---------------------------------------------------------------------------
 // Controller
 // ---------------------------------------------------------------------------
@@ -498,6 +491,8 @@ const _adminKey = 'real.admin.v1';
 const _handledKey = 'real.handledOffers.v1';
 const _snapCacheKey = 'real.snapCache.v1';
 const _googleKey = 'real.google.v1';
+const _audienceKey = 'real.audience.v1';
+const _groupsNoteKey = 'real.groupsNote.v1';
 const _googleCardKey = 'real.googleCard.v1';
 
 class RealController extends Notifier<RealState> {
@@ -1513,6 +1508,70 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  // ------------------------------------------- one tap, "available to"
+
+  /// "Available to…" (D-156): the groups I chose last time (remembered on
+  /// this phone), or everyone except them. Empty and not except = everyone.
+  ({List<String> ids, bool except}) get audience {
+    try {
+      final m = jsonDecode(_store.getString(_audienceKey) ?? '{}') as Map;
+      final known = {for (final c in state.snapshot?.circles ?? []) c.id};
+      return (
+        ids: [
+          for (final x in (m['ids'] as List? ?? const []))
+            if (known.isEmpty || known.contains(x)) '$x',
+        ],
+        except: m['except'] == true,
+      );
+    } catch (_) {
+      return (ids: const <String>[], except: false);
+    }
+  }
+
+  /// Choose who sees I'm free: now (if I am) and next time.
+  Future<void> setAudienceChoice(
+    List<String> ids, {
+    bool except = false,
+  }) async {
+    _store.setString(_audienceKey, jsonEncode({'ids': ids, 'except': except}));
+    state = state.copyWith();
+    await _run(() => _backend.setAudience(ids, except: except));
+    await refresh();
+  }
+
+  /// "I'm driving" / "I have time" (owner: one tap, 30 minutes; the time
+  /// and the groups can be changed after).
+  Future<bool> quickStart(AvailabilityMode mode, {int minutes = 30}) async {
+    final a = audience;
+    String? circle;
+    final ok = await _run(() async {
+      circle = await _backend.setAudience(a.ids, except: a.except);
+    });
+    if (!ok || !ref.mounted) return false;
+    return startAvailability(mode, minutes, circleId: circle);
+  }
+
+  /// "Until when": a new end (also earlier), from the time sheet.
+  Future<void> setUntil(DateTime until) async {
+    await _run(() => _backend.setUntil(until));
+    await refresh();
+    if (ref.mounted) unawaited(_watchWhileFree());
+  }
+
+  /// Groups: "what changed" once, only for people who used groups before.
+  bool get showGroupsNote {
+    if (_store.getString(_groupsNoteKey) != null) return false;
+    final snap = state.snapshot;
+    return snap != null &&
+        (snap.circles.any((c) => c.showModes != null) ||
+            snap.othersModes != null);
+  }
+
+  void dismissGroupsNote() {
+    _store.setString(_groupsNoteKey, 'seen');
+    state = state.copyWith();
+  }
+
   // ---------------------------------------------- yes automatically
 
   /// "Yes automatically while driving" (owner, D-153): friends with at
@@ -1712,6 +1771,8 @@ class RealController extends Notifier<RealState> {
       _snapCacheKey,
       _googleKey,
       _googleCardKey,
+      _audienceKey,
+      _groupsNoteKey,
       _contactsOffKey,
       _freeLogKey,
       _hintNoKey,

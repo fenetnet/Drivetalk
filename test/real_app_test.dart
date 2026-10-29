@@ -137,21 +137,20 @@ void main() {
       expect(find.text('יוני'), findsOneWidget);
 
       // I become free → both are asked.
-      // One tap on what I'm doing (no extra "I have time" step).
+      // One tap, 30 minutes (D-156): "I have time".
       await t.scrollUntilVisible(
-        find.text('סתם זמן פנוי'),
+        find.text('יש לי זמן'),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       await pumpFor(t, 300);
-      await t.tap(find.text('סתם זמן פנוי'));
+      await t.tap(find.text('יש לי זמן'));
       await pumpFor(t, 500);
       // The first time: one short note about the phone's questions.
       if (find.text('הבנתי, ממשיכים').evaluate().isNotEmpty) {
         await t.tap(find.text('הבנתי, ממשיכים'));
         await pumpFor(t, 500);
       }
-      await t.tap(find.text('30 דק׳'));
       await pumpFor(t, 800);
       expect(find.text('ליוני יש זמן עכשיו'), findsOneWidget);
       expect(find.text('לא עכשיו'), findsOneWidget);

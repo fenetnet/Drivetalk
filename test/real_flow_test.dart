@@ -2501,6 +2501,68 @@ void main() {
       });
     });
 
+    group('one tap, "available to", "until when" (D-156)', () {
+      RealCircle named(Phone p, String n) =>
+          p.s.snapshot!.circles.firstWhere((x) => x.name == n);
+
+      test('one tap: 30 minutes; then exactly until when I choose', () async {
+        await connect();
+        expect(await me.c.quickStart(AvailabilityMode.driving), isTrue);
+        final mine = myActiveAvailability(me.s, now)!;
+        expect(mine.mode, AvailabilityMode.driving);
+        expect(mine.minutesLeftAt(now), 30);
+        await me.c.setUntil(now.add(const Duration(hours: 2)));
+        expect(myActiveAvailability(me.s, now)!.minutesLeftAt(now), 120);
+        // Shorter too — at least 5 minutes from now.
+        await me.c.setUntil(now.add(const Duration(minutes: 1)));
+        expect(myActiveAvailability(me.s, now)!.minutesLeftAt(now), 5);
+      });
+
+      test('only the groups I tick see me; or everyone but them', () async {
+        await connect();
+        final yoniId = yoni.backend.userId!;
+        final family = named(me, 'משפחה');
+        final work = named(me, 'עבודה');
+        await me.c.saveCircle(family.copyWith(memberIds: {yoniId}));
+        await me.c.refresh();
+        // Only work (Yoni isn't there): he doesn't see me.
+        await me.c.setAudienceChoice([work.id]);
+        await me.c.quickStart(AvailabilityMode.free);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), isEmpty);
+        // Family and work: he does — at once, in this same window.
+        await me.c.setAudienceChoice([family.id, work.id]);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), hasLength(1));
+        // Everyone except family: not him.
+        await me.c.setAudienceChoice([family.id], except: true);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), isEmpty);
+        // Everyone except work: him again; and it's remembered.
+        await me.c.setAudienceChoice([work.id], except: true);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), hasLength(1));
+        expect(me.c.audience.except, isTrue);
+        expect(me.c.audience.ids, [work.id]);
+        // The hidden audience never shows among my groups.
+        expect(
+          me.s.snapshot!.circles.map((c) => c.name),
+          isNot(contains('·audience')),
+        );
+      });
+
+      test('an automatic trip is for the groups I chose last', () async {
+        await connect();
+        final work = named(me, 'עבודה');
+        await me.c.setAudienceChoice([work.id]);
+        me.driving.token ??= 'tok-me';
+        server.deviceTokens[me.driving.token!] = me.backend.userId!;
+        server.autoStart(me.driving.token!);
+        await yoni.c.refresh();
+        expect(freeFriends(yoni.s, now), isEmpty, reason: 'not in work');
+      });
+    });
+
     test('only friends I can really ask are listed (D-107)', () async {
       await connect();
       await yoni.c.startAvailability(AvailabilityMode.walking, 30);
@@ -2511,21 +2573,6 @@ void main() {
       await me.c.refresh();
       expect(freeFriends(me.s, now), hasLength(1));
       expect(askableFriends(me.s, now), isEmpty);
-    });
-
-    test('while driving: a look at the regular screen, then back', () async {
-      await connect();
-      await me.c.startAvailability(AvailabilityMode.driving, 30);
-      expect(showDriverScreen(me.s, now), isTrue);
-      me.c.showNormalView(true);
-      expect(showDriverScreen(me.s, now), isFalse);
-      me.c.showNormalView(false);
-      expect(showDriverScreen(me.s, now), isTrue);
-      // The choice lasts one trip only.
-      me.c.showNormalView(true);
-      now = now.add(const Duration(minutes: 1));
-      await me.c.startAvailability(AvailabilityMode.driving, 30);
-      expect(showDriverScreen(me.s, now), isTrue);
     });
 
     test('what I pressed never stops me from tapping a friend', () async {

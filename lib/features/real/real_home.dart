@@ -13,11 +13,46 @@ import '../../real/real_models.dart';
 import '../../real/routine_suggest.dart';
 import '../availability/pick_mode_screen.dart';
 import '../common/labels.dart';
-import '../common/widgets.dart';
 import 'real_about.dart';
 import 'real_common.dart';
+import 'real_free.dart';
 import 'real_quick.dart';
 import 'real_people.dart';
+
+/// "I'm driving" / "I have time" on Home (D-156): one tap, 30 minutes, to
+/// the groups chosen last time (the first time, one short note first).
+Future<void> startFree(
+  BuildContext context,
+  WidgetRef ref,
+  AvailabilityMode mode,
+) async {
+  final c = ref.read(realProvider.notifier);
+  if (c.needsPermissionIntro) {
+    final l = context.l10n;
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.permIntroTitle),
+        content: SingleChildScrollView(child: Text(l.permIntroBody)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(d, false),
+            child: Text(l.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(d, true),
+            child: Text(l.permIntroGo),
+          ),
+        ],
+      ),
+    );
+    if (go != true) return;
+    c.markPermissionIntroShown();
+  }
+  await c.quickStart(mode);
+}
+
+RealState s0(WidgetRef ref) => ref.read(realProvider);
 
 /// "Driving / walking / break / free" tapped on Home: straight to "for how
 /// long?" (the first time, one short note about the phone's questions).
@@ -71,85 +106,6 @@ Future<void> openRealDuration(
       ),
     ),
   );
-}
-
-/// "I have time now — what are you doing?" Four buttons, one tap each.
-class _ModeButtons extends ConsumerWidget {
-  const _ModeButtons({required this.title, required this.busy});
-  final String title;
-  final bool busy;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    Widget tile(AvailabilityMode m) => Expanded(
-      child: SizedBox(
-        height: 96,
-        child: FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.terracotta,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
-            ),
-            elevation: 4,
-            shadowColor: const Color(0x661565C0),
-          ),
-          onPressed: busy ? null : () => openRealDuration(context, ref, m),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(modeIcon(m), size: 32),
-              const SizedBox(height: 6),
-              Text(
-                modeLabel(l, m),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  height: 1.1,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          l.homeWhatNow,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
-        ),
-        const SizedBox(height: 14),
-        Row(
-          children: [
-            tile(AvailabilityMode.driving),
-            const SizedBox(width: 12),
-            tile(AvailabilityMode.walking),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            tile(AvailabilityMode.breakTime),
-            const SizedBox(width: 12),
-            tile(AvailabilityMode.free),
-          ],
-        ),
-      ],
-    );
-  }
 }
 
 /// The automatic-driving switch, with its one-time explanation.
@@ -243,19 +199,11 @@ class RealHomeScreen extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    // Mine on: the same gold ring friends see (owner, D-155).
                     if (me != null)
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          RealAvatar(person: me.toPerson(), size: 42),
-                          // "Yes automatically" is on (D-153).
-                          if (snap?.autoYes ?? false)
-                            const PositionedDirectional(
-                              bottom: -4,
-                              start: -4,
-                              child: BoltBadge(size: 20),
-                            ),
-                        ],
+                      InstantRing(
+                        on: snap?.autoYes ?? false,
+                        child: RealAvatar(person: me.toPerson(), size: 42),
                       ),
                     // "About DriveBond": what's special, the permissions.
                     IconButton(
@@ -306,20 +254,6 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _WhatsNewCard(onClose: c.dismissWhatsNew),
                 ],
-                if (isRealDriving(s, now)) ...[
-                  const SizedBox(height: 12),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(56),
-                    ),
-                    onPressed: () => c.showNormalView(false),
-                    icon: const Icon(Icons.directions_car_rounded),
-                    label: Text(
-                      l.driverBack,
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ],
                 if (s.lastError == 'offline') ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -347,9 +281,20 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
-                // "Yes automatically while driving": on/off at hand (D-153).
+                // Then: "I'm driving" / "I have time" — or me, free (D-156).
+                const SizedBox(height: 20),
+                if (mine == null)
+                  StartButtons(onStart: (m) => startFree(context, ref, m))
+                else ...[
+                  MyFreeCard(mine: mine, now: now, gender: g),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: _HowFriendsSeeMe(mine: mine, now: now),
+                  ),
+                ],
+                // The two automatic switches, together (owner).
                 const SizedBox(height: 16),
-                const _AutoYesCard(),
+                AutoCard(onAutoDriving: (v) => setAutoDriving(context, ref, v)),
                 // A friend turned quick connect on for me (D-112): its
                 // own place, never hidden behind another card.
                 if (c.quickAsk case final f?) ...[
@@ -361,21 +306,11 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   tip,
                 ],
-                // Who's free first, then my buttons (the owner's choice).
-                const SizedBox(height: 28),
-                if (mine == null)
-                  _ModeButtons(title: l.homeImFreeNow(g), busy: s.busy)
-                else
-                  Center(
-                    child: _MyStatus(mine: mine, now: now, gender: g),
-                  ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 if (snap != null && snap.friends.isNotEmpty) ...[
                   _WeekCard(week: snap.weekAt(now)),
                   const SizedBox(height: 12),
                 ],
-                if (s.driving.supported)
-                  _AutoDrivingRow(on: s.driving.enabled, busy: s.busy),
               ],
             ),
           ),
@@ -582,9 +517,10 @@ class _FreeNowCard extends ConsumerWidget {
                                           ?.instant
                                           .contains(p.id) ??
                                       false),
+                              // Gold only, never green under it (owner).
                               child: RealAvatar(
                                 person: p.toPerson(),
-                                online: !inCall,
+                                online: !inCall && !snapInstant(s0(ref), p.id),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -700,170 +636,6 @@ class _MeFace extends StatelessWidget {
       ),
     );
   }
-}
-
-/// When I'm free: a green circle with my status, and a small stop button.
-class _MyStatus extends ConsumerWidget {
-  const _MyStatus({
-    required this.mine,
-    required this.now,
-    required this.gender,
-  });
-  final RealAvailability mine;
-  final DateTime now;
-  final String gender;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final c = ref.read(realProvider.notifier);
-    return Column(
-      children: [
-        SizedBox(
-          width: 260,
-          height: 260,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              const PulsingCircle(size: 236, color: AppColors.mint),
-              Container(
-                width: 190,
-                height: 190,
-                decoration: const BoxDecoration(
-                  color: AppColors.sageDark,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x552F6B57),
-                      blurRadius: 30,
-                      offset: Offset(0, 14),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(18),
-                // Large phone text: smaller rather than cut.
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(modeIcon(mine.mode), color: Colors.white, size: 34),
-                      const SizedBox(height: 6),
-                      Text(
-                        l.realMeAvailableTitle(gender),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          height: 1.15,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        timeLeftLabel(l, mine, now),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // How friends see me right now (in a call: no questions meanwhile).
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: _HowFriendsSeeMe(mine: mine, now: now),
-        ),
-        if (ref.watch(realProvider).snapshot?.autoYes ?? false)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: MomentChip(text: l.autoYesOn, dot: instantGold),
-          ),
-        // Friends free that I can ask: say I may tap them. Nobody free: the
-        // card above already says so — nothing more here.
-        if (askableFriends(ref.watch(realProvider), now).isNotEmpty) ...[
-          Text(
-            l.realTapOrWait,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.inkSoft, fontSize: 15),
-          ),
-          const SizedBox(height: 12),
-        ],
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 10,
-          runSpacing: 8,
-          children: [
-            // A trip ends by itself: nothing to extend.
-            if (!mine.auto)
-              OutlinedButton.icon(
-                onPressed: () => _extend(context, ref),
-                icon: const Icon(Icons.more_time_rounded),
-                label: Text(l.extendButton),
-              ),
-            OutlinedButton.icon(
-              onPressed: c.stopAvailability,
-              icon: const Icon(Icons.stop_rounded),
-              label: Text(l.stopAvailability),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-Future<void> _extend(BuildContext context, WidgetRef ref) async {
-  final l = context.l10n;
-  // Read before the sheet: this card may be gone when it closes.
-  final c = ref.read(realProvider.notifier);
-  final minutes = await showModalBottomSheet<int>(
-    context: context,
-    showDragHandle: true,
-    builder: (d) => SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l.extendTitle,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                for (final m in const [10, 20, 30, 60]) ...[
-                  Expanded(
-                    child: FilledButton.tonal(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                      ),
-                      onPressed: () => Navigator.pop(d, m),
-                      // One line, smaller if needed (never "+1\n0").
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(l.extendBy(m), maxLines: 1),
-                      ),
-                    ),
-                  ),
-                  if (m != 60) const SizedBox(width: 8),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
-  if (minutes != null) await c.extendAvailability(minutes);
 }
 
 /// Free friends I can ask, people I haven't talked with in a while first.
@@ -1328,35 +1100,6 @@ class _WeekCard extends StatelessWidget {
   }
 }
 
-class _AutoDrivingRow extends ConsumerWidget {
-  const _AutoDrivingRow({required this.on, required this.busy});
-  final bool on;
-  final bool busy;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      child: SwitchListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        secondary: const Icon(
-          Icons.directions_car_rounded,
-          color: AppColors.sageDark,
-        ),
-        title: Text(
-          l.realAutoDriving,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-        ),
-        value: on,
-        // The app's usual switch colors (same as in Settings).
-        onChanged: busy ? null : (v) => setAutoDriving(context, ref, v),
-      ),
-    );
-  }
-}
-
 class _NoFriendsCard extends ConsumerWidget {
   const _NoFriendsCard();
 
@@ -1412,247 +1155,6 @@ class _NoFriendsCard extends ConsumerWidget {
             label: Text(l.realInviteFriend),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Driving, nothing happening: dark, calm, one huge stop button.
-class RealDriverHome extends ConsumerWidget {
-  const RealDriverHome({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final s = ref.watch(realProvider);
-    final now = ref.watch(realNowProvider);
-    final mine = myActiveAvailability(s, now);
-    final c = ref.read(realProvider.notifier);
-    // A question went unanswered: two big buttons, nothing else.
-    if (mine != null && mine.missed) {
-      return MomentLayout(
-        style: MomentStyle.dark,
-        footer: l.driverSafety,
-        top: Column(
-          children: [
-            MomentText(l.missedTitle, size: 30, style: MomentStyle.dark),
-          ],
-        ),
-        actions: [
-          PrimaryPill(
-            label: l.missedYes,
-            style: MomentStyle.dark,
-            height: 110,
-            onTap: s.busy ? null : c.stillFree,
-          ),
-          SecondaryPill(
-            label: l.missedNo,
-            style: MomentStyle.dark,
-            height: 88,
-            onTap: c.stopAvailability,
-          ),
-        ],
-      );
-    }
-    // The first minutes of an automatic trip: no questions yet.
-    if (mine != null && mine.quietAt(now)) {
-      return MomentLayout(
-        style: MomentStyle.dark,
-        footer: l.driverSafety,
-        top: Column(
-          children: [
-            const Icon(
-              Icons.directions_car_rounded,
-              color: Colors.white,
-              size: 64,
-            ),
-            const SizedBox(height: 24),
-            MomentText(l.graceTitle, size: 30, style: MomentStyle.dark),
-            const SizedBox(height: 8),
-            MomentText(
-              l.graceBody,
-              size: 20,
-              style: MomentStyle.dark,
-              soft: true,
-            ),
-          ],
-        ),
-        actions: [
-          PrimaryPill(
-            label: l.graceReady,
-            style: MomentStyle.dark,
-            height: 110,
-            onTap: s.busy ? null : c.readyNow,
-          ),
-          SecondaryPill(
-            label: l.graceNotThisTrip,
-            style: MomentStyle.dark,
-            height: 88,
-            onTap: c.stopAvailability,
-          ),
-        ],
-      );
-    }
-    final free = friendsToShow(s, now);
-    final autoYes = s.snapshot?.autoYes ?? false;
-    return MomentLayout(
-      style: MomentStyle.dark,
-      footer: l.driverSafety,
-      // "Yes automatically": always here, one tap turns it on/off (D-153).
-      header: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: s.busy ? null : () => c.setAutoYes(on: !autoYes),
-        child: MomentChip(
-          text: autoYes ? l.autoYesOn : l.autoYesOff,
-          style: MomentStyle.dark,
-          dot: autoYes ? instantGold : AppColors.inkSoft,
-        ),
-      ),
-      top: Column(
-        children: [
-          if (free.isEmpty) ...[
-            PulsingCircle(
-              size: 160,
-              color: AppColors.sage.withValues(alpha: 0.35),
-              child: Icon(
-                Icons.directions_car_rounded,
-                color: Colors.white,
-                size: 64,
-              ),
-            ),
-            const SizedBox(height: 28),
-            MomentText(l.driverNobody, size: 30, style: MomentStyle.dark),
-            const SizedBox(height: 6),
-            MomentText(
-              l.driverNobodyBody,
-              size: 18,
-              style: MomentStyle.dark,
-              soft: true,
-            ),
-          ] else ...[
-            // Who's free now: up to 3 big circles, one tap asks (D-107).
-            MomentText(l.driverFreeTitle, size: 28, style: MomentStyle.dark),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final (p, a) in free.take(3))
-                  Expanded(
-                    child: _DriverFriend(
-                      friend: p,
-                      label: modeLabel(l, a.mode),
-                      instant: snapInstant(s, p.id),
-                      onTap: s.busy ? null : () => c.tapFriend(p),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            MomentText(
-              l.driverFreeHint,
-              size: 18,
-              style: MomentStyle.dark,
-              soft: true,
-            ),
-          ],
-          if (mine != null && !mine.auto) ...[
-            const SizedBox(height: 6),
-            // Mine, clearly (not a friend's time).
-            MomentText(
-              l.driverMyTimeLeft(mine.minutesLeftAt(now)),
-              size: 20,
-              style: MomentStyle.dark,
-              soft: true,
-            ),
-          ],
-        ],
-      ),
-      actions: [
-        SecondaryPill(
-          // Same words as on the regular screen.
-          label: l.stopAvailability,
-          style: MomentStyle.dark,
-          height: 96,
-          onTap: c.stopAvailability,
-        ),
-        // A look at the regular screen (back with one tap from there).
-        TextButton(
-          onPressed: () => c.showNormalView(true),
-          child: Text(
-            l.driverNormalView,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              decoration: TextDecoration.underline,
-              decorationColor: Colors.white,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// One free friend on the driver screen: a big picture, name, what
-/// they're doing. The whole thing is one big button.
-class _DriverFriend extends StatelessWidget {
-  const _DriverFriend({
-    required this.friend,
-    required this.label,
-    required this.onTap,
-    this.instant = false,
-  });
-  final RealProfile friend;
-  final String label;
-  final VoidCallback? onTap;
-
-  /// They'd say yes to me at once (D-153): a double ring.
-  final bool instant;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(24),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Column(
-          children: [
-            InstantRing(
-              on: instant,
-              // Nothing moving on the driver screen.
-              animate: false,
-              child: HeroAvatar(
-                person: friend.toPerson(),
-                size: 84,
-                ring: AppColors.driverRing,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              friend.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.75),
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -2197,40 +1699,3 @@ class _GoogleCard extends ConsumerWidget {
 /// They'd say yes to me at once (D-153).
 bool snapInstant(RealState s, String id) =>
     s.snapshot?.instant.contains(id) ?? false;
-
-/// Home: "yes automatically while driving", on/off in one tap (D-153).
-class _AutoYesCard extends ConsumerWidget {
-  const _AutoYesCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = context.l10n;
-    final s = ref.watch(realProvider);
-    final c = ref.read(realProvider.notifier);
-    final on = s.snapshot?.autoYes ?? false;
-    return Card(
-      key: const ValueKey('autoYes'),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: on
-            ? const BorderSide(color: instantGold, width: 2)
-            : BorderSide.none,
-      ),
-      child: SwitchListTile(
-        value: on,
-        onChanged: s.busy || s.snapshot == null
-            ? null
-            : (v) => c.setAutoYes(on: v),
-        title: Text(
-          l.homeAutoYesTitle,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        subtitle: Text(
-          on
-              ? l.homeAutoYesOnBody(s.snapshot?.autoYesMin ?? 3)
-              : l.homeAutoYesOffBody,
-        ),
-      ),
-    );
-  }
-}

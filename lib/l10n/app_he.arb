@@ -577,7 +577,7 @@
   "realBlockedEmpty": "לא חסמת אף אחד",
   "realUnblock": "ביטול חסימה",
   "realCirclesTitle": "קבוצות",
-  "realCirclesIntro": "קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. לכל קבוצה בוחרים מתי היא רואה שיש לך זמן — למשל, עבודה רק בנסיעה. מי שלא רואה, גם לא מקבל הצעה לדבר איתך.",
+  "realCirclesIntro": "קבוצה היא כמה חברים יחד, למשל משפחה או עבודה. כשיש לך זמן, בוחרים \"זמין ל…\": רק לקבוצות מסוימות, או לכולם חוץ מקבוצות מסוימות.",
   "circleSeesAll": "רואים שיש לך זמן: בכל מצב",
   "circleSeesSome": "רואים שיש לך זמן: {modes}",
   "@circleSeesSome": {
@@ -1866,5 +1866,77 @@
       }
     }
   },
-  "homeAutoYesOffBody": "כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה."
+  "homeAutoYesOffBody": "כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.",
+  "modeFreeShort": "פנוי",
+  "startDriving": "אני בנסיעה",
+  "startFree": "יש לי זמן",
+  "startHint": "לחיצה אחת = 30 דקות. אפשר לשנות אחר כך.",
+  "audienceLabel": "זמין ל: {who}",
+  "@audienceLabel": {
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "audienceAll": "כולם",
+  "audienceAllBut": "כולם חוץ מ{names}",
+  "@audienceAllBut": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "audienceTitle": "למי אני זמין?",
+  "audienceOnlyTab": "רק לקבוצות שאסמן",
+  "audienceExceptTab": "לכולם חוץ מ…",
+  "audienceOnlyNote": "רק מי שבקבוצות המסומנות יראה שיש לך זמן. בלי סימון: כולם.",
+  "audienceExceptNote": "כל החברים יראו שיש לך זמן, חוץ ממי שבקבוצות המסומנות.",
+  "audienceNoGroups": "עוד אין קבוצות. אפשר ליצור אותן בלשונית האנשים.",
+  "audienceMembers": "{count, plural, =1{אדם אחד} other{{count} אנשים}}",
+  "@audienceMembers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "meDrivingTitle": "{gender, select, female{את בנסיעה} male{אתה בנסיעה} other{בנסיעה}}",
+  "@meDrivingTitle": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "meFreeTitle": "{gender, select, female{יש לך זמן} male{יש לך זמן} other{יש לך זמן}}",
+  "@meFreeTitle": {
+    "placeholders": {
+      "gender": {
+        "type": "String"
+      }
+    }
+  },
+  "timeLeftEdit": "עוד {minutes} דק׳",
+  "@timeLeftEdit": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "autoTripEnds": "נסיעה אוטומטית · נגמרת לבד",
+  "timeTitle": "לכמה זמן?",
+  "time15": "15 דק׳",
+  "time30": "30 דק׳",
+  "time45": "45 דק׳",
+  "time60": "שעה",
+  "time90": "שעה וחצי",
+  "time120": "שעתיים",
+  "time180": "3 שעות",
+  "timeUntil": "עד שעה מסוימת",
+  "timeMaxNote": "עד 3 שעות מתחילת הזמן הפנוי.",
+  "endFree": "סיום",
+  "groupsNote": "מה השתנה: \"מי רואה אותי בכל מצב\" ירד מהקבוצות. במקומו, כשיש לך זמן בוחרים \"זמין ל…\". מי שלא רוצים שיראה אותך: 0 כוכבים. הגדרה שכבר קבעת נשמרת, ואפשר לראות אותה בתוך הקבוצה."
 }

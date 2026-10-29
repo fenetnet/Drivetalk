@@ -237,6 +237,14 @@ abstract class RealBackend {
   /// More minutes on my (manual) free time. Returns the new end.
   Future<DateTime?> extendAvailability(int minutes);
 
+  /// "Until when" (D-156): a new end for my free window, also earlier.
+  Future<DateTime?> setUntil(DateTime until);
+
+  /// "Available to" these groups (or everyone except them; none = all my
+  /// friends): also for the window I'm in now, and for automatic trips.
+  /// Returns the circle to start a window with (null = everyone).
+  Future<String?> setAudience(List<String> circleIds, {bool except = false});
+
   /// Private settings (null = unchanged).
   Future<void> setSettings({
     bool? anonymous,
