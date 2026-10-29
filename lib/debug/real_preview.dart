@@ -3,6 +3,8 @@
 //   flutter build web -t lib/debug/real_preview.dart
 //   open …/#home | #offer | #waiting | #connected | #driving | #drivingOffer
 //        | #people | #settings | #test | #onboarding | #feedback
+//        | #first-photo | #first-contacts | #first-result | #first-routine
+//        | #first-permissions | #first-magic | #new-home | #new-free
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +15,7 @@ import '../domain/models.dart';
 import '../features/real/real_root.dart';
 import '../platform/contacts_reader.dart';
 import '../platform/driving_detector.dart';
+import '../platform/google_auth.dart';
 import '../platform/voice_service.dart';
 import '../real/deep_links.dart';
 import '../real/local_store.dart';
@@ -38,7 +41,33 @@ Future<void> main() async {
     return b;
   }
 
-  if (screen != 'onboarding') {
+  // A new person, step by step (D-156 tour): signed in, friends who use
+  // the app are in their contacts but not connected yet.
+  final newcomer = screen.startsWith('first-') || screen.startsWith('new-');
+  final contacts = FakeContactsReader()..asked = true;
+  if (newcomer) {
+    await me.signIn('נתנאל', Gender.male);
+    await me.setMyPhone('0521111111');
+    final found = [
+      await friend('יוני', Gender.male, '0532222222'),
+      await friend('מיכל', Gender.female, '0543333333'),
+      await friend('דנה', Gender.female, '0504444444'),
+    ];
+    contacts.numbers = ['0532222222', '0543333333', '0504444444'];
+    if (screen.startsWith('new-')) {
+      for (final f in found) {
+        final inv = await me.createInvitation();
+        await f.acceptInvitation(inv.token);
+      }
+      if (screen == 'new-free') {
+        await found[1].setAvailability(AvailabilityMode.driving, 25);
+      }
+    } else {
+      store.values['real.firstRun.v1'] = screen.substring('first-'.length);
+    }
+    store.values['real.whatsNew.v1'] = '170';
+    store.values['real.googleCard.v1'] = 'no';
+  } else if (screen != 'onboarding') {
     await me.signIn('נתנאל', Gender.male);
     await me.setMyPhone('0521111111');
     final yoni = await friend('יוני', Gender.male, '0532222222');
@@ -100,9 +129,9 @@ Future<void> main() async {
       drivingDetectorProvider.overrideWithValue(
         FakeDrivingDetector()..enabled = true,
       ),
-      contactsReaderProvider.overrideWithValue(
-        FakeContactsReader()..asked = true,
-      ),
+      contactsReaderProvider.overrideWithValue(contacts),
+      // The Google button as on a phone.
+      googleAuthProvider.overrideWithValue(FakeGoogleAuth()),
       incomingLinksProvider.overrideWithValue(const Stream.empty()),
       appVersionProvider.overrideWithValue('preview'),
     ],
@@ -111,6 +140,7 @@ Future<void> main() async {
   await Future<void>.delayed(const Duration(milliseconds: 50));
   final c = container.read(realProvider.notifier);
   await c.refresh();
+  if (screen == 'first-result') await c.firstRunFindPeople();
   final now = DateTime.now();
   final offer = currentOffer(container.read(realProvider), now);
   if (screen == 'waiting' && offer != null) {
