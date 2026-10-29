@@ -34,6 +34,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   yes to "talk now", or BOTH sides pre-approved each other for "quick connect"
   (owner decision D-026) — and even then with a visible/spoken cancellable
   countdown (5s), max 1 per availability window and 1 per person per day.
+  Exception (owner, D-153): "yes automatically while driving" — a person's
+  own opt-in switch (off by default) is a standing yes for friends with
+  enough stars, no daily limit; when both have it, the 5s countdown stays.
   Automatic availability ≠ automatic call consent.
 - Calls go through the phone's regular dialer when numbers may be shared
   (connections; friends-of-friends/groups only if BOTH allow it). Otherwise the

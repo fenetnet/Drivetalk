@@ -276,8 +276,9 @@ void main() {
     expect(ring(), findsOneWidget, reason: 'my friend');
     await t.runAsync(() => me.read(realProvider.notifier).setAutoYes(on: true));
     await t.pump();
-    // Mine on: the same gold ring on my own picture, too (owner).
-    expect(ring(), findsNWidgets(2));
+    // Mine on: the same gold ring on my own picture, too (owner) — up top
+    // and on "me" among the free people.
+    expect(ring(), findsNWidgets(3));
     await t.dragUntilVisible(
       find.byKey(const ValueKey('autoCard')),
       find.byType(ListView).first,

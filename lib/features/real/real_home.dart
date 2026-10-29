@@ -483,7 +483,13 @@ class _FreeNowCard extends ConsumerWidget {
                 separatorBuilder: (_, _) => const SizedBox(width: 14),
                 itemBuilder: (_, j) {
                   if (self != null && j == 0) {
-                    return _MeFace(me: self.$1, mine: self.$2, now: now);
+                    return _MeFace(
+                      me: self.$1,
+                      mine: self.$2,
+                      now: now,
+                      autoYes:
+                          ref.watch(realProvider).snapshot?.autoYes ?? false,
+                    );
                   }
                   final i = j - shift;
                   final faded = i >= free.length + busy.length;
@@ -601,7 +607,15 @@ class _FreeNowCard extends ConsumerWidget {
 
 /// Me in the row of free people: my picture, "me", and my time left.
 class _MeFace extends StatelessWidget {
-  const _MeFace({required this.me, required this.mine, required this.now});
+  const _MeFace({
+    required this.me,
+    required this.mine,
+    required this.now,
+    this.autoYes = false,
+  });
+
+  /// My "yes automatically" is on: the same gold ring friends see (owner).
+  final bool autoYes;
   final RealProfile me;
   final RealAvailability mine;
   final DateTime now;
@@ -614,7 +628,10 @@ class _MeFace extends StatelessWidget {
       width: 76,
       child: Column(
         children: [
-          RealAvatar(person: me.toPerson(), online: true),
+          InstantRing(
+            on: autoYes,
+            child: RealAvatar(person: me.toPerson(), online: !autoYes),
+          ),
           const SizedBox(height: 8),
           Text(
             l.meInRow,
