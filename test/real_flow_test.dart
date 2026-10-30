@@ -1702,6 +1702,21 @@ void main() {
     },
   );
 
+  test(
+    'signing out while a refresh is on the way: the old account stays out',
+    () async {
+      await connect();
+      me.backend.fetchDelay = const Duration(milliseconds: 300);
+      final late = me.c.refresh();
+      await me.c.signOut();
+      await late;
+      await pump(60);
+      expect(me.s.phase, RealPhase.signedOut);
+      expect(me.s.snapshot, isNull);
+      expect(me.store.values['real.milestone.v1'], isNull);
+    },
+  );
+
   test('a failed move to Google (offline) stays in my account', () async {
     await connect();
     yoni.google.token = const GoogleToken('g-yoni');

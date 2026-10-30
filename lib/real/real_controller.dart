@@ -1792,7 +1792,12 @@ class RealController extends Notifier<RealState> {
   }
 
   /// Everything this phone kept about the account (sign-out / deletion).
+  /// Raised whenever the account on this phone ends (sign-out, a move to
+  /// Google, deletion): an answer that left before that is dropped.
+  var _epoch = 0;
+
   Future<void> _clearLocal() async {
+    _epoch++;
     final detector = ref.read(drivingDetectorProvider);
     await detector.setRoutines('[]');
     await detector.forget();
@@ -1901,6 +1906,7 @@ class RealController extends Notifier<RealState> {
     }
     _refreshing = true;
     _refreshStarted = _now();
+    final epoch = _epoch;
     try {
       // While I'm free, let the server create offers that became possible
       // (a pause ended, someone's circle changed) — at most every 15s.
@@ -1915,9 +1921,10 @@ class RealController extends Notifier<RealState> {
           // The fetch below reports connection problems.
         }
       }
-      final snap = _withPhotos(await _backend.fetchSnapshot())
-          .withLocalNames(_localNames);
-      if (!ref.mounted) return;
+      final fetched = await _backend.fetchSnapshot();
+      // Signed out (or moved) meanwhile: never bring the old account back.
+      if (!ref.mounted || epoch != _epoch) return;
+      final snap = _withPhotos(fetched).withLocalNames(_localNames);
       final prev = state;
       // Drop local answers the server now knows about.
       final answers = {

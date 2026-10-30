@@ -1011,9 +1011,14 @@ class MemoryRealBackend implements RealBackend {
   @override
   String? get slowest => null;
 
+  /// Tests: a slow network for the snapshot.
+  Duration? fetchDelay;
+
   @override
   Future<RealSnapshot> fetchSnapshot() async {
+    // Like a request already on its way: who asked is fixed when it left.
     final me = _uid;
+    if (fetchDelay case final d?) await Future<void>.delayed(d);
     final now = server.now();
     final friends = [
       for (final p in server.profiles.values)
