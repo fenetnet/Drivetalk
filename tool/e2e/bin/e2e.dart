@@ -1847,9 +1847,10 @@ Future<void> main() async {
   await askerNotBusy();
   await autoYesDriving();
   await availableToGroups();
+  await securityRound2();
 
   check(
-    await eve.rpc('schema_version') == 67,
+    await eve.rpc('schema_version') == 68,
     'the server says its version (41)',
   );
 
@@ -4205,6 +4206,125 @@ Future<void> availableToGroups() async {
   );
   check(await gilSeesGalit(), 'back to everyone: Gil sees the trip (D-156)');
   for (final c in [ga, gb]) {
+    await c.rpc('clear_availability');
+  }
+}
+
+/// Security round 2 (D-164): an unverified number never skips approval,
+/// "connects at once" hides what I can't see, searches count numbers.
+Future<void> securityRound2() async {
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final alice = await newUser('אליס', 'female');
+  final bob = await newUser('בוב', 'male');
+  await befriend(alice, bob);
+  final alicePhone = await dbScalar(
+    "select phone from phone_numbers where user_id = '${uid(alice)}'",
+  );
+  final bobPhone = await dbScalar(
+    "select phone from phone_numbers where user_id = '${uid(bob)}'",
+  );
+  // Alice has Bob's number saved.
+  await alice.rpc('find_friends', params: {
+    'p_hashes': [h(bobPhone)],
+  });
+  // Someone else types Bob's number and has Alice's.
+  final fake = await newUser('בוב', 'male');
+  await fake.from('phone_numbers').upsert({
+    'user_id': uid(fake),
+    'phone': bobPhone,
+  });
+  await fake.rpc('find_friends', params: {
+    'p_hashes': [h(alicePhone)],
+  });
+  await fake.rpc('add_contacts', params: {
+    'p_users': [uid(alice)],
+  });
+  final pending = await dbScalar(
+    "select coalesce(pending_for::text, 'none') from connections "
+    "where user_a = least('${uid(alice)}'::uuid, '${uid(fake)}'::uuid) "
+    "and user_b = greatest('${uid(alice)}'::uuid, '${uid(fake)}'::uuid)",
+  );
+  check(
+    pending == uid(alice),
+    'a second account with a friend\'s number waits for approval (D-164)',
+  );
+  await alice.rpc('find_friends', params: {
+    'p_hashes': [h(bobPhone)],
+  });
+  final still = await dbScalar(
+    "select coalesce(pending_for::text, 'none') from connections "
+    "where user_a = least('${uid(alice)}'::uuid, '${uid(fake)}'::uuid) "
+    "and user_b = greatest('${uid(alice)}'::uuid, '${uid(fake)}'::uuid)",
+  );
+  check(still == uid(alice), '…and my contacts sync doesn\'t approve it');
+  final seen = List<Map<String, dynamic>>.from(
+    await alice.from('profiles').select('id'),
+  ).map((r) => r['id']).toSet();
+  check(seen.contains(uid(bob)), 'the real friend is not replaced by it');
+  final act = List<Map<String, dynamic>>.from(
+    await fake.rpc('friends_activity'),
+  );
+  check(
+    act.every((r) => r['user_id'] != uid(alice)),
+    'no "last seen" before being approved',
+  );
+
+  // ⚡ "connects at once" never names someone hidden from me.
+  await bob.rpc('set_auto_yes', params: {'p_on': true, 'p_min': 3});
+  await bob.rpc('set_availability', params: {
+    'p_mode': 'driving',
+    'p_minutes': 30,
+  });
+  await dbExec(
+    "update availability set quiet_until = null where user_id = '${uid(bob)}'",
+  );
+  final open = Map<String, dynamic>.from(
+    await alice.rpc('auto_yes_status') as Map,
+  );
+  check(
+    (open['instant'] as List).contains(uid(bob)),
+    'auto-yes friend driving: shown as connecting at once',
+  );
+  await bob.rpc('set_hide_status', params: {'p_hide': true});
+  final hidden = Map<String, dynamic>.from(
+    await alice.rpc('auto_yes_status') as Map,
+  );
+  check(
+    !(hidden['instant'] as List).contains(uid(bob)),
+    'hidden status: not shown as connecting at once (D-164)',
+  );
+  await bob.rpc('set_hide_status', params: {'p_hide': false});
+
+  // "X is on the way" never to a friend I rated 0.
+  await bob.rpc('save_push_token', params: {
+    'p_token': 'test-token-${uid(bob)}-0123456789',
+  });
+  await alice.rpc('set_rating', params: {
+    'p_friend': uid(bob),
+    'p_rating': 0,
+  });
+  await alice.rpc('set_availability', params: {
+    'p_mode': 'driving',
+    'p_minutes': 30,
+  });
+  final told = await dbScalar(
+    "select count(*) from trip_push_claim('${uid(alice)}')",
+  );
+  check(told == '0', 'rated 0: not told I\'m on the way (D-164)');
+
+  // Contact searches count numbers: 20000 a day.
+  final sweeper = await newUser('סורק', 'male');
+  final batch = [for (var i = 0; i < 5000; i++) h('+97250${3000000 + i}')];
+  var limited = false;
+  for (var i = 0; i < 5; i++) {
+    try {
+      await sweeper.rpc('find_friends', params: {'p_hashes': batch});
+    } on PostgrestException {
+      limited = true;
+    }
+  }
+  check(limited, 'a sweep over many numbers is stopped (D-164)');
+  for (final c in [alice, bob]) {
     await c.rpc('clear_availability');
   }
 }
