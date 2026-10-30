@@ -1497,6 +1497,11 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(busy: true);
     try {
       await _backend.signIn(name, gender);
+      // The account exists from here: even if the number fails to save
+      // and the app is closed, the next start still shows the first
+      // steps and keeps ⚡ waiting for the first talk.
+      await _store.setString(_firstRunKey, FirstRunStep.photo.name);
+      await _store.setString(_autoYesLockKey, 'locked');
       if (phone != null && phone.trim().isNotEmpty) {
         // Joining is complete only with the number saved (friends find
         // each other by it). On failure: stay here and try again.
@@ -1710,11 +1715,23 @@ class RealController extends Notifier<RealState> {
       return null;
     } on RealBackendException catch (e) {
       if (!ref.mounted) return null;
+      // A move to Google that failed (offline…) leaves me in my old
+      // account: back to it, never stuck on the loading screen.
+      final stayed =
+          state.phase == RealPhase.starting && _backend.userId != null;
       state = state.copyWith(
         busy: false,
-        phase: _backend.userId == null ? RealPhase.signedOut : state.phase,
+        phase: _backend.userId == null
+            ? RealPhase.signedOut
+            : stayed
+            ? RealPhase.ready
+            : state.phase,
       );
       _setError(e.code, show: true);
+      if (stayed) {
+        unawaited(refresh());
+        _afterReady();
+      }
       return null;
     }
   }
@@ -1804,6 +1821,8 @@ class RealController extends Notifier<RealState> {
       _milestoneKey,
       _autoYesLockKey,
       _quickOffKey,
+      _namesCheckedKey,
+      _pendingSyncKey,
       _micTipKey,
       _presetsKey,
       _permIntroKey,
@@ -1818,6 +1837,8 @@ class RealController extends Notifier<RealState> {
       await _store.setString(k, null);
     }
     _handled.clear();
+    _savedSnap = null;
+    _lastNameSync = null;
     _laterFeedback.clear();
     _answering.clear();
     _givingUp.clear();
@@ -3429,7 +3450,8 @@ class RealController extends Notifier<RealState> {
     try {
       final now = _now();
       if (myActiveAvailability(state, now) == null) {
-        if (!await startAvailability(AvailabilityMode.free, 30)) return false;
+        // Free to the people I chose ("available to"), as on Home.
+        if (!await quickStart(AvailabilityMode.free)) return false;
       } else {
         _react(state.snapshot!);
       }
@@ -3863,14 +3885,20 @@ class RealController extends Notifier<RealState> {
   /// ⚡ auto-yes waits for the first talk — for people who joined with this
   /// version only (nothing is taken from anyone).
   bool get autoYesLocked =>
-      _store.getString(_autoYesLockKey) != null && talkCount == 0;
+      _store.getString(_autoYesLockKey) != null &&
+      !state.cached &&
+      talkCount == 0;
 
   /// The first party says "unlocked" (it was locked for me).
   bool get autoYesWasLocked => _store.getString(_autoYesLockKey) != null;
 
   /// "Your first talk" in 3 steps on Home, until the first talk.
   bool get showJourney =>
-      state.firstRun == null && state.snapshot != null && talkCount == 0;
+      state.firstRun == null &&
+      state.snapshot != null &&
+      // The saved screen has no talks: wait for the server's answer.
+      !state.cached &&
+      talkCount == 0;
 
   /// I was free at least once (step 2 of the journey; also a trip).
   bool get wasFree =>
@@ -3881,8 +3909,11 @@ class RealController extends Notifier<RealState> {
 
   /// Quick connect is gone (owner, D-161): my old ones are turned off once,
   /// so nothing happens that I can no longer see or change.
+  var _quickOffRunning = false;
+
   Future<void> _quickOff(RealSnapshot snap) async {
-    if (_store.getString(_quickOffKey) != null) return;
+    if (_store.getString(_quickOffKey) != null || _quickOffRunning) return;
+    _quickOffRunning = true;
     try {
       for (final id in snap.quickMine) {
         await _backend.setQuick(id, false);
@@ -3890,11 +3921,25 @@ class RealController extends Notifier<RealState> {
       _store.setString(_quickOffKey, 'done');
     } on RealBackendException {
       // Next time.
+    } finally {
+      _quickOffRunning = false;
     }
   }
 
-  final _namesCheckedFor = <String>{};
+  static const _namesCheckedKey = 'real.namesChecked.v1';
   DateTime? _lastNameSync;
+
+  /// Friends already looked up in my contacts (kept, so a friend who just
+  /// isn't in my contacts doesn't cost a contacts search on every start).
+  Set<String> get _namesCheckedFor {
+    try {
+      return (jsonDecode(_store.getString(_namesCheckedKey) ?? '[]') as List)
+          .cast<String>()
+          .toSet();
+    } catch (_) {
+      return {};
+    }
+  }
 
   /// A new friend I have no contact name for yet (e.g. joined with Google
   /// after my last sync): look in my contacts now, quietly, so I see the
@@ -3905,9 +3950,10 @@ class RealController extends Notifier<RealState> {
       return;
     }
     final names = _localNames;
+    final checked = _namesCheckedFor;
     final unknown = [
       for (final f in snap.friends)
-        if (!names.containsKey(f.id) && !_namesCheckedFor.contains(f.id)) f.id,
+        if (!names.containsKey(f.id) && !checked.contains(f.id)) f.id,
     ];
     if (unknown.isEmpty) return;
     final now = _now();
@@ -3915,7 +3961,10 @@ class RealController extends Notifier<RealState> {
         now.difference(_lastNameSync!) < const Duration(minutes: 2)) {
       return;
     }
-    _namesCheckedFor.addAll(unknown);
+    _store.setString(
+      _namesCheckedKey,
+      jsonEncode({..._namesCheckedFor, ...unknown}.toList()),
+    );
     _lastNameSync = now;
     unawaited(syncContacts(ask: false, auto: true));
   }

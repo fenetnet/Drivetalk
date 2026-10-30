@@ -1702,6 +1702,32 @@ void main() {
     },
   );
 
+  test('a failed move to Google (offline) stays in my account', () async {
+    await connect();
+    yoni.google.token = const GoogleToken('g-yoni');
+    expect(await yoni.c.connectGoogle(), 'linked');
+    me.google.token = const GoogleToken('g-yoni');
+    expect(await me.c.connectGoogle(), 'taken');
+    final mine = me.backend.userId;
+    me.backend.offline = true;
+    await me.c.switchToGoogle();
+    expect(me.s.phase, RealPhase.ready, reason: 'not stuck loading');
+    me.backend.offline = false;
+    await me.c.refresh();
+    expect(me.backend.userId, mine);
+    expect(me.s.snapshot!.me.name, 'נתנאל');
+  });
+
+  test('the number fails to save at sign-up: first steps still come', () async {
+    final p = Phone(server, clock);
+    await p.boot();
+    await p.c.signIn('דן', Gender.male, phone: '12');
+    expect(p.s.phase, RealPhase.signedOut, reason: 'stays to fix the number');
+    expect(p.store.values['real.firstRun.v1'], 'photo');
+    expect(p.store.values['real.autoYesLock.v1'], 'locked');
+    p.dispose();
+  });
+
   group('talk history and the car', () {
     test(
       'first talk: the 3 steps, then a party once; 🔥 counts (D-159)',
@@ -2588,6 +2614,27 @@ void main() {
         await me.c.setUntil(now.add(const Duration(minutes: 1)));
         expect(myActiveAvailability(me.s, now)!.minutesLeftAt(now), 5);
       });
+
+      test(
+        'tapping a free friend keeps "available to" (review D-164)',
+        () async {
+          await connect();
+          final work = named(me, 'עבודה');
+          // Only work (Yoni isn't there).
+          await me.c.setAudienceChoice([work.id]);
+          await yoni.c.startAvailability(AvailabilityMode.free, 30);
+          await me.c.refresh();
+          final yoniProfile = me.s.snapshot!.friends.single;
+          expect(await me.c.tapFriend(yoniProfile), isTrue);
+          await yoni.c.refresh();
+          expect(currentOffer(yoni.s, now), isNotNull, reason: 'he is asked');
+          expect(
+            freeFriends(yoni.s, now),
+            isEmpty,
+            reason: 'but I am free only to work, as I chose',
+          );
+        },
+      );
 
       test('only the groups I tick see me; or everyone but them', () async {
         await connect();

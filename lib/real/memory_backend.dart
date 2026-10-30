@@ -1023,8 +1023,12 @@ class MemoryRealBackend implements RealBackend {
           p,
     ];
     final visible = {me, for (final f in friends) f.id};
+    // Signed in without a profile (left at the number step): like the
+    // real server.
+    final mine = server.profiles[me];
+    if (mine == null) throw const RealBackendException('no_profile');
     return RealSnapshot(
-      me: server.profiles[me]!,
+      me: mine,
       friends: friends,
       availability: {
         for (final e in server.availability.entries)
