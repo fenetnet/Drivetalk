@@ -25,6 +25,8 @@ concurrency:
 
 jobs:
   publish:
+    # Only the two publishing branches, also for a manual run (D-110).
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/claude/social-voice-app-mnrxc1'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

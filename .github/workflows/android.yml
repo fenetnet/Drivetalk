@@ -27,6 +27,8 @@ concurrency:
 
 jobs:
   build:
+    # Only the two publishing branches, also for a manual run (D-110).
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/claude/social-voice-app-mnrxc1'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -153,12 +155,18 @@ jobs:
         run: |
           # The app reads version.json to say "a new version is out".
           echo '{"build": ${{ github.run_number }}}' > version.json
-          gh release delete prototype --yes --cleanup-tag || true
-          gh release create prototype drivetalk-prototype.apk drivetalk.aab version.json \
-            --prerelease \
-            --target "${{ github.sha }}" \
-            --title "DriveBond — גרסת ניסיון" \
-            --notes-file docs/install-guide-release.md
+          # Replace the files in place: a build cancelled half way never
+          # leaves the download link or the "new version" check empty.
+          if ! gh release view prototype >/dev/null 2>&1; then
+            gh release create prototype \
+              --prerelease \
+              --target "${{ github.sha }}" \
+              --title "DriveBond — גרסת ניסיון" \
+              --notes-file docs/install-guide-release.md
+          fi
+          gh release upload prototype drivetalk-prototype.apk drivetalk.aab --clobber
+          # version.json last: the app hears about a build only once it's there.
+          gh release upload prototype version.json --clobber
           # Sometimes GitHub leaves it as an unpublished draft (then the link
           # and "new version" check are 404). Publish explicitly and verify.
           for i in 1 2 3; do
