@@ -95,7 +95,10 @@ class DrivingService : Service() {
         // limit on Android 15…). Never leave "free" on the server without
         // alerts on this phone: undo it and say so.
         private fun undo(context: Context, action: String?) {
-            val api = DrivingApi(DrivingStore(context))
+            val store = DrivingStore(context)
+            val api = DrivingApi(store)
+            // Visible in the test info: why a trip didn't show.
+            store.log("service refused (${action ?: "start"})")
             when (action) {
                 ACTION_END -> Thread { api.stop() }.start()
                 ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
@@ -108,6 +111,11 @@ class DrivingService : Service() {
                 }
                 else -> {
                     Thread { api.stop() }.start()
+                    // No trip after all: never stay "in a vehicle" (a car
+                    // Bluetooth trip would otherwise ignore every later
+                    // signal until the car disconnects).
+                    store.inVehicle = false
+                    TripCheck.stop(context)
                     DrivingNotifications.showProblem(context)
                 }
             }

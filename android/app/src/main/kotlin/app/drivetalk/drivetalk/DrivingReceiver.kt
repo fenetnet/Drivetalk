@@ -29,13 +29,12 @@ class DrivingReceiver : BroadcastReceiver() {
         fun onVehicle(context: Context, entered: Boolean, why: String = "test") {
             val store = DrivingStore(context)
             if (!store.enabled) return
-            store.log(
-                (if (entered) "trip start" else "trip end") + " ($why)" +
-                    if (!entered && !store.inVehicle) " — no trip" else "",
-            )
             // A new trip always (re)starts the service, even if a previous
-            // one was never closed; "trip over" only matters during a trip.
+            // one was never closed; "trip over" only matters during a trip
+            // (and isn't logged otherwise: every walk would push the useful
+            // lines out of the short log).
             if (!entered && !store.inVehicle) return
+            store.log((if (entered) "trip start" else "trip end") + " ($why)")
             store.inVehicle = entered
             if (entered) TripCheck.tripStarted(context, why.startsWith("car bluetooth")) else TripCheck.stop(context)
             DrivingEvents.send(if (entered) "enter" else "exit")

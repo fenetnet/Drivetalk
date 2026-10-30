@@ -25,17 +25,19 @@ object DrivingNotifications {
     /** After "Talk": "X is calling you" / "tap to call X" (its own id). */
     private const val ID_CALL_BASE = 7400
 
-    /** "X is on the way" from a quick-connect friend (D-119). */
+    /** "X is on the way" from a friend (D-119, D-161). */
     const val CHANNEL_TRIP = "friend_trips"
-    private const val ID_TRIP_BASE = 7600
+    // Each kind its own 256-wide range (they used to overlap: a new trip
+    // notice could replace a call or "tried to reach you").
+    private const val ID_TRIP_BASE = 8000
 
     /** News for me: a new version, owner notes (D-120). */
     const val CHANNEL_NEWS = "app_news"
-    private const val ID_OWNER = 7700
-    private const val ID_VERSION = 7701
+    private const val ID_OWNER = 8400
+    private const val ID_VERSION = 8500
 
     /** "X tried to reach you" (D-121), one per friend. */
-    private const val ID_MISSED_BASE = 7800
+    private const val ID_MISSED_BASE = 8600
 
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
