@@ -72,38 +72,61 @@ export async function googleToken(sa: { client_email: string; private_key: strin
 const VERSION_URL =
   "https://github.com/fenetnet/Drivetalk/releases/download/prototype/version.json";
 
-type Note = { push_token: string; data: Record<string, string> };
+/** [ref]: the outbox row it came from (to retry it if delivery failed). */
+type Note = { push_token: string; data: Record<string, string>; ref?: number };
 
-/** Sends [notes] through Firebase; tokens Firebase says are gone are dropped. */
+/** Sends [notes] through Firebase; tokens Firebase says are gone are dropped.
+ * [retry]: outbox rows that reached no phone because of a passing problem
+ * (Google sign-in, Firebase busy, network) — to be sent again. */
 async function deliver(
   admin: ReturnType<typeof createClient>,
   saText: string,
   notes: Note[],
-): Promise<{ sent: number; lastError: string }> {
-  if (notes.length === 0) return { sent: 0, lastError: "" };
-  const sa = JSON.parse(saText);
-  const access = await googleToken(sa);
+): Promise<{ sent: number; lastError: string; retry: number[] }> {
+  if (notes.length === 0) return { sent: 0, lastError: "", retry: [] };
+  const refs = (ns: Note[]) => [...new Set(ns.flatMap((n) => (n.ref == null ? [] : [n.ref])))];
+  // deno-lint-ignore no-explicit-any
+  let sa: any;
+  let access: string;
+  try {
+    sa = JSON.parse(saText);
+    access = await googleToken(sa);
+  } catch (e) {
+    console.error("push: no Google access", String(e));
+    return { sent: 0, lastError: "google_auth", retry: refs(notes) };
+  }
   let sent = 0;
   let lastError = "";
+  const reached = new Set<number>();
+  const passing: Note[] = [];
   for (const n of notes) {
-    const r = await fetch(
-      `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: {
-            token: n.push_token,
-            // Data only: the app builds the notification itself (its
-            // texts, its buttons).
-            data: n.data,
-            android: { priority: "HIGH", ttl: "1800s" },
-          },
-        }),
-      },
-    );
+    let r: Response;
+    try {
+      r = await fetch(
+        `https://fcm.googleapis.com/v1/projects/${sa.project_id}/messages:send`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${access}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: {
+              token: n.push_token,
+              // Data only: the app builds the notification itself (its
+              // texts, its buttons).
+              data: n.data,
+              android: { priority: "HIGH", ttl: "1800s" },
+            },
+          }),
+        },
+      );
+    } catch (e) {
+      console.error("push: network", String(e));
+      lastError = "network";
+      passing.push(n);
+      continue;
+    }
     if (r.ok) {
       sent++;
+      if (n.ref != null) reached.add(n.ref);
       continue;
     }
     const why = await r.text();
@@ -112,9 +135,12 @@ async function deliver(
     if (r.status === 404 || why.includes("UNREGISTERED")) {
       // The phone uninstalled the app or the token changed.
       await admin.rpc("drop_push_token", { p_token: n.push_token });
+    } else if (r.status === 429 || r.status >= 500) {
+      passing.push(n);
     }
   }
-  return { sent, lastError };
+  // Retry a row only if none of its phones got it (no doubles).
+  return { sent, lastError, retry: refs(passing).filter((id) => !reached.has(id)) };
 }
 
 /** Firebase data values must be strings. */
@@ -145,14 +171,26 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc("push_outbox_claim");
     if (error) {
       console.error("flush: claim failed", error.message);
-      return json({ error: "claim", detail: error.message }, 500);
+      return json({ error: "claim" }, 500);
     }
-    const rows = (data ?? []) as { kind: string; data: Record<string, unknown>; push_token: string }[];
+    const rows = (data ?? []) as {
+      id: number;
+      kind: string;
+      data: Record<string, unknown>;
+      push_token: string;
+    }[];
     const r = await deliver(admin, saText, rows.map((x) => ({
       push_token: x.push_token,
       data: strings({ ...(x.data ?? {}), type: x.kind }),
+      ref: x.id,
     })));
-    return json({ sent: r.sent });
+    // A passing problem: back in the queue for the next flush (rows older
+    // than 10 minutes are dropped by the claim itself).
+    if (r.retry.length > 0) {
+      const { error: back } = await admin.from("push_outbox").update({ sent_at: null }).in("id", r.retry);
+      if (back) console.error("flush: re-queue failed", back.message);
+    }
+    return json({ sent: r.sent, retry: r.retry.length });
   }
 
   // A new build: checked against the public version file, once per build.
@@ -166,7 +204,10 @@ Deno.serve(async (req) => {
     }
     if (build <= 0) return json({ sent: 0, error: "no_version" });
     const { data, error } = await admin.rpc("version_push_claim", { p_build: build });
-    if (error) return json({ error: "claim", detail: error.message }, 500);
+    if (error) {
+      console.error("version: claim failed", error.message);
+      return json({ error: "claim" }, 500);
+    }
     const rows = (data ?? []) as { push_token: string }[];
     const r = await deliver(admin, saText, rows.map((x) => ({
       push_token: x.push_token,
@@ -197,7 +238,7 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.from("push_tokens").select("token").eq("user_id", user);
     if (error) {
       console.error("push test: reading tokens failed", error.message);
-      return json({ error: "no_server", detail: error.message }, 500);
+      return json({ error: "no_server" }, 500);
     }
     notes = (data ?? []).map((r: { token: string }) => ({ push_token: r.token, data: { type: "test" } }));
     if (notes.length === 0) return json({ sent: 0, error: "no_token" });
@@ -205,7 +246,7 @@ Deno.serve(async (req) => {
     const { data: targets, error } = await admin.rpc("trip_push_claim", { p_user: user });
     if (error) {
       console.error("trip push: claim failed", error.message);
-      return json({ error: "claim", detail: error.message }, 500);
+      return json({ error: "claim" }, 500);
     }
     notes = ((targets ?? []) as { push_token: string; from_name: string }[]).map((t) => ({
       push_token: t.push_token,
