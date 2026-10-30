@@ -3893,8 +3893,36 @@ class RealController extends Notifier<RealState> {
     }
   }
 
+  final _namesCheckedFor = <String>{};
+  DateTime? _lastNameSync;
+
+  /// A new friend I have no contact name for yet (e.g. joined with Google
+  /// after my last sync): look in my contacts now, quietly, so I see the
+  /// name I saved — not their Google name (owner).
+  void _nameNewFriends(RealSnapshot snap) {
+    if (_store.getString(_contactsSyncKey) == null ||
+        _store.getString(_contactsOffKey) != null) {
+      return;
+    }
+    final names = _localNames;
+    final unknown = [
+      for (final f in snap.friends)
+        if (!names.containsKey(f.id) && !_namesCheckedFor.contains(f.id)) f.id,
+    ];
+    if (unknown.isEmpty) return;
+    final now = _now();
+    if (_lastNameSync != null &&
+        now.difference(_lastNameSync!) < const Duration(minutes: 2)) {
+      return;
+    }
+    _namesCheckedFor.addAll(unknown);
+    _lastNameSync = now;
+    unawaited(syncContacts(ask: false, auto: true));
+  }
+
   void _noteProgress(RealSnapshot snap) {
     unawaited(_quickOff(snap));
+    _nameNewFriends(snap);
     if (_store.getString(_milestoneKey) == null) {
       final n = snap.talks.length;
       _store.setString(

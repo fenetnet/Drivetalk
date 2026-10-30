@@ -2758,12 +2758,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String homeAutoYesOnBody(int stars) {
-    return 'חברים עם $stars כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.';
+    return 'דולק. בזמן נסיעה, חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי השאלה \"רוצה לדבר?\". עונים כמו לכל שיחה.';
   }
 
   @override
   String get homeAutoYesOffBody =>
-      'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.';
+      'כבוי. כשדולק: בזמן נסיעה, חבר קרוב שלוחץ עליך מתחבר מיד – הטלפון מצלצל בלי השאלה \"רוצה לדבר?\". את מספר הכוכבים בוחרים בהגדרות.';
 
   @override
   String get modeFreeShort => 'פנוי';
@@ -2894,10 +2894,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get intro1Body => 'אולי זה דווקא זמן טוב לדבר עם חבר.';
 
   @override
-  String get intro2Title => 'גם לחבר שלך\nיש זמן עכשיו.';
+  String get intro2Title => 'חברה יוצאת לדרך';
 
   @override
-  String get intro2Body => 'DriveBond מזהה כששניכם פנויים ומציעה לכם לדבר.';
+  String get intro2Body =>
+      'היא מתחילה נסיעה, החיבור לרכב מופעל, DriveBond מזהה את זה ואצלך מופיעה הצעה לשיחה.';
 
   @override
   String get introStart => 'בואו נתחיל';
@@ -2993,7 +2994,8 @@ class AppLocalizationsHe extends AppLocalizations {
   String get firstRunCarPick => 'הרכב שלך בבלוטות׳ – לזיהוי מהיר יותר';
 
   @override
-  String get autoYesLockedBody => '🔒 נפתח אחרי השיחה הראשונה שלך';
+  String get autoYesLockedBody =>
+      '🔒 נפתח אחרי השיחה הראשונה שלך. אחר כך: חבר קרוב שלוחץ עליך בנסיעה מתחבר מיד, בלי שאלה.';
 
   @override
   String get milestoneUnlockedBody =>

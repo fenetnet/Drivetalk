@@ -634,7 +634,10 @@ void main() {
     await t.scrollUntilVisible(find.byKey(const ValueKey('journey')), 200);
     expect(find.text('השיחה הראשונה שלך – 3 צעדים'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const ValueKey('autoYes')), 200);
-    expect(find.text('🔒 נפתח אחרי השיחה הראשונה שלך'), findsOneWidget);
+    expect(
+      find.textContaining('🔒 נפתח אחרי השיחה הראשונה שלך'),
+      findsOneWidget,
+    );
     expect(find.byKey(const ValueKey('fire')), findsNothing);
     await t.runAsync(() async {
       final f = friend.read(realProvider.notifier);

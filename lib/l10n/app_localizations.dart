@@ -4633,13 +4633,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeAutoYesOnBody.
   ///
   /// In he, this message translates to:
-  /// **'חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.'**
+  /// **'דולק. בזמן נסיעה, חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי השאלה \"רוצה לדבר?\". עונים כמו לכל שיחה.'**
   String homeAutoYesOnBody(int stars);
 
   /// No description provided for @homeAutoYesOffBody.
   ///
   /// In he, this message translates to:
-  /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.'**
+  /// **'כבוי. כשדולק: בזמן נסיעה, חבר קרוב שלוחץ עליך מתחבר מיד – הטלפון מצלצל בלי השאלה \"רוצה לדבר?\". את מספר הכוכבים בוחרים בהגדרות.'**
   String get homeAutoYesOffBody;
 
   /// No description provided for @modeFreeShort.
@@ -4837,13 +4837,13 @@ abstract class AppLocalizations {
   /// No description provided for @intro2Title.
   ///
   /// In he, this message translates to:
-  /// **'גם לחבר שלך\nיש זמן עכשיו.'**
+  /// **'חברה יוצאת לדרך'**
   String get intro2Title;
 
   /// No description provided for @intro2Body.
   ///
   /// In he, this message translates to:
-  /// **'DriveBond מזהה כששניכם פנויים ומציעה לכם לדבר.'**
+  /// **'היא מתחילה נסיעה, החיבור לרכב מופעל, DriveBond מזהה את זה ואצלך מופיעה הצעה לשיחה.'**
   String get intro2Body;
 
   /// No description provided for @introStart.
@@ -5017,7 +5017,7 @@ abstract class AppLocalizations {
   /// No description provided for @autoYesLockedBody.
   ///
   /// In he, this message translates to:
-  /// **'🔒 נפתח אחרי השיחה הראשונה שלך'**
+  /// **'🔒 נפתח אחרי השיחה הראשונה שלך. אחר כך: חבר קרוב שלוחץ עליך בנסיעה מתחבר מיד, בלי שאלה.'**
   String get autoYesLockedBody;
 
   /// No description provided for @milestoneUnlockedBody.

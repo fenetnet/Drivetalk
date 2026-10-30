@@ -70,7 +70,7 @@ void main() {
       );
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);
-      expect(find.text('גם לחבר שלך\nיש זמן עכשיו.'), findsOneWidget);
+      expect(find.text('חברה יוצאת לדרך'), findsOneWidget);
       expect(find.text('DriveBond זיהתה: שניכם פנויים עכשיו'), findsOneWidget);
       await t.tap(find.text('הבא'));
       await pumpFor(t, 300);

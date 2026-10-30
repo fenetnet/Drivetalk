@@ -1677,6 +1677,31 @@ void main() {
     });
   });
 
+  test(
+    'a friend who joins later shows with MY contact name, not Google\'s',
+    () async {
+      // I synced my contacts before Dana joined.
+      me.contacts
+        ..numbers = ['0543333333']
+        ..names = {'0543333333': 'דנה מהעבודה'};
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.syncContacts();
+      expect(me.c.contactMatches, isEmpty);
+      // Dana joins (Google gives her name) and adds me from her contacts.
+      final dana = Phone(server, clock);
+      dana.contacts.numbers = ['0521111111'];
+      await dana.boot();
+      await dana.c.signIn('Dana Levi', Gender.female, phone: '0543333333');
+      await dana.c.syncContacts();
+      await dana.c.addContacts([dana.c.contactMatches.single]);
+      await me.c.refresh();
+      await pump(20);
+      await me.c.refresh();
+      expect(me.s.snapshot!.friends.single.name, 'דנה מהעבודה');
+      dana.dispose();
+    },
+  );
+
   group('talk history and the car', () {
     test(
       'first talk: the 3 steps, then a party once; 🔥 counts (D-159)',

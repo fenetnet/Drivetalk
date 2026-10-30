@@ -407,14 +407,17 @@ object DrivingNotifications {
         context.getSystemService(NotificationManager::class.java).notify(ID_TRIP_BASE + 999, b.build())
     }
 
-    /** For the app's owners: new feedback / a crash / a new user (D-120). */
+    /** For the app's owners: new feedback / a crash (D-120). */
     fun showOwner(context: Context, what: String, name: String) {
+        // Not for every new user (owner, D-162): only people from my
+        // contacts, and those come as the "joined" card in the app.
+        if (what != "feedback" && what != "crash") return
         val store = DrivingStore(context)
         ensureChannels(context)
-        val title = when (what) {
-            "feedback" -> store.text("ownerFeedback", "New feedback")
-            "crash" -> store.text("ownerCrash", "A crash")
-            else -> store.text("ownerUser", "New user: {name}").replace("{name}", name)
+        val title = if (what == "feedback") {
+            store.text("ownerFeedback", "New feedback")
+        } else {
+            store.text("ownerCrash", "A crash")
         }
         val b = builder(context, CHANNEL_NEWS)
             .setSmallIcon(R.drawable.ic_stat_drivetalk)

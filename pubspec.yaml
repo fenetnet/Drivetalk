@@ -1,7 +1,7 @@
 name: drivetalk
 description: "DriveBond — voice-first app for meaningful conversations in dead time."
 publish_to: 'none'
-version: 1.1.0+1
+version: 1.1.1+1
 
 environment:
   sdk: ^3.13.5
