@@ -193,7 +193,8 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = ref.read(realProvider.notifier);
-    final done = widget.onDone ?? c.firstRunNext;
+    final done =
+        widget.onDone ?? () => c.firstRunNext(from: FirstRunStep.permissions);
     return MomentLayout(
       top: Column(
         children: [
@@ -204,7 +205,13 @@ class _PermissionsStepState extends ConsumerState<PermissionsStep> {
           Card(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: PermissionsList(key: _list, onChanged: _changed),
+              // The automatic switch has its own step right after (on by
+              // default, D-161): not twice, not with the opposite default.
+              child: PermissionsList(
+                key: _list,
+                onChanged: _changed,
+                showAuto: widget.onDone != null,
+              ),
             ),
           ),
           // Room between the list and the buttons below.

@@ -334,7 +334,8 @@ void main() {
     );
     await t.pump(const Duration(milliseconds: 300));
     expect(find.text('כדי שזה יעבוד גם בנסיעה'), findsOneWidget);
-    expect(find.text('זמינות אוטומטית בנסיעה (רשות)'), findsOneWidget);
+    // The automatic switch has its own step right after (D-161): not here.
+    expect(find.text('זמינות אוטומטית בנסיעה (רשות)'), findsNothing);
     expect(find.text('לאשר'), findsNWidgets(4));
     expect(t.takeException(), isNull);
 
@@ -652,6 +653,14 @@ void main() {
         accept: true,
       );
       await c.refresh();
+    });
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 300));
+    // During the call: no party yet (review D-164) — after it.
+    expect(find.text('השיחה הראשונה שלך\nב-DriveBond! 🎉'), findsNothing);
+    await t.runAsync(() async {
+      c.finishCall();
+      await c.afterCall(0);
     });
     await t.pump();
     await t.pump(const Duration(milliseconds: 300));

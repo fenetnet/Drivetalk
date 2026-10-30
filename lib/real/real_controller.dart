@@ -1017,13 +1017,25 @@ class RealController extends Notifier<RealState> {
   // ------------------------------------------------------------ first run
 
   /// "Let's see who of your people is already here" → contacts.
+  var _findingPeople = false;
+
   Future<void> firstRunFindPeople() async {
-    await syncContacts(quiet: true);
-    markMatchesSeen();
-    _setFirstRun(FirstRunStep.result);
+    // A second tap while the phone asks / reads the contacts: one search.
+    if (_findingPeople) return;
+    _findingPeople = true;
+    try {
+      await syncContacts(quiet: true);
+      markMatchesSeen();
+      _setFirstRun(FirstRunStep.result);
+    } finally {
+      _findingPeople = false;
+    }
   }
 
-  void firstRunNext() {
+  /// [from]: the step the button belongs to — a second quick tap (now on
+  /// the next step) is ignored instead of skipping that step too.
+  void firstRunNext({FirstRunStep? from}) {
+    if (from != null && state.firstRun != from) return;
     // Past the permissions step: no "before we start…" note again later.
     if (state.firstRun == FirstRunStep.permissions) {
       markPermissionIntroShown();
@@ -1412,6 +1424,9 @@ class RealController extends Notifier<RealState> {
       if (ok && cars.isNotEmpty) await setCars(cars);
     } else if (auto && cars.isNotEmpty) {
       await setCars(cars);
+    } else if (!auto && state.driving.enabled) {
+      // Turned off here: off, even if it was on before (review D-164).
+      await disableAutoDriving();
     }
     if (ref.mounted) firstRunNext();
   }

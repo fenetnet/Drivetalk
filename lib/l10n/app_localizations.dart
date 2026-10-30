@@ -865,7 +865,7 @@ abstract class AppLocalizations {
   /// No description provided for @realInviteMessageNoSite.
   ///
   /// In he, this message translates to:
-  /// **'להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← {code}'**
+  /// **'להורדה: {apkUrl}\nואז באפליקציה: האנשים שלי ← הוספת חבר ← יש לי קוד הזמנה ← {code}'**
   String realInviteMessageNoSite(String apkUrl, String code);
 
   /// No description provided for @realInviteShareSubject.
@@ -1195,7 +1195,7 @@ abstract class AppLocalizations {
   /// No description provided for @firstRunNoneBody.
   ///
   /// In he, this message translates to:
-  /// **'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.'**
+  /// **'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← הוספת חבר ← חיפוש באנשי הקשר.'**
   String get firstRunNoneBody;
 
   /// No description provided for @firstRunLater.
@@ -1741,7 +1741,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingDialogBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
+  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי בנסיעה).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
   String get realAutoDrivingDialogBody;
 
   /// No description provided for @realAutoDrivingOn.
@@ -4039,7 +4039,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutPermActivityBody.
   ///
   /// In he, this message translates to:
-  /// **'רק אם הדלקתם \"זמינות אוטומטית בנסיעה\". אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום. זה כבוי עד שמדליקים.'**
+  /// **'רק אם \"זמינות אוטומטית בנסיעה\" דלוקה (בהרשמה היא דלוקה, ואפשר לכבות בכל רגע). אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום.'**
   String get aboutPermActivityBody;
 
   /// No description provided for @aboutPermBtTitle.
@@ -4471,7 +4471,7 @@ abstract class AppLocalizations {
   /// No description provided for @testDriveNotHeardBody.
   ///
   /// In he, this message translates to:
-  /// **'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.'**
+  /// **'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק ב-ⓘ למעלה בבית ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.'**
   String get testDriveNotHeardBody;
 
   /// No description provided for @testDriveDone.

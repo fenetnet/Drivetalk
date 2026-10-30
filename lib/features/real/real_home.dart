@@ -1306,8 +1306,14 @@ class _MilestonePartyState extends ConsumerState<_MilestoneParty> {
   @override
   Widget build(BuildContext context) {
     ref.watch(realProvider.select((s) => s.snapshot?.talks.length));
+    final stage = ref.watch(realProvider.select((s) => s.callStage));
+    final s = ref.watch(realProvider);
+    final now = ref.watch(realNowProvider);
     final due = ref.read(realProvider.notifier).milestoneDue;
-    if (due != null && !_showing) {
+    // Never in a call or while driving (a decision to read): later, at
+    // a calm moment on Home.
+    final calm = stage == CallStage.none && !isRealDriving(s, now);
+    if (due != null && calm && !_showing) {
       _showing = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _party(due));
     }
@@ -1690,6 +1696,8 @@ class _MissingPermissionsState extends ConsumerState<_MissingPermissions> {
 
   Future<void> _check() async {
     final c = ref.read(realProvider.notifier);
+    // Not while driving: a whole page of permissions waits for later.
+    if (isRealDriving(ref.read(realProvider), DateTime.now())) return;
     if (!await c.shouldAskMissingPermissions() || !mounted) return;
     await navigatorKey.currentState?.push(
       MaterialPageRoute<void>(

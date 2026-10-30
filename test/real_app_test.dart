@@ -79,8 +79,22 @@ void main() {
       await pumpFor(t, 300);
       expect(find.text('הזמן בדרך –\nעם האנשים שלך.'), findsOneWidget);
       expect(find.text('מה זה DriveBond?'), findsOneWidget);
+      // Android back: to the pictures, not out of the app (review D-164).
+      await t.binding.handlePopRoute();
+      await pumpFor(t, 300);
+      expect(find.text('שוב תקוע בפקק?'), findsOneWidget);
+      await t.tap(find.text('לדלג'));
+      await pumpFor(t, 300);
       await t.enterText(find.byType(TextField).first, 'נתנאל');
       await t.pump();
+      await t.tap(find.text('המשך'));
+      await pumpFor(t, 300);
+      expect(find.text('מה המספר שלך?'), findsOneWidget);
+      // Back from the number: the name step, the name kept.
+      await t.binding.handlePopRoute();
+      await pumpFor(t, 300);
+      expect(find.text('הזמן בדרך –\nעם האנשים שלך.'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'נתנאל'), findsOneWidget);
       await t.tap(find.text('המשך'));
       await pumpFor(t, 300);
       expect(find.text('מה המספר שלך?'), findsOneWidget);

@@ -45,6 +45,8 @@ class RealFirstRunScreen extends ConsumerWidget {
     );
 
     final me = s.snapshot?.me;
+    final step = s.firstRun;
+    void next() => c.firstRunNext(from: step);
     return switch (s.firstRun) {
       // A picture, so friends recognize me. Optional; one sentence says
       // where to add it later.
@@ -67,7 +69,7 @@ class RealFirstRunScreen extends ConsumerWidget {
         ),
         actions: [
           if ((me?.photoVersion ?? 0) > 0)
-            PrimaryPill(label: l.next, onTap: c.firstRunNext)
+            PrimaryPill(label: l.next, onTap: next)
           else
             PrimaryPill(
               label: l.firstRunPhotoGo,
@@ -77,7 +79,7 @@ class RealFirstRunScreen extends ConsumerWidget {
                   : () => _pickPhoto(context, ref, false),
             ),
           if (me?.photo == null)
-            SecondaryPill(label: l.firstRunLater, onTap: c.firstRunNext),
+            SecondaryPill(label: l.firstRunLater, onTap: next),
         ],
       ),
       FirstRunStep.contacts => MomentLayout(
@@ -94,7 +96,7 @@ class RealFirstRunScreen extends ConsumerWidget {
             icon: Icons.search_rounded,
             onTap: s.busy ? null : c.firstRunFindPeople,
           ),
-          SecondaryPill(label: l.skip, onTap: c.firstRunNext),
+          SecondaryPill(label: l.skip, onTap: next),
         ],
       ),
       FirstRunStep.result when c.contactMatches.isNotEmpty => MomentLayout(
@@ -112,7 +114,7 @@ class RealFirstRunScreen extends ConsumerWidget {
             ),
           ],
         ),
-        actions: [PrimaryPill(label: l.next, onTap: c.firstRunNext)],
+        actions: [PrimaryPill(label: l.next, onTap: next)],
       ),
       FirstRunStep.result when friends.isNotEmpty => MomentLayout(
         top: Column(
@@ -137,7 +139,7 @@ class RealFirstRunScreen extends ConsumerWidget {
             MomentText(l.firstRunFound(friends.length), size: 28),
           ],
         ),
-        actions: [PrimaryPill(label: l.next, onTap: c.firstRunNext)],
+        actions: [PrimaryPill(label: l.next, onTap: next)],
       ),
       FirstRunStep.result => MomentLayout(
         top: Column(
@@ -153,7 +155,7 @@ class RealFirstRunScreen extends ConsumerWidget {
             icon: Icons.share_rounded,
             onTap: () => shareInvite(context, ref),
           ),
-          SecondaryPill(label: l.firstRunLater, onTap: c.firstRunNext),
+          SecondaryPill(label: l.firstRunLater, onTap: next),
         ],
       ),
       FirstRunStep.routine => const _RoutineStep(),
@@ -177,7 +179,7 @@ class RealFirstRunScreen extends ConsumerWidget {
           PrimaryPill(
             label: l.firstRunMagicGo,
             style: MomentStyle.green,
-            onTap: c.firstRunNext,
+            onTap: next,
           ),
           // Practice once, as in the car (owner).
           SecondaryPill(
@@ -326,7 +328,10 @@ class _RoutineStepState extends ConsumerState<_RoutineStep> {
                       : null,
                 ),
         ),
-        SecondaryPill(label: l.firstRunRoutineNone, onTap: c.firstRunNext),
+        SecondaryPill(
+          label: l.firstRunRoutineNone,
+          onTap: () => c.firstRunNext(from: FirstRunStep.routine),
+        ),
       ],
     );
   }
@@ -453,5 +458,7 @@ Future<void> _pickPhoto(
   bool hasPhoto,
 ) async {
   final c = ref.read(realProvider.notifier);
-  if (await editMyPhoto(context, ref, hasPhoto: hasPhoto)) c.firstRunNext();
+  if (await editMyPhoto(context, ref, hasPhoto: hasPhoto)) {
+    c.firstRunNext(from: FirstRunStep.photo);
+  }
 }

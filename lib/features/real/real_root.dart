@@ -416,202 +416,241 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
     final c = ref.read(realProvider.notifier);
     final hasName = _name.text.trim().isNotEmpty;
     final phoneOk = normalizePhone(_phone.text) != null;
-    return Scaffold(
-      body: Stack(
-        children: [
-          const PositionedDirectional(
-            top: -140,
-            end: -100,
-            child: _Blob(size: 360, color: AppColors.blush),
-          ),
-          const PositionedDirectional(
-            top: 160,
-            start: -150,
-            child: _Blob(size: 260, color: AppColors.mint),
-          ),
-          SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: const BoxDecoration(
-                        color: AppColors.terracotta,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0x551565C0),
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _phoneStep ? Icons.phone_rounded : Icons.forum_rounded,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (_phoneStep && !_viaGoogle)
-                      TextButton.icon(
-                        onPressed: s.busy
-                            ? null
-                            : () => setState(() => _phoneStep = false),
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        label: Text(l.onbBack),
-                      )
-                    else if (!_phoneStep)
-                      TextButton.icon(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => const AboutScreen(),
-                          ),
-                        ),
-                        icon: const Icon(Icons.info_outline_rounded),
-                        label: Text(l.onbWhatIs),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  _phoneStep ? l.onbPhoneTitle : l.realWelcomeHeadline,
-                  style: const TextStyle(
-                    fontSize: 38,
-                    fontWeight: FontWeight.w800,
-                    height: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  _phoneStep ? l.realPhoneRequiredHelp : l.realWelcomeSub,
-                  style: const TextStyle(
-                    color: AppColors.inkSoft,
-                    fontSize: 17,
-                    height: 1.4,
-                  ),
-                ),
-                if (s.invite != null && !_phoneStep) ...[
-                  const SizedBox(height: 14),
-                  MomentChip(
-                    text: l.realInviteWaitingAfterJoin,
-                    icon: Icons.mail_rounded,
-                  ),
-                ],
-                if (!_phoneStep && c.googleAvailable) ...[
-                  const SizedBox(height: 24),
-                  if (c.googleEmail case final email?)
-                    MomentChip(
-                      text: l.googleConnected(email),
-                      icon: Icons.check_circle_rounded,
-                    )
-                  else ...[
-                    GoogleButton(
-                      label: l.googleContinue,
-                      onTap: s.busy ? null : _google,
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      l.googleOr,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.inkSoft),
-                    ),
-                  ],
-                ],
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x1F1565C0),
-                        blurRadius: 32,
-                        offset: Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // The name: typed here, or (after Google) shown on the
-                      // number step to check.
-                      if (!_phoneStep || _viaGoogle) ...[
-                        TextField(
-                          controller: _name,
-                          maxLength: 40,
-                          textInputAction: TextInputAction.next,
-                          decoration: InputDecoration(
-                            counterText: '',
-                            labelText: _viaGoogle
-                                ? l.onbGoogleName
-                                : l.onbNameLabel,
-                            prefixIcon: const Icon(Icons.person_rounded),
-                          ),
-                          onChanged: (_) => setState(() {}),
-                        ),
-                        const SizedBox(height: 6),
-                      ],
-                      if (_phoneStep)
-                        TextField(
-                          controller: _phone,
-                          autofocus: true,
-                          keyboardType: TextInputType.phone,
-                          textDirection: TextDirection.ltr,
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            labelText: l.realPhoneRequired,
-                            // Say why "let's go" is grey (e.g. a typo).
-                            errorText: _phone.text.trim().isNotEmpty && !phoneOk
-                                ? l.realErrorInvalidPhone
-                                : null,
-                            errorMaxLines: 2,
-                            prefixIcon: const Icon(Icons.phone_rounded),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                if (_phoneStep)
-                  PrimaryPill(
-                    label: l.realJoin,
-                    height: 64,
-                    onTap: hasName && phoneOk && !s.busy
-                        ? () =>
-                              c.signIn(_name.text, _gender, phone: _phone.text)
-                        : null,
-                  )
-                else
-                  PrimaryPill(
-                    label: l.onbContinue,
-                    height: 64,
-                    onTap: hasName && !s.busy
-                        ? () => setState(() => _phoneStep = true)
-                        : null,
-                  ),
-                if (s.busy)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 12),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                const SizedBox(height: 16),
-                Text(
-                  l.realPrivacyNote,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.inkSoft,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+    // Android back steps back through sign-up instead of leaving the app
+    // (and losing what was typed): number → name → the pictures.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop || s.busy) return;
+        setState(() {
+          if (_phoneStep) {
+            _phoneStep = false;
+          } else {
+            _introDone = false;
+          }
+        });
+      },
+      child: Scaffold(
+        body: Stack(
+          children: [
+            const PositionedDirectional(
+              top: -140,
+              end: -100,
+              child: _Blob(size: 360, color: AppColors.blush),
             ),
-          ),
-        ],
+            const PositionedDirectional(
+              top: 160,
+              start: -150,
+              child: _Blob(size: 260, color: AppColors.mint),
+            ),
+            SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: const BoxDecoration(
+                          color: AppColors.terracotta,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0x551565C0),
+                              blurRadius: 20,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          _phoneStep
+                              ? Icons.phone_rounded
+                              : Icons.forum_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      const Spacer(),
+                      if (_phoneStep && !_viaGoogle)
+                        TextButton.icon(
+                          onPressed: s.busy
+                              ? null
+                              : () => setState(() => _phoneStep = false),
+                          icon: const Icon(Icons.arrow_back_rounded),
+                          label: Text(l.onbBack),
+                        )
+                      else if (!_phoneStep)
+                        TextButton.icon(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const AboutScreen(),
+                            ),
+                          ),
+                          icon: const Icon(Icons.info_outline_rounded),
+                          label: Text(l.onbWhatIs),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    _phoneStep ? l.onbPhoneTitle : l.realWelcomeHeadline,
+                    style: const TextStyle(
+                      fontSize: 38,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _phoneStep ? l.realPhoneRequiredHelp : l.realWelcomeSub,
+                    style: const TextStyle(
+                      color: AppColors.inkSoft,
+                      fontSize: 17,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (s.invite != null && !_phoneStep) ...[
+                    const SizedBox(height: 14),
+                    MomentChip(
+                      text: l.realInviteWaitingAfterJoin,
+                      icon: Icons.mail_rounded,
+                    ),
+                  ],
+                  if (!_phoneStep && c.googleAvailable) ...[
+                    const SizedBox(height: 24),
+                    if (c.googleEmail case final email?)
+                      MomentChip(
+                        text: l.googleConnected(email),
+                        icon: Icons.check_circle_rounded,
+                      )
+                    else ...[
+                      GoogleButton(
+                        label: l.googleContinue,
+                        onTap: s.busy ? null : _google,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        l.googleOr,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.inkSoft),
+                      ),
+                    ],
+                  ],
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(18, 20, 18, 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1F1565C0),
+                          blurRadius: 32,
+                          offset: Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // The name: typed here, or (after Google) shown on the
+                        // number step to check.
+                        if (!_phoneStep || _viaGoogle) ...[
+                          TextField(
+                            controller: _name,
+                            maxLength: 40,
+                            textInputAction: TextInputAction.next,
+                            // Enter on the keyboard: on to the number.
+                            onSubmitted: (_) {
+                              if (_name.text.trim().isNotEmpty && !_phoneStep) {
+                                setState(() => _phoneStep = true);
+                              }
+                            },
+                            decoration: InputDecoration(
+                              counterText: '',
+                              labelText: _viaGoogle
+                                  ? l.onbGoogleName
+                                  : l.onbNameLabel,
+                              prefixIcon: const Icon(Icons.person_rounded),
+                            ),
+                            onChanged: (_) => setState(() {}),
+                          ),
+                          const SizedBox(height: 6),
+                        ],
+                        if (_phoneStep)
+                          TextField(
+                            controller: _phone,
+                            autofocus: true,
+                            keyboardType: TextInputType.phone,
+                            textDirection: TextDirection.ltr,
+                            // "Done" on the keyboard joins (the button may
+                            // be under the keyboard on a small phone).
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (_) {
+                              if (hasName && phoneOk && !s.busy) {
+                                c.signIn(
+                                  _name.text,
+                                  _gender,
+                                  phone: _phone.text,
+                                );
+                              }
+                            },
+                            onChanged: (_) => setState(() {}),
+                            decoration: InputDecoration(
+                              labelText: l.realPhoneRequired,
+                              // Say why "let's go" is grey (e.g. a typo).
+                              errorText:
+                                  _phone.text.trim().isNotEmpty && !phoneOk
+                                  ? l.realErrorInvalidPhone
+                                  : null,
+                              errorMaxLines: 2,
+                              prefixIcon: const Icon(Icons.phone_rounded),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  if (_phoneStep)
+                    PrimaryPill(
+                      label: l.realJoin,
+                      height: 64,
+                      onTap: hasName && phoneOk && !s.busy
+                          ? () => c.signIn(
+                              _name.text,
+                              _gender,
+                              phone: _phone.text,
+                            )
+                          : null,
+                    )
+                  else
+                    PrimaryPill(
+                      label: l.onbContinue,
+                      height: 64,
+                      onTap: hasName && !s.busy
+                          ? () => setState(() => _phoneStep = true)
+                          : null,
+                    ),
+                  if (s.busy)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 12),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l.realPrivacyNote,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.inkSoft,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

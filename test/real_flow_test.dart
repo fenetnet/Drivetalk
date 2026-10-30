@@ -1717,6 +1717,18 @@ void main() {
     },
   );
 
+  test('first steps: a double tap never skips a step; the car step off '
+      'means off (review D-164)', () async {
+    await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+    expect(me.s.firstRun, FirstRunStep.photo);
+    me.c.firstRunNext(from: FirstRunStep.photo);
+    me.c.firstRunNext(from: FirstRunStep.photo);
+    expect(me.s.firstRun, FirstRunStep.contacts);
+    expect(await me.c.enableAutoDriving(), isTrue);
+    await me.c.firstRunCar(auto: false);
+    expect(me.s.driving.enabled, isFalse);
+  });
+
   test('a failed move to Google (offline) stays in my account', () async {
     await connect();
     yoni.google.token = const GoogleToken('g-yoni');

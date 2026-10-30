@@ -290,6 +290,8 @@ Future<void> openTimeSheet(
   final picked = await showModalBottomSheet<DateTime>(
     context: context,
     showDragHandle: true,
+    // Small phones / large text: the whole list scrolls (review D-164).
+    isScrollControlled: true,
     builder: (ctx) {
       final l = AppLocalizations.of(ctx);
       final options = [
@@ -302,7 +304,7 @@ Future<void> openTimeSheet(
         (180, l.time180),
       ];
       return SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -340,7 +342,7 @@ Future<void> openTimeSheet(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.schedule_rounded),
                 title: Text(l.timeUntil),
-                trailing: const Icon(Icons.chevron_left_rounded),
+                trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () async {
                   final t = await showTimePicker(
                     context: ctx,

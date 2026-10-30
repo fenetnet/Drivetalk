@@ -466,7 +466,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String realInviteMessageNoSite(String apkUrl, String code) {
-    return 'להורדה: $apkUrl\nואז באפליקציה: האנשים שלי ← יש לי קוד הזמנה ← $code';
+    return 'להורדה: $apkUrl\nואז באפליקציה: האנשים שלי ← הוספת חבר ← יש לי קוד הזמנה ← $code';
   }
 
   @override
@@ -685,7 +685,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunNoneBody =>
-      'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← חיפוש באנשי הקשר.';
+      'שולחים קישור למישהו שאוהבים לדבר איתו. אחרי ההתקנה, אחד מכם מוסיף את השני: האנשים שלי ← הוספת חבר ← חיפוש באנשי הקשר.';
 
   @override
   String get firstRunLater => 'אחר כך';
@@ -1008,7 +1008,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realAutoDrivingDialogBody =>
-      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או בחיבור מהיר ששניכם הפעלתם).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
+      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי בנסיעה).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
 
   @override
   String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה הזמינות תידלק לבד.';
@@ -2418,7 +2418,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get aboutPermActivityBody =>
-      'רק אם הדלקתם \"זמינות אוטומטית בנסיעה\". אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום. זה כבוי עד שמדליקים.';
+      'רק אם \"זמינות אוטומטית בנסיעה\" דלוקה (בהרשמה היא דלוקה, ואפשר לכבות בכל רגע). אנדרואיד אומר לאפליקציה \"הטלפון כנראה ברכב\", בלי GPS ובלי מיקום.';
 
   @override
   String get aboutPermBtTitle => 'בלוטות\' (הרכב)';
@@ -2669,7 +2669,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get testDriveNotHeardBody =>
-      'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק בהגדרות ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.';
+      'אפשר לנסות שוב ולדבר ברור אחרי הצפצוף. אם זה חוזר, כדאי לבדוק ב-ⓘ למעלה בבית ← הרשאות שהמיקרופון מאושר. הכפתורים תמיד עובדים.';
 
   @override
   String get testDriveDone => 'סיימתי';

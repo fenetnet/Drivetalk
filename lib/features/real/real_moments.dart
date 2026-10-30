@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -59,6 +61,7 @@ class RealOfferScreen extends ConsumerWidget {
         l.offerLastTalkDate('${last!.day}/${last.month}'),
     ].join(' · ');
 
+    final shortSide = MediaQuery.sizeOf(context).height;
     return MomentLayout(
       style: style,
       header: when == null
@@ -74,10 +77,12 @@ class RealOfferScreen extends ConsumerWidget {
         children: [
           HeroAvatar(
             person: other.toPerson(),
-            size: dark ? 150 : 168,
+            // A small phone keeps the question itself in view (review
+            // D-164): the picture gives way, not "talk?".
+            size: math.min(dark ? 150.0 : 168.0, shortSide * 0.18),
             ring: dark ? AppColors.driverRing : Colors.white,
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: shortSide < 700 ? 16 : 32),
           MomentText(
             dark
                 ? other.name
