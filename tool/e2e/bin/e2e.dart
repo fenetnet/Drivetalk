@@ -1848,9 +1848,10 @@ Future<void> main() async {
   await autoYesDriving();
   await availableToGroups();
   await securityRound2();
+  await audienceStaysFresh();
 
   check(
-    await eve.rpc('schema_version') == 68,
+    await eve.rpc('schema_version') == 69,
     'the server says its version (41)',
   );
 
@@ -4327,4 +4328,45 @@ Future<void> securityRound2() async {
   for (final c in [alice, bob]) {
     await c.rpc('clear_availability');
   }
+}
+
+/// "Available to…" follows the groups and friends as they change (D-164).
+Future<void> audienceStaysFresh() async {
+  final ha = await newUser('הדס', 'female');
+  final hb = await newUser('הראל', 'male');
+  await befriend(ha, hb);
+  Future<bool> sees(SupabaseClient c) async =>
+      (await rows(c, 'availability')).any((a) => a['user_id'] == uid(ha));
+  final family = await ha.rpc('save_circle', params: {
+    'p_id': null,
+    'p_name': 'משפחה טריה',
+    'p_quick': false,
+    'p_members': [uid(hb)],
+  }) as String;
+  await ha.rpc('set_audience', params: {
+    'p_circles': [family],
+    'p_except': false,
+  });
+  // Harel leaves the family group; then an automatic trip starts.
+  await ha.rpc('save_circle', params: {
+    'p_id': family,
+    'p_name': 'משפחה טריה',
+    'p_quick': false,
+    'p_members': <String>[],
+  });
+  final device = await ha.rpc('create_device_token') as String;
+  await ha.rpc('auto_start', params: {'p_token': device});
+  check(!await sees(hb), 'removed from the chosen group: no longer sees my trip');
+  await ha.rpc('clear_availability');
+  // "Everyone except family": a brand-new friend sees my next trip.
+  await ha.rpc('set_audience', params: {
+    'p_circles': [family],
+    'p_except': true,
+  });
+  final hc = await newUser('הילה', 'female');
+  await befriend(ha, hc);
+  await ha.rpc('auto_start', params: {'p_token': device});
+  check(await sees(hc), '"everyone except…": a new friend sees my trip');
+  check(await sees(hb), '…and so does one no longer in the excluded group');
+  await ha.rpc('clear_availability');
 }
