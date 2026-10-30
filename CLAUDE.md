@@ -160,7 +160,7 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Versions (D-160)
 
-`version:` in `pubspec.yaml` is what users see (now 1.1.1). The build
+`version:` in `pubspec.yaml` is what users see (now 1.1.2). The build
 number is the GitHub run number (always rising). Bug fixes: 1.0.1, 1.0.2…;
 new features: 1.1.0, 1.2.0…; 2.0.0 only with owner approval. Raise it in the
 same commit as the change. CI uploads to Internal testing only.

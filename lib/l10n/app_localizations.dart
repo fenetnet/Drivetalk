@@ -4633,13 +4633,13 @@ abstract class AppLocalizations {
   /// No description provided for @homeAutoYesOnBody.
   ///
   /// In he, this message translates to:
-  /// **'דולק. בזמן נסיעה, חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי השאלה \"רוצה לדבר?\". עונים כמו לכל שיחה.'**
+  /// **'חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.'**
   String homeAutoYesOnBody(int stars);
 
   /// No description provided for @homeAutoYesOffBody.
   ///
   /// In he, this message translates to:
-  /// **'כבוי. כשדולק: בזמן נסיעה, חבר קרוב שלוחץ עליך מתחבר מיד – הטלפון מצלצל בלי השאלה \"רוצה לדבר?\". את מספר הכוכבים בוחרים בהגדרות.'**
+  /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.'**
   String get homeAutoYesOffBody;
 
   /// No description provided for @modeFreeShort.
@@ -4963,8 +4963,8 @@ abstract class AppLocalizations {
   /// No description provided for @milestoneFirstBody.
   ///
   /// In he, this message translates to:
-  /// **'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה: חברים קרובים יתחברו אליך מיד, בלי לשאול.'**
-  String get milestoneFirstBody;
+  /// **'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
+  String milestoneFirstBody(int stars);
 
   /// No description provided for @milestoneFirstGo.
   ///
@@ -5017,14 +5017,14 @@ abstract class AppLocalizations {
   /// No description provided for @autoYesLockedBody.
   ///
   /// In he, this message translates to:
-  /// **'🔒 נפתח אחרי השיחה הראשונה שלך. אחר כך: חבר קרוב שלוחץ עליך בנסיעה מתחבר מיד, בלי שאלה.'**
+  /// **'🔒 נפתח אחרי השיחה הראשונה שלך'**
   String get autoYesLockedBody;
 
   /// No description provided for @milestoneUnlockedBody.
   ///
   /// In he, this message translates to:
-  /// **'🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. חברים קרובים יתחברו אליך מיד, בלי לשאול.'**
-  String get milestoneUnlockedBody;
+  /// **'🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
+  String milestoneUnlockedBody(int stars);
 
   /// No description provided for @feedbackOrProblem.
   ///

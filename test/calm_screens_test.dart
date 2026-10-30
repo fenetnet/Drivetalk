@@ -123,6 +123,9 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       await f.acceptInvite();
       await c.refresh();
+      // "New in your list" is at the top now (1.1.2): seen, so each test
+      // starts with the usual Home.
+      if (c.newFriend case final n?) c.dismissNewFriend(n);
     });
     return (me, friend);
   }
@@ -634,10 +637,7 @@ void main() {
     await t.scrollUntilVisible(find.byKey(const ValueKey('journey')), 200);
     expect(find.text('השיחה הראשונה שלך – 3 צעדים'), findsOneWidget);
     await t.scrollUntilVisible(find.byKey(const ValueKey('autoYes')), 200);
-    expect(
-      find.textContaining('🔒 נפתח אחרי השיחה הראשונה שלך'),
-      findsOneWidget,
-    );
+    expect(find.text('🔒 נפתח אחרי השיחה הראשונה שלך'), findsOneWidget);
     expect(find.byKey(const ValueKey('fire')), findsNothing);
     await t.runAsync(() async {
       final f = friend.read(realProvider.notifier);

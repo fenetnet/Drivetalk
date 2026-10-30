@@ -282,6 +282,10 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _WhatsNewCard(onClose: c.dismissWhatsNew),
                 ],
+                if (_topCard(s, c) case final top?) ...[
+                  const SizedBox(height: 12),
+                  top,
+                ],
                 if (s.lastError == 'offline') ...[
                   const SizedBox(height: 10),
                   MomentChip(
@@ -347,8 +351,19 @@ class RealHomeScreen extends ConsumerWidget {
   }
 }
 
-/// The one card under "Now": update > someone from my contacts joined >
-/// routine now > routine idea > the home-screen button tip.
+/// At the top of Home (owner, 1.1.2): a new version, or someone new — added
+/// me, just became a friend, or joined from my contacts.
+Widget? _topCard(RealState s, RealController c) {
+  if (s.newBuild != null) return const _UpdateCard();
+  // Someone added me from their contacts: keep them?
+  if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
+  if (c.newFriend case final f?) return _NewFriendCard(friend: f);
+  if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  return null;
+}
+
+/// The one card under "Now": routine now > routine idea > the home-screen
+/// button tip.
 Widget? _tipCard(
   RealState s,
   RealController c,
@@ -357,14 +372,9 @@ Widget? _tipCard(
 ) {
   // "Still free?" after a question I didn't answer — only here, in the app.
   if (myActiveAvailability(s, now)?.missed ?? false) return const _MissedCard();
-  if (s.newBuild != null) return const _UpdateCard();
   if (s.driving.enabled && (snap?.status.autoMissed ?? 0) >= 2) {
     return const _AutoMissedCard();
   }
-  // Someone added me from their contacts: keep them?
-  if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
-  if (c.newFriend case final f?) return _NewFriendCard(friend: f);
-  if (c.newContactMatch case final m?) return _NewContactCard(match: m);
   if (c.showAddNumber) return const _AddNumberCard();
   if (c.showBackgroundTip) return const _BackgroundCard();
   if (c.dueRoutine(now) case final r?) return _RoutineCard(routine: r);
@@ -1310,6 +1320,7 @@ class _MilestonePartyState extends ConsumerState<_MilestoneParty> {
     final c = ref.read(realProvider.notifier);
     c.milestoneSeen(n);
     final first = n == 1;
+    final stars = ref.read(realProvider).snapshot?.autoYesMin ?? 3;
     final offerAuto =
         first && !(ref.read(realProvider).snapshot?.autoYes ?? true);
     final go = await showDialog<bool>(
@@ -1323,8 +1334,8 @@ class _MilestonePartyState extends ConsumerState<_MilestoneParty> {
         content: Text(
           first
               ? (c.autoYesWasLocked
-                    ? l.milestoneUnlockedBody
-                    : l.milestoneFirstBody)
+                    ? l.milestoneUnlockedBody(stars)
+                    : l.milestoneFirstBody(stars))
               : l.milestoneBody(n),
           textAlign: TextAlign.center,
           style: const TextStyle(fontSize: 16),

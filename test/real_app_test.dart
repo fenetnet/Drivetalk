@@ -154,7 +154,15 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await pumpFor(t, 800);
-      // No code, no invitation: we're connected.
+      // No code, no invitation: we're connected — told at the top (1.1.2).
+      expect(find.textContaining('יוני'), findsWidgets);
+      await t.scrollUntilVisible(
+        find.text(
+          'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.',
+        ),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
       expect(
         find.text(
           'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.',

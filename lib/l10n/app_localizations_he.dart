@@ -2758,12 +2758,12 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String homeAutoYesOnBody(int stars) {
-    return 'דולק. בזמן נסיעה, חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי השאלה \"רוצה לדבר?\". עונים כמו לכל שיחה.';
+    return 'חברים עם $stars כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.';
   }
 
   @override
   String get homeAutoYesOffBody =>
-      'כבוי. כשדולק: בזמן נסיעה, חבר קרוב שלוחץ עליך מתחבר מיד – הטלפון מצלצל בלי השאלה \"רוצה לדבר?\". את מספר הכוכבים בוחרים בהגדרות.';
+      'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.';
 
   @override
   String get modeFreeShort => 'פנוי';
@@ -2961,8 +2961,9 @@ class AppLocalizationsHe extends AppLocalizations {
   String get milestoneFirstTitle => 'השיחה הראשונה שלך\nב-DriveBond! 🎉';
 
   @override
-  String get milestoneFirstBody =>
-      'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה: חברים קרובים יתחברו אליך מיד, בלי לשאול.';
+  String milestoneFirstBody(int stars) {
+    return 'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
+  }
 
   @override
   String get milestoneFirstGo => 'להפעיל ⚡ כן אוטומטי';
@@ -2994,12 +2995,12 @@ class AppLocalizationsHe extends AppLocalizations {
   String get firstRunCarPick => 'הרכב שלך בבלוטות׳ – לזיהוי מהיר יותר';
 
   @override
-  String get autoYesLockedBody =>
-      '🔒 נפתח אחרי השיחה הראשונה שלך. אחר כך: חבר קרוב שלוחץ עליך בנסיעה מתחבר מיד, בלי שאלה.';
+  String get autoYesLockedBody => '🔒 נפתח אחרי השיחה הראשונה שלך';
 
   @override
-  String get milestoneUnlockedBody =>
-      '🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. חברים קרובים יתחברו אליך מיד, בלי לשאול.';
+  String milestoneUnlockedBody(int stars) {
+    return '🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
+  }
 
   @override
   String get feedbackOrProblem => 'משוב או בעיה';
