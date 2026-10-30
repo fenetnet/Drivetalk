@@ -1,11 +1,12 @@
 # DriveBond — מדיניות פרטיות / Privacy Policy
 
-_עודכן: 28 באוקטובר 2026_
+_עודכן: 30 באוקטובר 2026_
 
 DriveBond היא אפליקציה שמחברת בין חברים לשיחה כששניהם פנויים. זו גרסת ניסיון.
 
 ## מה נשמר בשרת
 - **שם** שבחרת.
+- **"⚡ כן אוטומטי בנסיעה" (רשות, כבוי כברירת מחדל):** אם הפעלת, חבר שנתת לו מספיק כוכבים ולוחץ עליך בזמן נסיעה מתחבר מיד, בלי השאלה "רוצה לדבר?". נשמר רק אם זה דלוק ומאיזה מספר כוכבים.
 - **חשבון Google (רשות):** אם בחרת "המשך עם Google", נשמרים כתובת האימייל ומזהה החשבון שלך ב-Google, רק כדי שתוכל/י לחזור לאותו חשבון בטלפון חדש. החברים לא רואים אותם.
 - **מספר הטלפון** שלך. הוא נמסר לחבר רק אחרי ששניכם אמרתם "כן" לשיחה, כדי שאחד מכם יוכל להתקשר.
 - **מי החברים שלך באפליקציה.**
@@ -26,7 +27,7 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 ## התראות
 ההתראות נשלחות דרך Firebase Cloud Messaging (שירות של Google), שמשמש רק כדי להעביר אותן לטלפון.
 - **שאלה או שיחה שסוכמה:** ההודעה שעוברת דרך Google ריקה. הטלפון מביא את הפרטים בעצמו מהשרת שלנו.
-- **"X בדרך":** כשמתחילה אצלך נסיעה, חברים ששניכם הדלקתם איתם חיבור מהיר מקבלים הודעה עם השם שלך, לכל היותר פעם ביום, ולא בשעות השקטות שלהם. אפשר לכבות בהגדרות ← נסיעה ("להודיע לחברים עם חיבור מהיר כשיוצאים לדרך").
+- **"X בדרך":** כשמתחילה אצלך נסיעה, חברים שהפעילו בשבילך ⚡ כן אוטומטי (וחברים עם חיבור מהיר ישן משני הצדדים) מקבלים הודעה עם השם שלך, לכל היותר פעם ביום, ולא בשעות השקטות שלהם. אפשר לכבות בהגדרות ← נסיעה ("להודיע כשאני יוצא לדרך").
 - **"X ניסה להשיג אותך":** כשחבר אמר "כן" לשיחה איתך והשאלה נסגרה לפני שענית. עם השם שלו, לכל היותר פעם ביום.
 - **"יש גרסה חדשה":** בלי מידע אישי.
 - **לבעלי האפליקציה בלבד:** הודעה על משוב חדש, על קריסה, ועל משתמש חדש (עם השם שבחר).
@@ -45,8 +46,8 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 - **מי מתחבר:** אף אחד לא מתחבר לבד. החיפוש מראה אילו מאנשי הקשר שלך משתמשים ב-DriveBond, ואת/ה בוחר/ת את מי להוסיף. כל אחד יכול להסיר חבר בכל רגע, ומי שהוסר לא יחזור מאנשי הקשר.
 - אפשר למחוק בכל רגע: הגדרות ← פרטיות. אם מבטלים את ההרשאה, האפליקציה מוחקת לבד.
 
-## זיהוי נסיעה (רשות, כבוי כברירת מחדל)
-אם הפעלת את האפשרות, הטלפון מזהה בעצמו שהוא כנראה ברכב, לפי חיישני התנועה או לפי הבלוטות' של הרכב שבחרת.
+## זיהוי נסיעה (דלוק כברירת מחדל בהרשמה, אפשר לכבות)
+בהרשמה המתג דלוק, ואפשר לכבות אותו באותו מסך או בכל רגע במסך הבית. כשהוא דלוק, הטלפון מזהה בעצמו שהוא כנראה ברכב, לפי חיישני התנועה או לפי הבלוטות' של הרכב שבחרת.
 - לשרת נשלח רק "פנוי · נסיעה" ומתי זה נגמר.
 - **מיקרופון:** בנסיעה אפשר לענות "כן"/"לא עכשיו" בקול. האפליקציה לא מקליטה ולא שומרת כלום.
   - קודם מנסים זיהוי דיבור על הטלפון עצמו. אם אין בטלפון זיהוי עברית מקומי, משתמשים בשירות זיהוי הדיבור של הטלפון (למשל של Google), שעשוי לעבד את הקול בשרתים שלו.
@@ -77,14 +78,15 @@ DriveBond היא אפליקציה שמחברת בין חברים לשיחה כש
 ---
 
 **English summary:** DriveBond stores your chosen name, phone number (shared with a friend only after you both agree to talk), your friends list, an optional profile photo (visible only to your friends), and whether you are currently available (mode and expiry, deleted automatically).
+- **"⚡ Yes automatically while driving" (optional, off by default):** if on, a friend you gave enough stars who taps you while you drive connects at once, without the "want to talk?" question. Only the on/off and the star level are stored.
 - **Google account (optional):** with "Continue with Google", your Google email and account ID are stored, only so you can get the same account back on a new phone. Friends never see them.
 - **Privacy settings:** "available without my name" (friends see only how many friends are free, not who), "hide when I'm in a call", quiet hours (hours, chosen days and your time zone), and "tell friends when I set off". Only you see them.
 - **Crash notes:** if the app crashes, a short technical note (error type, message, code location) and the app version are sent to the app's owner (also when Android reports the app froze) — no names, numbers or content.
 - **"In a call" (yes/no):** while you are available, friends see whether you are currently in a call, so you aren't offered another one. The phone only checks whether a call is in progress (no number, no who, no duration, no permission needed); it clears itself when the call ends (at most 3 minutes after the last update).
-- **Notifications:** sent through Google's Firebase Cloud Messaging; the server keeps your phone's push address and app version. Questions and agreed calls are sent as empty wake-ups (the phone fetches the details from our server). "X is on the way" (to mutual quick-connect friends, at most once a day, can be turned off) and "X tried to reach you" (at most once a day) carry the friend's display name (and gender, for Hebrew grammar). Sent notifications are deleted from the server after 2 days; a push address after sign-out or 180 days unused.
+- **Notifications:** sent through Google's Firebase Cloud Messaging; the server keeps your phone's push address and app version. Questions and agreed calls are sent as empty wake-ups (the phone fetches the details from our server). "X is on the way" (to friends who turned ⚡ auto-yes on for you, or old two-way quick-connect pairs; at most once a day, can be turned off) and "X tried to reach you" (at most once a day) carry the friend's display name (and gender, for Hebrew grammar). Sent notifications are deleted from the server after 2 days; a push address after sign-out or 180 days unused.
 - **Not collected:** no location or GPS, no call recording, no call log.
 - **Contacts (optional):** phone numbers and names are read. Names never leave the phone: they are kept on the device only, to show you who is who. Numbers are hashed on the device before upload. The server keeps only hashes that belong to DriveBond users; everything else is discarded immediately. Nobody is connected automatically: the user picks which of their contacts to add, and anyone can remove a friend at any time.
-- **Driving detection (optional, off by default):** uses on-device motion sensors or the car's Bluetooth.
+- **Driving detection (on by default at sign-up, can be turned off):** uses on-device motion sensors or the car's Bluetooth.
 - **Sharing:** data is not sold or shared. It is hosted on Supabase (EU); notifications pass through Google Firebase Cloud Messaging. Both act only as infrastructure providers.
 - **Voice:** while driving, a friend's question may open the app over the lock screen (like an incoming call) so it can be answered aloud; with the car's hands-free connected, its microphone is used while listening. On-device recognition when available; otherwise the phone's speech service (e.g. Google) may process the audio. Nothing is recorded or stored by the app.
 - **Usage measurements:** event names and durations only (no content, numbers or names).
