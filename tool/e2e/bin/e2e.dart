@@ -1851,7 +1851,7 @@ Future<void> main() async {
   await audienceStaysFresh();
 
   check(
-    await eve.rpc('schema_version') == 69,
+    await eve.rpc('schema_version') == 70,
     'the server says its version (41)',
   );
 
@@ -4258,6 +4258,28 @@ Future<void> securityRound2() async {
     "and user_b = greatest('${uid(alice)}'::uuid, '${uid(fake)}'::uuid)",
   );
   check(still == uid(alice), '…and my contacts sync doesn\'t approve it');
+  Future<String> pendingNow() => dbScalar(
+    "select coalesce(pending_for::text, 'none') from connections "
+    "where user_a = least('${uid(alice)}'::uuid, '${uid(fake)}'::uuid) "
+    "and user_b = greatest('${uid(alice)}'::uuid, '${uid(fake)}'::uuid)",
+  );
+  // Remove and restore: still waiting (round 2).
+  await fake
+      .from('connections')
+      .delete()
+      .eq('user_a', [uid(alice), uid(fake)].reduce((a, b) => a.compareTo(b) < 0 ? a : b));
+  await fake.rpc('restore_friend', params: {'p_user': uid(alice)});
+  check(
+    await pendingNow() == uid(alice),
+    'remove + restore doesn\'t skip the approval (D-164)',
+  );
+  // Block and unblock: still waiting.
+  await fake.rpc('block_user', params: {'p_user': uid(alice)});
+  await fake.rpc('unblock_user', params: {'p_user': uid(alice)});
+  check(
+    await pendingNow() == uid(alice),
+    'block + unblock doesn\'t skip the approval (D-164)',
+  );
   final seen = List<Map<String, dynamic>>.from(
     await alice.from('profiles').select('id'),
   ).map((r) => r['id']).toSet();
@@ -4368,5 +4390,14 @@ Future<void> audienceStaysFresh() async {
   await ha.rpc('auto_start', params: {'p_token': device});
   check(await sees(hc), '"everyone except…": a new friend sees my trip');
   check(await sees(hb), '…and so does one no longer in the excluded group');
+  await ha.rpc('clear_availability');
+  // Only one chosen group, then it's deleted: everyone again (not nobody).
+  await ha.rpc('set_audience', params: {
+    'p_circles': [family],
+    'p_except': false,
+  });
+  await ha.from('circles').delete().eq('id', family);
+  await ha.rpc('auto_start', params: {'p_token': device});
+  check(await sees(hb), 'the chosen group deleted: the trip is for everyone');
   await ha.rpc('clear_availability');
 }
