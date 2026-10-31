@@ -454,6 +454,9 @@ void main() {
 
   test('first steps: any hour for the routine', () async {
     await me.c.signIn('נתנאל', Gender.male);
+    while (me.s.firstRun != FirstRunStep.routine) {
+      me.c.firstRunNext();
+    }
     await me.c.firstRunRoutines(evening: 18 * 60 + 15);
     expect(me.s.routines.single.minuteOfDay, 18 * 60 + 15);
   });
@@ -1725,8 +1728,27 @@ void main() {
     me.c.firstRunNext(from: FirstRunStep.photo);
     expect(me.s.firstRun, FirstRunStep.contacts);
     expect(await me.c.enableAutoDriving(), isTrue);
+    // (The car step itself only runs from the car step.)
     await me.c.firstRunCar(auto: false);
-    expect(me.s.driving.enabled, isFalse);
+    expect(me.s.driving.enabled, isTrue, reason: 'not the car step yet');
+    while (me.s.firstRun != FirstRunStep.routine) {
+      me.c.firstRunNext();
+    }
+    // Two quick taps on the routine step: one set, one step on.
+    await Future.wait([
+      me.c.firstRunRoutines(morning: 480),
+      me.c.firstRunRoutines(morning: 480),
+    ]);
+    expect(me.s.routines, hasLength(1));
+    expect(me.s.firstRun, FirstRunStep.permissions);
+    me.c.firstRunNext(from: FirstRunStep.permissions);
+    expect(me.s.firstRun, FirstRunStep.car);
+    await Future.wait([
+      me.c.firstRunCar(auto: false),
+      me.c.firstRunCar(auto: false),
+    ]);
+    expect(me.s.firstRun, FirstRunStep.magic, reason: 'magic not skipped');
+    expect(me.s.driving.enabled, isFalse, reason: 'off here means off');
   });
 
   test('a failed move to Google (offline) stays in my account', () async {
@@ -1743,6 +1765,9 @@ void main() {
     await me.c.refresh();
     expect(me.backend.userId, mine);
     expect(me.s.snapshot!.me.name, 'נתנאל');
+    // …and nothing on this phone was wiped (review D-164).
+    expect(me.store.values['real.firstRun.v1'], isNotNull);
+    expect(me.store.values['real.milestone.v1'], isNotNull);
   });
 
   test('the number fails to save at sign-up: first steps still come', () async {

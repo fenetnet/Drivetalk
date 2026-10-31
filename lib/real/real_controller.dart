@@ -1063,6 +1063,20 @@ class RealController extends Notifier<RealState> {
   /// (availability turns on by itself then; editable in settings).
   /// [morning] / [evening]: minute of the day, or null = not picked.
   Future<void> firstRunRoutines({int? morning, int? evening}) async {
+    // A second quick tap: no second set of routines, no skipped step.
+    if (state.firstRun != FirstRunStep.routine || _stepBusy) return;
+    _stepBusy = true;
+    try {
+      await _firstRunRoutines(morning: morning, evening: evening);
+    } finally {
+      _stepBusy = false;
+    }
+  }
+
+  /// One first step's work at a time (the buttons only grey out later).
+  var _stepBusy = false;
+
+  Future<void> _firstRunRoutines({int? morning, int? evening}) async {
     final workdays = {7, 1, 2, 3, 4}; // Sun–Thu
     final now = _now().microsecondsSinceEpoch;
     final picked = [
@@ -1089,7 +1103,7 @@ class RealController extends Notifier<RealState> {
       await saveRoutines([...state.routines, ...picked]);
       _event('onboarding_routine');
     }
-    firstRunNext();
+    firstRunNext(from: FirstRunStep.routine);
   }
 
   void _setFirstRun(FirstRunStep? step) {
@@ -1419,6 +1433,19 @@ class RealController extends Notifier<RealState> {
     required bool auto,
     List<(String, String)> cars = const [],
   }) async {
+    if (state.firstRun != FirstRunStep.car || _stepBusy) return;
+    _stepBusy = true;
+    try {
+      await _firstRunCar(auto: auto, cars: cars);
+    } finally {
+      _stepBusy = false;
+    }
+  }
+
+  Future<void> _firstRunCar({
+    required bool auto,
+    List<(String, String)> cars = const [],
+  }) async {
     if (auto && !state.driving.enabled) {
       final ok = await enableAutoDriving();
       if (ok && cars.isNotEmpty) await setCars(cars);
@@ -1428,7 +1455,7 @@ class RealController extends Notifier<RealState> {
       // Turned off here: off, even if it was on before (review D-164).
       await disableAutoDriving();
     }
-    if (ref.mounted) firstRunNext();
+    if (ref.mounted) firstRunNext(from: FirstRunStep.car);
   }
 
   /// Paired Bluetooth devices, to pick the cars.
@@ -1688,6 +1715,9 @@ class RealController extends Notifier<RealState> {
     final t = _pendingGoogle;
     _pendingGoogle = null;
     if (t == null) return;
+    final before = _backend.userId;
+    // This phone's background access belongs to the account I'm leaving:
+    // given up first (only that account can do it).
     try {
       await _backend.revokeDeviceTokens();
       final push = _store.getString(_pushKey)?.split('|').first;
@@ -1695,10 +1725,56 @@ class RealController extends Notifier<RealState> {
     } on RealBackendException {
       // Moving anyway.
     }
+    if (!ref.mounted) return;
+    state = state.copyWith(busy: true);
+    bool known;
+    try {
+      // Signed in to Google first; this phone's data is cleared only once
+      // that worked (review D-164: a failed move kept nothing).
+      known = await _backend.signInWithGoogle(t.idToken);
+    } on RealBackendException catch (e) {
+      if (!ref.mounted) return;
+      state = state.copyWith(busy: false);
+      _setError(e.code, show: true);
+      if (_backend.userId == before) {
+        // Still my old account, with everything: only the background
+        // access given up above comes back.
+        await _store.setString(_pushKey, null);
+        unawaited(_reissueDevice());
+        unawaited(_ensurePushToken());
+      } else {
+        // In the Google account, but it couldn't be read: start clean
+        // from the sign-up screen ("Continue with Google" again).
+        await _clearLocal();
+        if (ref.mounted) {
+          state = RealState(phase: RealPhase.signedOut, prefs: state.prefs);
+        }
+      }
+      return;
+    }
     await _clearLocal();
     if (!ref.mounted) return;
     state = RealState(phase: RealPhase.starting, prefs: state.prefs);
-    await _googleIn(t);
+    await _afterGoogle(t, known);
+  }
+
+  /// A new background token for this phone (after giving the old one up).
+  Future<void> _reissueDevice() async {
+    final detector = ref.read(drivingDetectorProvider);
+    try {
+      final st = await detector.status();
+      if (!st.supported || !ref.mounted) return;
+      final token = await _backend.createDeviceToken();
+      if (!ref.mounted) return;
+      await detector.configure(
+        url: BackendConfig.supabaseUrl,
+        key: BackendConfig.supabaseAnonKey,
+        token: token,
+        texts: _nativeTexts(),
+      );
+    } on RealBackendException {
+      // Next start (_ensureDevice).
+    }
   }
 
   /// Sign-up screen: "Continue with Google". Coming back → the app opens
@@ -1714,6 +1790,21 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(busy: true);
     try {
       final known = await _backend.signInWithGoogle(t.idToken);
+      return await _afterGoogle(t, known);
+    } on RealBackendException catch (e) {
+      if (!ref.mounted) return null;
+      state = state.copyWith(
+        busy: false,
+        phase: _backend.userId == null ? RealPhase.signedOut : state.phase,
+      );
+      _setError(e.code, show: true);
+      return null;
+    }
+  }
+
+  /// Signed in to Google: back to my account, or (new) the name to fill in.
+  Future<String?> _afterGoogle(GoogleToken t, bool known) async {
+    try {
       if (!ref.mounted) return null;
       if (t.email != null) _store.setString(_googleKey, t.email);
       _store.setString(_googleCardKey, 'done');
@@ -1730,23 +1821,8 @@ class RealController extends Notifier<RealState> {
       return null;
     } on RealBackendException catch (e) {
       if (!ref.mounted) return null;
-      // A move to Google that failed (offline…) leaves me in my old
-      // account: back to it, never stuck on the loading screen.
-      final stayed =
-          state.phase == RealPhase.starting && _backend.userId != null;
-      state = state.copyWith(
-        busy: false,
-        phase: _backend.userId == null
-            ? RealPhase.signedOut
-            : stayed
-            ? RealPhase.ready
-            : state.phase,
-      );
+      state = state.copyWith(busy: false);
       _setError(e.code, show: true);
-      if (stayed) {
-        unawaited(refresh());
-        _afterReady();
-      }
       return null;
     }
   }

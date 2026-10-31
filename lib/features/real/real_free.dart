@@ -606,7 +606,9 @@ class AutoCard extends ConsumerWidget {
             activeTrackColor: instantGold,
             value: yes,
             // New here: opens after the first talk (owner, D-161).
-            onChanged: s.busy || s.snapshot == null || locked
+            // The saved screen (no talks known yet): wait for the server
+            // before ⚡ can be turned on (review D-164).
+            onChanged: s.busy || s.snapshot == null || s.cached || locked
                 ? null
                 : (v) => c.setAutoYes(on: v),
           ),
