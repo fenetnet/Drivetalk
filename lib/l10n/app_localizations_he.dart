@@ -1774,7 +1774,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String pendingBody(String name) {
-    return 'המספר של $name לא שמור אצלך, ולכן $name עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?';
+    return '$name הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?';
   }
 
   @override

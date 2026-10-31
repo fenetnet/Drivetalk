@@ -3007,7 +3007,7 @@ abstract class AppLocalizations {
   /// No description provided for @pendingBody.
   ///
   /// In he, this message translates to:
-  /// **'המספר של {name} לא שמור אצלך, ולכן {name} עוד לא רואה מתי יש לך זמן. להשאיר ברשימה?'**
+  /// **'{name} הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?'**
   String pendingBody(String name);
 
   /// No description provided for @pendingKeep.
