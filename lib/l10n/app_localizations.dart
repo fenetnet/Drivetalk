@@ -2545,7 +2545,7 @@ abstract class AppLocalizations {
   /// No description provided for @statsNote.
   ///
   /// In he, this message translates to:
-  /// **'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.'**
+  /// **'סכומים לפי אדם (מספר טלפון). שמות מופיעים רק ברשימות המשובים, הדיווחים והקריסות, ורק אצלך.'**
   String get statsNote;
 
   /// No description provided for @statsReports.
@@ -2707,25 +2707,25 @@ abstract class AppLocalizations {
   /// No description provided for @statsUsersHint.
   ///
   /// In he, this message translates to:
-  /// **'כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)'**
+  /// **'אנשים עם מספר טלפון. כמה התקנות או חשבונות עם אותו מספר = אדם אחד'**
   String get statsUsersHint;
 
   /// No description provided for @statsNewUsersHint.
   ///
   /// In he, this message translates to:
-  /// **'נרשמו לראשונה בתקופה הזו'**
+  /// **'מספרי טלפון שהופיעו לראשונה בתקופה הזו'**
   String get statsNewUsersHint;
 
   /// No description provided for @statsActiveUsersHint.
   ///
   /// In he, this message translates to:
-  /// **'פתחו אותה לפחות פעם אחת בתקופה'**
+  /// **'אנשים (לפי מספר) שפתחו את האפליקציה לפחות פעם אחת בתקופה'**
   String get statsActiveUsersHint;
 
   /// No description provided for @statsFriendshipsHint.
   ///
   /// In he, this message translates to:
-  /// **'כמה זוגות חברים מחוברים באפליקציה (בסך הכול)'**
+  /// **'זוגות של שני אנשים שונים שמחוברים ואושרו (בלי כפילויות)'**
   String get statsFriendshipsHint;
 
   /// No description provided for @statsFreeTimesHint.
@@ -5037,6 +5037,24 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'רעיון, או משהו שלא עבד – זה מגיע ישר אלינו.'**
   String get feedbackOrProblemBody;
+
+  /// No description provided for @statsNoPhone.
+  ///
+  /// In he, this message translates to:
+  /// **'חשבונות בלי מספר טלפון'**
+  String get statsNoPhone;
+
+  /// No description provided for @statsNoPhoneHint.
+  ///
+  /// In he, this message translates to:
+  /// **'גרסאות ישנות או הרשמות שלא הושלמו. לא נספרים כאנשים. {active} מהם פתחו את האפליקציה בתקופה'**
+  String statsNoPhoneHint(int active);
+
+  /// No description provided for @statsPeople.
+  ///
+  /// In he, this message translates to:
+  /// **' · מ-{n} אנשים'**
+  String statsPeople(int n);
 }
 
 class _AppLocalizationsDelegate

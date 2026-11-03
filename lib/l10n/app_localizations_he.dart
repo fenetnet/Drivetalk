@@ -1500,7 +1500,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get statsNote =>
-      'רק סכומים. בלי שמות, בלי מספרים, ובלי שום מידע על אדם מסוים.';
+      'סכומים לפי אדם (מספר טלפון). שמות מופיעים רק ברשימות המשובים, הדיווחים והקריסות, ורק אצלך.';
 
   @override
   String get statsReports => 'דיווחים';
@@ -1589,17 +1589,19 @@ class AppLocalizationsHe extends AppLocalizations {
   String get removedRestore => 'להחזיר';
 
   @override
-  String get statsUsersHint => 'כל מי שנרשם אי פעם (אדם אחד לכל מספר טלפון)';
+  String get statsUsersHint =>
+      'אנשים עם מספר טלפון. כמה התקנות או חשבונות עם אותו מספר = אדם אחד';
 
   @override
-  String get statsNewUsersHint => 'נרשמו לראשונה בתקופה הזו';
+  String get statsNewUsersHint => 'מספרי טלפון שהופיעו לראשונה בתקופה הזו';
 
   @override
-  String get statsActiveUsersHint => 'פתחו אותה לפחות פעם אחת בתקופה';
+  String get statsActiveUsersHint =>
+      'אנשים (לפי מספר) שפתחו את האפליקציה לפחות פעם אחת בתקופה';
 
   @override
   String get statsFriendshipsHint =>
-      'כמה זוגות חברים מחוברים באפליקציה (בסך הכול)';
+      'זוגות של שני אנשים שונים שמחוברים ואושרו (בלי כפילויות)';
 
   @override
   String get statsFreeTimesHint => 'כמה פעמים מישהו סימן שהוא פנוי';
@@ -3008,4 +3010,17 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get feedbackOrProblemBody =>
       'רעיון, או משהו שלא עבד – זה מגיע ישר אלינו.';
+
+  @override
+  String get statsNoPhone => 'חשבונות בלי מספר טלפון';
+
+  @override
+  String statsNoPhoneHint(int active) {
+    return 'גרסאות ישנות או הרשמות שלא הושלמו. לא נספרים כאנשים. $active מהם פתחו את האפליקציה בתקופה';
+  }
+
+  @override
+  String statsPeople(int n) {
+    return ' · מ-$n אנשים';
+  }
 }

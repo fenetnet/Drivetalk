@@ -240,6 +240,21 @@ void main() {
     expect(stats['declined'], 1);
   });
 
+  test('the owner\'s numbers count people by phone number (1.2.0)', () async {
+    await connect(); // me with a number, Yoni without
+    // A second install of mine: the same number, a new account.
+    final again = Phone(server, clock);
+    await again.boot();
+    await again.c.signIn('נתנאל', Gender.male, phone: '052-111-1111');
+    expect(await me.c.unlockAdmin('test-owner-code'), isTrue);
+    await pump();
+    final stats = (await me.c.appStats(7))!;
+    expect(stats['users'], 1, reason: 'two installs, one number = one person');
+    expect(stats['users_no_phone'], 1, reason: 'Yoni, apart');
+    expect(stats['accounts'], 3);
+    again.dispose();
+  });
+
   test('first steps: "mornings" → a Sun–Thu routine at 7:30', () async {
     await me.c.signIn('נתנאל', Gender.male);
     expect(me.s.firstRun, FirstRunStep.photo, reason: 'a picture first');

@@ -1075,12 +1075,22 @@ class SupabaseRealBackend implements RealBackend {
 
   @override
   Future<List<OwnerNote>> ownerCrashes() => _guard(() async {
-    final rows = await _c.rpc('owner_crashes') as List;
+    List rows;
+    try {
+      // With who had it (server 71).
+      rows = await _c.rpc('owner_crashes_details') as List;
+    } on PostgrestException {
+      rows = await _c.rpc('owner_crashes') as List; // an older server
+    }
     return [
       for (final r in rows.cast<Map>())
         OwnerNote(
           _time(r['created_at']),
-          '${r['kind'] ?? ''} · ${r['build'] ?? ''}',
+          [
+            if (r['display_name'] != null) r['display_name'],
+            r['kind'] ?? '',
+            r['build'] ?? '',
+          ].join(' · '),
           '${r['message'] ?? ''}\n\n${r['stack'] ?? ''}'.trim(),
         ),
     ];

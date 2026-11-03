@@ -6,8 +6,8 @@ import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
 import '../common/labels.dart';
 
-/// Owner only (behind the admin code): totals — no names, nothing about
-/// a single person.
+/// Owner only (behind the admin code): totals by person (one per phone
+/// number); names only in the feedback / report / crash lists.
 class RealStatsScreen extends ConsumerStatefulWidget {
   const RealStatsScreen({super.key});
 
@@ -70,6 +70,9 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
             onTap: open == null ? null : () => _openNotes(context, open),
           );
           final offers = (m['offers'] ?? 0) + (m['quick'] ?? 0);
+          // "· from N people" (servers from 71 on).
+          String people(num? n) =>
+              n == null || n == 0 ? '' : l.statsPeople(n.round());
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -99,6 +102,13 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
               row(l.statsNewUsers, l.statsNewUsersHint, 'new_users'),
               row(l.statsActiveUsers, l.statsActiveUsersHint, 'active_users'),
               row(l.statsFriendships, l.statsFriendshipsHint, 'friendships'),
+              // Older servers don't count these apart (owner, 1.2.0).
+              if (m['users_no_phone'] != null)
+                row(
+                  l.statsNoPhone,
+                  l.statsNoPhoneHint(m['active_no_phone']?.round() ?? 0),
+                  'users_no_phone',
+                ),
               const Divider(),
               row(l.statsFreeTimes, l.statsFreeTimesHint, 'free_times'),
               row(l.statsOffers, l.statsOffersHint, 'offers'),
@@ -139,12 +149,14 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                 l.statsFeedback,
                 l.statsFeedbackHint,
                 'feedback',
+                extra: people(m['feedback_people']),
                 open: _Notes.feedback,
               ),
               row(
                 l.statsCrashes,
                 l.statsCrashesHint,
                 'crashes',
+                extra: people(m['crash_people']),
                 open: _Notes.crashes,
               ),
               const Divider(),

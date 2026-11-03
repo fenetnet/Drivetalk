@@ -13,6 +13,7 @@ import '../app/app.dart';
 import '../app/providers.dart';
 import '../domain/models.dart';
 import '../features/real/real_root.dart';
+import '../features/real/real_stats.dart';
 import '../platform/contacts_reader.dart';
 import '../platform/driving_detector.dart';
 import '../platform/phone_dialer.dart';
@@ -182,12 +183,21 @@ Future<void> main() async {
     if (screen == 'feedback') c.finishCall();
   }
 
+  // The owner's numbers (1.2.0): this phone is the owner's.
+  if (screen == 'stats') server.owners.add(me.userId!);
+
   runApp(
     UncontrolledProviderScope(
       container: container,
       child: const DriveTalkApp(),
     ),
   );
+  if (screen == 'stats') {
+    await Future<void>.delayed(const Duration(milliseconds: 800));
+    navigatorKey.currentState?.push(
+      MaterialPageRoute<void>(builder: (_) => const RealStatsScreen()),
+    );
+  }
 }
 
 class _ReadyDialer extends PhoneDialer {

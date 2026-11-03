@@ -1294,7 +1294,15 @@ class MemoryRealBackend implements RealBackend {
     ];
     int count(bool Function(_Offer) f) => recent.where(f).length;
     return {
-      'users': server.profiles.length,
+      // One person per phone number; accounts without one apart.
+      'users': {
+        for (final id in server.profiles.keys)
+          if (server.phones[id] != null) normalizePhone(server.phones[id]!),
+      }.length,
+      'users_no_phone': server.profiles.keys
+          .where((id) => server.phones[id] == null)
+          .length,
+      'accounts': server.profiles.length,
       'friendships': server.connections.length,
       'offers': count((o) => !o.quick),
       'quick': count((o) => o.quick),
