@@ -7,6 +7,7 @@ import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../l10n/app_localizations.dart';
+import '../../platform/contacts_reader.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
@@ -282,7 +283,7 @@ class RealHomeScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   _WhatsNewCard(onClose: c.dismissWhatsNew),
                 ],
-                if (_topCard(s, c) case final top?) ...[
+                if (_topCard(s, c, now) case final top?) ...[
                   const SizedBox(height: 12),
                   top,
                 ],
@@ -313,6 +314,11 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
+                // Driving, nobody free: maybe call a favorite (1.2.1).
+                if (mine?.mode == AvailabilityMode.driving &&
+                    free.isEmpty &&
+                    c.favoritesOn)
+                  const _FavoritesCard(),
                 // Then: "I'm driving" / "I have time" — or me, free (D-156).
                 const SizedBox(height: 20),
                 if (mine == null)
@@ -339,7 +345,13 @@ class RealHomeScreen extends ConsumerWidget {
                 ],
                 const SizedBox(height: 24),
                 if (snap != null && snap.friends.isNotEmpty) ...[
-                  _WeekCard(week: snap.weekAt(now)),
+                  _WeekCard(
+                    week: snap.weekAt(now),
+                    // More than 3 people this week: worth sharing (owner).
+                    onShare: snap.weekAt(now).$2 > 3
+                        ? () => shareWeek(context, ref, snap.weekAt(now).$2)
+                        : null,
+                  ),
                   const SizedBox(height: 12),
                 ],
               ],
@@ -353,12 +365,14 @@ class RealHomeScreen extends ConsumerWidget {
 
 /// At the top of Home (owner, 1.1.2): a new version, or someone new — added
 /// me, just became a friend, or joined from my contacts.
-Widget? _topCard(RealState s, RealController c) {
+Widget? _topCard(RealState s, RealController c, DateTime now) {
   if (s.newBuild != null) return const _UpdateCard();
   // Someone added me from their contacts: keep them?
   if (c.pendingFriend case final f?) return _PendingFriendCard(friend: f);
   if (c.newFriend case final f?) return _NewFriendCard(friend: f);
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
+  // Just after a trip with nobody free: invite someone (1.2.1).
+  if (c.showDriveInvite(now)) return const _DriveInviteCard();
   return null;
 }
 
@@ -1090,8 +1104,9 @@ class _RoutineCard extends ConsumerWidget {
 
 /// "Your week": how many talks, with how many different friends.
 class _WeekCard extends StatelessWidget {
-  const _WeekCard({required this.week});
+  const _WeekCard({required this.week, this.onShare});
   final (int, int) week;
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -1147,8 +1162,137 @@ class _WeekCard extends StatelessWidget {
               ],
             ),
           ),
+          if (onShare != null)
+            TextButton.icon(
+              onPressed: onShare,
+              icon: const Icon(Icons.share_rounded, size: 20),
+              label: Text(l.weekShare),
+            ),
         ],
       ),
+    );
+  }
+}
+
+/// After a trip with no friend free: "who would you call in traffic?" →
+/// an invitation (1.2.1). Never while driving.
+class _DriveInviteCard extends ConsumerWidget {
+  const _DriveInviteCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.driveInviteTitle,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(l.driveInviteBody),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      c.dismissDriveInvite();
+                      await shareInvite(context, ref);
+                    },
+                    icon: const Icon(Icons.share_rounded),
+                    label: Text(l.driveInviteButton),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                TextButton(
+                  onPressed: c.dismissDriveInvite,
+                  child: Text(l.contactsNo),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Driving, no friend free: two favorites from the phone (starred, not on
+/// DriveBond) — one tap calls through the regular dialer (1.2.1).
+class _FavoritesCard extends ConsumerStatefulWidget {
+  const _FavoritesCard();
+
+  @override
+  ConsumerState<_FavoritesCard> createState() => _FavoritesCardState();
+}
+
+class _FavoritesCardState extends ConsumerState<_FavoritesCard> {
+  late final Future<List<PhoneContact>> _list = ref
+      .read(realProvider.notifier)
+      .favoriteSuggestions();
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return FutureBuilder<List<PhoneContact>>(
+      future: _list,
+      builder: (context, snap) {
+        final list = snap.data ?? const <PhoneContact>[];
+        if (list.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.mint,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  l.favoritesTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                for (final p in list)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(56),
+                        textStyle: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      onPressed: () => c.callFavorite(p),
+                      icon: const Icon(Icons.call_rounded),
+                      label: Text(p.name),
+                    ),
+                  ),
+                Text(
+                  l.favoritesNote,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.inkSoft,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -5,6 +5,7 @@
 //        | #people | #settings | #test | #onboarding | #feedback
 //        | #first-photo | #first-contacts | #first-result | #first-routine
 //        | #first-permissions | #first-magic | #new-home | #new-free
+//        | #added | #lonely | #week | #asked (1.2.1)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +20,7 @@ import '../platform/driving_detector.dart';
 import '../platform/phone_dialer.dart';
 import '../platform/google_auth.dart';
 import '../platform/voice_service.dart';
+import '../real/contacts_hash.dart';
 import '../real/deep_links.dart';
 import '../real/local_store.dart';
 import '../real/memory_backend.dart';
@@ -96,7 +98,7 @@ Future<void> main() async {
       RealCircle(id: '', name: 'חברים מהצבא', memberIds: {yoni.userId!}),
     );
     // Talks behind me (D-159): the first one, or five — and the party.
-    if (screen == 'party' || screen == 'party5') {
+    if (screen == 'party' || screen == 'party5' || screen == 'week') {
       final n = screen == 'party' ? 1 : 5;
       for (var i = 0; i < n; i++) {
         final f = [yoni, mom, dana, omer, shira][i];
@@ -113,8 +115,47 @@ Future<void> main() async {
         await me.clearAvailability();
         await f.clearAvailability();
       }
-      store.values['real.milestone.v1'] = n == 1 ? '0' : '1';
+      store.values['real.milestone.v1'] = screen == 'week'
+          ? '5'
+          : n == 1
+          ? '0'
+          : '1';
     }
+    // 1.2.1: someone added me ("add back?"); I added someone (waiting);
+    // after a lonely trip ("invite"); favorites on the phone.
+    if (screen == 'added') {
+      final roni = await friend('רוני', Gender.female, '0507777777');
+      await roni.syncContacts([hashPhone('0521111111')!]);
+      await roni.addContacts([me.userId!]);
+    }
+    if (screen == 'asked') {
+      final gal = await friend('גל', Gender.male, '0508888888');
+      await me.syncContacts([hashPhone('0508888888')!]);
+      await me.addContacts([gal.userId!]);
+    }
+    if (const [
+      'added',
+      'asked',
+      'lonely',
+      'week',
+      'driving',
+    ].contains(screen)) {
+      store.values['real.whatsNew.v1'] = '170';
+      store.values['real.googleCard.v1'] = 'no';
+    }
+    if (screen == 'lonely') {
+      store.values['real.lonelyDrive.v1'] = DateTime.now()
+          .subtract(const Duration(minutes: 20))
+          .toIso8601String();
+    }
+    contacts
+      ..numbers = ['0541000001', '0541000002', '0541000003']
+      ..names = {
+        '0541000001': 'אמא',
+        '0541000002': 'אבי מהעבודה',
+        '0541000003': 'סבתא רחל',
+      }
+      ..starred = {'0541000001', '0541000002'};
     if (screen != 'driving') {
       // Home: three faces fit the card (driving, break, in a call).
       if (screen != 'home') {
@@ -138,7 +179,7 @@ Future<void> main() async {
         await yoni.setAvailability(AvailabilityMode.driving, 25);
     }
     RealShell.debugInitialTab = switch (screen) {
-      'people' => 1,
+      'people' || 'asked' => 1,
       'test' => 2,
       'settings' => 3,
       _ => 0,
@@ -169,6 +210,13 @@ Future<void> main() async {
   final c = container.read(realProvider.notifier);
   await c.refresh();
   if (screen == 'first-result') await c.firstRunFindPeople();
+  if (screen == 'week') {
+    // The "when again?" questions of those talks: already answered.
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+    for (var i = 0; i < 6; i++) {
+      c.skipFeedback();
+    }
+  }
   final now = DateTime.now();
   final offer = currentOffer(container.read(realProvider), now);
   if (screen == 'waiting' && offer != null) {

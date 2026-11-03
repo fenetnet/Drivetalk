@@ -2293,7 +2293,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactsPickBody.
   ///
   /// In he, this message translates to:
-  /// **'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.'**
+  /// **'בוחרים רק את מי שבא לדבר איתו. הם יקבלו הודעה, וכשיוסיפו אותך בחזרה – אתם מחוברים. מי שלא נבחר לא יודע על זה.'**
   String get contactsPickBody;
 
   /// No description provided for @contactsAdd.
@@ -3001,26 +3001,128 @@ abstract class AppLocalizations {
   /// No description provided for @pendingTitle.
   ///
   /// In he, this message translates to:
-  /// **'הצטרפת לרשימה של {name}'**
+  /// **'{name} הוסיף/ה אותך'**
   String pendingTitle(String name);
 
   /// No description provided for @pendingBody.
   ///
   /// In he, this message translates to:
-  /// **'{name} הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?'**
+  /// **'{name} עוד לא רואה מתי יש לך זמן. להוסיף בחזרה?'**
   String pendingBody(String name);
 
   /// No description provided for @pendingKeep.
   ///
   /// In he, this message translates to:
-  /// **'להשאיר'**
+  /// **'להוסיף בחזרה'**
   String get pendingKeep;
 
   /// No description provided for @pendingRemove.
   ///
   /// In he, this message translates to:
-  /// **'להסיר'**
+  /// **'לא, תודה'**
   String get pendingRemove;
+
+  /// No description provided for @realContactsAsked.
+  ///
+  /// In he, this message translates to:
+  /// **'{names} — קיבלו הודעה. כשיוסיפו אותך בחזרה, אתם מחוברים.'**
+  String realContactsAsked(String names);
+
+  /// No description provided for @askedWaiting.
+  ///
+  /// In he, this message translates to:
+  /// **'עוד לא הוסיף/ה אותך בחזרה'**
+  String get askedWaiting;
+
+  /// Push (1.2.1): someone added me from their contacts
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{{name} הוסיפה אותך ב-DriveBond} male{{name} הוסיף אותך ב-DriveBond} other{{name} הוסיף/ה אותך ב-DriveBond}}'**
+  String addedNotifTitle(String name, String gender);
+
+  /// No description provided for @addedNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'להוסיף בחזרה? ככה תוכלו לדבר כששניכם בדרכים.'**
+  String get addedNotifBody;
+
+  /// Push (1.2.1): the one I added added me back
+  ///
+  /// In he, this message translates to:
+  /// **'{gender, select, female{{name} הוסיפה אותך בחזרה 🎉} male{{name} הוסיף אותך בחזרה 🎉} other{{name} הוסיף/ה אותך בחזרה 🎉}}'**
+  String acceptedNotifTitle(String name, String gender);
+
+  /// No description provided for @acceptedNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'עכשיו אתם מחוברים: כשלשניכם יש זמן, נציע לכם לדבר.'**
+  String get acceptedNotifBody;
+
+  /// No description provided for @weeklyNotifTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע דיברת עם {people} חברים ב-{talks} שיחות 🔥'**
+  String weeklyNotifTitle(String people, String talks);
+
+  /// No description provided for @weeklyNotifBody.
+  ///
+  /// In he, this message translates to:
+  /// **'יופי של שבוע. מי הבא בתור?'**
+  String get weeklyNotifBody;
+
+  /// No description provided for @weekShare.
+  ///
+  /// In he, this message translates to:
+  /// **'לשתף'**
+  String get weekShare;
+
+  /// No description provided for @weekShareText.
+  ///
+  /// In he, this message translates to:
+  /// **'השבוע דיברתי עם {people} חברים בזמן נסיעות, עם DriveBond 🚗🔥'**
+  String weekShareText(int people);
+
+  /// No description provided for @driveInviteTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'את מי היית רוצה לשמוע בפקק?'**
+  String get driveInviteTitle;
+
+  /// No description provided for @driveInviteBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בנסיעה האחרונה אף חבר לא היה פנוי. מזמינים עוד חבר או שניים, ובנסיעה הבאה יהיה עם מי לדבר.'**
+  String get driveInviteBody;
+
+  /// No description provided for @driveInviteButton.
+  ///
+  /// In he, this message translates to:
+  /// **'להזמין חבר'**
+  String get driveInviteButton;
+
+  /// No description provided for @favoritesTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'אף חבר לא פנוי. אולי להתקשר למישהו מהמועדפים?'**
+  String get favoritesTitle;
+
+  /// No description provided for @favoritesNote.
+  ///
+  /// In he, this message translates to:
+  /// **'מהמועדפים בטלפון שלך. השיחה עוברת בחייגן הרגיל.'**
+  String get favoritesNote;
+
+  /// No description provided for @settingsFavorites.
+  ///
+  /// In he, this message translates to:
+  /// **'הצעות מהמועדפים בנסיעה'**
+  String get settingsFavorites;
+
+  /// No description provided for @settingsFavoritesHint.
+  ///
+  /// In he, this message translates to:
+  /// **'כשאף חבר לא פנוי, נציע 2 אנשים שסימנת כמועדפים בטלפון. הכול נשאר בטלפון.'**
+  String get settingsFavoritesHint;
 
   /// No description provided for @offerShared.
   ///

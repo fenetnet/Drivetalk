@@ -38,6 +38,9 @@ object DrivingNotifications {
 
     /** "X tried to reach you" (D-121), one per friend. */
     private const val ID_MISSED_BASE = 8600
+    // "X added you" / "X added you back" (one per friend), the weekly summary.
+    private const val ID_ADDED_BASE = 8900
+    private const val ID_WEEKLY = 8899
 
     fun ensureChannels(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
@@ -468,6 +471,46 @@ object DrivingNotifications {
             .setContentIntent(openApp(context, 296))
         context.getSystemService(NotificationManager::class.java)
             .notify(ID_MISSED_BASE + (friendId.hashCode() and 0xff), b.build())
+    }
+
+    /**
+     * "X added you — add back?" ([back] = false) or "X added you back"
+     * (1.2.1). Opens the app, where the card waits.
+     */
+    fun showAdded(context: Context, friendId: String, name: String, gender: String, back: Boolean) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val shown = store.nameFor(friendId, name)
+        val g = when (gender) {
+            "female" -> "F"
+            "male" -> "M"
+            else -> "O"
+        }
+        val title = if (back) "acceptedTitle$g" else "addedTitle$g"
+        val body = if (back) "acceptedBody" else "addedBody"
+        val b = builder(context, CHANNEL_NEWS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(store.text(title, "{name}").replace("{name}", shown))
+            .setContentText(store.text(body, ""))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 300))
+        context.getSystemService(NotificationManager::class.java)
+            .notify(ID_ADDED_BASE + (friendId.hashCode() and 0xff), b.build())
+    }
+
+    /** Friday: "This week you talked with N people" (more than 3 only). */
+    fun showWeekly(context: Context, people: String, talks: String) {
+        val store = DrivingStore(context)
+        ensureChannels(context)
+        val b = builder(context, CHANNEL_NEWS)
+            .setSmallIcon(R.drawable.ic_stat_drivetalk)
+            .setContentTitle(
+                store.text("weeklyTitle", "{people}").replace("{people}", people).replace("{talks}", talks),
+            )
+            .setContentText(store.text("weeklyBody", ""))
+            .setAutoCancel(true)
+            .setContentIntent(openApp(context, 301))
+        context.getSystemService(NotificationManager::class.java).notify(ID_WEEKLY, b.build())
     }
 
     fun cancelTrip(context: Context, friendId: String) {

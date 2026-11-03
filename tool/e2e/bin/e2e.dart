@@ -1256,7 +1256,16 @@ Future<void> main() async {
   check(
     added.length == 1 &&
         (await rows(noa, 'profiles')).any((p) => p['display_name'] == 'אבי'),
-    'I pick Noa → connected at once (no approval)',
+    'I pick Noa → she sees who added her',
+  );
+  check(
+    await dbScalar(
+          "select coalesce(pending_for::text, 'none') from connections "
+          "where user_a = least('${uid(avi)}'::uuid, '${uid(noa)}'::uuid) "
+          "and user_b = greatest('${uid(avi)}'::uuid, '${uid(noa)}'::uuid)",
+        ) ==
+        uid(noa),
+    '…and decides: connected only once she adds back (mutual add, 1.2.1)',
   );
   // Noa removes Avi → neither side can add the other from contacts again.
   await noa
@@ -1849,9 +1858,10 @@ Future<void> main() async {
   await availableToGroups();
   await securityRound2();
   await audienceStaysFresh();
+  await mutualAdd();
 
   check(
-    await eve.rpc('schema_version') == 70,
+    await eve.rpc('schema_version') == 72,
     'the server says its version (41)',
   );
 
@@ -4400,4 +4410,91 @@ Future<void> audienceStaysFresh() async {
   await ha.rpc('auto_start', params: {'p_token': device});
   check(await sees(hb), 'the chosen group deleted: the trip is for everyone');
   await ha.rpc('clear_availability');
+}
+
+/// 1.2.1: adding from contacts asks; adding back connects; both sides get
+/// a notification; "asked" lists whom I wait for; the weekly summary only
+/// for more than 3 people.
+Future<void> mutualAdd() async {
+  String h(String e164) => sha256.convert(utf8.encode(e164)).toString();
+  final dana = await newUser('דנה', 'female');
+  final ron = await newUser('רון', 'male');
+  Future<String> phoneOf(SupabaseClient c) =>
+      dbScalar("select phone from phone_numbers where user_id = '${uid(c)}'");
+  final danaPhone = await phoneOf(dana);
+  final ronPhone = await phoneOf(ron);
+  await dbExec(
+    "insert into push_tokens (token, user_id) values "
+    "('e2e-${uid(dana)}', '${uid(dana)}'), ('e2e-${uid(ron)}', '${uid(ron)}')",
+  );
+  // Both have each other's number.
+  await dana.rpc('find_friends', params: {
+    'p_hashes': [h(ronPhone)],
+  });
+  await ron.rpc('find_friends', params: {
+    'p_hashes': [h(danaPhone)],
+  });
+  await dana.rpc('add_contacts', params: {
+    'p_users': [uid(ron)],
+  });
+  Future<String> pendingNow() => dbScalar(
+    "select coalesce(pending_for::text, 'none') from connections "
+    "where user_a = least('${uid(dana)}'::uuid, '${uid(ron)}'::uuid) "
+    "and user_b = greatest('${uid(dana)}'::uuid, '${uid(ron)}'::uuid)",
+  );
+  check(
+    await pendingNow() == uid(ron),
+    'having each other\'s number doesn\'t connect: Ron decides (1.2.1)',
+  );
+  check(
+    await dbCount(
+          "select count(*) from push_outbox where kind = 'added' "
+          "and user_id = '${uid(ron)}' and data->>'from' = '${uid(dana)}'",
+        ) ==
+        1,
+    'Ron gets "Dana added you — add back?"',
+  );
+  final danaStatus = Map<String, dynamic>.from(await dana.rpc('my_status'));
+  check(
+    List.from(danaStatus['asked'] as List).contains(uid(ron)),
+    'Dana\'s status: waiting for Ron to add back',
+  );
+  final ronSees = List<Map<String, dynamic>>.from(
+    await ron.rpc('find_friends', params: {
+      'p_hashes': [h(danaPhone)],
+    }),
+  );
+  check(
+    await pendingNow() == uid(ron) &&
+        ronSees.single['is_friend'] == false,
+    'Ron\'s contacts search doesn\'t approve; offers Dana to add back',
+  );
+  await ron.rpc('add_contacts', params: {
+    'p_users': [uid(dana)],
+  });
+  check(await pendingNow() == 'none', 'Ron adds back → connected');
+  check(
+    await dbCount(
+          "select count(*) from push_outbox where kind = 'accepted' "
+          "and user_id = '${uid(dana)}' and data->>'from' = '${uid(ron)}'",
+        ) ==
+        1,
+    'Dana gets "Ron added you back"',
+  );
+  var blocked = false;
+  try {
+    await ron.rpc('weekly_summary_tick');
+  } catch (_) {
+    blocked = true;
+  }
+  check(blocked, 'only the server runs the weekly summary');
+  await dbExec('select public.weekly_summary_tick()');
+  check(
+    await dbCount(
+          "select count(*) from push_outbox where kind = 'weekly' "
+          "and user_id in ('${uid(dana)}', '${uid(ron)}')",
+        ) ==
+        0,
+    'no weekly summary without talks with more than 3 people',
+  );
 }

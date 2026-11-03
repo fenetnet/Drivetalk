@@ -1493,7 +1493,7 @@ void main() {
   });
 
   group('friends from contacts', () {
-    test('nobody is added automatically; I pick who → connected', () async {
+    test('nobody is added automatically; I pick who → they add back', () async {
       await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
       yoni.contacts.numbers = ['0521111111'];
       me.contacts.numbers = ['053-222-2222', '+972 54 000 0000'];
@@ -1505,17 +1505,27 @@ void main() {
       // Yoni has me saved too — still nothing automatic for him.
       await yoni.c.syncContacts();
       expect(yoni.s.snapshot!.friends, isEmpty);
-      // I pick Yoni → connected at once, no approval.
+      // I pick Yoni → he's asked (mutual add, 1.2.1), even though he has
+      // my number too.
       await me.c.addContacts([me.c.contactMatches.single]);
       expect(me.s.snapshot!.friends.single.name, 'יוני');
-      expect(me.s.notice?.kind, RealNoticeKind.contactsFound);
+      expect(me.s.notice?.kind, RealNoticeKind.contactsAsked);
+      final yoniId = yoni.backend.userId!;
+      expect(me.s.snapshot!.status.asked, {yoniId});
       await yoni.c.refresh();
-      expect(yoni.s.snapshot!.friends.single.name, 'נתנאל');
-      // Yoni is told once that I added him; I'm not (I did it myself).
-      expect(yoni.c.newFriend?.name, 'נתנאל');
+      await pump(20);
+      expect(yoni.c.pendingFriend?.name, 'נתנאל');
+      // His contacts list offers me again: adding = adding back.
+      await yoni.c.syncContacts();
+      expect(yoni.c.contactMatches.single.name, 'נתנאל');
+      await yoni.c.addContacts(yoni.c.contactMatches);
+      expect(yoni.s.notice?.kind, RealNoticeKind.contactsFound);
+      expect(yoni.s.snapshot!.status.pending, isEmpty);
+      expect(yoni.c.pendingFriend, isNull);
+      await me.c.refresh();
+      expect(me.s.snapshot!.status.asked, isEmpty);
+      // I'm not told I have a new friend (I did it myself).
       expect(me.c.newFriend, isNull);
-      yoni.c.dismissNewFriend(yoni.c.newFriend!);
-      expect(yoni.c.newFriend, isNull);
     });
 
     test('removed → not suggested again from contacts (both sides)', () async {
@@ -2921,7 +2931,7 @@ void main() {
       },
     );
 
-    test('someone I do have saved is kept without asking', () async {
+    test('someone I do have saved still asks me (mutual add, 1.2.1)', () async {
       me.contacts.numbers = ['0532222222'];
       await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
       await me.c.syncContacts();
@@ -2931,9 +2941,13 @@ void main() {
       await yoni.c.addContacts(yoni.c.contactMatches);
       await me.c.refresh();
       await pump(20);
-      // My contacts were searched before Yoni joined: looked at again.
+      // Having his number doesn't connect us: I add back (or not).
+      expect(me.s.snapshot!.status.pending, {yoni.backend.userId});
+      expect(me.c.pendingFriend?.name, 'יוני');
+      await me.c.approveFriend(me.c.pendingFriend!);
       expect(me.s.snapshot!.status.pending, isEmpty);
-      expect(me.c.pendingFriend, isNull);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.status.asked, isEmpty);
     });
 
     test('extend my free time', () async {
@@ -3401,5 +3415,101 @@ void main() {
       await yoni.c.signOut();
       expect(server.pushTokens, isEmpty);
     });
+  });
+
+  group('growth (1.2.1)', () {
+    test('after a trip with no friend free: "invite someone" (not while '
+        'driving, once in 3 days, not after a talk)', () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      expect(me.c.showDriveInvite(now), isFalse, reason: 'not while driving');
+      await me.c.stopAvailability();
+      now = now.add(const Duration(minutes: 5));
+      expect(me.c.showDriveInvite(now), isTrue);
+      me.c.dismissDriveInvite();
+      expect(me.c.showDriveInvite(now), isFalse);
+      // The next lonely trip, two days later: still quiet (3 days).
+      now = now.add(const Duration(days: 2));
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await me.c.stopAvailability();
+      expect(me.c.showDriveInvite(now), isFalse);
+      // Hours later the card is gone by itself.
+      now = now.add(const Duration(days: 2));
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await me.c.stopAvailability();
+      expect(me.c.showDriveInvite(now), isTrue);
+      now = now.add(const Duration(hours: 4));
+      expect(me.c.showDriveInvite(now), isFalse);
+    });
+
+    test('a friend was free on the trip: no invite card', () async {
+      await connect();
+      await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+      await me.c.startAvailability(AvailabilityMode.driving, 30);
+      await me.c.stopAvailability();
+      expect(me.c.showDriveInvite(now), isFalse);
+    });
+
+    test('favorites: two starred contacts not on DriveBond, others next '
+        'trip, through the dialer; the switch turns it off', () async {
+      await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+      me.contacts
+        ..numbers = [
+          '0532222222', // Yoni: on DriveBond → a friend, not a call
+          '0541000001',
+          '0541000002',
+          '0541000003',
+          '0541000004', // not a favorite
+        ]
+        ..names = {
+          '0532222222': 'יוני',
+          '0541000001': 'דנה',
+          '0541000002': 'אבי',
+          '0541000003': 'רותי',
+          '0541000004': 'אינסטלטור',
+        }
+        ..starred = {'0532222222', '0541000001', '0541000002', '0541000003'};
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      await me.c.syncContacts();
+      final first = await me.c.favoriteSuggestions();
+      expect([for (final p in first) p.name], ['דנה', 'אבי']);
+      // Same trip: the same two.
+      expect(
+        [for (final p in await me.c.favoriteSuggestions()) p.name],
+        ['דנה', 'אבי'],
+      );
+      // The next trip: the one not suggested yet comes first.
+      now = now.add(const Duration(hours: 5));
+      expect(
+        [for (final p in await me.c.favoriteSuggestions()) p.name],
+        ['רותי', 'דנה'],
+      );
+      await me.c.callFavorite(first.first);
+      expect(me.dialer.dialed, ['0541000001']);
+      await me.c.setFavoritesOn(false);
+      expect(me.c.favoritesOn, isFalse);
+      expect(await me.c.favoriteSuggestions(), isEmpty);
+    });
+
+    test(
+      '"I added them" shows until they add me back; removing ends it',
+      () async {
+        await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+        yoni.contacts.numbers = ['0521111111'];
+        await yoni.c.signIn('יוני', Gender.male, phone: '0532222222');
+        await yoni.c.syncContacts();
+        await yoni.c.addContacts(yoni.c.contactMatches);
+        expect(yoni.s.snapshot!.status.asked, {me.backend.userId});
+        await me.c.refresh();
+        await pump(20);
+        // "No, thanks": removed, and Yoni's "waiting" ends.
+        final f = me.c.pendingFriend!;
+        me.c.dismissNewFriend(f);
+        await me.c.unmatch(f);
+        await yoni.c.refresh();
+        expect(yoni.s.snapshot!.status.asked, isEmpty);
+        expect(yoni.s.snapshot!.friends, isEmpty);
+      },
+    );
   });
 }

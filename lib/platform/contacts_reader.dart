@@ -4,9 +4,12 @@ import 'package:flutter/services.dart';
 /// A number from the phone's contacts and the name saved for it here.
 /// Numbers are hashed before anything is sent; names never leave the phone.
 class PhoneContact {
-  const PhoneContact(this.number, this.name);
+  const PhoneContact(this.number, this.name, {this.starred = false});
   final String number;
   final String name;
+
+  /// A favorite on this phone ("maybe call…" suggestions, never sent).
+  final bool starred;
 }
 
 /// The phone's contacts (see RealController.syncContacts).
@@ -50,7 +53,11 @@ class AndroidContactsReader implements ContactsReader {
       return [
         for (final m in list ?? const [])
           if (m is Map)
-            PhoneContact('${m['number'] ?? ''}', '${m['name'] ?? ''}'),
+            PhoneContact(
+              '${m['number'] ?? ''}',
+              '${m['name'] ?? ''}',
+              starred: '${m['starred']}' == '1',
+            ),
       ];
     } catch (_) {
       return const [];
@@ -63,12 +70,16 @@ class FakeContactsReader implements ContactsReader {
   FakeContactsReader({
     this.numbers = const [],
     this.names = const {},
+    this.starred = const {},
     this.granted = true,
   });
   List<String> numbers;
 
   /// Number → the name saved for it (tests).
   Map<String, String> names;
+
+  /// Favorite numbers (tests).
+  Set<String> starred;
   bool granted;
   var asked = false;
 
@@ -82,6 +93,9 @@ class FakeContactsReader implements ContactsReader {
 
   @override
   Future<List<PhoneContact>> contacts() async => granted
-      ? [for (final n in numbers) PhoneContact(n, names[n] ?? '')]
+      ? [
+          for (final n in numbers)
+            PhoneContact(n, names[n] ?? '', starred: starred.contains(n)),
+        ]
       : const [];
 }

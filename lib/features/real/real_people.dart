@@ -16,10 +16,27 @@ import 'real_circles.dart';
 import 'real_common.dart';
 import 'real_quick.dart';
 
+/// "This week I talked with N friends" + an invitation link (1.2.1).
+Future<void> shareWeek(BuildContext context, WidgetRef ref, int people) async {
+  final l = context.l10n;
+  final invite = BackendConfig.store
+      ? l.realInviteStore(BackendConfig.playUrl)
+      : l.realInviteSimple(
+          ref.read(apkUrlProvider),
+          BackendConfig.downloadPageUrl,
+        );
+  final text = '${l.weekShareText(people)}\n\n$invite';
+  try {
+    await SharePlus.instance.share(
+      ShareParams(text: text, subject: l.realInviteShareSubject),
+    );
+  } catch (_) {}
+}
+
 /// Create an invitation and open the phone's share sheet (WhatsApp, SMS…).
 /// Falls back to copying when sharing isn't available.
-/// Normally just the download link: once the friend joins, people who have
-/// each other's number connect by themselves. [withCode] adds a personal
+/// Normally just the download link: once the friend joins, they add me
+/// from their contacts and I get "X added you — add back?" (1.2.1). [withCode] adds a personal
 /// code, for a friend who isn't saved in my contacts.
 Future<void> shareInvite(
   BuildContext context,
@@ -196,6 +213,12 @@ class RealPeopleScreen extends ConsumerWidget {
                     : '${modeLabel(l, a.mode)} · '
                           '${l.timeLeftMinutes(a.minutesLeftAt(now))}',
                 color: AppColors.sageDark,
+              ),
+              // I added them; they haven't added me back yet (1.2.1).
+              _ when snap.status.asked.contains(f.id) => StatusLine(
+                icon: Icons.hourglass_top_rounded,
+                text: l.askedWaiting,
+                color: AppColors.inkSoft,
               ),
               _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {
                 >= 30 => l.inactiveMonth,

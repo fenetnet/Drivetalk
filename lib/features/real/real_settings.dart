@@ -155,6 +155,14 @@ class RealSettingsScreen extends ConsumerWidget {
                     ? null
                     : c.setTripNotify,
               ),
+              // "Maybe call a favorite?" while nobody's free (1.2.1).
+              SwitchListTile(
+                secondary: const Icon(Icons.star_rounded),
+                title: Text(l.settingsFavorites),
+                subtitle: Text(l.settingsFavoritesHint),
+                value: c.favoritesOn,
+                onChanged: c.setFavoritesOn,
+              ),
               if (s.driving.supported)
                 ListTile(
                   leading: const Icon(Icons.bedtime_rounded),

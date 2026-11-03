@@ -1138,6 +1138,10 @@ class MemoryRealBackend implements RealBackend {
           for (final e in server.pendingFor.entries)
             if (e.value == me) e.key.split('|').firstWhere((x) => x != me),
         },
+        asked: {
+          for (final e in server.pendingFor.entries)
+            if (e.value != me && e.key.split('|').contains(me)) e.value,
+        },
       ),
       inactiveDays: {
         for (final f in friends)
@@ -1593,14 +1597,7 @@ class MemoryRealBackend implements RealBackend {
       for (final h in hashes)
         if (users.contains(h)) h,
     };
-    // Whoever added me and is in my contacts: kept (I know them).
-    server.pendingFor.removeWhere((pair, who) {
-      if (who != me) return false;
-      final other = pair.split('|').firstWhere((x) => x != me);
-      final phone = server.phones[other];
-      return phone != null &&
-          server.contactHashes[me]!.contains(hashPhone(phone));
-    });
+    // Nobody is approved by a search: adding back does that (1.2.1).
     return _rows(me);
   }
 
@@ -1613,7 +1610,10 @@ class MemoryRealBackend implements RealBackend {
       final h = hashPhone(e.value);
       if (e.key == me || h == null || !mine.contains(h)) continue;
       if (server.blockedBetween(me, e.key)) continue;
-      final friend = server.connected(me, e.key);
+      // Waiting for me to add back: not a friend yet (1.2.1).
+      final friend =
+          server.connected(me, e.key) &&
+          server.pendingFor[MemoryServer._pair(me, e.key)] != me;
       final row = ContactMatch(
         e.key,
         server.profiles[e.key]!.name,
@@ -1642,12 +1642,14 @@ class MemoryRealBackend implements RealBackend {
     final names = <String>[];
     for (final m in _matches(me)) {
       if (!userIds.contains(m.id)) continue;
-      server.connect(me, m.id);
-      // They don't have my number saved (as far as we know): they decide.
-      final mine = server.phones[me];
-      if (mine == null ||
-          !(server.contactHashes[m.id]?.contains(hashPhone(mine)) ?? false)) {
-        server.pendingFor[MemoryServer._pair(me, m.id)] = m.id;
+      final pair = MemoryServer._pair(me, m.id);
+      if (server.pendingFor[pair] == me) {
+        // They added me first: adding back connects us (1.2.1).
+        server.pendingFor.remove(pair);
+      } else {
+        // Mutual add: they decide ("X added you — add back?").
+        server.connect(me, m.id);
+        server.pendingFor[pair] = m.id;
       }
       names.add(m.name);
     }

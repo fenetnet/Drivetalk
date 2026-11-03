@@ -1357,7 +1357,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get contactsPickBody =>
-      'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.';
+      'בוחרים רק את מי שבא לדבר איתו. הם יקבלו הודעה, וכשיוסיפו אותך בחזרה – אתם מחוברים. מי שלא נבחר לא יודע על זה.';
 
   @override
   String get contactsAdd => 'להוסיף';
@@ -1771,19 +1771,93 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String pendingTitle(String name) {
-    return 'הצטרפת לרשימה של $name';
+    return '$name הוסיף/ה אותך';
   }
 
   @override
   String pendingBody(String name) {
-    return '$name הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?';
+    return '$name עוד לא רואה מתי יש לך זמן. להוסיף בחזרה?';
   }
 
   @override
-  String get pendingKeep => 'להשאיר';
+  String get pendingKeep => 'להוסיף בחזרה';
 
   @override
-  String get pendingRemove => 'להסיר';
+  String get pendingRemove => 'לא, תודה';
+
+  @override
+  String realContactsAsked(String names) {
+    return '$names — קיבלו הודעה. כשיוסיפו אותך בחזרה, אתם מחוברים.';
+  }
+
+  @override
+  String get askedWaiting => 'עוד לא הוסיף/ה אותך בחזרה';
+
+  @override
+  String addedNotifTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': '$name הוסיפה אותך ב-DriveBond',
+      'male': '$name הוסיף אותך ב-DriveBond',
+      'other': '$name הוסיף/ה אותך ב-DriveBond',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get addedNotifBody => 'להוסיף בחזרה? ככה תוכלו לדבר כששניכם בדרכים.';
+
+  @override
+  String acceptedNotifTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': '$name הוסיפה אותך בחזרה 🎉',
+      'male': '$name הוסיף אותך בחזרה 🎉',
+      'other': '$name הוסיף/ה אותך בחזרה 🎉',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get acceptedNotifBody =>
+      'עכשיו אתם מחוברים: כשלשניכם יש זמן, נציע לכם לדבר.';
+
+  @override
+  String weeklyNotifTitle(String people, String talks) {
+    return 'השבוע דיברת עם $people חברים ב-$talks שיחות 🔥';
+  }
+
+  @override
+  String get weeklyNotifBody => 'יופי של שבוע. מי הבא בתור?';
+
+  @override
+  String get weekShare => 'לשתף';
+
+  @override
+  String weekShareText(int people) {
+    return 'השבוע דיברתי עם $people חברים בזמן נסיעות, עם DriveBond 🚗🔥';
+  }
+
+  @override
+  String get driveInviteTitle => 'את מי היית רוצה לשמוע בפקק?';
+
+  @override
+  String get driveInviteBody =>
+      'בנסיעה האחרונה אף חבר לא היה פנוי. מזמינים עוד חבר או שניים, ובנסיעה הבאה יהיה עם מי לדבר.';
+
+  @override
+  String get driveInviteButton => 'להזמין חבר';
+
+  @override
+  String get favoritesTitle => 'אף חבר לא פנוי. אולי להתקשר למישהו מהמועדפים?';
+
+  @override
+  String get favoritesNote => 'מהמועדפים בטלפון שלך. השיחה עוברת בחייגן הרגיל.';
+
+  @override
+  String get settingsFavorites => 'הצעות מהמועדפים בנסיעה';
+
+  @override
+  String get settingsFavoritesHint =>
+      'כשאף חבר לא פנוי, נציע 2 אנשים שסימנת כמועדפים בטלפון. הכול נשאר בטלפון.';
 
   @override
   String offerShared(int minutes) {
