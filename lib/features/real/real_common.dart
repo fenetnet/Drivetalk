@@ -1040,3 +1040,29 @@ class BoltBadge extends StatelessWidget {
     child: Icon(Icons.bolt_rounded, color: Colors.white, size: size * 0.7),
   );
 }
+
+/// "How should we address you?" — אתה / את / doesn't matter (owner, 1.2.2).
+/// Only for the wording; nothing else depends on it.
+class GenderChoice extends StatelessWidget {
+  const GenderChoice({super.key, required this.value, required this.onChanged});
+  final Gender? value;
+  final ValueChanged<Gender> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return SegmentedButton<Gender>(
+      emptySelectionAllowed: true,
+      showSelectedIcon: false,
+      segments: [
+        ButtonSegment(value: Gender.male, label: Text(l.genderMale)),
+        ButtonSegment(value: Gender.female, label: Text(l.genderFemale)),
+        ButtonSegment(value: Gender.unspecified, label: Text(l.genderAny)),
+      ],
+      selected: {?value},
+      onSelectionChanged: (v) {
+        if (v.isNotEmpty) onChanged(v.first);
+      },
+    );
+  }
+}

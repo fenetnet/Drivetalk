@@ -6,6 +6,7 @@
 //        | #first-photo | #first-contacts | #first-result | #first-routine
 //        | #first-permissions | #first-magic | #new-home | #new-free
 //        | #added | #lonely | #week | #asked (1.2.1)
+//        | #onboarding-name | #gender (1.2.2)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,6 +74,8 @@ Future<void> main() async {
     store.values['real.googleCard.v1'] = 'no';
     // Joined with this version: ⚡ auto-yes waits for the first talk.
     store.values['real.autoYesLock.v1'] = 'locked';
+  } else if (screen == 'onboarding-name') {
+    RealOnboarding.debugSkipIntro = true;
   } else if (screen != 'onboarding') {
     await me.signIn('נתנאל', Gender.male);
     await me.setMyPhone('0521111111');
@@ -140,6 +143,12 @@ Future<void> main() async {
       'week',
       'driving',
     ].contains(screen)) {
+      store.values['real.whatsNew.v1'] = '170';
+      store.values['real.googleCard.v1'] = 'no';
+    }
+    if (screen == 'gender') {
+      // Joined before the question: neutral, not asked yet.
+      await me.updateProfile('נתנאל', Gender.unspecified);
       store.values['real.whatsNew.v1'] = '170';
       store.values['real.googleCard.v1'] = 'no';
     }

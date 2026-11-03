@@ -3001,8 +3001,8 @@ abstract class AppLocalizations {
   /// No description provided for @pendingTitle.
   ///
   /// In he, this message translates to:
-  /// **'{name} הוסיף/ה אותך'**
-  String pendingTitle(String name);
+  /// **'{gender, select, female{{name} הוסיפה אותך} male{{name} הוסיף אותך} other{{name} הוסיף/ה אותך}}'**
+  String pendingTitle(String name, String gender);
 
   /// No description provided for @pendingBody.
   ///
@@ -3031,8 +3031,8 @@ abstract class AppLocalizations {
   /// No description provided for @askedWaiting.
   ///
   /// In he, this message translates to:
-  /// **'עוד לא הוסיף/ה אותך בחזרה'**
-  String get askedWaiting;
+  /// **'{gender, select, female{עוד לא הוסיפה אותך בחזרה} male{עוד לא הוסיף אותך בחזרה} other{עוד לא הוסיף/ה אותך בחזרה}}'**
+  String askedWaiting(String gender);
 
   /// Push (1.2.1): someone added me from their contacts
   ///
@@ -5157,6 +5157,42 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **' · מ-{n} אנשים'**
   String statsPeople(int n);
+
+  /// No description provided for @genderQuestion.
+  ///
+  /// In he, this message translates to:
+  /// **'איך לפנות אליך?'**
+  String get genderQuestion;
+
+  /// No description provided for @genderMale.
+  ///
+  /// In he, this message translates to:
+  /// **'אתה'**
+  String get genderMale;
+
+  /// No description provided for @genderFemale.
+  ///
+  /// In he, this message translates to:
+  /// **'את'**
+  String get genderFemale;
+
+  /// No description provided for @genderAny.
+  ///
+  /// In he, this message translates to:
+  /// **'לא משנה'**
+  String get genderAny;
+
+  /// No description provided for @genderHint.
+  ///
+  /// In he, this message translates to:
+  /// **'רק בשביל הניסוח באפליקציה. אפשר לדלג, ואפשר לשנות בהגדרות.'**
+  String get genderHint;
+
+  /// No description provided for @genderCardBody.
+  ///
+  /// In he, this message translates to:
+  /// **'בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות.'**
+  String get genderCardBody;
 }
 
 class _AppLocalizationsDelegate

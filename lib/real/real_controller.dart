@@ -1214,6 +1214,29 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith();
   }
 
+  // ------------------------------------------------------------ address (1.2.2)
+
+  static const _genderAskedKey = 'real.genderAsked.v1';
+
+  /// Joined before the question: ask once on Home (any answer or ✕ ends it).
+  bool get showGenderCard =>
+      state.snapshot?.me.gender == Gender.unspecified &&
+      state.firstRun == null &&
+      _store.getString(_genderAskedKey) == null;
+
+  void dismissGenderCard() {
+    _store.setString(_genderAskedKey, 'yes');
+    state = state.copyWith();
+  }
+
+  /// "אתה" / "את" / doesn't matter — only the wording changes.
+  Future<void> setMyGender(Gender g) async {
+    await _store.setString(_genderAskedKey, 'yes');
+    final me = state.snapshot?.me;
+    if (me == null) return;
+    await updateProfile(me.name, g);
+  }
+
   // ------------------------------------------------------------ growth (1.2.1)
 
   static const _favoritesOffKey = 'real.favoritesOff.v1';
@@ -1659,6 +1682,8 @@ class RealController extends Notifier<RealState> {
       // steps and keeps ⚡ waiting for the first talk.
       await _store.setString(_firstRunKey, FirstRunStep.photo.name);
       await _store.setString(_autoYesLockKey, 'locked');
+      // Asked at sign-up (answered or skipped): no card later (1.2.2).
+      await _store.setString(_genderAskedKey, 'yes');
       if (phone != null && phone.trim().isNotEmpty) {
         // Joining is complete only with the number saved (friends find
         // each other by it). On failure: stay here and try again.
@@ -2031,6 +2056,11 @@ class RealController extends Notifier<RealState> {
       _usedFreeKey,
       _milestoneKey,
       _autoYesLockKey,
+      _genderAskedKey,
+      _favoritesOffKey,
+      _favoritesShownKey,
+      _lonelyDriveKey,
+      _driveInviteKey,
       _quickOffKey,
       _namesCheckedKey,
       _pendingSyncKey,
@@ -4550,7 +4580,11 @@ class RealController extends Notifier<RealState> {
 }
 
 /// Gender-neutral texts for everyone (D-073).
-String _genderKey(Gender g) => 'other';
+String _genderKey(Gender g) => switch (g) {
+  Gender.female => 'female',
+  Gender.male => 'male',
+  Gender.unspecified => 'other',
+};
 
 /// The share text. With an invite site: message + link. Without: message +
 /// download link + code to type in the app.

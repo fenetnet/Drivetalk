@@ -217,7 +217,7 @@ class RealPeopleScreen extends ConsumerWidget {
               // I added them; they haven't added me back yet (1.2.1).
               _ when snap.status.asked.contains(f.id) => StatusLine(
                 icon: Icons.hourglass_top_rounded,
-                text: l.askedWaiting,
+                text: l.askedWaiting(genderKey(f.gender)),
                 color: AppColors.inkSoft,
               ),
               _ => Text(switch (snap.inactiveDays[f.id] ?? 0) {

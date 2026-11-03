@@ -373,6 +373,8 @@ Widget? _topCard(RealState s, RealController c, DateTime now) {
   if (c.newContactMatch case final m?) return _NewContactCard(match: m);
   // Just after a trip with nobody free: invite someone (1.2.1).
   if (c.showDriveInvite(now)) return const _DriveInviteCard();
+  // Once, for people who joined before the question (1.2.2).
+  if (c.showGenderCard) return const _GenderCard();
   return null;
 }
 
@@ -916,7 +918,7 @@ class _PendingFriendCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    l.pendingTitle(friend.name),
+                    l.pendingTitle(friend.name, genderKey(friend.gender)),
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -1169,6 +1171,56 @@ class _WeekCard extends StatelessWidget {
               label: Text(l.weekShare),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// "How should we address you?" — once, for people who joined before the
+/// question existed (1.2.2). Any answer (or ✕) closes it for good.
+class _GenderCard extends ConsumerWidget {
+  const _GenderCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l.genderQuestion,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l.close,
+                  onPressed: c.dismissGenderCard,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 0, left: 8),
+              child: Text(l.genderCardBody),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: GenderChoice(value: null, onChanged: c.setMyGender),
+            ),
+          ],
+        ),
       ),
     );
   }

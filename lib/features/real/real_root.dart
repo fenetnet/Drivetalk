@@ -372,6 +372,9 @@ class _NotConfigured extends ConsumerWidget {
 class RealOnboarding extends ConsumerStatefulWidget {
   const RealOnboarding({super.key});
 
+  /// Design preview only: start at the name step.
+  static bool debugSkipIntro = false;
+
   @override
   ConsumerState<RealOnboarding> createState() => _RealOnboardingState();
 }
@@ -379,12 +382,13 @@ class RealOnboarding extends ConsumerStatefulWidget {
 class _RealOnboardingState extends ConsumerState<RealOnboarding> {
   final _name = TextEditingController();
   final _phone = TextEditingController();
-  // No gender question (owner decision D-044).
-  final _gender = Gender.unspecified;
+  // How to address me (owner, 1.2.2): optional — no answer = neutral.
+  Gender? _picked;
+  Gender get _gender => _picked ?? Gender.unspecified;
 
   /// First the three photo pages (owner), then:
   /// how to join (Google or a name), then the number (required).
-  var _introDone = false;
+  var _introDone = RealOnboarding.debugSkipIntro;
   var _phoneStep = false;
   var _viaGoogle = false;
 
@@ -578,6 +582,29 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                             onChanged: (_) => setState(() {}),
                           ),
                           const SizedBox(height: 6),
+                          if (!_phoneStep) ...[
+                            Text(
+                              l.genderQuestion,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            GenderChoice(
+                              value: _picked,
+                              onChanged: (g) => setState(() => _picked = g),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              l.genderHint,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.inkSoft,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                          ],
                         ],
                         if (_phoneStep)
                           TextField(

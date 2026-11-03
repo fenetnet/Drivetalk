@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../domain/models.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../real/backend_config.dart';
@@ -497,6 +498,12 @@ class RealSettingsScreen extends ConsumerWidget {
               title: Text(l.realNameTitle),
               onTap: () => Navigator.pop(sheet, 'name'),
             ),
+            // "אתה" / "את" / doesn't matter (1.2.2).
+            ListTile(
+              leading: const Icon(Icons.wc_rounded),
+              title: Text(l.genderQuestion),
+              onTap: () => Navigator.pop(sheet, 'gender'),
+            ),
             ListTile(
               leading: const Icon(Icons.photo_camera_rounded),
               title: Text(l.realPhotoTitle),
@@ -516,6 +523,8 @@ class RealSettingsScreen extends ConsumerWidget {
     switch (choice) {
       case 'name':
         await _editName(context, ref);
+      case 'gender':
+        await _editGender(context, ref);
       case 'photo':
         await editMyPhoto(context, ref, hasPhoto: hasPhoto);
       case 'phone':
@@ -584,6 +593,33 @@ class RealSettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _editGender(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final picked = await showDialog<Gender>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: Text(l.genderQuestion),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GenderChoice(
+              value: ref.read(realProvider).snapshot?.me.gender,
+              onChanged: (g) => Navigator.pop(d, g),
+            ),
+            const SizedBox(height: 10),
+            Text(l.genderHint),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d), child: Text(l.cancel)),
+        ],
+      ),
+    );
+    if (picked != null) await c.setMyGender(picked);
   }
 
   Future<void> _editName(BuildContext context, WidgetRef ref) async {

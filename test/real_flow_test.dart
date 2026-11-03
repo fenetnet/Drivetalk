@@ -924,7 +924,7 @@ void main() {
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
     await me.c.refresh();
     await pump(50);
-    expect(me.voice.spoken, contains('ליוני יש זמן. לדבר?'));
+    expect(me.voice.spoken, contains('יוני פנוי. לדבר?'));
     expect(waitingOffer(me.s, now), isNotNull);
   });
 
@@ -950,6 +950,7 @@ void main() {
       );
       me.c.debugLifecycle(AppLifecycleState.resumed);
       await pump(50);
+      // From the notification: only the name, so the neutral wording.
       expect(me.voice.spoken.first, 'ליוני יש זמן. לדבר?');
       expect(
         me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?'),
@@ -974,7 +975,7 @@ void main() {
     await yoni.c.startAvailability(AvailabilityMode.free, 30);
     await me.c.refresh();
     await pump(50);
-    expect(me.voice.spoken.where((x) => x == 'ליוני יש זמן. לדבר?').length, 2);
+    expect(me.voice.spoken.where((x) => x == 'יוני פנוי. לדבר?').length, 2);
     expect(waitingOffer(me.s, now), isNotNull, reason: 'the second "yes"');
   });
 
@@ -3159,7 +3160,7 @@ void main() {
       await yoni.c.startAvailability(AvailabilityMode.free, 30);
       await me.c.refresh();
       await pump(20);
-      expect(me.voice.spoken, isNot(contains('ליוני יש זמן. לדבר?')));
+      expect(me.voice.spoken, isNot(contains('יוני פנוי. לדבר?')));
       expect(me.s.listening, isFalse, reason: 'no hidden microphone');
     });
 
@@ -3511,5 +3512,54 @@ void main() {
         expect(yoni.s.snapshot!.friends, isEmpty);
       },
     );
+  });
+
+  group('how to address me (1.2.2)', () {
+    test(
+      'asked at sign-up (or skipped): no card later; saved for friends',
+      () async {
+        await me.c.signIn('נועה', Gender.female, phone: '0521111111');
+        expect(me.s.snapshot!.me.gender, Gender.female);
+        expect(me.c.showGenderCard, isFalse);
+        await yoni.c.signIn('יוני', Gender.unspecified, phone: '0532222222');
+        expect(yoni.c.showGenderCard, isFalse, reason: 'skipped at sign-up');
+      },
+    );
+
+    test('joined before the question: one card; the answer is saved', () async {
+      await connect();
+      for (var i = 0; i < 10 && me.s.firstRun != null; i++) {
+        me.c.firstRunNext();
+        await pump();
+      }
+      expect(me.s.firstRun, isNull);
+      // As if this account joined before 1.2.2 (no question then).
+      await me.store.setString('real.genderAsked.v1', null);
+      await me.c.updateProfile('נתנאל', Gender.unspecified);
+      expect(me.c.showGenderCard, isTrue);
+      await me.c.setMyGender(Gender.male);
+      expect(me.s.snapshot!.me.gender, Gender.male);
+      expect(me.c.showGenderCard, isFalse);
+      // Friends see it (their texts about me use it).
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.friends.single.gender, Gender.male);
+      // "Doesn't matter" later, from settings: neutral again.
+      await me.c.setMyGender(Gender.unspecified);
+      expect(me.s.snapshot!.me.gender, Gender.unspecified);
+      expect(me.c.showGenderCard, isFalse, reason: 'already answered');
+    });
+
+    test('✕ closes the card for good', () async {
+      await connect();
+      await me.store.setString('real.genderAsked.v1', null);
+      await me.c.updateProfile('נתנאל', Gender.unspecified);
+      for (var i = 0; i < 10 && me.s.firstRun != null; i++) {
+        me.c.firstRunNext();
+        await pump();
+      }
+      expect(me.c.showGenderCard, isTrue);
+      me.c.dismissGenderCard();
+      expect(me.c.showGenderCard, isFalse);
+    });
   });
 }

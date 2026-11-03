@@ -1770,8 +1770,13 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String pendingTitle(String name) {
-    return '$name הוסיף/ה אותך';
+  String pendingTitle(String name, String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': '$name הוסיפה אותך',
+      'male': '$name הוסיף אותך',
+      'other': '$name הוסיף/ה אותך',
+    });
+    return '$_temp0';
   }
 
   @override
@@ -1791,7 +1796,14 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String get askedWaiting => 'עוד לא הוסיף/ה אותך בחזרה';
+  String askedWaiting(String gender) {
+    String _temp0 = intl.Intl.selectLogic(gender, {
+      'female': 'עוד לא הוסיפה אותך בחזרה',
+      'male': 'עוד לא הוסיף אותך בחזרה',
+      'other': 'עוד לא הוסיף/ה אותך בחזרה',
+    });
+    return '$_temp0';
+  }
 
   @override
   String addedNotifTitle(String name, String gender) {
@@ -3097,4 +3109,24 @@ class AppLocalizationsHe extends AppLocalizations {
   String statsPeople(int n) {
     return ' · מ-$n אנשים';
   }
+
+  @override
+  String get genderQuestion => 'איך לפנות אליך?';
+
+  @override
+  String get genderMale => 'אתה';
+
+  @override
+  String get genderFemale => 'את';
+
+  @override
+  String get genderAny => 'לא משנה';
+
+  @override
+  String get genderHint =>
+      'רק בשביל הניסוח באפליקציה. אפשר לדלג, ואפשר לשנות בהגדרות.';
+
+  @override
+  String get genderCardBody =>
+      'בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות.';
 }

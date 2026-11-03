@@ -169,10 +169,10 @@ void main() {
       });
       await pumpFor(t, 800);
       // No code, no invitation: "Yoni added you — add back?" at the top.
-      expect(find.text('יוני הוסיף/ה אותך'), findsOneWidget);
+      expect(find.text('יוני הוסיף אותך'), findsOneWidget);
       await t.tap(find.text('להוסיף בחזרה'));
       await pumpFor(t, 800);
-      expect(find.text('יוני הוסיף/ה אותך'), findsNothing);
+      expect(find.text('יוני הוסיף אותך'), findsNothing);
       await t.scrollUntilVisible(
         find.text(
           'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.',
@@ -208,7 +208,7 @@ void main() {
         await pumpFor(t, 500);
       }
       await pumpFor(t, 800);
-      expect(find.text('ליוני יש זמן עכשיו'), findsOneWidget);
+      expect(find.text('יוני פנוי עכשיו'), findsOneWidget);
       expect(find.text('לא עכשיו'), findsOneWidget);
 
       await t.tap(find.text('לדבר עכשיו'));
