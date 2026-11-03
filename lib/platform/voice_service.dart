@@ -10,6 +10,10 @@ import '../domain/hebrew_text.dart';
 
 enum VoiceAnswer { yes, no, none, permissionDenied, unavailable }
 
+/// The app's language for reading aloud and listening: 'he' or 'en'
+/// (1.2.3; set by the app when the language is chosen).
+String voiceLanguage = 'he';
+
 /// Driving: read things aloud and understand a simple "yes" / "no".
 /// Speech recognition runs through the phone's own recognizer; nothing is
 /// recorded or stored by the app.
@@ -56,9 +60,26 @@ const _yesPhrases = {
   'כן בבקשה',
   'יאללה בוא',
   'יאללה בואי',
+  // English (1.2.3).
   'yes',
+  'yes yes',
+  'yeah',
+  'yep',
+  'yup',
+  'sure',
+  'yes sure',
+  'of course',
+  'yes please',
   'ok',
   'okay',
+  'go ahead',
+  "let's talk",
+  'lets talk',
+  'call',
+  'call me',
+  'yes call',
+  'absolutely',
+  'definitely',
 };
 const _noPhrases = {
   'לא',
@@ -77,10 +98,26 @@ const _noPhrases = {
   'אני עסוקה',
   'לא מתאים',
   'לא עכשיו תודה',
+  // English (1.2.3).
   'no',
+  'no no',
+  'nope',
+  'nah',
   'not now',
+  'no thanks',
+  'no thank you',
+  'not now thanks',
+  'later',
+  'maybe later',
+  'busy',
+  "i'm busy",
+  'im busy',
+  'cancel',
+  "can't",
+  "can't now",
+  'not right now',
 };
-const _fillers = {'אה', 'אמ', 'אממ', 'אהה', 'אוקיי'};
+const _fillers = {'אה', 'אמ', 'אממ', 'אהה', 'אוקיי', 'uh', 'um', 'umm', 'hmm'};
 
 VoiceAnswer parseYesNo(String heard) {
   final words = heard
@@ -124,14 +161,15 @@ class DeviceVoiceService implements VoiceService {
   Completer<VoiceAnswer>? _pending;
   VoiceAnswer? _simulatedNext;
 
-  bool _configured = false;
+  String? _configured;
 
   /// Short, brisk, slightly faster than default, with a Hebrew voice that
   /// runs on the phone itself when there is one.
   Future<void> _configure() async {
-    if (_configured) return;
-    _configured = true;
-    await _tts.setLanguage('he-IL');
+    final lang = voiceLanguage;
+    if (_configured == lang) return;
+    _configured = lang;
+    await _tts.setLanguage(lang == 'en' ? 'en-US' : 'he-IL');
     await _tts.setSpeechRate(0.58); // 0.5 = normal on Android
     await _tts.setPitch(1.05);
     await _tts.awaitSpeakCompletion(true);
@@ -145,7 +183,11 @@ class DeviceVoiceService implements VoiceService {
       final voices = await _tts.getVoices as List?;
       final hebrew = [
         for (final v in voices ?? const [])
-          if (v is Map && '${v['locale']}'.toLowerCase().startsWith('he')) v,
+          if (v is Map &&
+              '${v['locale']}'.toLowerCase().startsWith(
+                lang == 'en' ? 'en' : 'he',
+              ))
+            v,
       ];
       if (hebrew.isEmpty) return;
       // Prefer voices that work on the phone itself (nothing sent out).
@@ -384,7 +426,7 @@ class DeviceVoiceService implements VoiceService {
       }
       await _stt.listen(
         listenOptions: SpeechListenOptions(
-          localeId: 'he_IL',
+          localeId: voiceLanguage == 'en' ? 'en_US' : 'he_IL',
           listenFor: timeout,
           // Only the finished sentence counts ("yes… actually no").
           partialResults: false,

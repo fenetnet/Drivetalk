@@ -23,35 +23,50 @@
 <body>
 <main>
   <div class="logo">🚗💬</div>
-  <h1 id="title">קיבלת הזמנה ל-DriveBond</h1>
-  <p class="lead">כששניכם פנויים, DriveBond פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
-  <p class="small">אחרי ההתקנה לוחצים "פתיחה באפליקציה" — ואתם מחוברים. שיחה מתחילה רק אם שניכם אומרים כן.</p>
+  <h1 id="title" data-en="You're invited to DriveBond">קיבלת הזמנה ל-DriveBond</h1>
+  <p class="lead" data-en="When you're both free, DriveBond simply suggests you talk — no planning ahead.">כששניכם פנויים, DriveBond פשוט מציעה לכם לדבר — בלי לתאם מראש.</p>
+  <p class="small" data-en="After installing, tap &quot;Open in the app&quot; — and you're connected. A call starts only if you both say yes.">אחרי ההתקנה לוחצים "פתיחה באפליקציה" — ואתם מחוברים. שיחה מתחילה רק אם שניכם אומרים כן.</p>
 
   <section class="card" id="has-app">
-    <h2>כבר יש לך את האפליקציה?</h2>
-    <a class="btn primary" id="open-app" href="#">פתיחה באפליקציה</a>
+    <h2 data-en="Already have the app?">כבר יש לך את האפליקציה?</h2>
+    <a class="btn primary" id="open-app" href="#" data-en="Open in the app">פתיחה באפליקציה</a>
   </section>
 
   <section class="card">
-    <h2>אין עדיין?</h2>
+    <h2 data-en="Not yet?">אין עדיין?</h2>
     <ol>
-      <li><a class="btn" id="download" href="#">הורדת האפליקציה (אנדרואיד)</a></li>
-      <li id="install-step">פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
-      <li>חוזרים לדף הזה ולוחצים <b>"פתיחה באפליקציה"</b>.</li>
+      <li><a class="btn" id="download" href="#" data-en="Download the app (Android)">הורדת האפליקציה (אנדרואיד)</a></li>
+      <li id="install-step" data-en="Open the downloaded file and install. If the phone warns you — &quot;Install anyway&quot; (this is a test version, not from the store).">פותחים את הקובץ שירד ומתקינים. אם הטלפון מזהיר — "התקנה בכל זאת" (זו גרסת ניסיון שלא מהחנות).</li>
+      <li data-en="Come back to this page and tap <b>&quot;Open in the app&quot;</b>.">חוזרים לדף הזה ולוחצים <b>"פתיחה באפליקציה"</b>.</li>
     </ol>
-    <p class="small">אייפון: גרסה תגיע בהמשך.</p>
+    <p class="small" data-en="iPhone: not available.">אייפון: גרסה תגיע בהמשך.</p>
   </section>
 
   <section class="card" id="code-card">
-    <h2>או להקליד את הקוד</h2>
-    <p class="small">באפליקציה: האנשים שלי ← יש לי קוד הזמנה</p>
+    <h2 data-en="Or type the code">או להקליד את הקוד</h2>
+    <p class="small" data-en="In the app: My people → I have an invite code">באפליקציה: האנשים שלי ← יש לי קוד הזמנה</p>
     <div class="code" id="code" dir="ltr"></div>
-    <button class="btn" id="copy">העתקת הקוד</button>
+    <button class="btn" id="copy" data-en="Copy the code">העתקת הקוד</button>
   </section>
 
-  <p class="small muted">בלי מיקום, בלי הקלטות. אפשר לחסום או להסיר בכל רגע.</p>
+  <p class="small muted" data-en="No location, no recordings. You can block or remove anyone at any time.">בלי מיקום, בלי הקלטות. אפשר לחסום או להסיר בכל רגע.</p>
 </main>
 <script>
+// English for anyone whose phone isn't in Hebrew (1.2.3); ?lang=he / ?lang=en
+// choose. The English texts are this page's own (data-en), never the link's.
+var DT_EN = (function () {
+  var q = new URLSearchParams(location.search).get('lang');
+  if (q === 'he' || q === 'en') return q === 'en';
+  return !/^(he|iw)/i.test(navigator.language || '');
+})();
+if (DT_EN) {
+  document.documentElement.lang = 'en';
+  document.documentElement.dir = 'ltr';
+  document.title = 'Invitation to DriveBond';
+  document.querySelectorAll('[data-en]').forEach(function (e) {
+    e.innerHTML = e.getAttribute('data-en');
+  });
+}
 (function () {
   var base = window.DT_BASE || '';
   // Read the code from /i/<code> or ?t=<code>.
@@ -62,7 +77,9 @@
   // Who invited me (their own first name, put in the link by their app).
   var from = new URLSearchParams(location.search).get('from');
   if (from && from.length <= 40) {
-    document.getElementById('title').textContent = 'קיבלת הזמנה מ־' + from + ' ל-DriveBond';
+    document.getElementById('title').textContent = DT_EN
+      ? from + ' invited you to DriveBond'
+      : 'קיבלת הזמנה מ־' + from + ' ל-DriveBond';
   }
 
   function start() {
@@ -73,8 +90,10 @@
     var dl = document.getElementById('download');
     dl.href = apk;
     if (play) {
-      dl.textContent = 'הורדה מ-Google Play';
-      document.getElementById('install-step').textContent = 'מתקינים מהחנות (כמו כל אפליקציה).';
+      dl.textContent = DT_EN ? 'Get it on Google Play' : 'הורדה מ-Google Play';
+      document.getElementById('install-step').textContent = DT_EN
+        ? 'Install from the store (like any app).'
+        : 'מתקינים מהחנות (כמו כל אפליקציה).';
     }
     var codeEl = document.getElementById('code');
     if (!code) {
@@ -92,7 +111,7 @@
         encodeURIComponent(apk) + ';end'
       : 'drivetalk://invite/' + code;
     document.getElementById('copy').onclick = function () {
-      var done = function () { this.textContent = 'הועתק ✓'; }.bind(this);
+      var done = function () { this.textContent = DT_EN ? 'Copied ✓' : 'הועתק ✓'; }.bind(this);
       if (navigator.clipboard) {
         navigator.clipboard.writeText(code).then(done, function () {});
       }

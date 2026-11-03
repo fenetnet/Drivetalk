@@ -2104,5 +2104,9 @@
   "genderFemale": "את",
   "genderAny": "לא משנה",
   "genderHint": "רק בשביל הניסוח באפליקציה. אפשר לדלג, ואפשר לשנות בהגדרות.",
-  "genderCardBody": "בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות."
+  "genderCardBody": "בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות.",
+  "settingsLanguage": "שפה · Language",
+  "languagePhone": "כמו בטלפון",
+  "languageHe": "עברית",
+  "languageEn": "English"
 }

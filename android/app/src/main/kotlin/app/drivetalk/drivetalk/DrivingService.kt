@@ -222,7 +222,8 @@ class DrivingService : Service() {
         startedAt = System.currentTimeMillis()
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                tts?.language = Locale.forLanguageTag("he-IL")
+                // The app's language (1.2.3): Hebrew unless English was chosen.
+                tts?.language = Locale.forLanguageTag(DrivingStore(this).text("ttsLang", "he-IL"))
                 tts?.setSpeechRate(1.15f)
                 // Like a navigation app: music / Waze get quieter meanwhile.
                 tts?.setAudioAttributes(VOICE_ATTRS)

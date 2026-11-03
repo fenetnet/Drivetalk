@@ -139,6 +139,18 @@ class RealSettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => _pickCar(context, ref),
                 ),
+              // Hebrew / English / like the phone (1.2.3).
+              ListTile(
+                leading: const Icon(Icons.translate_rounded),
+                title: Text(l.settingsLanguage),
+                subtitle: Text(switch (s.prefs.language) {
+                  'he' => l.languageHe,
+                  'en' => l.languageEn,
+                  _ => l.languagePhone,
+                }),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => _pickLanguage(context, ref),
+              ),
               SwitchListTile(
                 secondary: const Icon(Icons.record_voice_over_rounded),
                 title: Text(l.settingsVoiceReadout),
@@ -593,6 +605,41 @@ class RealSettingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _pickLanguage(BuildContext context, WidgetRef ref) async {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final now = ref.read(realProvider).prefs;
+    final picked = await showDialog<String>(
+      context: context,
+      builder: (d) => SimpleDialog(
+        title: Text(l.settingsLanguage),
+        children: [
+          for (final (code, label) in [
+            ('phone', l.languagePhone),
+            ('he', l.languageHe),
+            ('en', l.languageEn),
+          ])
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(d, code),
+              child: Row(
+                children: [
+                  Icon(
+                    (now.language ?? 'phone') == code
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(label, style: const TextStyle(fontSize: 17)),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (picked == null) return;
+    c.setPrefs(now.copyWith(language: () => picked == 'phone' ? null : picked));
   }
 
   Future<void> _editGender(BuildContext context, WidgetRef ref) async {

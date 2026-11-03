@@ -3129,4 +3129,16 @@ class AppLocalizationsHe extends AppLocalizations {
   @override
   String get genderCardBody =>
       'בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות.';
+
+  @override
+  String get settingsLanguage => 'שפה · Language';
+
+  @override
+  String get languagePhone => 'כמו בטלפון';
+
+  @override
+  String get languageHe => 'עברית';
+
+  @override
+  String get languageEn => 'English';
 }

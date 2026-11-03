@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_en.dart';
 import 'app_localizations_he.dart';
 
 // ignore_for_file: type=lint
@@ -92,7 +93,10 @@ abstract class AppLocalizations {
       ];
 
   /// A list of this localizations delegate's supported locales.
-  static const List<Locale> supportedLocales = <Locale>[Locale('he')];
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('he'),
+  ];
 
   /// No description provided for @tabHome.
   ///
@@ -5193,6 +5197,30 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'בחירה אחת, ומעכשיו האפליקציה תפנה אליך בהתאם. אפשר לשנות בהגדרות.'**
   String get genderCardBody;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In he, this message translates to:
+  /// **'שפה · Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @languagePhone.
+  ///
+  /// In he, this message translates to:
+  /// **'כמו בטלפון'**
+  String get languagePhone;
+
+  /// No description provided for @languageHe.
+  ///
+  /// In he, this message translates to:
+  /// **'עברית'**
+  String get languageHe;
+
+  /// No description provided for @languageEn.
+  ///
+  /// In he, this message translates to:
+  /// **'English'**
+  String get languageEn;
 }
 
 class _AppLocalizationsDelegate
@@ -5206,7 +5234,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['he'].contains(locale.languageCode);
+      <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -5215,6 +5243,8 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
     case 'he':
       return AppLocalizationsHe();
   }

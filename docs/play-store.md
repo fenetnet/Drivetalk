@@ -32,6 +32,27 @@
 >
 > הזמן המת שלך. הזמן המת שלהם. שיחה אחת טובה.
 
+**באנגלית (1.2.3):** ב-Play Console: דף החנות הראשי ← "ניהול תרגומים" ← הוספת שפה: English (United States) ← מדביקים:
+
+**Short description (up to 80 characters):**
+> Your dead time + their dead time = a good talk. No planning ahead.
+
+**Full description:**
+> When did you last talk to a good friend — just because?
+>
+> Every day we spend an hour in traffic, on walks and on breaks. So do our friends, at the very same time. Nobody calls, because "maybe they're busy".
+>
+> DriveBond knows when you're both free — and connects you.
+>
+> 🚗 Stuck in traffic? See which friends are free right now: driving, walking, on a break — and who's in a call.
+> 🤝 A call starts only when you both say "yes". Nobody gets disturbed.
+> 📞 "Yes" — and the phone is already dialing, as a regular call.
+> 🎙️ While driving: a simple screen, huge buttons, and answers by voice.
+> ⭐ You decide with whom: rate each friend, and anyone you'd rather not — won't be suggested.
+> 🔒 No feed, no likes, no location and no recordings. Your contacts stay on the phone; only encrypted numbers leave it.
+>
+> Your dead time. Their dead time. One good talk.
+
 **תמונות:**
 - **אייקון:** `icon-512.png`
 - **תמונה ראשית:** `feature-1024x500.png` ("מתי דיברתם בפעם האחרונה?")

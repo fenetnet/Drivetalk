@@ -202,19 +202,51 @@ class RealNotice {
 }
 
 class RealPrefs {
-  const RealPrefs({this.voice = true, this.testTab = true});
+  const RealPrefs({this.voice = true, this.testTab = true, this.language});
   final bool voice;
   final bool testTab;
 
-  RealPrefs copyWith({bool? voice, bool? testTab}) =>
-      RealPrefs(voice: voice ?? this.voice, testTab: testTab ?? this.testTab);
+  /// 'he' / 'en', or null = like the phone (1.2.3).
+  final String? language;
 
-  Map<String, Object?> toJson() => {'voice': voice, 'testTab': testTab};
+  RealPrefs copyWith({
+    bool? voice,
+    bool? testTab,
+    String? Function()? language,
+  }) => RealPrefs(
+    voice: voice ?? this.voice,
+    testTab: testTab ?? this.testTab,
+    language: language == null ? this.language : language(),
+  );
+
+  Map<String, Object?> toJson() => {
+    'voice': voice,
+    'testTab': testTab,
+    'language': language,
+  };
   static RealPrefs fromJson(Map<String, Object?> j) => RealPrefs(
     voice: j['voice'] as bool? ?? true,
     testTab: j['testTab'] as bool? ?? true,
+    language: switch (j['language']) {
+      'he' => 'he',
+      'en' => 'en',
+      _ => null,
+    },
   );
 }
+
+/// The app's language (1.2.3): the one chosen in settings, otherwise the
+/// phone's — English for an English phone, Hebrew for everything else.
+Locale appLocale(String? chosen, Locale phone) => switch (chosen) {
+  'he' => const Locale('he'),
+  'en' => const Locale('en'),
+  _ => phone.languageCode == 'en' ? const Locale('en') : const Locale('he'),
+};
+
+/// The phone's language (tests can replace it).
+final phoneLocaleProvider = Provider<Locale>(
+  (ref) => WidgetsBinding.instance.platformDispatcher.locale,
+);
 
 /// An invitation link/code opened on this phone.
 class PendingInvite {
@@ -552,7 +584,13 @@ class RealController extends Notifier<RealState> {
   /// screen (several calls in one drive: each is asked, one after another).
   final _laterFeedback = <RealCall>[];
 
-  AppLocalizations get _l => lookupAppLocalizations(const Locale('he'));
+  Locale _locale = const Locale('he');
+  AppLocalizations get _l => lookupAppLocalizations(_locale);
+
+  void _useLanguage(String? chosen) {
+    _locale = appLocale(chosen, ref.read(phoneLocaleProvider));
+    voiceLanguage = _locale.languageCode;
+  }
 
   @override
   RealState build() {
@@ -576,6 +614,7 @@ class RealController extends Notifier<RealState> {
       }
     } catch (_) {}
 
+    _useLanguage(prefs.language);
     final routines = _loadRoutines();
     if (!_backend.isConfigured) {
       return RealState(
@@ -1414,6 +1453,8 @@ class RealController extends Notifier<RealState> {
 
   /// Texts for the Android notifications (Hebrew lives in the ARB file).
   Map<String, String> _nativeTexts() => {
+    // The car's voice speaks the app's language (1.2.3).
+    'ttsLang': _locale.languageCode == 'en' ? 'en-US' : 'he-IL',
     'channelStatus': _l.realNotifChannelStatus,
     'channelOffers': _l.realNotifChannelOffers,
     'channelTalk': _l.realNotifChannelTalk,
@@ -2119,8 +2160,18 @@ class RealController extends Notifier<RealState> {
 
   void setPrefs(RealPrefs prefs) {
     final wasVoice = state.prefs.voice;
+    final langChanged = prefs.language != state.prefs.language;
     state = state.copyWith(prefs: prefs);
     _store.setString(_prefsKey, jsonEncode(prefs.toJson()));
+    if (langChanged) {
+      _useLanguage(prefs.language);
+      // Notifications and the voice in the car speak the new language.
+      if (state.driving.configured) {
+        unawaited(
+          ref.read(drivingDetectorProvider).updateTexts(_nativeTexts()),
+        );
+      }
+    }
     if (!prefs.voice) _stopVoice();
     if (prefs.voice && !wasVoice) {
       unawaited(ref.read(voiceServiceProvider).prepare());

@@ -13,4 +13,22 @@ void main() {
       expect(parseYesNo(unclear), VoiceAnswer.none, reason: unclear);
     }
   });
+
+  test('English answers too (1.2.3)', () {
+    for (final yes in [
+      'Yes',
+      'yeah',
+      'Sure!',
+      'um, yes please',
+      "Let's talk",
+    ]) {
+      expect(parseYesNo(yes), VoiceAnswer.yes, reason: yes);
+    }
+    for (final no in ['No', 'nope', 'not now', "I'm busy", 'No thanks.']) {
+      expect(parseYesNo(no), VoiceAnswer.no, reason: no);
+    }
+    for (final unclear in ['yes... actually no', 'maybe']) {
+      expect(parseYesNo(unclear), VoiceAnswer.none, reason: unclear);
+    }
+  });
 }

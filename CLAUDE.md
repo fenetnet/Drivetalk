@@ -82,7 +82,9 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
 
 - Flutter (Dart), Android first.
 - State management: Riverpod 3 (see decisions log).
-- Hebrew + RTL first, all strings via localization (ARB files) so English can be added.
+- Hebrew + RTL first; English too (1.2.3, `app_en.arb`): the phone's language
+  (English phone → English, anything else → Hebrew) or Settings → Language.
+  Every new text goes into BOTH `app_he.arb` and `app_en.arb`.
 - Phase 1 uses fake/mock services only. Later: Supabase (Postgres + Auth +
   Realtime + RLS + server functions), LiveKit (audio only) — both need owner approval.
 - Android driving detection: official Activity Recognition Transition API
@@ -160,7 +162,7 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Versions (D-160)
 
-`version:` in `pubspec.yaml` is what users see (now 1.2.2). The build
+`version:` in `pubspec.yaml` is what users see (now 1.2.3). The build
 number is the GitHub run number (always rising). Bug fixes: 1.0.1, 1.0.2…;
 new features: 1.1.0, 1.2.0…; 2.0.0 only with owner approval. Raise it in the
 same commit as the change. CI uploads to Internal testing only.
