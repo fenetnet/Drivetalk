@@ -250,7 +250,7 @@ class MemoryServer {
     return autoYes.contains(user) &&
         a != null &&
         now().isBefore(a.expiresAt) &&
-        a.mode == AvailabilityMode.driving &&
+        // In every mode (owner, D-169).
         !a.missed &&
         ratingOf(user, from) >= (autoYesMin[user] ?? 3) &&
         phones[user] != null &&
@@ -661,6 +661,21 @@ class MemoryServer {
           ..bAccepted = true
           ..acceptedAt = since;
         _accepted(offers[id]!);
+      } else {
+        // ⚡ on one side: its yes is in; only the other side is asked (D-169).
+        final auto = autoYesFor(user, other)
+            ? user
+            : autoYesFor(other, user)
+            ? other
+            : null;
+        if (auto != null) {
+          final o = offers[id]!..autoAccepted = auto;
+          if (auto == o.a) {
+            o.aAccepted = true;
+          } else {
+            o.bAccepted = true;
+          }
+        }
       }
       return;
     }
@@ -883,6 +898,7 @@ class _Offer {
   DateTime? sharedUntil;
   DateTime? lastTalk;
   bool direct = false;
+  String? autoAccepted;
 
   RealOffer toReal() => RealOffer(
     id: id,
@@ -906,6 +922,7 @@ class _Offer {
     endedB: endedB,
     shownA: shownA,
     shownB: shownB,
+    autoAccepted: autoAccepted,
   );
 }
 
@@ -2059,8 +2076,10 @@ class MemoryRealBackend implements RealBackend {
           !o.direct &&
           o.a == ends[0] &&
           o.b == ends[1] &&
-          o.aAccepted == null &&
-          o.bAccepted == null) {
+          ((o.aAccepted == null && o.bAccepted == null) ||
+              // only ⚡ answered it for them (D-169)
+              (o.autoAccepted == userId &&
+                  MemoryServer._answerOf(o, me) == null))) {
         o
           ..status = OfferStatus.cancelled
           ..updatedAt = now;

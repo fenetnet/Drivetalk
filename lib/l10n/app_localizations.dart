@@ -1745,7 +1745,7 @@ abstract class AppLocalizations {
   /// No description provided for @realAutoDrivingDialogBody.
   ///
   /// In he, this message translates to:
-  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי בנסיעה).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
+  /// **'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.'**
   String get realAutoDrivingDialogBody;
 
   /// No description provided for @realAutoDrivingOn.
@@ -4619,13 +4619,13 @@ abstract class AppLocalizations {
   /// No description provided for @autoYesTitle.
   ///
   /// In he, this message translates to:
-  /// **'כן אוטומטי בנסיעה'**
+  /// **'כן אוטומטי'**
   String get autoYesTitle;
 
   /// No description provided for @autoYesBody.
   ///
   /// In he, this message translates to:
-  /// **'חברים עם מספיק כוכבים מתחברים אליך מיד בנסיעה. מכמה כוכבים:'**
+  /// **'חברים עם מספיק כוכבים מתחברים אליך מיד, בכל פעם שיש לך זמן. לא שואלים אותך: הטלפון פשוט מצלצל. מכמה כוכבים:'**
   String get autoYesBody;
 
   /// No description provided for @autoYesFrom.
@@ -4673,19 +4673,19 @@ abstract class AppLocalizations {
   /// No description provided for @homeAutoYesTitle.
   ///
   /// In he, this message translates to:
-  /// **'⚡ כן אוטומטי בנסיעה'**
+  /// **'⚡ כן אוטומטי'**
   String get homeAutoYesTitle;
 
   /// No description provided for @homeAutoYesOnBody.
   ///
   /// In he, this message translates to:
-  /// **'חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.'**
+  /// **'חברים עם {stars} כוכבים ומעלה מתחברים אליך מיד כשיש לך זמן, בלי לשאול אותך.'**
   String homeAutoYesOnBody(int stars);
 
   /// No description provided for @homeAutoYesOffBody.
   ///
   /// In he, this message translates to:
-  /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.'**
+  /// **'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד כשיש לך זמן, בלי שאלה.'**
   String get homeAutoYesOffBody;
 
   /// No description provided for @modeFreeShort.
@@ -5009,7 +5009,7 @@ abstract class AppLocalizations {
   /// No description provided for @milestoneFirstBody.
   ///
   /// In he, this message translates to:
-  /// **'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
+  /// **'עכשיו אפשר להפעיל ⚡ כן אוטומטי. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
   String milestoneFirstBody(int stars);
 
   /// No description provided for @milestoneFirstGo.
@@ -5069,7 +5069,7 @@ abstract class AppLocalizations {
   /// No description provided for @milestoneUnlockedBody.
   ///
   /// In he, this message translates to:
-  /// **'🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
+  /// **'🔓 נפתח עכשיו: ⚡ כן אוטומטי. כשהוא דולק: חבר שנתת לו {stars} כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.'**
   String milestoneUnlockedBody(int stars);
 
   /// No description provided for @feedbackOrProblem.

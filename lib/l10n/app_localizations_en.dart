@@ -1030,7 +1030,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get realAutoDrivingDialogBody =>
-      'The phone detects a trip by itself (no GPS) and marks that you have time until the end of the trip.\n\nA call starts only if you both say yes (or if a friend turned on ⚡ automatic yes while driving).\n\nYou\'ll be asked for \"Physical activity\" and notification permissions.';
+      'The phone detects a trip by itself (no GPS) and marks that you have time until the end of the trip.\n\nA call starts only if you both say yes (or if a friend turned on ⚡ automatic yes).\n\nYou\'ll be asked for \"Physical activity\" and notification permissions.';
 
   @override
   String get realAutoDrivingOn =>
@@ -2814,11 +2814,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'We couldn\'t sign in with Google. You can try again.';
 
   @override
-  String get autoYesTitle => 'Automatic yes while driving';
+  String get autoYesTitle => 'Automatic yes';
 
   @override
   String get autoYesBody =>
-      'Friends with enough stars connect to you right away while driving. From how many stars:';
+      'Friends with enough stars connect to you right away, whenever you have time. You\'re not asked: your phone just rings. From how many stars:';
 
   @override
   String get autoYesFrom => 'From whom';
@@ -2842,16 +2842,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get instantFriend => 'Connects instantly';
 
   @override
-  String get homeAutoYesTitle => '⚡ Automatic yes while driving';
+  String get homeAutoYesTitle => '⚡ Automatic yes';
 
   @override
   String homeAutoYesOnBody(int stars) {
-    return 'Friends with $stars stars and up connect to you right away while you\'re driving.';
+    return 'Friends with $stars stars and up connect to you right away when you have time, without asking you.';
   }
 
   @override
   String get homeAutoYesOffBody =>
-      'Off. When on, close friends connect to you right away while driving, without a question.';
+      'Off. When on, close friends connect to you right away when you have time, without a question.';
 
   @override
   String get modeFreeShort => 'Free';
@@ -3052,7 +3052,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String milestoneFirstBody(int stars) {
-    return 'Now you can turn on ⚡ automatic yes while driving. When it\'s on: a friend you gave $stars stars or more who taps you — your phone simply rings, without asking you \"want to talk?\", like any call.';
+    return 'Now you can turn on ⚡ automatic yes. When it\'s on: a friend you gave $stars stars or more who taps you — your phone simply rings, without asking you \"want to talk?\", like any call.';
   }
 
   @override
@@ -3089,7 +3089,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String milestoneUnlockedBody(int stars) {
-    return '🔓 Unlocked now: ⚡ automatic yes while driving. When it\'s on: a friend you gave $stars stars or more who taps you — your phone simply rings, without asking you \"want to talk?\", like any call.';
+    return '🔓 Unlocked now: ⚡ automatic yes. When it\'s on: a friend you gave $stars stars or more who taps you — your phone simply rings, without asking you \"want to talk?\", like any call.';
   }
 
   @override

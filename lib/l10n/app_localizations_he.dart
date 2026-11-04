@@ -1008,7 +1008,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get realAutoDrivingDialogBody =>
-      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי בנסיעה).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
+      'הטלפון מזהה נסיעה לבד (בלי GPS) ומסמן שיש לך זמן עד סוף הנסיעה.\n\nשיחה מתחילה רק אם שניכם אומרים כן (או אם חבר הפעיל ⚡ כן אוטומטי).\n\nיתבקשו הרשאות \"פעילות גופנית\" והתראות.';
 
   @override
   String get realAutoDrivingOn => 'מעולה. בנסיעה הבאה הזמינות תידלק לבד.';
@@ -2754,11 +2754,11 @@ class AppLocalizationsHe extends AppLocalizations {
   String get realErrorGoogle => 'לא הצלחנו להתחבר עם Google. אפשר לנסות שוב.';
 
   @override
-  String get autoYesTitle => 'כן אוטומטי בנסיעה';
+  String get autoYesTitle => 'כן אוטומטי';
 
   @override
   String get autoYesBody =>
-      'חברים עם מספיק כוכבים מתחברים אליך מיד בנסיעה. מכמה כוכבים:';
+      'חברים עם מספיק כוכבים מתחברים אליך מיד, בכל פעם שיש לך זמן. לא שואלים אותך: הטלפון פשוט מצלצל. מכמה כוכבים:';
 
   @override
   String get autoYesFrom => 'ממי';
@@ -2782,16 +2782,16 @@ class AppLocalizationsHe extends AppLocalizations {
   String get instantFriend => 'מתחבר מיד';
 
   @override
-  String get homeAutoYesTitle => '⚡ כן אוטומטי בנסיעה';
+  String get homeAutoYesTitle => '⚡ כן אוטומטי';
 
   @override
   String homeAutoYesOnBody(int stars) {
-    return 'חברים עם $stars כוכבים ומעלה מתחברים אליך מיד כשאתה בנסיעה.';
+    return 'חברים עם $stars כוכבים ומעלה מתחברים אליך מיד כשיש לך זמן, בלי לשאול אותך.';
   }
 
   @override
   String get homeAutoYesOffBody =>
-      'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד בנסיעה, בלי שאלה.';
+      'כבוי. כשדולק, חברים קרובים מתחברים אליך מיד כשיש לך זמן, בלי שאלה.';
 
   @override
   String get modeFreeShort => 'פנוי';
@@ -2990,7 +2990,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String milestoneFirstBody(int stars) {
-    return 'עכשיו אפשר להפעיל ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
+    return 'עכשיו אפשר להפעיל ⚡ כן אוטומטי. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
   }
 
   @override
@@ -3027,7 +3027,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String milestoneUnlockedBody(int stars) {
-    return '🔓 נפתח עכשיו: ⚡ כן אוטומטי בנסיעה. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
+    return '🔓 נפתח עכשיו: ⚡ כן אוטומטי. כשהוא דולק: חבר שנתת לו $stars כוכבים ומעלה ולוחץ עליך – הטלפון שלך פשוט מצלצל, בלי לשאול אותך \"רוצה לדבר?\", כמו לכל שיחה.';
   }
 
   @override

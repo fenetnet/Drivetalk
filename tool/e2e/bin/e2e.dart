@@ -1853,7 +1853,7 @@ Future<void> main() async {
   await autoYesEverywhere();
 
   check(
-    await eve.rpc('schema_version') == 73,
+    await eve.rpc('schema_version') == 74,
     'the server says its version (41)',
   );
 

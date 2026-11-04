@@ -207,6 +207,7 @@ class RealOffer {
     this.endedB = false,
     this.shownA,
     this.shownB,
+    this.autoAccepted,
   });
   final String id;
   final String userA;
@@ -250,6 +251,10 @@ class RealOffer {
   final bool endedA;
   final bool endedB;
   bool get callOver => endedA || endedB;
+
+  /// The side whose ⚡ "yes automatically" answered the app's question for
+  /// it (that side isn't asked, D-169). null = nobody / older server.
+  final String? autoAccepted;
 
   /// When the question showed on each side's phone (D-129).
   final DateTime? shownA;

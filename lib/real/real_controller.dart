@@ -493,6 +493,9 @@ RealOffer? waitingOffer(RealState s, DateTime now) {
     if (o.status == OfferStatus.pending &&
         now.isBefore(o.expiresAt) &&
         _myAnswer(s, o) == true &&
+        // ⚡ answered for me: nothing to wait for on screen — the phone
+        // just rings when they say yes (D-169).
+        o.autoAccepted != snap.me.id &&
         snap.friend(o.otherId(snap.me.id)) != null) {
       return o;
     }

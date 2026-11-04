@@ -1484,6 +1484,7 @@ class SupabaseRealBackend implements RealBackend {
     endedB: r['ended_b'] == true,
     shownA: _maybeTime(r['shown_a']),
     shownB: _maybeTime(r['shown_b']),
+    autoAccepted: r['auto_accepted'] as String?,
   );
 
   /// The list (server 50), or the older single range.

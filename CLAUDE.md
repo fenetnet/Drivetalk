@@ -34,9 +34,10 @@ Decisions log: `docs/decisions.md`. Current status: `docs/handoff.md`.
   yes to "talk now", or BOTH sides pre-approved each other for "quick connect"
   (owner decision D-026) — and even then with a visible/spoken cancellable
   countdown (5s), max 1 per availability window and 1 per person per day.
-  Exception (owner, D-153): "yes automatically while driving" — a person's
+  Exception (owner, D-153, D-169): ⚡ "yes automatically" — a person's
   own opt-in switch (off by default) is a standing yes for friends with
-  enough stars, no daily limit; when both have it, the 5s countdown stays.
+  enough stars, in every mode, no daily limit. The ⚡ side is not asked;
+  when both have it, no countdown (owner, 2026-11-04).
   Automatic availability ≠ automatic call consent. Quick connect left the
   app (D-161, step 1; the server still honors old pairs until step 2).
   New users: ⚡ auto-yes opens after their first talk.
@@ -162,7 +163,7 @@ blocked), so APKs are built by GitHub Actions (`.github/workflows/android.yml`).
 
 ## Versions (D-160)
 
-`version:` in `pubspec.yaml` is what users see (now 1.2.3). The build
+`version:` in `pubspec.yaml` is what users see (now 1.2.4). The build
 number is the GitHub run number (always rising). Bug fixes: 1.0.1, 1.0.2…;
 new features: 1.1.0, 1.2.0…; 2.0.0 only with owner approval. Raise it in the
 same commit as the change. CI uploads to Internal testing only.

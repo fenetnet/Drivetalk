@@ -2625,13 +2625,15 @@ void main() {
         expect(yoni.s.call?.role, CallRole.theyCall);
       });
 
-      test('the app asks me, I say yes: connected, I call', () async {
+      test('the app asks only me; I say yes: connected, I call', () async {
         await connect(myPhone: '0521111111', yoniPhone: '0532222222');
         await yoniDrivingAutoYes();
         await me.c.startAvailability(AvailabilityMode.walking, 60);
         await refreshBoth();
         final q = currentOffer(me.s, now)!;
-        expect(currentOffer(yoni.s, now), isNotNull, reason: 'asked as usual');
+        // ⚡ answered for Yoni: no question, nothing to wait for (D-169).
+        expect(currentOffer(yoni.s, now), isNull, reason: 'not asked');
+        expect(waitingOffer(yoni.s, now), isNull, reason: 'no waiting screen');
         await me.c.respond(q, accept: true);
         await pump(20);
         await refreshBoth();
@@ -2640,18 +2642,23 @@ void main() {
         expect(me.dialer.dialed, ['0532222222']);
       });
 
-      test('fewer stars than his level, or not driving: a question', () async {
-        await connect(myPhone: '0521111111', yoniPhone: '0532222222');
-        await yoni.c.setAutoYes(on: true, min: 4);
-        await yoni.c.startAvailability(AvailabilityMode.driving, 60);
-        await me.c.startAvailability(AvailabilityMode.walking, 60);
-        await refreshBoth();
-        expect(me.s.snapshot!.instant, isEmpty, reason: '3 stars < 4');
-        await yoni.c.setAutoYes(min: 3);
-        await yoni.c.startAvailability(AvailabilityMode.walking, 60);
-        await me.c.refresh();
-        expect(me.s.snapshot!.instant, isEmpty, reason: 'walking');
-      });
+      test(
+        'fewer stars than his level: a question; any mode works (D-169)',
+        () async {
+          await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+          await yoni.c.setAutoYes(on: true, min: 4);
+          await yoni.c.startAvailability(AvailabilityMode.driving, 60);
+          await me.c.startAvailability(AvailabilityMode.walking, 60);
+          await refreshBoth();
+          expect(me.s.snapshot!.instant, isEmpty, reason: '3 stars < 4');
+          await yoni.c.setAutoYes(min: 3);
+          await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+          await me.c.refresh();
+          expect(me.s.snapshot!.instant, {
+            yoni.backend.userId,
+          }, reason: 'walking counts too now');
+        },
+      );
 
       test('both on for each other: connects by itself, 5 seconds', () async {
         await connect(myPhone: '0521111111', yoniPhone: '0532222222');
