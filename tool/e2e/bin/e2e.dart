@@ -1850,9 +1850,10 @@ Future<void> main() async {
   await securityRound2();
   await audienceStaysFresh();
   await weeklySummary();
+  await autoYesEverywhere();
 
   check(
-    await eve.rpc('schema_version') == 72,
+    await eve.rpc('schema_version') == 73,
     'the server says its version (41)',
   );
 
@@ -4438,4 +4439,46 @@ Future<void> weeklySummary() async {
     blocked = true;
   }
   check(blocked, 'only the server runs the weekly summary');
+}
+
+/// ⚡ in every mode, and the ⚡ side isn't asked: only the other side is,
+/// and their "yes" rings the ⚡ phone (owner, 2026-11-04).
+Future<void> autoYesEverywhere() async {
+  final za = await newUser('זיו', 'male');
+  final zb = await newUser('זהבה', 'female');
+  await befriend(za, zb);
+  await skipQuietGap();
+  await za.rpc('set_auto_yes', params: {'p_on': true, 'p_min': 3});
+  await za.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  await zb.rpc('set_availability', params: {'p_mode': 'free', 'p_minutes': 30});
+  final open = (await rows(
+    zb,
+    'match_offers',
+  )).where((x) => x['status'] == 'pending').toList();
+  final zivAnswer = open.isEmpty
+      ? null
+      : (open.first['user_a'] == uid(za)
+            ? open.first['a_response']
+            : open.first['b_response']);
+  check(
+    open.length == 1 && zivAnswer == 'accept',
+    'not driving, ⚡ on: the app\'s question is already "yes" for Ziv',
+  );
+  final r = Map<String, dynamic>.from(
+    await zb.rpc(
+      'answer_offer',
+      params: {
+        'p_offer': open.isEmpty ? null : open.first['id'],
+        'p_accept': true,
+      },
+    ) as Map,
+  );
+  check(
+    r['status'] == 'accepted' && r['i_call'] == true,
+    'Zehava says yes → connected, she calls (Ziv\'s phone rings)',
+  );
+  for (final c in [za, zb]) {
+    await c.rpc('set_auto_yes', params: {'p_on': false});
+    await c.rpc('clear_availability');
+  }
 }
