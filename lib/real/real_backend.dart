@@ -1,0 +1,285 @@
+import 'dart:typed_data';
+
+import '../domain/models.dart';
+import 'real_models.dart';
+
+/// Everything the app needs from the real backend. Implemented by
+/// [SupabaseRealBackend] (production) and an in-memory version for tests.
+abstract class RealBackend {
+  bool get isConfigured;
+
+  /// Current signed-in user id, or null.
+  String? get userId;
+
+  /// Restore a saved session (if any). Never throws for "no session".
+  Future<void> start();
+
+  /// Create an account (first time) and set the profile.
+  Future<RealProfile> signIn(String name, Gender gender);
+  Future<RealProfile> updateProfile(String name, Gender gender);
+  Future<void> signOut();
+
+  Future<RealSnapshot> fetchSnapshot();
+
+  /// "Yes automatically while driving" (D-153): on/off and the star level.
+  Future<void> setAutoYes({bool? on, int? min});
+
+  /// The Google account this login is tied to (its email), if any.
+  String? get googleEmail => null;
+
+  /// Tie this account to Google: same account, same friends, and it comes
+  /// back on a new phone. 'linked', or 'taken' (that Google account already
+  /// belongs to another DriveBond account).
+  Future<String> linkGoogle(String idToken);
+
+  /// Sign in with Google (a new phone, or a new person). True if that
+  /// account already has a profile (welcome back).
+  Future<bool> signInWithGoogle(String idToken);
+
+  /// The slowest request of the last refresh ("askable_friends 820ms").
+  String? get slowest => null;
+
+  /// Fires when something relevant may have changed (realtime events).
+  Stream<void> get changes;
+  Stream<LiveStatus> get liveStatus;
+
+  /// Instant updates stopped (the phone slept, the network changed, the
+  /// login was renewed): open them again. Nothing when they work.
+  Future<void> reconnectLive();
+
+  Future<CreatedInvitation> createInvitation();
+  Future<InviteInfo> getInvitation(String token);
+  Future<AcceptResult> acceptInvitation(String token);
+
+  Future<void> setAvailability(
+    AvailabilityMode mode,
+    int minutes, {
+    String? circleId,
+  });
+
+  /// Ask the server to create offers that became possible (e.g. a pause
+  /// ended). Called every few seconds while I'm free.
+  Future<void> nudgeOffers();
+  Future<void> clearAvailability();
+
+  /// Returns the offer's new status.
+  /// Yes / not now. The second "yes" gets the number back at once.
+  /// "Not now — I'll get back to you": a no, and the other side is told so.
+  Future<OfferAnswer> declineLater(String offerId);
+
+  /// Totals for the owner (no names, nothing about one person).
+  Future<Map<String, num?>> appStats(int days);
+
+  Future<OfferAnswer> answerOffer(String offerId, {required bool accept});
+
+  /// A question shows on my screen now: the one who asked sees it reached
+  /// me (D-129).
+  Future<void> offerShown(String offerId);
+
+  /// Quick connect: my phone shows it (the 5 seconds start once both saw it).
+  Future<void> seenCall(String offerId);
+
+  /// Quick connect: cancel during the 5 seconds. False if too late.
+  Future<bool> cancelCall(String offerId);
+
+  /// Quick connect (or after a restart): may we dial now, and who dials?
+  Future<CallStart> startCall(String offerId);
+
+  /// The call is over for me (frees me for the next offer).
+  Future<void> endCall(String offerId);
+
+  /// After a call (also ends it for me). "Not soon" quietly pauses the
+  /// pair for a while; "no talk" doesn't count as a talk.
+  /// After a call: when to suggest them again (0 = any time; the longer
+  /// of both sides wins) and whether we really talked (D-108).
+  Future<void> afterCall(
+    String offerId, {
+    required int days,
+    required bool talked,
+  });
+
+  /// My phone number for regular calls (null = not shared).
+  Future<String?> getMyPhone();
+  Future<void> setMyPhone(String? phone);
+
+  /// Automatic driving: a token this phone uses in the background.
+  Future<String> createDeviceToken();
+  Future<void> revokeDeviceTokens();
+
+  /// Upload hashed contact numbers; returns contacts who use DriveTalk and
+  /// can be added. Connects nobody (I pick).
+  Future<List<ContactMatch>> syncContacts(List<String> hashes);
+
+  /// Test screen, "why isn't X here?" (D-132): 'me', 'not_user', 'user',
+  /// 'friend', 'removed', 'blocked', 'rate_limited' or 'old_server'.
+  Future<String> contactCheck(String hash);
+
+  /// Add the contacts I picked — connected at once. Returns their names.
+  Future<List<String>> addContacts(List<String> userIds);
+
+  /// People I removed (not people who removed me), newest first.
+  Future<List<ContactMatch>> removedFriends();
+
+  /// Bring back someone I removed: friends again at once. False if not
+  /// allowed (they removed me, or a block).
+  Future<bool> restoreFriend(String userId);
+
+  /// How much I want to talk with a friend, 0 (never offer) – 5 (first).
+  Future<void> setRating(String friendId, int rating);
+
+  /// Quick connect with one friend (D-112).
+  Future<void> setQuick(String userId, bool on);
+
+  /// Cancel my pause for a friend (and the automatic one on their side).
+  Future<void> clearPause(String userId);
+
+  /// Hide my status from friends (and theirs from me).
+  Future<void> setHideStatus(bool hide);
+
+  /// This phone's push address (Firebase), so notifications reach it when
+  /// the app is closed (D-119).
+  Future<void> savePushToken(String token, {int? build});
+
+  /// Signing out on this phone: no more notifications for me here.
+  Future<void> forgetPushToken(String token);
+
+  /// "Tell my quick-connect friends when I'm on the way" (D-119).
+  Future<void> setTripNotify(bool on);
+
+  /// I'm on the way: tell my quick-connect friends (the server decides who,
+  /// at most once a day each).
+  Future<void> notifyTrip();
+
+  /// A test notification to my own phones: 'sent', 'no_token',
+  /// 'no_function', 'not_configured', 'no_server', 'offline' or another code.
+  Future<String> testPush();
+
+  /// "Everyone else" (friends in none of my circles): who sees that I'm
+  /// free. null = always, empty = never.
+  Future<void> setOthersVisibility(Set<AvailabilityMode>? modes);
+
+  /// Family / friends / work, created once per person (empty).
+  Future<void> ensurePresetCircles(List<String> names);
+
+  /// My profile photo (a small JPEG); null removes it.
+  Future<void> setPhoto(Uint8List? jpeg);
+
+  /// A friend's (or my) photo; null if there is none or I may not see it.
+  Future<Uint8List?> downloadPhoto(String userId);
+
+  /// "I'd like to talk" with a friend (never told to them). null = always.
+  Future<void> setTalkIntent(String userId, DateTime? until);
+  Future<void> clearTalkIntent(String userId);
+
+  /// Realtime per table (true = watching). Empty when not applicable.
+  Map<String, bool> get realtimeTables => const {};
+
+  /// The server's version (see schema_version()); 0 = older than that.
+  Future<int> schemaVersion();
+
+  /// Remove the hashed contact numbers I uploaded (connections stay).
+  Future<void> clearContactHashes();
+
+  /// Delete my account and everything that belongs to it (photo too).
+  Future<void> deleteAccount();
+
+  /// A measurement: an event name and maybe a duration. Never content.
+  Future<void> logEvent(String name, {int? ms});
+
+  /// "I opened the app" (for friends' "last active", whole days only).
+  Future<void> touchSeen();
+
+  /// The owner's code also registers this account as owner on the server.
+  Future<bool> claimOwner(String code);
+
+  /// Owner only: latest feedback and reports.
+  Future<List<OwnerNote>> ownerFeedback();
+  Future<List<OwnerNote>> ownerReports();
+
+  /// A short note to the owner ("Send feedback").
+  Future<void> sendFeedback(String text, {int? build, String? details});
+
+  /// Owner only: people by name (or a number's hash) and their state on
+  /// the server — why they're grey (D-143). Never a number.
+  Future<List<Map<String, Object?>>> ownerLookup(String query);
+
+  Future<void> block(String userId);
+
+  /// People I blocked (to unblock them).
+  Future<List<RealProfile>> blockedPeople();
+
+  /// Returns true if the connection came back.
+  Future<bool> unblock(String userId);
+
+  /// Circles (private to me).
+  Future<RealCircle> saveCircle(RealCircle circle);
+  Future<void> deleteCircle(String circleId);
+  Future<void> unmatch(String userId);
+  Future<void> report(String userId, ReportReason reason);
+
+  /// Tap a free friend: ask them now (my tap is my yes). Returns asked /
+  /// me_not_free / not_free / busy / not_now / no_number / rate_limited.
+  Future<String> askFriend(String userId);
+
+  /// Why a free friend can't be asked right now (ok / call_open / not_now /
+  /// busy / not_free / …) — for the note on the grey circle (D-142).
+  Future<String> askWhy(String userId);
+
+  /// "Still free" after a question I didn't answer.
+  Future<bool> stillFree();
+
+  /// "Ready now" during the first minutes of an automatic trip.
+  Future<bool> readyNow();
+
+  /// "Keep automatic detection" after trips with no answer.
+  Future<void> keepAuto();
+
+  /// More minutes on my (manual) free time. Returns the new end.
+  Future<DateTime?> extendAvailability(int minutes);
+
+  /// "Until when" (D-156): a new end for my free window, also earlier.
+  Future<DateTime?> setUntil(DateTime until);
+
+  /// "Available to" these groups (or everyone except them; none = all my
+  /// friends): also for the window I'm in now, and for automatic trips.
+  /// Returns the circle to start a window with (null = everyone).
+  Future<String?> setAudience(List<String> circleIds, {bool except = false});
+
+  /// Private settings (null = unchanged).
+  Future<void> setSettings({
+    bool? anonymous,
+    bool? hideInCall,
+    int? quietFrom,
+    int? quietTo,
+    int? quietDays,
+    bool clearQuiet = false,
+    String? timeZone,
+  });
+
+  /// All my quiet-hours schedules at once (empty = none) (D-124).
+  Future<void> setQuietRanges(List<QuietRange> ranges, {String? timeZone});
+
+  /// Keep a friend who added me from their contacts.
+  Future<bool> approveFriend(String userId);
+
+  /// A short technical note about a crash (no personal data).
+  Future<void> reportCrash({
+    required String build,
+    required String kind,
+    required String message,
+    required String stack,
+  });
+
+  /// Owner only: the latest crash notes.
+  Future<List<OwnerNote>> ownerCrashes();
+}
+
+/// A failure the UI can show in simple words. [code] is a short machine
+/// code (never contains secrets) — shown in the test screen.
+class RealBackendException implements Exception {
+  const RealBackendException(this.code);
+  final String code;
+
+  @override
+  String toString() => 'RealBackendException($code)';
+}

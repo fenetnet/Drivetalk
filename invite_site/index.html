@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DriveBond</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <div class="logo">🚗💬</div>
+  <h1>DriveBond</h1>
+  <p class="lead" data-en="Dead time → a real talk with the right person.<br>Only when you're both free, and only if you both say yes.">זמן מת → שיחה אמיתית עם האדם הנכון.<br>רק כששניכם פנויים, ורק אם שניכם אומרים כן.</p>
+  <section class="card">
+    <h2 data-en="For Android">גרסת ניסיון לאנדרואיד</h2>
+    <a class="btn primary" id="download" href="#" data-en="Download">הורדה</a>
+    <p class="small" data-en="Got an invitation link? Open it — it leads here and explains everything.">קיבלת קישור הזמנה? פתחו אותו — הוא יוביל לכאן ויסביר הכל.</p>
+  </section>
+  <p class="small muted" data-en="<a href=&quot;privacy.html&quot;>Privacy policy</a> · <a href=&quot;delete.html&quot;>Delete account</a>"><a href="privacy.html">מדיניות פרטיות</a> · <a href="delete.html">מחיקת חשבון</a></p>
+</main>
+<script src="config.js"></script>
+<script>
+// English for anyone whose phone isn't in Hebrew (1.2.3).
+if (!/^(he|iw)/i.test(navigator.language || '')) {
+  document.documentElement.lang = 'en';
+  document.documentElement.dir = 'ltr';
+  document.querySelectorAll('[data-en]').forEach(function (e) {
+    e.innerHTML = e.getAttribute('data-en');
+  });
+}
+document.getElementById('download').href = window.DT_CONFIG.apkUrl;
+</script>
+</body>
+</html>
