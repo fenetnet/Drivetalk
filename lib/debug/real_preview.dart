@@ -5,7 +5,7 @@
 //        | #people | #settings | #test | #onboarding | #feedback
 //        | #first-photo | #first-contacts | #first-result | #first-routine
 //        | #first-permissions | #first-magic | #new-home | #new-free
-//        | #added | #lonely | #week | #asked (1.2.1)
+//        | #lonely | #week (1.2.1)
 //        | #onboarding-name | #gender (1.2.2)
 
 import 'package:flutter/material.dart';
@@ -21,7 +21,6 @@ import '../platform/driving_detector.dart';
 import '../platform/phone_dialer.dart';
 import '../platform/google_auth.dart';
 import '../platform/voice_service.dart';
-import '../real/contacts_hash.dart';
 import '../real/deep_links.dart';
 import '../real/local_store.dart';
 import '../real/memory_backend.dart';
@@ -124,25 +123,8 @@ Future<void> main() async {
           ? '0'
           : '1';
     }
-    // 1.2.1: someone added me ("add back?"); I added someone (waiting);
-    // after a lonely trip ("invite"); favorites on the phone.
-    if (screen == 'added') {
-      final roni = await friend('רוני', Gender.female, '0507777777');
-      await roni.syncContacts([hashPhone('0521111111')!]);
-      await roni.addContacts([me.userId!]);
-    }
-    if (screen == 'asked') {
-      final gal = await friend('גל', Gender.male, '0508888888');
-      await me.syncContacts([hashPhone('0508888888')!]);
-      await me.addContacts([gal.userId!]);
-    }
-    if (const [
-      'added',
-      'asked',
-      'lonely',
-      'week',
-      'driving',
-    ].contains(screen)) {
+    // 1.2.1: after a lonely trip ("invite").
+    if (const ['lonely', 'week', 'driving'].contains(screen)) {
       store.values['real.whatsNew.v1'] = '170';
       store.values['real.googleCard.v1'] = 'no';
     }
@@ -157,14 +139,6 @@ Future<void> main() async {
           .subtract(const Duration(minutes: 20))
           .toIso8601String();
     }
-    contacts
-      ..numbers = ['0541000001', '0541000002', '0541000003']
-      ..names = {
-        '0541000001': 'אמא',
-        '0541000002': 'אבי מהעבודה',
-        '0541000003': 'סבתא רחל',
-      }
-      ..starred = {'0541000001', '0541000002'};
     if (screen != 'driving') {
       // Home: three faces fit the card (driving, break, in a call).
       if (screen != 'home') {
@@ -188,7 +162,7 @@ Future<void> main() async {
         await yoni.setAvailability(AvailabilityMode.driving, 25);
     }
     RealShell.debugInitialTab = switch (screen) {
-      'people' || 'asked' => 1,
+      'people' => 1,
       'test' => 2,
       'settings' => 3,
       _ => 0,

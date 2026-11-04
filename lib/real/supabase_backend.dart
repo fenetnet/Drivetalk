@@ -1509,7 +1509,6 @@ class SupabaseRealBackend implements RealBackend {
           autoMissed: (r['auto_missed'] as num?)?.toInt() ?? 0,
           hiddenFree: (r['hidden_free'] as num?)?.toInt() ?? 0,
           pending: {for (final x in (r['pending'] as List? ?? const [])) '$x'},
-          asked: {for (final x in (r['asked'] as List? ?? const [])) '$x'},
           tripNotify: r['trip_notify'] != false,
         );
 

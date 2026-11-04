@@ -180,7 +180,6 @@ enum RealNoticeKind {
   autoDrivingFailed,
   unblocked,
   contactsFound,
-  contactsAsked,
   contactsNone,
   contactsNoPermission,
   unblockedReconnected,
@@ -1278,80 +1277,8 @@ class RealController extends Notifier<RealState> {
 
   // ------------------------------------------------------------ growth (1.2.1)
 
-  static const _favoritesOffKey = 'real.favoritesOff.v1';
-  static const _favoritesShownKey = 'real.favoritesShown.v1';
   static const _lonelyDriveKey = 'real.lonelyDrive.v1';
   static const _driveInviteKey = 'real.driveInvite.v1';
-
-  /// "Maybe call someone from your favorites?" while driving with no
-  /// friend free (settings switch, on unless turned off).
-  bool get favoritesOn => _store.getString(_favoritesOffKey) == null;
-
-  Future<void> setFavoritesOn(bool on) async {
-    await _store.setString(_favoritesOffKey, on ? null : '1');
-    _favorites = null;
-    state = state.copyWith();
-  }
-
-  /// Numbers (hashed) of DriveBond users from my last contacts search:
-  /// they're suggested as friends, not as phone calls.
-  final _appUserHashes = <String>{};
-  (DateTime, List<PhoneContact>)? _favorites;
-
-  /// Up to two favorites (starred on this phone) who don't use DriveBond —
-  /// the ones suggested least recently, new ones each trip. Only on the
-  /// phone: nothing is sent, nothing about calls is read.
-  Future<List<PhoneContact>> favoriteSuggestions() async {
-    if (!favoritesOn) return const [];
-    final now = _now();
-    final cached = _favorites;
-    if (cached != null && now.difference(cached.$1).inHours < 3) {
-      return cached.$2;
-    }
-    final reader = ref.read(contactsReaderProvider);
-    if (!await reader.hasPermission()) return const [];
-    final all = await reader.contacts();
-    if (!ref.mounted) return const [];
-    Map<String, dynamic> shown;
-    try {
-      shown = Map<String, dynamic>.from(
-        jsonDecode(_store.getString(_favoritesShownKey) ?? '{}') as Map,
-      );
-    } catch (_) {
-      shown = {};
-    }
-    final seen = <String>{};
-    final picks = <(PhoneContact, String, DateTime, int)>[];
-    for (final c in all) {
-      if (!c.starred || c.name.trim().isEmpty) continue;
-      final h = hashPhone(c.number);
-      if (h == null || !seen.add(h) || _appUserHashes.contains(h)) continue;
-      final at = DateTime.tryParse('${shown[h] ?? ''}') ?? DateTime(2000);
-      picks.add((c, h, at, picks.length));
-    }
-    // Least recently suggested first; then in the phone's order.
-    picks.sort((a, b) {
-      final t = a.$3.compareTo(b.$3);
-      return t != 0 ? t : a.$4.compareTo(b.$4);
-    });
-    final chosen = picks.take(2).toList();
-    for (final p in chosen) {
-      shown[p.$2] = now.toIso8601String();
-    }
-    if (chosen.isNotEmpty) {
-      await _store.setString(_favoritesShownKey, jsonEncode(shown));
-    }
-    final list = [for (final p in chosen) p.$1];
-    _favorites = (now, list);
-    return list;
-  }
-
-  /// Call a favorite through the phone's regular dialer.
-  Future<void> callFavorite(PhoneContact c) async {
-    _event('favorite_call');
-    final r = await ref.read(phoneDialerProvider).call(c.number);
-    if (r == DialResult.failed) _notify(RealNoticeKind.dialFailed);
-  }
 
   /// Driving and no friend free: remembered, for "invite someone for next
   /// time" after the trip.
@@ -1485,15 +1412,7 @@ class RealController extends Notifier<RealState> {
     'missedTitleM': _l.missedNotifTitle('{name}', 'male'),
     'missedTitleO': _l.missedNotifTitle('{name}', 'other'),
     'missedBody': _l.missedNotifBody,
-    // "X added you" / "X added you back", the weekly summary (1.2.1).
-    'addedTitleF': _l.addedNotifTitle('{name}', 'female'),
-    'addedTitleM': _l.addedNotifTitle('{name}', 'male'),
-    'addedTitleO': _l.addedNotifTitle('{name}', 'other'),
-    'addedBody': _l.addedNotifBody,
-    'acceptedTitleF': _l.acceptedNotifTitle('{name}', 'female'),
-    'acceptedTitleM': _l.acceptedNotifTitle('{name}', 'male'),
-    'acceptedTitleO': _l.acceptedNotifTitle('{name}', 'other'),
-    'acceptedBody': _l.acceptedNotifBody,
+    // The weekly summary (1.2.1).
     'weeklyTitle': _l.weeklyNotifTitle('{people}', '{talks}'),
     'weeklyBody': _l.weeklyNotifBody,
     'statusTitle': _l.realNotifStatusTitle,
@@ -2098,8 +2017,6 @@ class RealController extends Notifier<RealState> {
       _milestoneKey,
       _autoYesLockKey,
       _genderAskedKey,
-      _favoritesOffKey,
-      _favoritesShownKey,
       _lonelyDriveKey,
       _driveInviteKey,
       _quickOffKey,
@@ -3407,9 +3324,6 @@ class RealController extends Notifier<RealState> {
       final found = await _backend.syncContacts(saved.keys.take(5000).toList());
       if (!ref.mounted) return;
       _store.setString(_contactsSyncKey, _now().toIso8601String());
-      _appUserHashes
-        ..clear()
-        ..addAll([for (final m in found) ?m.hash]);
       final names = {..._localNames};
       for (final m in found) {
         final local = saved[m.hash] ?? '';
@@ -3494,8 +3408,6 @@ class RealController extends Notifier<RealState> {
     _markSeen(picked.map((m) => m.id));
     final ids = {for (final m in picked) m.id};
     _rememberFriends(ids); // I added them: no "X added you" card
-    // Waiting for me = adding back (connected); the others are asked (1.2.1).
-    final waiting = state.snapshot?.status.pending ?? const <String>{};
     final ok = await _run(() async {
       final names = await _backend.addContacts(ids.toList());
       if (!ref.mounted) return;
@@ -3503,14 +3415,7 @@ class RealController extends Notifier<RealState> {
         for (final m in contactMatches)
           if (!ids.contains(m.id)) m,
       ];
-      if (names.isEmpty) return;
-      final asked = [
-        for (final m in picked)
-          if (!waiting.contains(m.id)) m.name,
-      ];
-      if (asked.isNotEmpty) {
-        _notify(RealNoticeKind.contactsAsked, name: asked.join(', '));
-      } else {
+      if (names.isNotEmpty) {
         _notify(RealNoticeKind.contactsFound, name: names.join(', '));
       }
     });

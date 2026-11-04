@@ -163,16 +163,13 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         await y.signIn('יוני', Gender.male, phone: '0532222222');
         await y.firstRunFindPeople();
-        // Yoni picks me from his contacts → I'm asked (mutual add, 1.2.1).
+        // Yoni picks me from his contacts → connected at once.
         await y.addContacts(y.contactMatches);
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
       await pumpFor(t, 800);
-      // No code, no invitation: "Yoni added you — add back?" at the top.
-      expect(find.text('יוני הוסיף אותך'), findsOneWidget);
-      await t.tap(find.text('להוסיף בחזרה'));
-      await pumpFor(t, 800);
-      expect(find.text('יוני הוסיף אותך'), findsNothing);
+      // No code, no invitation: we're connected — told at the top (1.1.2).
+      expect(find.textContaining('יוני'), findsWidgets);
       await t.scrollUntilVisible(
         find.text(
           'כרגע אף חבר לא פנוי. כשמישהו יסמן שיש לו זמן, הוא יופיע כאן.',

@@ -7,7 +7,6 @@ import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../domain/models.dart';
 import '../../l10n/app_localizations.dart';
-import '../../platform/contacts_reader.dart';
 import '../../real/backend_config.dart';
 import '../../real/real_controller.dart';
 import '../../real/real_models.dart';
@@ -314,11 +313,6 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
-                // Driving, nobody free: maybe call a favorite (1.2.1).
-                if (mine?.mode == AvailabilityMode.driving &&
-                    free.isEmpty &&
-                    c.favoritesOn)
-                  const _FavoritesCard(),
                 // Then: "I'm driving" / "I have time" — or me, free (D-156).
                 const SizedBox(height: 20),
                 if (mine == null)
@@ -918,7 +912,7 @@ class _PendingFriendCard extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    l.pendingTitle(friend.name, genderKey(friend.gender)),
+                    l.pendingTitle(friend.name),
                     style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
@@ -1271,80 +1265,6 @@ class _DriveInviteCard extends ConsumerWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Driving, no friend free: two favorites from the phone (starred, not on
-/// DriveBond) — one tap calls through the regular dialer (1.2.1).
-class _FavoritesCard extends ConsumerStatefulWidget {
-  const _FavoritesCard();
-
-  @override
-  ConsumerState<_FavoritesCard> createState() => _FavoritesCardState();
-}
-
-class _FavoritesCardState extends ConsumerState<_FavoritesCard> {
-  late final Future<List<PhoneContact>> _list = ref
-      .read(realProvider.notifier)
-      .favoriteSuggestions();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = context.l10n;
-    final c = ref.read(realProvider.notifier);
-    return FutureBuilder<List<PhoneContact>>(
-      future: _list,
-      builder: (context, snap) {
-        final list = snap.data ?? const <PhoneContact>[];
-        if (list.isEmpty) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.mint,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  l.favoritesTitle,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                for (final p in list)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(56),
-                        textStyle: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      onPressed: () => c.callFavorite(p),
-                      icon: const Icon(Icons.call_rounded),
-                      label: Text(p.name),
-                    ),
-                  ),
-                Text(
-                  l.favoritesNote,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.inkSoft,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

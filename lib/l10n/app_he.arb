@@ -741,7 +741,7 @@
   "ratingTitle": "כמה בא לי לדבר?",
   "ratingHelp": "0 = לא להציע בכלל · 5 = הכי חשוב. רק לך זה מוצג.",
   "contactsPickTitle": "מאנשי הקשר שלך כבר כאן",
-  "contactsPickBody": "בוחרים רק את מי שבא לדבר איתו. הם יקבלו הודעה, וכשיוסיפו אותך בחזרה – אתם מחוברים. מי שלא נבחר לא יודע על זה.",
+  "contactsPickBody": "בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.",
   "contactsAdd": "להוסיף",
   "contactsNo": "לא",
   "newContactTitle": "{name} מאנשי הקשר שלך כבר כאן",
@@ -981,18 +981,15 @@
       }
     }
   },
-  "pendingTitle": "{gender, select, female{{name} הוסיפה אותך} male{{name} הוסיף אותך} other{{name} הוסיף/ה אותך}}",
+  "pendingTitle": "הצטרפת לרשימה של {name}",
   "@pendingTitle": {
     "placeholders": {
       "name": {
         "type": "String"
-      },
-      "gender": {
-        "type": "String"
       }
     }
   },
-  "pendingBody": "{name} עוד לא רואה מתי יש לך זמן. להוסיף בחזרה?",
+  "pendingBody": "{name} הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?",
   "@pendingBody": {
     "placeholders": {
       "name": {
@@ -1000,43 +997,8 @@
       }
     }
   },
-  "pendingKeep": "להוסיף בחזרה",
-  "pendingRemove": "לא, תודה",
-  "realContactsAsked": "{names} — קיבלו הודעה. כשיוסיפו אותך בחזרה, אתם מחוברים.",
-  "@realContactsAsked": {
-    "placeholders": {
-      "names": {
-        "type": "String"
-      }
-    }
-  },
-  "askedWaiting": "{gender, select, female{עוד לא הוסיפה אותך בחזרה} male{עוד לא הוסיף אותך בחזרה} other{עוד לא הוסיף/ה אותך בחזרה}}",
-  "addedNotifTitle": "{gender, select, female{{name} הוסיפה אותך ב-DriveBond} male{{name} הוסיף אותך ב-DriveBond} other{{name} הוסיף/ה אותך ב-DriveBond}}",
-  "@addedNotifTitle": {
-    "description": "Push (1.2.1): someone added me from their contacts",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "gender": {
-        "type": "String"
-      }
-    }
-  },
-  "addedNotifBody": "להוסיף בחזרה? ככה תוכלו לדבר כששניכם בדרכים.",
-  "acceptedNotifTitle": "{gender, select, female{{name} הוסיפה אותך בחזרה 🎉} male{{name} הוסיף אותך בחזרה 🎉} other{{name} הוסיף/ה אותך בחזרה 🎉}}",
-  "@acceptedNotifTitle": {
-    "description": "Push (1.2.1): the one I added added me back",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "gender": {
-        "type": "String"
-      }
-    }
-  },
-  "acceptedNotifBody": "עכשיו אתם מחוברים: כשלשניכם יש זמן, נציע לכם לדבר.",
+  "pendingKeep": "להשאיר",
+  "pendingRemove": "להסיר",
   "weeklyNotifTitle": "השבוע דיברת עם {people} חברים ב-{talks} שיחות 🔥",
   "@weeklyNotifTitle": {
     "placeholders": {
@@ -1061,10 +1023,6 @@
   "driveInviteTitle": "את מי היית רוצה לשמוע בפקק?",
   "driveInviteBody": "בנסיעה האחרונה אף חבר לא היה פנוי. מזמינים עוד חבר או שניים, ובנסיעה הבאה יהיה עם מי לדבר.",
   "driveInviteButton": "להזמין חבר",
-  "favoritesTitle": "אף חבר לא פנוי. אולי להתקשר למישהו מהמועדפים?",
-  "favoritesNote": "מהמועדפים בטלפון שלך. השיחה עוברת בחייגן הרגיל.",
-  "settingsFavorites": "הצעות מהמועדפים בנסיעה",
-  "settingsFavoritesHint": "כשאף חבר לא פנוי, נציע 2 אנשים שסימנת כמועדפים בטלפון. הכול נשאר בטלפון.",
   "offerShared": "שניכם פנויים עוד כ-{minutes} דק׳",
   "@offerShared": {
     "placeholders": {
@@ -2089,13 +2047,6 @@
     "placeholders": {
       "n": {
         "type": "int"
-      }
-    }
-  },
-  "@askedWaiting": {
-    "placeholders": {
-      "gender": {
-        "type": "String"
       }
     }
   },

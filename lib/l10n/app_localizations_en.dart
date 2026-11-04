@@ -1387,7 +1387,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactsPickBody =>
-      'Pick only who you\'d like to talk to. They\'ll get a notification, and once they add you back — you\'re connected. Anyone you don\'t pick won\'t know.';
+      'Pick only who you\'d like to talk to. Anyone you don\'t pick won\'t know.';
 
   @override
   String get contactsAdd => 'Add';
@@ -1807,68 +1807,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String pendingTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name added you',
-      'male': '$name added you',
-      'other': '$name added you',
-    });
-    return '$_temp0';
+  String pendingTitle(String name) {
+    return 'You joined $name\'s list';
   }
 
   @override
   String pendingBody(String name) {
-    return '$name can\'t see yet when you have time. Add back?';
+    return '$name added you and can\'t see yet when you have time. Know them? Keep them on the list?';
   }
 
   @override
-  String get pendingKeep => 'Add back';
+  String get pendingKeep => 'Keep';
 
   @override
-  String get pendingRemove => 'No, thanks';
-
-  @override
-  String realContactsAsked(String names) {
-    return '$names — got a notification. Once they add you back, you\'re connected.';
-  }
-
-  @override
-  String askedWaiting(String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'Hasn\'t added you back yet',
-      'male': 'Hasn\'t added you back yet',
-      'other': 'Hasn\'t added you back yet',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String addedNotifTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name added you on DriveBond',
-      'male': '$name added you on DriveBond',
-      'other': '$name added you on DriveBond',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get addedNotifBody =>
-      'Add back? Then you can talk when you\'re both on the road.';
-
-  @override
-  String acceptedNotifTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name added you back 🎉',
-      'male': '$name added you back 🎉',
-      'other': '$name added you back 🎉',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get acceptedNotifBody =>
-      'You\'re connected now: when you both have time, we\'ll suggest you talk.';
+  String get pendingRemove => 'Remove';
 
   @override
   String weeklyNotifTitle(String people, String talks) {
@@ -1895,21 +1847,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get driveInviteButton => 'Invite a friend';
-
-  @override
-  String get favoritesTitle =>
-      'No friend is free. Maybe call one of your favorites?';
-
-  @override
-  String get favoritesNote =>
-      'From the favorites on your phone. The call goes through the regular dialer.';
-
-  @override
-  String get settingsFavorites => 'Favorites suggestions while driving';
-
-  @override
-  String get settingsFavoritesHint =>
-      'When no friend is free, we\'ll suggest 2 people you starred as favorites on your phone. Everything stays on the phone.';
 
   @override
   String offerShared(int minutes) {
@@ -2015,7 +1952,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String freeNotNowMine(String name) {
-    return 'That\'s because you haven\'t added $name back yet. Once you do, you can talk right away.';
+    return 'That\'s because you haven\'t approved $name on your list yet. Once you do, you can talk right away.';
   }
 
   @override

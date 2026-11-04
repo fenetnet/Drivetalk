@@ -9,20 +9,15 @@ import android.provider.ContactsContract
  * show friends by the name saved here) and are never sent.
  */
 object ContactsReader {
-    /**
-     * Number + the name saved for it on this phone + whether it's a
-     * favorite (starred) — for "maybe call…" suggestions, on the phone only.
-     */
+    /** Number + the name saved for it on this phone. */
     fun contacts(context: Context): List<Map<String, String>> {
         val out = LinkedHashMap<String, String>()
-        val starred = HashSet<String>()
         try {
             context.contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 arrayOf(
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
                     ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.STARRED,
                 ),
                 null,
                 null,
@@ -30,25 +25,17 @@ object ContactsReader {
             )?.use { c ->
                 val n = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
                 val d = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-                val s = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.STARRED)
                 while (c.moveToNext() && out.size < 5000) {
                     val number = if (n >= 0) c.getString(n) else null
                     if (number != null && !out.containsKey(number)) {
                         out[number] = (if (d >= 0) c.getString(d) else null) ?: ""
-                        if (s >= 0 && c.getInt(s) == 1) starred.add(number)
                     }
                 }
             }
         } catch (e: Exception) {
             // No permission or no contacts provider.
         }
-        return out.map {
-            mapOf(
-                "number" to it.key,
-                "name" to it.value,
-                "starred" to if (starred.contains(it.key)) "1" else "0",
-            )
-        }
+        return out.map { mapOf("number" to it.key, "name" to it.value) }
     }
 
     fun phoneNumbers(context: Context): List<String> {

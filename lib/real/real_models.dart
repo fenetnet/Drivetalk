@@ -334,7 +334,6 @@ class MyStatus {
     this.autoMissed = 0,
     this.hiddenFree = 0,
     this.pending = const {},
-    this.asked = const {},
     this.tripNotify = true,
   });
 
@@ -370,10 +369,6 @@ class MyStatus {
 
   /// Friends who added me from their contacts and wait for my "keep".
   final Set<String> pending;
-
-  /// People I added who haven't added me back yet (1.2.1; empty from an
-  /// older server).
-  final Set<String> asked;
 }
 
 /// What I can see right now.

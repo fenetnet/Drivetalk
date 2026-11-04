@@ -1357,7 +1357,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get contactsPickBody =>
-      'בוחרים רק את מי שבא לדבר איתו. הם יקבלו הודעה, וכשיוסיפו אותך בחזרה – אתם מחוברים. מי שלא נבחר לא יודע על זה.';
+      'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.';
 
   @override
   String get contactsAdd => 'להוסיף';
@@ -1770,67 +1770,20 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
-  String pendingTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name הוסיפה אותך',
-      'male': '$name הוסיף אותך',
-      'other': '$name הוסיף/ה אותך',
-    });
-    return '$_temp0';
+  String pendingTitle(String name) {
+    return 'הצטרפת לרשימה של $name';
   }
 
   @override
   String pendingBody(String name) {
-    return '$name עוד לא רואה מתי יש לך זמן. להוסיף בחזרה?';
+    return '$name הוסיף/ה אותך, ועוד לא רואה מתי יש לך זמן. מכיר/ה? להשאיר ברשימה?';
   }
 
   @override
-  String get pendingKeep => 'להוסיף בחזרה';
+  String get pendingKeep => 'להשאיר';
 
   @override
-  String get pendingRemove => 'לא, תודה';
-
-  @override
-  String realContactsAsked(String names) {
-    return '$names — קיבלו הודעה. כשיוסיפו אותך בחזרה, אתם מחוברים.';
-  }
-
-  @override
-  String askedWaiting(String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': 'עוד לא הוסיפה אותך בחזרה',
-      'male': 'עוד לא הוסיף אותך בחזרה',
-      'other': 'עוד לא הוסיף/ה אותך בחזרה',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String addedNotifTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name הוסיפה אותך ב-DriveBond',
-      'male': '$name הוסיף אותך ב-DriveBond',
-      'other': '$name הוסיף/ה אותך ב-DriveBond',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get addedNotifBody => 'להוסיף בחזרה? ככה תוכלו לדבר כששניכם בדרכים.';
-
-  @override
-  String acceptedNotifTitle(String name, String gender) {
-    String _temp0 = intl.Intl.selectLogic(gender, {
-      'female': '$name הוסיפה אותך בחזרה 🎉',
-      'male': '$name הוסיף אותך בחזרה 🎉',
-      'other': '$name הוסיף/ה אותך בחזרה 🎉',
-    });
-    return '$_temp0';
-  }
-
-  @override
-  String get acceptedNotifBody =>
-      'עכשיו אתם מחוברים: כשלשניכם יש זמן, נציע לכם לדבר.';
+  String get pendingRemove => 'להסיר';
 
   @override
   String weeklyNotifTitle(String people, String talks) {
@@ -1857,19 +1810,6 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get driveInviteButton => 'להזמין חבר';
-
-  @override
-  String get favoritesTitle => 'אף חבר לא פנוי. אולי להתקשר למישהו מהמועדפים?';
-
-  @override
-  String get favoritesNote => 'מהמועדפים בטלפון שלך. השיחה עוברת בחייגן הרגיל.';
-
-  @override
-  String get settingsFavorites => 'הצעות מהמועדפים בנסיעה';
-
-  @override
-  String get settingsFavoritesHint =>
-      'כשאף חבר לא פנוי, נציע 2 אנשים שסימנת כמועדפים בטלפון. הכול נשאר בטלפון.';
 
   @override
   String offerShared(int minutes) {

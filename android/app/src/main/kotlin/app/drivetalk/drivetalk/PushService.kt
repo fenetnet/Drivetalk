@@ -32,14 +32,6 @@ class PushService : FirebaseMessagingService() {
                 val from = data["from"] ?: return
                 DrivingNotifications.showMissed(this, from, data["name"].orEmpty(), data["gender"].orEmpty())
             }
-            // "X added you — add back?" / "X added you back" (1.2.1).
-            "added", "accepted" -> {
-                val from = data["from"] ?: return
-                DrivingNotifications.showAdded(
-                    this, from, data["name"].orEmpty(), data["gender"].orEmpty(),
-                    back = data["type"] == "accepted",
-                )
-            }
             // Friday morning: the week in talks (more than 3 people only).
             "weekly" -> DrivingNotifications.showWeekly(
                 this, data["people"].orEmpty(), data["talks"].orEmpty(),
