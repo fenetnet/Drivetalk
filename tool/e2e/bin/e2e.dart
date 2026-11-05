@@ -1428,7 +1428,10 @@ Future<void> main() async {
     'owner numbers: totals only',
   );
   check(
-    !stats.keys.any((k) => k.contains('name') || k.contains('phone')),
+    // Counts only ("users_no_phone" is a count of accounts, not a number).
+    !stats.keys.any(
+      (k) => k.contains('name') || k.replaceAll('no_phone', '').contains('phone'),
+    ),
     'owner numbers have no names or phone numbers',
   );
   await avi.rpc('set_hide_status', params: {'p_hide': false});

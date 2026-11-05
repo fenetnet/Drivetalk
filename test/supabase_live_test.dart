@@ -5,6 +5,7 @@
 //     flutter test test/supabase_live_test.dart
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui' show Locale;
 
 import 'package:drivetalk/app/providers.dart';
 import 'package:drivetalk/domain/models.dart';
@@ -46,6 +47,7 @@ ProviderContainer _phone(_Dialer dialer) => ProviderContainer(
       ),
     ),
     localStoreProvider.overrideWithValue(MemoryLocalStore()),
+    phoneLocaleProvider.overrideWithValue(const Locale('he', 'IL')),
     voiceServiceProvider.overrideWithValue(SilentVoiceService()),
     phoneDialerProvider.overrideWithValue(dialer),
     drivingDetectorProvider.overrideWithValue(FakeDrivingDetector()),
