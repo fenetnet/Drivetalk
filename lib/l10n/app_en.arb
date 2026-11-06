@@ -843,5 +843,6 @@
   "settingsLanguage": "Language · שפה",
   "languagePhone": "Like the phone",
   "languageHe": "עברית",
-  "languageEn": "English"
+  "languageEn": "English",
+  "settingsAccessibility": "Accessibility statement"
 }

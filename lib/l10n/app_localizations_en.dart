@@ -3143,4 +3143,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageEn => 'English';
+
+  @override
+  String get settingsAccessibility => 'Accessibility statement';
 }

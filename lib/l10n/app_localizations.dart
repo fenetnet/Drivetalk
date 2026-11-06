@@ -5161,6 +5161,12 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'English'**
   String get languageEn;
+
+  /// No description provided for @settingsAccessibility.
+  ///
+  /// In he, this message translates to:
+  /// **'הצהרת נגישות'**
+  String get settingsAccessibility;
 }
 
 class _AppLocalizationsDelegate

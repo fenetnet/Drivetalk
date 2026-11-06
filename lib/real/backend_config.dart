@@ -51,6 +51,10 @@ class BackendConfig {
     defaultValue: 'app.drivetalk.drivetalk',
   );
 
+  /// The accessibility statement (IS 5568), on the app's site.
+  static const accessibilityUrl =
+      'https://fenetnet.github.io/Drivetalk/accessibility.html';
+
   static const playUrl =
       'https://play.google.com/store/apps/details?id=$playId';
 

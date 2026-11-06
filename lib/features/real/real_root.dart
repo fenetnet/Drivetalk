@@ -475,25 +475,34 @@ class _RealOnboardingState extends ConsumerState<RealOnboarding> {
                           size: 32,
                         ),
                       ),
-                      const Spacer(),
-                      if (_phoneStep && !_viaGoogle)
-                        TextButton.icon(
-                          onPressed: s.busy
-                              ? null
-                              : () => setState(() => _phoneStep = false),
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          label: Text(l.onbBack),
-                        )
-                      else if (!_phoneStep)
-                        TextButton.icon(
-                          onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const AboutScreen(),
-                            ),
-                          ),
-                          icon: const Icon(Icons.info_outline_rounded),
-                          label: Text(l.onbWhatIs),
+                      const SizedBox(width: 12),
+                      // With very large text the button wraps instead of
+                      // running off the screen (accessibility, 1.2.5).
+                      Expanded(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: _phoneStep && !_viaGoogle
+                              ? TextButton.icon(
+                                  onPressed: s.busy
+                                      ? null
+                                      : () =>
+                                            setState(() => _phoneStep = false),
+                                  icon: const Icon(Icons.arrow_back_rounded),
+                                  label: Text(l.onbBack),
+                                )
+                              : !_phoneStep
+                              ? TextButton.icon(
+                                  onPressed: () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const AboutScreen(),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.info_outline_rounded),
+                                  label: Text(l.onbWhatIs),
+                                )
+                              : const SizedBox.shrink(),
                         ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 28),

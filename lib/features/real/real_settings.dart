@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../domain/models.dart';
@@ -237,6 +238,16 @@ class RealSettingsScreen extends ConsumerWidget {
                 subtitle: Text(l.settingsPrivacyBody),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _privacySheet(context, ref),
+              ),
+              // The accessibility statement (IS 5568, 1.2.5).
+              ListTile(
+                leading: const Icon(Icons.accessibility_new_rounded),
+                title: Text(l.settingsAccessibility),
+                trailing: const Icon(Icons.open_in_new_rounded),
+                onTap: () => launchUrl(
+                  Uri.parse(BackendConfig.accessibilityUrl),
+                  mode: LaunchMode.externalApplication,
+                ),
               ),
             ],
           ),
