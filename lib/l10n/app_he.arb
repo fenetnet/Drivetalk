@@ -2060,5 +2060,25 @@
   "languagePhone": "כמו בטלפון",
   "languageHe": "עברית",
   "languageEn": "English",
-  "settingsAccessibility": "הצהרת נגישות"
+  "settingsAccessibility": "הצהרת נגישות",
+  "funnelTitle": "המשפך: מה קורה עם מי שהצטרף",
+  "funnelJoined": "הצטרפו בתקופה",
+  "funnelJoinedHint": "אנשים חדשים (לפי מספר טלפון)",
+  "funnelFriend": "הוסיפו חבר",
+  "funnelFriendHint": "מתוכם: יש להם לפחות חבר אחד מחובר",
+  "funnelFree": "היו זמינים",
+  "funnelFreeHint": "מתוכם: סימנו שיש להם זמן או נסעו, לפחות פעם אחת",
+  "funnelTalked": "דיברו",
+  "funnelTalkedHint": "מתוכם: לפחות שיחה אחת דרך DriveBond",
+  "funnelWeek": "חזרו אחרי שבוע",
+  "funnelWeekHint": "מתוך {base} שהצטרפו לפני שבוע או יותר: פתחו שוב את האפליקציה אחרי 7 ימים",
+  "@funnelWeekHint": {
+    "placeholders": {
+      "base": {
+        "type": "int"
+      }
+    }
+  },
+  "firstRunFewHint": "הכי טוב עם 3 חברים או יותר: ככה כמעט תמיד יש מישהו פנוי לדבר.",
+  "firstRunInviteMore": "להזמין עוד חברים"
 }

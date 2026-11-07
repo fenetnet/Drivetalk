@@ -86,7 +86,11 @@ if (DT_EN) {
     var cfg = window.DT_CONFIG || {};
     // Sent from the Google Play app (?p=1): install from the store too.
     var play = new URLSearchParams(location.search).get('p') === '1' && cfg.playUrl;
-    var apk = play ? cfg.playUrl : cfg.apkUrl;
+    // From Google Play, the store link carries the code: after installing,
+    // the app connects to the friend by itself (1.3.0).
+    var apk = play
+      ? cfg.playUrl + (code ? '&referrer=' + encodeURIComponent('invite=' + code) : '')
+      : cfg.apkUrl;
     var dl = document.getElementById('download');
     dl.href = apk;
     if (play) {

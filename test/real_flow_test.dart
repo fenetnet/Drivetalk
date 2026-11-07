@@ -10,8 +10,10 @@ import 'package:drivetalk/domain/models.dart';
 import 'package:drivetalk/l10n/app_localizations.dart';
 import 'package:drivetalk/platform/contacts_reader.dart';
 import 'package:drivetalk/platform/driving_detector.dart';
+import 'package:drivetalk/platform/install_referrer.dart';
 import 'package:drivetalk/platform/phone_dialer.dart';
 import 'package:drivetalk/platform/voice_service.dart';
+import 'package:drivetalk/real/backend_config.dart';
 import 'package:drivetalk/real/local_store.dart';
 import 'package:drivetalk/real/memory_backend.dart';
 import 'package:drivetalk/real/photo_cache.dart';
@@ -63,9 +65,11 @@ class Phone {
         appBuildProvider.overrideWithValue(10),
         updateCheckerProvider.overrideWithValue(updates),
         googleAuthProvider.overrideWithValue(google),
+        installReferrerProvider.overrideWithValue(referrer),
       ],
     );
   }
+  final referrer = FakeInstallReferrer();
   final google = FakeGoogleAuth();
   final photos = MemoryPhotoCache();
   final updates = FakeUpdateChecker();
@@ -252,6 +256,9 @@ void main() {
     expect(stats['users'], 1, reason: 'two installs, one number = one person');
     expect(stats['users_no_phone'], 1, reason: 'Yoni, apart');
     expect(stats['accounts'], 3);
+    // The funnel (server 75): my two accounts have a number; one has Yoni.
+    expect(stats['funnel_joined'], 2);
+    expect(stats['funnel_friend'], 1);
     again.dispose();
   });
 
@@ -3240,7 +3247,13 @@ void main() {
       }
       await me.c.signOut();
       for (final k in me.store.values.keys) {
-        expect(k, 'real.prefs.v1', reason: 'only the phone settings stay');
+        // Only the phone's own settings stay (incl. "the install's
+        // invitation was already looked at", 1.3.0).
+        expect(
+          k,
+          isIn(['real.prefs.v1', 'real.referrerChecked.v1']),
+          reason: 'only the phone settings stay',
+        );
       }
       expect(me.driving.token, isNull);
     });
@@ -3491,6 +3504,54 @@ void main() {
       expect(me.c.showGenderCard, isTrue);
       me.c.dismissGenderCard();
       expect(me.c.showGenderCard, isFalse);
+    });
+  });
+
+  group('invitation through the Google Play install (1.3.0)', () {
+    test('reads "invite=<code>" from the store referrer', () {
+      const code = 'abcdefghijklmnop1234';
+      expect(inviteFromReferrer('invite=$code'), code);
+      expect(inviteFromReferrer('utm_source=x&invite=$code'), code);
+      expect(inviteFromReferrer('invite%3D$code'), code);
+      expect(inviteFromReferrer('utm_source=google-play'), isNull);
+      expect(inviteFromReferrer('invite=short'), isNull);
+      expect(inviteFromReferrer(null), isNull);
+      expect(playLinkWithInvite(code), endsWith('&referrer=invite%3D$code'));
+    });
+
+    test(
+      'installed from a friend\'s link: connected after joining, once',
+      () async {
+        await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+        final token = await me.c.createInviteToken();
+        expect(token, isNotNull);
+        // A new phone, installed from my store link.
+        final friend = Phone(server, clock);
+        friend.referrer.value = 'invite=$token';
+        await friend.boot();
+        await pump(20);
+        expect(friend.s.phase, RealPhase.signedOut);
+        expect(friend.s.invite?.token, token, reason: 'waiting for sign-up');
+        await friend.c.signIn('דנה', Gender.female, phone: '0504444444');
+        await pump(20);
+        expect(friend.s.invite?.info?.inviterName, 'נתנאל');
+        await friend.c.acceptInvite();
+        expect(friend.s.snapshot!.friends.single.name, 'נתנאל');
+        // Asked once only (an update or sign-out doesn't bring it back).
+        expect(friend.referrer.asked, 1);
+        friend.dispose();
+      },
+    );
+
+    test('a phone that already has an account never looks', () async {
+      await me.c.signIn('נתנאל', Gender.male, phone: '0521111111');
+      final again = Phone(server, clock, sameBackend: me.backend);
+      again.referrer.value = 'invite=abcdefghijklmnop1234';
+      await again.boot();
+      await pump(20);
+      expect(again.referrer.asked, 0);
+      expect(again.s.invite, isNull);
+      again.dispose();
     });
   });
 }

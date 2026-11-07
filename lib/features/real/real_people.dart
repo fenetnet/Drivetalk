@@ -35,8 +35,8 @@ Future<void> shareWeek(BuildContext context, WidgetRef ref, int people) async {
 
 /// Create an invitation and open the phone's share sheet (WhatsApp, SMS…).
 /// Falls back to copying when sharing isn't available.
-/// Normally just the download link: once the friend joins, people who have
-/// each other's number connect by themselves. [withCode] adds a personal
+/// Normally just the download link (in the Google Play build it carries an
+/// invitation, so the friend is connected after installing). [withCode] adds a personal
 /// code, for a friend who isn't saved in my contacts.
 Future<void> shareInvite(
   BuildContext context,
@@ -47,7 +47,13 @@ Future<void> shareInvite(
   final text = withCode
       ? await ref.read(realProvider.notifier).createInviteMessage()
       : BackendConfig.store
-      ? l.realInviteStore(BackendConfig.playUrl)
+      // The store link carries an invitation: after installing, the friend
+      // is connected to me by itself (1.3.0). Offline: the plain link.
+      ? l.realInviteStore(
+          playLinkWithInvite(
+            await ref.read(realProvider.notifier).createInviteToken(),
+          ),
+        )
       : l.realInviteSimple(
           ref.read(apkUrlProvider),
           BackendConfig.downloadPageUrl,

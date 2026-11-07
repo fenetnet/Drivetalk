@@ -844,5 +844,18 @@
   "languagePhone": "Like the phone",
   "languageHe": "עברית",
   "languageEn": "English",
-  "settingsAccessibility": "Accessibility statement"
+  "settingsAccessibility": "Accessibility statement",
+  "funnelTitle": "The funnel: what happens to people who joined",
+  "funnelJoined": "Joined in the period",
+  "funnelJoinedHint": "New people (by phone number)",
+  "funnelFriend": "Added a friend",
+  "funnelFriendHint": "Of them: have at least one connected friend",
+  "funnelFree": "Were available",
+  "funnelFreeHint": "Of them: marked they have time or drove, at least once",
+  "funnelTalked": "Talked",
+  "funnelTalkedHint": "Of them: at least one talk through DriveBond",
+  "funnelWeek": "Came back after a week",
+  "funnelWeekHint": "Of {base} who joined a week ago or more: opened the app again after 7 days",
+  "firstRunFewHint": "Best with 3 friends or more: then there's almost always someone free to talk.",
+  "firstRunInviteMore": "Invite more friends"
 }

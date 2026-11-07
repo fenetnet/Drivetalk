@@ -121,4 +121,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Push notifications (D-119).
     implementation("com.google.firebase:firebase-messaging:24.1.0")
+    // A friend's invitation through the Google Play install (1.3.0).
+    implementation("com.android.installreferrer:installreferrer:2.2")
 }

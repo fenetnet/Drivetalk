@@ -1329,6 +1329,34 @@ class MemoryRealBackend implements RealBackend {
       'later': count((o) => o.laterFrom != null),
       'no_answer': count((o) => o.status == OfferStatus.expired),
       'crashes': server.crashes.length,
+      // The funnel (server 75): everyone here is "new" in this test server.
+      ..._funnel(),
+    };
+  }
+
+  Map<String, num> _funnel() {
+    final people = [
+      for (final id in server.profiles.keys)
+        if (server.phones[id] != null) id,
+    ];
+    bool inOffer(String id, {bool talked = false}) => server.offers.values.any(
+      (o) => (o.a == id || o.b == id) && (!talked || o.talked == true),
+    );
+    return {
+      'funnel_joined': people.length,
+      'funnel_friend': people
+          .where(
+            (id) =>
+                server.connections.any((c) => c.split('|').contains(id)) &&
+                !server.pendingFor.values.contains(id),
+          )
+          .length,
+      'funnel_free': people
+          .where((id) => server.availability[id] != null || inOffer(id))
+          .length,
+      'funnel_talked': people.where((id) => inOffer(id, talked: true)).length,
+      'funnel_week_base': 0,
+      'funnel_week_back': 0,
     };
   }
 

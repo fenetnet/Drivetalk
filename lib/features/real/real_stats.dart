@@ -109,6 +109,45 @@ class _RealStatsState extends ConsumerState<RealStatsScreen> {
                   l.statsNoPhoneHint(m['active_no_phone']?.round() ?? 0),
                   'users_no_phone',
                 ),
+              // Where new people get stuck (servers from 75 on, owner).
+              if (m['funnel_joined'] != null) ...[
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Text(
+                    l.funnelTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                row(l.funnelJoined, l.funnelJoinedHint, 'funnel_joined'),
+                row(
+                  l.funnelFriend,
+                  l.funnelFriendHint,
+                  'funnel_friend',
+                  extra: pct(m['funnel_friend'], m['funnel_joined']),
+                ),
+                row(
+                  l.funnelFree,
+                  l.funnelFreeHint,
+                  'funnel_free',
+                  extra: pct(m['funnel_free'], m['funnel_joined']),
+                ),
+                row(
+                  l.funnelTalked,
+                  l.funnelTalkedHint,
+                  'funnel_talked',
+                  extra: pct(m['funnel_talked'], m['funnel_joined']),
+                ),
+                row(
+                  l.funnelWeek,
+                  l.funnelWeekHint(m['funnel_week_base']?.round() ?? 0),
+                  'funnel_week_back',
+                  extra: pct(m['funnel_week_back'], m['funnel_week_base']),
+                ),
+              ],
               const Divider(),
               row(l.statsFreeTimes, l.statsFreeTimesHint, 'free_times'),
               row(l.statsOffers, l.statsOffersHint, 'offers'),

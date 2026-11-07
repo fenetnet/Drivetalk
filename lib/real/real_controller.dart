@@ -20,6 +20,7 @@ import 'real_backend.dart';
 import 'real_models.dart';
 import 'routine_suggest.dart';
 import '../platform/google_auth.dart';
+import '../platform/install_referrer.dart';
 import 'supabase_backend.dart';
 import 'update_checker.dart';
 
@@ -711,6 +712,7 @@ class RealController extends Notifier<RealState> {
     if (!ref.mounted) return;
     if (_backend.userId == null) {
       state = state.copyWith(phase: RealPhase.signedOut);
+      unawaited(_inviteFromInstall());
       return;
     }
     // Open at once with what this phone saved last time; the server's
@@ -3146,6 +3148,31 @@ class RealController extends Notifier<RealState> {
     });
     return message;
   }
+
+  /// A new invitation code, quietly (null = couldn't make one now).
+  Future<String?> createInviteToken() async {
+    try {
+      return (await _backend.createInvitation()).token;
+    } on RealBackendException {
+      return null;
+    }
+  }
+
+  /// Installed from a friend's Google Play link (1.3.0): their invitation
+  /// opens by itself — once, on a phone with no account yet.
+  Future<void> _inviteFromInstall() async {
+    if (_store.getString(_referrerKey) != null) return;
+    await _store.setString(_referrerKey, 'checked');
+    final token = inviteFromReferrer(
+      await ref.read(installReferrerProvider).get(),
+    );
+    if (token == null || !ref.mounted || state.invite != null) return;
+    _event('invite_from_install');
+    openInvite(token);
+  }
+
+  /// Phone-level (kept on sign-out): the install's invitation was looked at.
+  static const _referrerKey = 'real.referrerChecked.v1';
 
   /// A link or code was opened on this phone.
   void openInvite(String token) {

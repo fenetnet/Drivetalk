@@ -150,6 +150,7 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         configureDriving(flutterEngine)
         configureContacts(flutterEngine)
+        configureReferrer(flutterEngine)
         // Regular phone call through the phone's own dialer.
         // With the CALL_PHONE permission: one tap (ACTION_CALL).
         // Without it: the dialer opens with the number filled in (ACTION_DIAL).
@@ -435,6 +436,20 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             result.success(null)
         }
+    }
+
+    /** What Google Play passed through the install (1.3.0). */
+    private fun configureReferrer(flutterEngine: FlutterEngine) {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "app.drivetalk/referrer")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "get") {
+                    InstallReferrer.read(this) { value ->
+                        runOnUiThread { result.success(value) }
+                    }
+                } else {
+                    result.notImplemented()
+                }
+            }
     }
 
     private fun configureContacts(flutterEngine: FlutterEngine) {

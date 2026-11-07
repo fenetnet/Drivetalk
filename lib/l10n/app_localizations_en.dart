@@ -3146,4 +3146,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAccessibility => 'Accessibility statement';
+
+  @override
+  String get funnelTitle => 'The funnel: what happens to people who joined';
+
+  @override
+  String get funnelJoined => 'Joined in the period';
+
+  @override
+  String get funnelJoinedHint => 'New people (by phone number)';
+
+  @override
+  String get funnelFriend => 'Added a friend';
+
+  @override
+  String get funnelFriendHint => 'Of them: have at least one connected friend';
+
+  @override
+  String get funnelFree => 'Were available';
+
+  @override
+  String get funnelFreeHint =>
+      'Of them: marked they have time or drove, at least once';
+
+  @override
+  String get funnelTalked => 'Talked';
+
+  @override
+  String get funnelTalkedHint => 'Of them: at least one talk through DriveBond';
+
+  @override
+  String get funnelWeek => 'Came back after a week';
+
+  @override
+  String funnelWeekHint(int base) {
+    return 'Of $base who joined a week ago or more: opened the app again after 7 days';
+  }
+
+  @override
+  String get firstRunFewHint =>
+      'Best with 3 friends or more: then there\'s almost always someone free to talk.';
+
+  @override
+  String get firstRunInviteMore => 'Invite more friends';
 }

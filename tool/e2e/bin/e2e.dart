@@ -1434,6 +1434,12 @@ Future<void> main() async {
     ),
     'owner numbers have no names or phone numbers',
   );
+  check(
+    (stats['funnel_joined'] as num) >= (stats['funnel_friend'] as num) &&
+        (stats['funnel_joined'] as num) >= (stats['funnel_talked'] as num) &&
+        (stats['funnel_week_base'] as num) >= (stats['funnel_week_back'] as num),
+    'the funnel: of who joined, how many got a friend / talked / came back',
+  );
   await avi.rpc('set_hide_status', params: {'p_hide': false});
   // Last active: whole days only; feedback to the owner (D-079).
   await noa.rpc('touch_seen');
@@ -1856,7 +1862,7 @@ Future<void> main() async {
   await autoYesEverywhere();
 
   check(
-    await eve.rpc('schema_version') == 74,
+    await eve.rpc('schema_version') == 75,
     'the server says its version (41)',
   );
 

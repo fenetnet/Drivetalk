@@ -5167,6 +5167,84 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'הצהרת נגישות'**
   String get settingsAccessibility;
+
+  /// No description provided for @funnelTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'המשפך: מה קורה עם מי שהצטרף'**
+  String get funnelTitle;
+
+  /// No description provided for @funnelJoined.
+  ///
+  /// In he, this message translates to:
+  /// **'הצטרפו בתקופה'**
+  String get funnelJoined;
+
+  /// No description provided for @funnelJoinedHint.
+  ///
+  /// In he, this message translates to:
+  /// **'אנשים חדשים (לפי מספר טלפון)'**
+  String get funnelJoinedHint;
+
+  /// No description provided for @funnelFriend.
+  ///
+  /// In he, this message translates to:
+  /// **'הוסיפו חבר'**
+  String get funnelFriend;
+
+  /// No description provided for @funnelFriendHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוכם: יש להם לפחות חבר אחד מחובר'**
+  String get funnelFriendHint;
+
+  /// No description provided for @funnelFree.
+  ///
+  /// In he, this message translates to:
+  /// **'היו זמינים'**
+  String get funnelFree;
+
+  /// No description provided for @funnelFreeHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוכם: סימנו שיש להם זמן או נסעו, לפחות פעם אחת'**
+  String get funnelFreeHint;
+
+  /// No description provided for @funnelTalked.
+  ///
+  /// In he, this message translates to:
+  /// **'דיברו'**
+  String get funnelTalked;
+
+  /// No description provided for @funnelTalkedHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוכם: לפחות שיחה אחת דרך DriveBond'**
+  String get funnelTalkedHint;
+
+  /// No description provided for @funnelWeek.
+  ///
+  /// In he, this message translates to:
+  /// **'חזרו אחרי שבוע'**
+  String get funnelWeek;
+
+  /// No description provided for @funnelWeekHint.
+  ///
+  /// In he, this message translates to:
+  /// **'מתוך {base} שהצטרפו לפני שבוע או יותר: פתחו שוב את האפליקציה אחרי 7 ימים'**
+  String funnelWeekHint(int base);
+
+  /// No description provided for @firstRunFewHint.
+  ///
+  /// In he, this message translates to:
+  /// **'הכי טוב עם 3 חברים או יותר: ככה כמעט תמיד יש מישהו פנוי לדבר.'**
+  String get firstRunFewHint;
+
+  /// No description provided for @firstRunInviteMore.
+  ///
+  /// In he, this message translates to:
+  /// **'להזמין עוד חברים'**
+  String get firstRunInviteMore;
 }
 
 class _AppLocalizationsDelegate

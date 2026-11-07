@@ -86,3 +86,9 @@ class BackendConfig {
   static String get backendHost =>
       supabaseUrl.isEmpty ? '—' : Uri.tryParse(supabaseUrl)?.host ?? '?';
 }
+
+/// The Google Play link, carrying an invitation code when there is one:
+/// Google Play hands "invite=<code>" to the app after installing (1.3.0).
+String playLinkWithInvite(String? token) => token == null
+    ? BackendConfig.playUrl
+    : '${BackendConfig.playUrl}&referrer=${Uri.encodeComponent('invite=$token')}';

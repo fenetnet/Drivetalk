@@ -3084,4 +3084,47 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get settingsAccessibility => 'הצהרת נגישות';
+
+  @override
+  String get funnelTitle => 'המשפך: מה קורה עם מי שהצטרף';
+
+  @override
+  String get funnelJoined => 'הצטרפו בתקופה';
+
+  @override
+  String get funnelJoinedHint => 'אנשים חדשים (לפי מספר טלפון)';
+
+  @override
+  String get funnelFriend => 'הוסיפו חבר';
+
+  @override
+  String get funnelFriendHint => 'מתוכם: יש להם לפחות חבר אחד מחובר';
+
+  @override
+  String get funnelFree => 'היו זמינים';
+
+  @override
+  String get funnelFreeHint =>
+      'מתוכם: סימנו שיש להם זמן או נסעו, לפחות פעם אחת';
+
+  @override
+  String get funnelTalked => 'דיברו';
+
+  @override
+  String get funnelTalkedHint => 'מתוכם: לפחות שיחה אחת דרך DriveBond';
+
+  @override
+  String get funnelWeek => 'חזרו אחרי שבוע';
+
+  @override
+  String funnelWeekHint(int base) {
+    return 'מתוך $base שהצטרפו לפני שבוע או יותר: פתחו שוב את האפליקציה אחרי 7 ימים';
+  }
+
+  @override
+  String get firstRunFewHint =>
+      'הכי טוב עם 3 חברים או יותר: ככה כמעט תמיד יש מישהו פנוי לדבר.';
+
+  @override
+  String get firstRunInviteMore => 'להזמין עוד חברים';
 }

@@ -112,9 +112,21 @@ class RealFirstRunScreen extends ConsumerWidget {
                 child: ContactPickList(scrolls: false),
               ),
             ),
+            // Fewer than 3: more friends = someone free more often (1.3.0).
+            if (c.contactMatches.length + friends.length < 3) ...[
+              const SizedBox(height: 12),
+              MomentText(l.firstRunFewHint, size: 15, soft: true),
+            ],
           ],
         ),
-        actions: [PrimaryPill(label: l.next, onTap: next)],
+        actions: [
+          PrimaryPill(label: l.next, onTap: next),
+          if (c.contactMatches.length + friends.length < 3)
+            SecondaryPill(
+              label: l.firstRunInviteMore,
+              onTap: () => shareInvite(context, ref),
+            ),
+        ],
       ),
       FirstRunStep.result when friends.isNotEmpty => MomentLayout(
         top: Column(
@@ -137,9 +149,20 @@ class RealFirstRunScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 28),
             MomentText(l.firstRunFound(friends.length), size: 28),
+            if (friends.length < 3) ...[
+              const SizedBox(height: 12),
+              MomentText(l.firstRunFewHint, size: 16, soft: true),
+            ],
           ],
         ),
-        actions: [PrimaryPill(label: l.next, onTap: next)],
+        actions: [
+          PrimaryPill(label: l.next, onTap: next),
+          if (friends.length < 3)
+            SecondaryPill(
+              label: l.firstRunInviteMore,
+              onTap: () => shareInvite(context, ref),
+            ),
+        ],
       ),
       FirstRunStep.result => MomentLayout(
         top: Column(

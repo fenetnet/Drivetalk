@@ -5,7 +5,7 @@
 //        | #people | #settings | #test | #onboarding | #feedback
 //        | #first-photo | #first-contacts | #first-result | #first-routine
 //        | #first-permissions | #first-magic | #new-home | #new-free
-//        | #lonely | #week (1.2.1)
+//        | #lonely | #week (1.2.1) | #first-few (1.3.0)
 //        | #onboarding-name | #gender (1.2.2)
 
 import 'package:flutter/material.dart';
@@ -57,7 +57,10 @@ Future<void> main() async {
       await friend('מיכל', Gender.female, '0543333333'),
       await friend('דנה', Gender.female, '0504444444'),
     ];
-    contacts.numbers = ['0532222222', '0543333333', '0504444444'];
+    contacts.numbers = screen == 'first-few'
+        // Only one friend from the contacts: "invite more" (1.3.0).
+        ? ['0532222222']
+        : ['0532222222', '0543333333', '0504444444'];
     if (screen.startsWith('new-')) {
       for (final f in found) {
         final inv = await me.createInvitation();
@@ -67,7 +70,9 @@ Future<void> main() async {
         await found[1].setAvailability(AvailabilityMode.driving, 25);
       }
     } else {
-      store.values['real.firstRun.v1'] = screen.substring('first-'.length);
+      store.values['real.firstRun.v1'] = screen == 'first-few'
+          ? 'result'
+          : screen.substring('first-'.length);
     }
     store.values['real.whatsNew.v1'] = '170';
     store.values['real.googleCard.v1'] = 'no';
@@ -192,7 +197,9 @@ Future<void> main() async {
   await Future<void>.delayed(const Duration(milliseconds: 50));
   final c = container.read(realProvider.notifier);
   await c.refresh();
-  if (screen == 'first-result') await c.firstRunFindPeople();
+  if (screen == 'first-result' || screen == 'first-few') {
+    await c.firstRunFindPeople();
+  }
   if (screen == 'week') {
     // The "when again?" questions of those talks: already answered.
     await Future<void>.delayed(const Duration(milliseconds: 300));
