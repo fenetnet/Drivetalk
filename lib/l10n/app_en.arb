@@ -857,5 +857,14 @@
   "funnelWeek": "Came back after a week",
   "funnelWeekHint": "Of {base} who joined a week ago or more: opened the app again after 7 days",
   "firstRunFewHint": "Best with 3 friends or more: then there's almost always someone free to talk.",
-  "firstRunInviteMore": "Invite more friends"
+  "firstRunInviteMore": "Invite more friends",
+  "settingsShareUsual": "Friends see when I'm usually on the road",
+  "settingsShareUsualHint": "Only the regular times you set in \"My routine\" (e.g. Sun–Thu 07:30), and only to friends. You can turn it off any time.",
+  "settingsShareUsualNoRoutine": "First set regular times in \"My routine\". Only they are shared, and only with friends.",
+  "usualTitle": "When friends are usually free",
+  "usualToday": "Today {time}",
+  "usualTomorrow": "Tomorrow {time}",
+  "usualDay": "{day} {time}",
+  "usualLine": "Usually: {days} {time}",
+  "usualNote": "What friends chose to share from their routine."
 }

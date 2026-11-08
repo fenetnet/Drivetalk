@@ -3189,4 +3189,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunInviteMore => 'Invite more friends';
+
+  @override
+  String get settingsShareUsual => 'Friends see when I\'m usually on the road';
+
+  @override
+  String get settingsShareUsualHint =>
+      'Only the regular times you set in \"My routine\" (e.g. Sun–Thu 07:30), and only to friends. You can turn it off any time.';
+
+  @override
+  String get settingsShareUsualNoRoutine =>
+      'First set regular times in \"My routine\". Only they are shared, and only with friends.';
+
+  @override
+  String get usualTitle => 'When friends are usually free';
+
+  @override
+  String usualToday(String time) {
+    return 'Today $time';
+  }
+
+  @override
+  String usualTomorrow(String time) {
+    return 'Tomorrow $time';
+  }
+
+  @override
+  String usualDay(String day, String time) {
+    return '$day $time';
+  }
+
+  @override
+  String usualLine(String days, String time) {
+    return 'Usually: $days $time';
+  }
+
+  @override
+  String get usualNote => 'What friends chose to share from their routine.';
 }

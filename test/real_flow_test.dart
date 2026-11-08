@@ -3554,4 +3554,45 @@ void main() {
       again.dispose();
     });
   });
+
+  group('when friends are usually on the road (item 4)', () {
+    const routine = Routine(
+      id: 'r1',
+      weekdays: {7, 1, 2, 3, 4},
+      minuteOfDay: 7 * 60 + 30,
+      durationMinutes: 30,
+      mode: AvailabilityMode.driving,
+    );
+
+    test('shared only when I turn it on; off deletes it', () async {
+      await connect();
+      await me.c.saveRoutines([routine]);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.usualTimes, isEmpty, reason: 'off by default');
+      await me.c.setShareUsualTimes(true);
+      await yoni.c.refresh();
+      final t = yoni.s.snapshot!.usualTimes.values.single.single;
+      expect(t.weekdays, {7, 1, 2, 3, 4});
+      expect(t.startMinute, 450);
+      // Next one: the clock says Friday 2.10.2026 8:00 → Sunday 07:30.
+      expect(t.nextAfter(now), DateTime(2026, 10, 4, 7, 30));
+      // A change in my routine follows by itself.
+      await me.c.saveRoutines([]);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.usualTimes, isEmpty);
+      await me.c.saveRoutines([routine]);
+      await me.c.setShareUsualTimes(false);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.usualTimes, isEmpty, reason: 'off = deleted');
+    });
+
+    test('not to someone I rated "never"', () async {
+      await connect();
+      await me.c.saveRoutines([routine]);
+      await me.c.setShareUsualTimes(true);
+      await me.c.setRating(me.s.snapshot!.friends.single, 0);
+      await yoni.c.refresh();
+      expect(yoni.s.snapshot!.usualTimes, isEmpty);
+    });
+  });
 }

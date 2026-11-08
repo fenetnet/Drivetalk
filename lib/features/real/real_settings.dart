@@ -140,6 +140,18 @@ class RealSettingsScreen extends ConsumerWidget {
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () => _pickCar(context, ref),
                 ),
+              // "Friends see when I'm usually on the road" (item 4).
+              SwitchListTile(
+                secondary: const Icon(Icons.schedule_rounded),
+                title: Text(l.settingsShareUsual),
+                subtitle: Text(
+                  s.routines.isEmpty
+                      ? l.settingsShareUsualNoRoutine
+                      : l.settingsShareUsualHint,
+                ),
+                value: c.shareUsualTimes,
+                onChanged: c.setShareUsualTimes,
+              ),
               // Hebrew / English / like the phone (1.2.3).
               ListTile(
                 leading: const Icon(Icons.translate_rounded),

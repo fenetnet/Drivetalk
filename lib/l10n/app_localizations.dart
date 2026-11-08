@@ -5245,6 +5245,60 @@ abstract class AppLocalizations {
   /// In he, this message translates to:
   /// **'להזמין עוד חברים'**
   String get firstRunInviteMore;
+
+  /// No description provided for @settingsShareUsual.
+  ///
+  /// In he, this message translates to:
+  /// **'החברים יראו מתי אני בדרך כלל בדרך'**
+  String get settingsShareUsual;
+
+  /// No description provided for @settingsShareUsualHint.
+  ///
+  /// In he, this message translates to:
+  /// **'רק הזמנים הקבועים שהגדרת ב\"השגרה שלי\" (למשל א׳–ה׳ 07:30), ורק לחברים. אפשר לכבות בכל רגע.'**
+  String get settingsShareUsualHint;
+
+  /// No description provided for @settingsShareUsualNoRoutine.
+  ///
+  /// In he, this message translates to:
+  /// **'קודם מגדירים זמנים קבועים ב\"השגרה שלי\". רק הם ישותפו, ורק עם החברים.'**
+  String get settingsShareUsualNoRoutine;
+
+  /// No description provided for @usualTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'מתי החברים בדרך כלל פנויים'**
+  String get usualTitle;
+
+  /// No description provided for @usualToday.
+  ///
+  /// In he, this message translates to:
+  /// **'היום {time}'**
+  String usualToday(String time);
+
+  /// No description provided for @usualTomorrow.
+  ///
+  /// In he, this message translates to:
+  /// **'מחר {time}'**
+  String usualTomorrow(String time);
+
+  /// No description provided for @usualDay.
+  ///
+  /// In he, this message translates to:
+  /// **'ביום {day} {time}'**
+  String usualDay(String day, String time);
+
+  /// No description provided for @usualLine.
+  ///
+  /// In he, this message translates to:
+  /// **'בדרך כלל: {days} {time}'**
+  String usualLine(String days, String time);
+
+  /// No description provided for @usualNote.
+  ///
+  /// In he, this message translates to:
+  /// **'מה שהחברים בחרו לשתף מהשגרה שלהם.'**
+  String get usualNote;
 }
 
 class _AppLocalizationsDelegate

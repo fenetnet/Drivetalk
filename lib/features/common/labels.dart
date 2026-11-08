@@ -115,3 +115,22 @@ String weekdaysText(AppLocalizations l, Set<int> days) => [
   for (final d in const [7, 1, 2, 3, 4, 5, 6])
     if (days.contains(d)) weekdayShort(l, d),
 ].join(', ');
+
+String _hm(int minuteOfDay) =>
+    '${(minuteOfDay ~/ 60).toString().padLeft(2, '0')}:'
+    '${(minuteOfDay % 60).toString().padLeft(2, '0')}';
+
+/// "Today 17:30" / "Tomorrow 07:30" / "Tue 07:30" (item 4).
+String usualWhen(AppLocalizations l, DateTime start, DateTime now) {
+  final day = DateTime(start.year, start.month, start.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final time = _hm(start.hour * 60 + start.minute);
+  final diff = day.difference(today).inDays;
+  if (diff == 0) return l.usualToday(time);
+  if (diff == 1) return l.usualTomorrow(time);
+  return l.usualDay(weekdayShort(l, start.weekday), time);
+}
+
+/// "Usually: Sun, Mon, Tue 07:30" for a friend's row (item 4).
+String usualLineText(AppLocalizations l, Set<int> days, int minuteOfDay) =>
+    l.usualLine(weekdaysText(l, days), _hm(minuteOfDay));

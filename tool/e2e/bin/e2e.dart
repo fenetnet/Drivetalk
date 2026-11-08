@@ -1860,9 +1860,10 @@ Future<void> main() async {
   await audienceStaysFresh();
   await weeklySummary();
   await autoYesEverywhere();
+  await usualTimes();
 
   check(
-    await eve.rpc('schema_version') == 75,
+    await eve.rpc('schema_version') == 76,
     'the server says its version (41)',
   );
 
@@ -4490,4 +4491,35 @@ Future<void> autoYesEverywhere() async {
     await c.rpc('set_auto_yes', params: {'p_on': false});
     await c.rpc('clear_availability');
   }
+}
+
+/// Item 4: regular times shared only by choice, only to friends.
+Future<void> usualTimes() async {
+  final ua = await newUser('אורי', 'male');
+  final ub = await newUser('אורית', 'female');
+  final stranger = await newUser('זר', 'male');
+  await befriend(ua, ub);
+  await ua.rpc('set_usual_times', params: {
+    'p_times': [
+      {'days': 62, 'start': 450, 'minutes': 30, 'mode': 'driving'},
+    ],
+  });
+  final friendSees = List.from(await ub.rpc('friends_usual_times'));
+  final strangerSees = List.from(await stranger.rpc('friends_usual_times'));
+  check(
+    friendSees.length == 1 && strangerSees.isEmpty,
+    'usual times: a friend sees them, a stranger doesn\'t',
+  );
+  var direct = true;
+  try {
+    await stranger.from('usual_times').select();
+  } catch (_) {
+    direct = false;
+  }
+  check(!direct, 'usual times can\'t be read directly');
+  await ua.rpc('set_usual_times', params: {'p_times': <Object>[]});
+  check(
+    List.from(await ub.rpc('friends_usual_times')).isEmpty,
+    'turned off: deleted',
+  );
 }

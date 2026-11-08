@@ -2022,6 +2022,7 @@ class RealController extends Notifier<RealState> {
       _milestoneKey,
       _autoYesLockKey,
       _genderAskedKey,
+      _shareUsualKey,
       _lonelyDriveKey,
       _driveInviteKey,
       _quickOffKey,
@@ -3278,8 +3279,41 @@ class RealController extends Notifier<RealState> {
     _notify(RealNoticeKind.saved);
   }
 
+  // ------------------------------------------------------------ usual times
+
+  static const _shareUsualKey = 'real.shareUsual.v1';
+
+  /// "Friends see when I'm usually on the road" (item 4; off unless on).
+  bool get shareUsualTimes => _store.getString(_shareUsualKey) == 'on';
+
+  Future<void> setShareUsualTimes(bool on) async {
+    await _store.setString(_shareUsualKey, on ? 'on' : null);
+    state = state.copyWith();
+    await _shareUsual(force: true);
+  }
+
+  /// My routines to my friends — only while sharing is on; turning it off
+  /// deletes them from the server.
+  Future<void> _shareUsual({bool force = false}) async {
+    if (!force && !shareUsualTimes) return;
+    final times = shareUsualTimes
+        ? [
+            for (final r in state.routines)
+              if (r.weekdays.isNotEmpty)
+                UsualTime(
+                  weekdays: r.weekdays,
+                  startMinute: r.minuteOfDay,
+                  minutes: r.durationMinutes,
+                  mode: r.mode,
+                ),
+          ]
+        : const <UsualTime>[];
+    await _quietly(() => _backend.setUsualTimes(times));
+  }
+
   Future<void> _storeRoutines(List<Routine> list) async {
     state = state.copyWith(routines: list);
+    unawaited(_shareUsual());
     await _store.setString(
       _routinesKey,
       jsonEncode([for (final r in list) r.toJson()]),

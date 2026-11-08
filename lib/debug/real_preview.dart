@@ -5,7 +5,7 @@
 //        | #people | #settings | #test | #onboarding | #feedback
 //        | #first-photo | #first-contacts | #first-result | #first-routine
 //        | #first-permissions | #first-magic | #new-home | #new-free
-//        | #lonely | #week (1.2.1) | #first-few (1.3.0)
+//        | #lonely | #week (1.2.1) | #first-few | #usual (1.3.0)
 //        | #onboarding-name | #gender (1.2.2)
 
 import 'package:flutter/material.dart';
@@ -144,7 +144,28 @@ Future<void> main() async {
           .subtract(const Duration(minutes: 20))
           .toIso8601String();
     }
-    if (screen != 'driving') {
+    if (screen == 'usual') {
+      // Nobody free now; two friends share their regular times (item 4).
+      server.usualTimes[mom.userId!] = const [
+        UsualTime(
+          weekdays: {1, 2, 3, 4, 5, 6, 7},
+          startMinute: 17 * 60 + 30,
+          minutes: 30,
+          mode: AvailabilityMode.driving,
+        ),
+      ];
+      server.usualTimes[yoni.userId!] = const [
+        UsualTime(
+          weekdays: {7, 1, 2, 3, 4},
+          startMinute: 7 * 60 + 30,
+          minutes: 40,
+          mode: AvailabilityMode.driving,
+        ),
+      ];
+      store.values['real.whatsNew.v1'] = '170';
+      store.values['real.googleCard.v1'] = 'no';
+    }
+    if (screen != 'driving' && screen != 'usual') {
       // Home: three faces fit the card (driving, break, in a call).
       if (screen != 'home') {
         await mom.setAvailability(AvailabilityMode.walking, 40);
@@ -163,6 +184,8 @@ Future<void> main() async {
         await me.setAvailability(AvailabilityMode.driving, 60);
       case 'driving':
         await me.setAvailability(AvailabilityMode.driving, 60);
+      case 'usual':
+        break;
       default:
         await yoni.setAvailability(AvailabilityMode.driving, 25);
     }

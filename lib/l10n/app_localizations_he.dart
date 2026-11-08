@@ -3127,4 +3127,41 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunInviteMore => 'להזמין עוד חברים';
+
+  @override
+  String get settingsShareUsual => 'החברים יראו מתי אני בדרך כלל בדרך';
+
+  @override
+  String get settingsShareUsualHint =>
+      'רק הזמנים הקבועים שהגדרת ב\"השגרה שלי\" (למשל א׳–ה׳ 07:30), ורק לחברים. אפשר לכבות בכל רגע.';
+
+  @override
+  String get settingsShareUsualNoRoutine =>
+      'קודם מגדירים זמנים קבועים ב\"השגרה שלי\". רק הם ישותפו, ורק עם החברים.';
+
+  @override
+  String get usualTitle => 'מתי החברים בדרך כלל פנויים';
+
+  @override
+  String usualToday(String time) {
+    return 'היום $time';
+  }
+
+  @override
+  String usualTomorrow(String time) {
+    return 'מחר $time';
+  }
+
+  @override
+  String usualDay(String day, String time) {
+    return 'ביום $day $time';
+  }
+
+  @override
+  String usualLine(String days, String time) {
+    return 'בדרך כלל: $days $time';
+  }
+
+  @override
+  String get usualNote => 'מה שהחברים בחרו לשתף מהשגרה שלהם.';
 }

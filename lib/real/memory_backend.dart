@@ -242,6 +242,9 @@ class MemoryServer {
 
   /// "Yes automatically while driving" (D-153): on, and the star level.
   final Set<String> autoYes = {};
+
+  /// Regular times each person shares with friends (server 76).
+  final Map<String, List<UsualTime>> usualTimes = {};
   final Map<String, int> autoYesMin = {};
 
   /// Would [user] say yes to [from] by themselves right now?
@@ -1087,6 +1090,16 @@ class MemoryRealBackend implements RealBackend {
         for (final f in friends)
           if (server.autoYesFor(f.id, me)) f.id,
       },
+      usualTimes: {
+        for (final f in friends)
+          if (server.usualTimes[f.id] case final t?
+              when t.isNotEmpty &&
+                  !server.blockedBetween(me, f.id) &&
+                  !server.awaitsApproval(f.id, me) &&
+                  !server.hidden.contains(f.id) &&
+                  server.ratingOf(f.id, me) > 0)
+            f.id: t,
+      },
       pauses: {
         for (final f in friends)
           if (server.snoozes['$me|${f.id}'] case final u?
@@ -1297,6 +1310,16 @@ class MemoryRealBackend implements RealBackend {
       server._changed();
     }
     return r;
+  }
+
+  @override
+  Future<void> setUsualTimes(List<UsualTime> times) async {
+    if (times.isEmpty) {
+      server.usualTimes.remove(_uid);
+    } else {
+      server.usualTimes[_uid] = [...times.take(20)];
+    }
+    server._changed();
   }
 
   @override

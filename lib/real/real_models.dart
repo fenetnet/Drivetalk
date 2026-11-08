@@ -400,6 +400,7 @@ class RealSnapshot {
     this.autoYes = false,
     this.autoYesMin = 3,
     this.instant = const {},
+    this.usualTimes = const {},
   });
 
   /// "Yes automatically while driving" (D-153): mine on, from how many
@@ -420,6 +421,10 @@ class RealSnapshot {
   /// My pauses after a call (D-108/D-113): friend id → until, and whether
   /// I chose it (else the automatic 3 days).
   final Map<String, ({DateTime until, bool chosen})> pauses;
+
+  /// Friends' usual times, shared by them (item 4, server 76): friend id →
+  /// their regular times. Only friends who turned sharing on.
+  final Map<String, List<UsualTime>> usualTimes;
 
   /// Both sides turned it on: the call can start by itself.
   bool quickBoth(String id) =>
@@ -516,6 +521,7 @@ class RealSnapshot {
     autoYes: autoYes,
     autoYesMin: autoYesMin,
     instant: instant,
+    usualTimes: usualTimes,
   );
 
   /// Same snapshot with downloaded photos filled in (by user id).
@@ -766,4 +772,38 @@ class OwnerNote {
 
   /// "Report a problem": the app's technical details (D-143).
   final String? details;
+}
+
+/// A friend's regular time, shared by them (server 76).
+class UsualTime {
+  const UsualTime({
+    required this.weekdays,
+    required this.startMinute,
+    required this.minutes,
+    required this.mode,
+  });
+
+  /// DateTime.weekday values (Mon=1 … Sun=7).
+  final Set<int> weekdays;
+  final int startMinute;
+  final int minutes;
+  final AvailabilityMode mode;
+
+  /// The server's bits: Monday = 1 << 1 … Sunday = 1 << 7.
+  static int bitsOf(Set<int> days) => days.fold(0, (b, d) => b | (1 << d));
+  static Set<int> daysOf(int bits) => {
+    for (var d = 1; d <= 7; d++)
+      if (bits & (1 << d) != 0) d,
+  };
+
+  /// The next start at or after [now] (within a week), or null.
+  DateTime? nextAfter(DateTime now) {
+    for (var i = 0; i < 8; i++) {
+      final day = DateTime(now.year, now.month, now.day + i);
+      if (!weekdays.contains(day.weekday)) continue;
+      final start = day.add(Duration(minutes: startMinute));
+      if (start.add(Duration(minutes: minutes)).isAfter(now)) return start;
+    }
+    return null;
+  }
 }

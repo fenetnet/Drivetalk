@@ -70,6 +70,9 @@ abstract class RealBackend {
   /// Totals for the owner (no names, nothing about one person).
   Future<Map<String, num?>> appStats(int days);
 
+  /// Share my regular times with my friends, or stop (empty list).
+  Future<void> setUsualTimes(List<UsualTime> times);
+
   Future<OfferAnswer> answerOffer(String offerId, {required bool accept});
 
   /// A question shows on my screen now: the one who asked sees it reached

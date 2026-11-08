@@ -313,6 +313,11 @@ class RealHomeScreen extends ConsumerWidget {
                     hiddenFree: snap?.status.hiddenFree ?? 0,
                     anonymous: snap?.status.anonymous ?? false,
                   ),
+                // Nobody free: when friends usually are (item 4).
+                if (free.isEmpty && (snap?.usualTimes.isNotEmpty ?? false)) ...[
+                  const SizedBox(height: 16),
+                  _UsualTimesCard(snap: snap!, now: now),
+                ],
                 // Then: "I'm driving" / "I have time" — or me, free (D-156).
                 const SizedBox(height: 20),
                 if (mine == null)
@@ -1264,6 +1269,75 @@ class _DriveInviteCard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Friends' shared regular times, the next few first (item 4).
+class _UsualTimesCard extends StatelessWidget {
+  const _UsualTimesCard({required this.snap, required this.now});
+  final RealSnapshot snap;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final next = <(RealProfile, DateTime, AvailabilityMode)>[];
+    for (final f in snap.friends) {
+      (DateTime, AvailabilityMode)? best;
+      for (final t in snap.usualTimes[f.id] ?? const <UsualTime>[]) {
+        final at = t.nextAfter(now);
+        if (at != null && (best == null || at.isBefore(best.$1))) {
+          best = (at, t.mode);
+        }
+      }
+      if (best != null) next.add((f, best.$1, best.$2));
+    }
+    next.sort((a, b) => a.$2.compareTo(b.$2));
+    if (next.isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.blush,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            l.usualTitle,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 8),
+          for (final (f, at, mode) in next.take(3))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  RealAvatar(person: f.toPerson(), size: 36),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      f.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Icon(modeIcon(mode), size: 18, color: AppColors.inkSoft),
+                  const SizedBox(width: 6),
+                  Text(usualWhen(l, at, now)),
+                ],
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            l.usualNote,
+            style: const TextStyle(fontSize: 13, color: AppColors.inkSoft),
+          ),
+        ],
       ),
     );
   }

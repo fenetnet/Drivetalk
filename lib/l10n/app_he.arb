@@ -2080,5 +2080,48 @@
     }
   },
   "firstRunFewHint": "הכי טוב עם 3 חברים או יותר: ככה כמעט תמיד יש מישהו פנוי לדבר.",
-  "firstRunInviteMore": "להזמין עוד חברים"
+  "firstRunInviteMore": "להזמין עוד חברים",
+  "settingsShareUsual": "החברים יראו מתי אני בדרך כלל בדרך",
+  "settingsShareUsualHint": "רק הזמנים הקבועים שהגדרת ב\"השגרה שלי\" (למשל א׳–ה׳ 07:30), ורק לחברים. אפשר לכבות בכל רגע.",
+  "settingsShareUsualNoRoutine": "קודם מגדירים זמנים קבועים ב\"השגרה שלי\". רק הם ישותפו, ורק עם החברים.",
+  "usualTitle": "מתי החברים בדרך כלל פנויים",
+  "usualToday": "היום {time}",
+  "usualTomorrow": "מחר {time}",
+  "usualDay": "ביום {day} {time}",
+  "usualLine": "בדרך כלל: {days} {time}",
+  "usualNote": "מה שהחברים בחרו לשתף מהשגרה שלהם.",
+  "@usualToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@usualTomorrow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@usualDay": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "@usualLine": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

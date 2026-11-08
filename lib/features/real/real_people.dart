@@ -227,6 +227,13 @@ class RealPeopleScreen extends ConsumerWidget {
               }),
             },
             RatingStars(rating: snap.ratingOf(f.id)),
+            // Their shared regular time (item 4).
+            if (snap.usualTimes[f.id]?.firstOrNull case final t?)
+              StatusLine(
+                icon: Icons.schedule_rounded,
+                text: usualLineText(l, t.weekdays, t.startMinute),
+                color: AppColors.inkSoft,
+              ),
             // My pause after a call (D-113): easy to keep track of.
             if (snap.pauses[f.id] case final p? when p.until.isAfter(now))
               StatusLine(

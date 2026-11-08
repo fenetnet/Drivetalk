@@ -193,6 +193,7 @@ class SupabaseRealBackend implements RealBackend {
         'my_pauses',
         'my_availability_details',
         'auto_yes_status',
+        'friends_usual_times',
       ],
       [
         _c
@@ -353,6 +354,13 @@ class SupabaseRealBackend implements RealBackend {
               (r) => [Map<String, dynamic>.from(r as Map)],
               onError: _ifOlder(() => <Map<String, dynamic>>[]),
             ),
+        // Friends' usual times (server 76; optional on an older server).
+        _c
+            .rpc('friends_usual_times')
+            .then<List<Map<String, dynamic>>>(
+              (r) => [for (final x in r as List) Map<String, dynamic>.from(x)],
+              onError: _ifOlder(() => <Map<String, dynamic>>[]),
+            ),
       ],
     );
     final autoYes = results[15].firstOrNull;
@@ -446,6 +454,7 @@ class SupabaseRealBackend implements RealBackend {
       autoYes: autoYes?['on'] == true,
       autoYesMin: (autoYes?['min'] as num?)?.toInt() ?? 3,
       instant: {for (final x in autoYes?['instant'] as List? ?? const []) '$x'},
+      usualTimes: _usualTimes(results[16]),
       pauses: {
         for (final r in results[13])
           r['user_id'] as String: (
@@ -1454,6 +1463,42 @@ class SupabaseRealBackend implements RealBackend {
     }
     return out;
   }
+
+  static Map<String, List<UsualTime>> _usualTimes(
+    List<Map<String, dynamic>> rows,
+  ) {
+    final out = <String, List<UsualTime>>{};
+    for (final r in rows) {
+      (out[r['user_id'] as String] ??= []).add(
+        UsualTime(
+          weekdays: UsualTime.daysOf((r['days'] as num).toInt()),
+          startMinute: (r['start_minute'] as num).toInt(),
+          minutes: (r['minutes'] as num).toInt(),
+          mode: modeFromKey(r['mode'] as String?),
+        ),
+      );
+    }
+    return out;
+  }
+
+  /// Share my regular times with friends (server 76), or stop (empty).
+  @override
+  Future<void> setUsualTimes(List<UsualTime> times) => _guard(() async {
+    await _c.rpc(
+      'set_usual_times',
+      params: {
+        'p_times': [
+          for (final t in times)
+            {
+              'days': UsualTime.bitsOf(t.weekdays),
+              'start': t.startMinute,
+              'minutes': t.minutes.clamp(5, 240),
+              'mode': t.mode.name,
+            },
+        ],
+      },
+    );
+  });
 
   static RealProfile _profile(Map<String, dynamic> r) => RealProfile(
     id: r['id'] as String,
