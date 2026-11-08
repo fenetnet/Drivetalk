@@ -12,7 +12,11 @@ import android.os.Build
 
 /** Notifications while driving: "you're available" and "X is free — talk?". */
 object DrivingNotifications {
-    const val CHANNEL_STATUS = "driving_status"
+    // A new id (1.3.0): Android keeps a channel's sound settings forever, and
+    // on some phones the old one rang at every trip. This one is created
+    // silent (no sound, no vibration); the old one is removed.
+    const val CHANNEL_STATUS = "driving_status_quiet"
+    private const val OLD_CHANNEL_STATUS = "driving_status"
     const val CHANNEL_OFFERS = "driving_offers"
 
     /** "X is free — talk?": its own soft chime and vibration (D-106). */
@@ -45,13 +49,21 @@ object DrivingNotifications {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val nm = context.getSystemService(NotificationManager::class.java)
         val store = DrivingStore(context)
-        nm.createNotificationChannel(
-            NotificationChannel(
-                CHANNEL_STATUS,
-                store.text("channelStatus", "Driving availability"),
-                NotificationManager.IMPORTANCE_LOW,
-            ),
+        // (Android refuses while a trip still shows on it: next time then.)
+        try {
+            nm.deleteNotificationChannel(OLD_CHANNEL_STATUS)
+        } catch (e: Exception) {
+        }
+        val status = NotificationChannel(
+            CHANNEL_STATUS,
+            store.text("channelStatus", "Driving availability"),
+            NotificationManager.IMPORTANCE_LOW,
         )
+        // Only a quiet line in the shade: never a sound or a buzz.
+        status.setSound(null, null)
+        status.enableVibration(false)
+        status.setShowBadge(false)
+        nm.createNotificationChannel(status)
         nm.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_OFFERS,
@@ -154,6 +166,8 @@ object DrivingNotifications {
             .setContentTitle(store.text(if (manual) "manualTitle" else "statusTitle", "DriveBond"))
             .setContentText(store.text(if (manual) "manualBody" else "statusBody", ""))
             .setOngoing(true)
+            // Updated during the trip: never alert again.
+            .setOnlyAlertOnce(true)
             .setContentIntent(openApp(context, 1))
             .addAction(
                 Notification.Action.Builder(
