@@ -1034,8 +1034,12 @@ class MemoryRealBackend implements RealBackend {
   /// Tests: a slow network for the snapshot.
   Duration? fetchDelay;
 
+  /// How many times this phone asked for everything (tests: server load).
+  var fetchCount = 0;
+
   @override
   Future<RealSnapshot> fetchSnapshot() async {
+    fetchCount++;
     // Like a request already on its way: who asked is fixed when it left.
     final me = _uid;
     if (fetchDelay case final d?) await Future<void>.delayed(d);

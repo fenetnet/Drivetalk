@@ -3595,4 +3595,31 @@ void main() {
       expect(yoni.s.snapshot!.usualTimes, isEmpty);
     });
   });
+
+  test(
+    'behind other apps: the server is asked every 2 minutes, not 10 s',
+    () async {
+      await connect();
+      await me.c.startAvailability(AvailabilityMode.free, 30);
+      me.c.debugLifecycle(AppLifecycleState.paused);
+      await pump();
+      final before = me.backend.fetchCount;
+      for (var i = 0; i < 23; i++) {
+        me.c.debugTick();
+      }
+      await pump(20);
+      expect(me.backend.fetchCount, before, reason: 'under 2 minutes: none');
+      me.c.debugTick(); // the 24th tick = 2 minutes
+      await pump(20);
+      expect(me.backend.fetchCount, greaterThan(before));
+      // Back on screen: at once, and every 10 seconds again.
+      me.c.debugLifecycle(AppLifecycleState.resumed);
+      await pump(20);
+      final onScreen = me.backend.fetchCount;
+      me.c.debugTick();
+      me.c.debugTick();
+      await pump(20);
+      expect(me.backend.fetchCount, greaterThan(onScreen));
+    },
+  );
 }

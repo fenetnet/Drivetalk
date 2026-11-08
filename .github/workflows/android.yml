@@ -14,6 +14,9 @@ on:
       - "store_assets/**"
       - ".github/workflows/supabase-migrate.yml"
       - ".github/workflows/invite-site.yml"
+      - ".github/workflows/keep-awake.yml"
+      - ".github/workflows/backup.yml"
+      - ".github/workflows/server-check.yml"
   workflow_dispatch:
 
 permissions:

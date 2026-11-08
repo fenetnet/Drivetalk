@@ -1,12 +1,13 @@
-# Keeps the free Supabase project from pausing (it pauses after a week
-# with no activity): every 3 days, one tiny request asks the server its
-# version — the same question the app asks. Public key only; no secrets.
-# Scheduled workflows run only from the default branch (main).
+# Server health: every hour one tiny request asks the server its version —
+# the same question the app asks. It keeps the free Supabase project from
+# pausing, and when the server doesn't answer the run fails, so GitHub
+# emails the owner at once (owner, 2026-11-08; was every 3 days).
+# Public key only; no secrets. Scheduled workflows run only from main.
 name: Keep server awake
 
 on:
   schedule:
-    - cron: "17 6 */3 * *"
+    - cron: "23 * * * *"
   workflow_dispatch:
 
 permissions: {}

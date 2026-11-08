@@ -675,7 +675,14 @@ class RealController extends Notifier<RealState> {
     _subs.add(
       _backend.changes.listen((_) {
         _debounce?.cancel();
-        _debounce = Timer(const Duration(milliseconds: 300), refresh);
+        // Behind other apps: changes are gathered for 10 seconds (one
+        // refresh instead of many); on screen at once.
+        _debounce = Timer(
+          _foreground
+              ? const Duration(milliseconds: 300)
+              : const Duration(seconds: 10),
+          refresh,
+        );
       }),
     );
     _subs.add(
@@ -770,7 +777,15 @@ class RealController extends Notifier<RealState> {
     final busy =
         myActiveAvailability(state, now) != null ||
         waitingOffer(state, now) != null;
-    final every = busy || state.live != LiveStatus.connected ? 2 : 6;
+    // Behind other apps the phone's own service and push notifications do
+    // the work (questions, calls); the app itself looks only every 2
+    // minutes, so the small free server isn't asked by every pocket
+    // (owner, 2026-11-08). On screen: as before.
+    final every = !_foreground
+        ? 24
+        : busy || state.live != LiveStatus.connected
+        ? 2
+        : 6;
     if (myExpired || _tick % every == 0) refresh();
     // Instant updates stopped: try again (at most once a minute).
     if (state.live == LiveStatus.error && _foreground) _reconnectLive();
