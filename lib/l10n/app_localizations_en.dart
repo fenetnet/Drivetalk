@@ -1387,7 +1387,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get contactsPickBody =>
-      'Pick only who you\'d like to talk to. Anyone you don\'t pick won\'t know.';
+      'Pick only the people you want to talk to. Anyone you don\'t pick won\'t know.';
 
   @override
   String get contactsAdd => 'Add';
@@ -3185,7 +3185,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get firstRunFewHint =>
-      'Best with 3 friends or more: then there\'s almost always someone free to talk.';
+      'The more friends, the more talks. With 10 active friends there\'s almost always someone free to talk.';
 
   @override
   String get firstRunInviteMore => 'Invite more friends';

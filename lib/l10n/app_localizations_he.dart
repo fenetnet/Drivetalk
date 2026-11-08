@@ -1357,7 +1357,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get contactsPickBody =>
-      'בוחרים רק את מי שבא לדבר איתו. מי שלא נבחר לא יודע על זה.';
+      'בוחרים רק את מי שרוצים לדבר איתו. מי שלא נבחר לא יודע על זה.';
 
   @override
   String get contactsAdd => 'להוסיף';
@@ -3123,7 +3123,7 @@ class AppLocalizationsHe extends AppLocalizations {
 
   @override
   String get firstRunFewHint =>
-      'הכי טוב עם 3 חברים או יותר: ככה כמעט תמיד יש מישהו פנוי לדבר.';
+      'ככל שיש יותר חברים, יוצאות יותר שיחות. עם 10 חברים פעילים כמעט תמיד יש מישהו פנוי לדבר.';
 
   @override
   String get firstRunInviteMore => 'להזמין עוד חברים';
