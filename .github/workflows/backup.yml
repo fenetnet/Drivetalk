@@ -1,0 +1,60 @@
+# A nightly backup of the real server's data (owner, 2026-11-08), kept for
+# 30 days as an encrypted file of this run (Actions → Server backup → a
+# run → Artifacts). Nothing happens until the owner adds two repository
+# secrets himself (nobody else ever sees them):
+#   SUPABASE_DB_URL     — Supabase → Connect → "Session pooler" URI (with
+#                         the database password)
+#   BACKUP_PASSPHRASE   — any long passphrase he keeps; the file can't be
+#                         opened without it
+# Scheduled workflows run only from the default branch (main).
+name: Server backup
+
+on:
+  schedule:
+    - cron: "41 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Dump, compress and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::notice::Secrets SUPABASE_DB_URL / BACKUP_PASSPHRASE not set — no backup yet."
+            exit 0
+          fi
+          # pg_dump 17 (matches the server's Postgres).
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsS -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          day=$(date -u +%Y-%m-%d)
+          # Accounts (auth), the app's data (public) and private helpers.
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --schema=public --schema=private --schema=auth \
+            --no-owner --no-privileges --format=plain \
+            | gzip -9 > "drivebond-$day.sql.gz"
+          gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 \
+            --passphrase "$BACKUP_PASSPHRASE" -o "drivebond-$day.sql.gz.gpg" "drivebond-$day.sql.gz"
+          rm "drivebond-$day.sql.gz"
+          ls -l drivebond-*.gpg
+          echo "DAY=$day" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        if: env.DAY != ''
+        with:
+          name: drivebond-backup-${{ env.DAY }}
+          path: drivebond-*.sql.gz.gpg
+          retention-days: 30
+          if-no-files-found: error
