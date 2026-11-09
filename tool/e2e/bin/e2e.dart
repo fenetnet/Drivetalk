@@ -1870,7 +1870,7 @@ Future<void> main() async {
   await usualTimes();
 
   check(
-    await eve.rpc('schema_version') == 76,
+    await eve.rpc('schema_version') == 77,
     'the server says its version (41)',
   );
 
@@ -2667,6 +2667,25 @@ Future<void> securityFixes(SupabaseClient eve) async {
         ) ==
         1,
     'the cleanup runs every night',
+  );
+  // 77: Supabase's own logs kept 2 days; idle connections closed hourly.
+  await dbExec(
+    'insert into cron.job_run_details (jobid, runid, status, start_time) '
+    "values (0, -77, 'succeeded', now() - interval '3 days'); "
+    'select public.nightly_cleanup();',
+  );
+  check(
+    await dbCount('select count(*) from cron.job_run_details where runid = -77') ==
+        0,
+    'nightly cleanup: Supabase job logs older than 2 days go',
+  );
+  check(
+    await dbCount('select private.close_idle_connections()') >= 0 &&
+        await dbCount(
+              "select count(*) from cron.job where jobname = 'drivetalk-close-idle'",
+            ) ==
+            1,
+    'idle connections are closed every hour (and closing never fails)',
   );
   for (final c in [sa, sb]) {
     await c.rpc('clear_availability');
