@@ -2455,7 +2455,9 @@ class RealController extends Notifier<RealState> {
         case OfferStatus.cancelled:
           _markHandled(o.id);
           // Only the one who said yes is told — gently, without blame.
-          if (fresh && mine == true) {
+          // Not when ⚡ said it for me: I did nothing, nothing to tell
+          // (owner, 2026-11-09).
+          if (fresh && mine == true && o.autoAccepted != me) {
             _notify(RealNoticeKind.didNotWorkOut);
             if (_driving(now)) _speak(_l.realVoiceDidNotWorkOut);
           }

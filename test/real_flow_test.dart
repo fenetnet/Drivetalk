@@ -3622,4 +3622,24 @@ void main() {
       expect(me.backend.fetchCount, greaterThan(onScreen));
     },
   );
+
+  test('⚡ said yes for me and they said no: I\'m not told anything', () async {
+    await connect(myPhone: '0521111111', yoniPhone: '0532222222');
+    await yoni.c.setAutoYes(on: true);
+    await yoni.c.startAvailability(AvailabilityMode.walking, 60);
+    await me.c.startAvailability(AvailabilityMode.free, 60);
+    await refreshBoth();
+    final q = currentOffer(me.s, now)!;
+    expect(currentOffer(yoni.s, now), isNull, reason: '⚡: not asked');
+    await me.c.respond(q, accept: false);
+    await pump(20);
+    await refreshBoth();
+    await pump(20);
+    expect(
+      yoni.s.notice?.kind,
+      isNot(RealNoticeKind.didNotWorkOut),
+      reason: 'no "didn\'t work out" for a yes ⚡ gave',
+    );
+    expect(yoni.voice.spoken, isEmpty);
+  });
 }
