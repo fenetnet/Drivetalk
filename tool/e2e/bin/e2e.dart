@@ -1870,9 +1870,10 @@ Future<void> main() async {
   await usualTimes();
   await oneAnswer();
   await quietRing();
+  await quietRenewals();
 
   check(
-    await eve.rpc('schema_version') == 78,
+    await eve.rpc('schema_version') == 79,
     'the server says its version (41)',
   );
 
@@ -4689,6 +4690,75 @@ Future<void> quietRing() async {
   await rc.removeChannel(spyCh);
   await rb.rpc('clear_availability');
   for (final c in [ra, rb, rc]) {
+    await c.dispose();
+  }
+}
+
+/// 79: a trip's renewal rewrites nothing and rings nobody.
+Future<void> quietRenewals() async {
+  final wa = await newUser('ורד', 'female');
+  final wb = await newUser('ויקטור', 'male');
+  await befriend(wa, wb);
+  final group = await wa.rpc('save_circle', params: {
+    'p_id': null,
+    'p_name': 'נסיעות',
+    'p_quick': false,
+    'p_members': [uid(wb)],
+  }) as String;
+  await wa.rpc('set_audience', params: {
+    'p_circles': [group],
+    'p_except': false,
+  });
+  final device = await wa.rpc('create_device_token') as String;
+  await wa.rpc('auto_start', params: {'p_token': device});
+  final aud = await dbScalar(
+    "select audience_circle from profiles where id = '${uid(wa)}'",
+  );
+  Future<String> members() => dbScalar(
+    "select coalesce(string_agg(member::text || ':' || xmin::text, ','), '') "
+    "from circle_members where circle_id = '$aud'",
+  );
+  Future<int> ringsFor(SupabaseClient c) => dbCount(
+    "select count(*) from realtime.messages where topic = 'u:${uid(c)}' "
+    "and inserted_at > now() - interval '1 minute'",
+  );
+  final before = await members();
+  final ringsBefore = await ringsFor(wb);
+  await wa.rpc('auto_start', params: {'p_token': device});
+  check(
+    before.contains(uid(wb)) && await members() == before,
+    'trip renewal: the chosen group is not rewritten',
+  );
+  check(
+    await ringsFor(wb) == ringsBefore,
+    'trip renewal: friends\' phones are not rung',
+  );
+  check(
+    (await rows(wb, 'availability')).any((a) => a['user_id'] == uid(wa)),
+    'trip renewal: the friend still sees the trip',
+  );
+  // Something the friend sees (a call): rung at once.
+  await dbExec(
+    "update availability set phone_until = now() + interval '2 minutes' "
+    "where user_id = '${uid(wa)}'",
+  );
+  check(
+    await ringsFor(wb) > ringsBefore,
+    'a change the friend sees still rings at once',
+  );
+  // A real difference is still written: the friend leaves the group.
+  await wa.rpc('save_circle', params: {
+    'p_id': group,
+    'p_name': 'נסיעות',
+    'p_quick': false,
+    'p_members': <String>[],
+  });
+  check(
+    !(await members()).contains(uid(wb)),
+    'left the group: removed from the hidden list',
+  );
+  await wa.rpc('clear_availability');
+  for (final c in [wa, wb]) {
     await c.dispose();
   }
 }
