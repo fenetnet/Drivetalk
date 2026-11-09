@@ -47,6 +47,10 @@ abstract class RealBackend {
   /// login was renewed): open them again. Nothing when they work.
   Future<void> reconnectLive();
 
+  /// Behind other apps for a while: close the live line (it costs the
+  /// small server memory). [reconnectLive] opens it again.
+  Future<void> pauseLive();
+
   Future<CreatedInvitation> createInvitation();
   Future<InviteInfo> getInvitation(String token);
   Future<AcceptResult> acceptInvitation(String token);

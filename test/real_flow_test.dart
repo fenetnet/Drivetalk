@@ -3623,6 +3623,34 @@ void main() {
     },
   );
 
+  test('behind other apps for a while: the live line closes, and opens '
+      'again on return (D-173)', () async {
+    RealController.pauseLiveAfter = const Duration(milliseconds: 30);
+    addTearDown(
+      () => RealController.pauseLiveAfter = const Duration(minutes: 1),
+    );
+    await connect();
+    // A quick look at another app: nothing closes.
+    me.c.debugLifecycle(AppLifecycleState.paused);
+    me.c.debugLifecycle(AppLifecycleState.resumed);
+    await pump(20);
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    expect(me.backend.livePaused, 0);
+    expect(me.s.live, LiveStatus.connected);
+    // Behind other apps for longer: closed.
+    me.c.debugLifecycle(AppLifecycleState.paused);
+    await Future<void>.delayed(const Duration(milliseconds: 60));
+    await pump(20);
+    expect(me.backend.livePaused, 1);
+    expect(me.s.live, LiveStatus.disconnected);
+    // Back: open again at once.
+    final before = me.backend.reconnects;
+    me.c.debugLifecycle(AppLifecycleState.resumed);
+    await pump(20);
+    expect(me.backend.reconnects, before + 1);
+    expect(me.s.live, LiveStatus.connected);
+  });
+
   test('⚡ said yes for me and they said no: I\'m not told anything', () async {
     await connect(myPhone: '0521111111', yoniPhone: '0532222222');
     await yoni.c.setAutoYes(on: true);

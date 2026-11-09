@@ -167,15 +167,73 @@ class SupabaseRealBackend implements RealBackend {
     return results;
   }
 
-  @override
-  Future<RealSnapshot> fetchSnapshot() => _guard(() async {
-    final me = userId;
-    if (me == null) throw const RealBackendException('not_authenticated');
-    final since = DateTime.now()
-        .toUtc()
-        .subtract(const Duration(hours: 12))
-        .toIso8601String();
-    final results = await _timed(
+  /// Server 78 and newer: everything in one request (owner, D-173). Off
+  /// for a while when it fails; the separate requests are the fallback.
+  DateTime? _oneAnswerOffUntil;
+
+  Future<List<List<Map<String, dynamic>>>> _fetchParts(
+    String me,
+    String since,
+  ) async {
+    final off = _oneAnswerOffUntil;
+    if (off == null || DateTime.now().isAfter(off)) {
+      try {
+        return await _fetchOne();
+      } catch (e) {
+        // An older server keeps the separate requests for 30 minutes;
+        // anything else tries the one request again next time.
+        if (e is PostgrestException && isOlderServer(e)) {
+          _oneAnswerOffUntil = DateTime.now().add(const Duration(minutes: 30));
+        }
+      }
+    }
+    return _fetchMany(me, since);
+  }
+
+  Future<List<List<Map<String, dynamic>>>> _fetchOne() async {
+    final watch = Stopwatch()..start();
+    final m = Map<String, dynamic>.from(await _c.rpc('app_snapshot') as Map);
+    slowest = 'app_snapshot ${watch.elapsedMilliseconds}ms';
+    return oneAnswerParts(m);
+  }
+
+  /// The one answer, in the order of the separate requests (tests).
+  @visibleForTesting
+  static List<List<Map<String, dynamic>>> oneAnswerParts(
+    Map<String, dynamic> m,
+  ) {
+    List<Map<String, dynamic>> list(String k) => [
+      for (final x in m[k] as List? ?? const [])
+        Map<String, dynamic>.from(x as Map),
+    ];
+    List<Map<String, dynamic>> one(String k) => [
+      if (m[k] is Map) Map<String, dynamic>.from(m[k] as Map),
+    ];
+    return [
+      list('profiles'),
+      list('availability'),
+      list('offers'),
+      list('talks'),
+      list('intents'),
+      list('circles'),
+      list('ratings'),
+      list('activity'),
+      list('hide'),
+      list('others'),
+      [
+        for (final x in m['askable'] as List? ?? const []) {'id': '$x'},
+      ],
+      one('status'),
+      list('quick'),
+      list('pauses'),
+      list('mine'),
+      one('auto_yes'),
+      list('usual'),
+    ];
+  }
+
+  Future<List<List<Map<String, dynamic>>>> _fetchMany(String me, String since) {
+    return _timed(
       const [
         'profiles',
         'availability',
@@ -363,6 +421,17 @@ class SupabaseRealBackend implements RealBackend {
             ),
       ],
     );
+  }
+
+  @override
+  Future<RealSnapshot> fetchSnapshot() => _guard(() async {
+    final me = userId;
+    if (me == null) throw const RealBackendException('not_authenticated');
+    final since = DateTime.now()
+        .toUtc()
+        .subtract(const Duration(hours: 12))
+        .toIso8601String();
+    final results = await _fetchParts(me, since);
     final autoYes = results[15].firstOrNull;
     final profiles = [
       for (final r in results[0]) _profile(Map<String, dynamic>.from(r)),
@@ -1287,18 +1356,115 @@ class SupabaseRealBackend implements RealBackend {
   /// The core tables: without them, "instant updates" really don't work.
   static const _coreTables = {'availability', 'match_offers'};
 
+  /// Server 78 (D-173): a quiet "ring" on my own private channel instead of
+  /// every table's changes. Checked once on every connection (ring_me must
+  /// arrive); if it doesn't, tried once more, then the table changes as
+  /// before — and the ring is tried again only after 30 minutes.
+  DateTime? _ringOffUntil;
+  var _ringTries = 0;
+  Completer<void>? _ringHeard;
+
+  bool get _ringAllowed {
+    final off = _ringOffUntil;
+    return off == null || DateTime.now().isAfter(off);
+  }
+
   void _subscribe() {
     if (_channels.isNotEmpty || _client == null) return;
     _live.add(LiveStatus.connecting);
+    if (_ringAllowed) {
+      unawaited(_subscribeRing());
+    } else {
+      _subscribeTables();
+    }
+  }
+
+  Future<void> _subscribeRing() async {
+    final me = userId;
+    if (me == null) return;
+    // A private channel needs the current login.
+    final token = _c.auth.currentSession?.accessToken;
+    if (token != null) {
+      try {
+        await _c.realtime.setAuth(token);
+      } catch (_) {}
+    }
+    if (userId != me || _channels.isNotEmpty) return;
+    final ch = _c
+        .channel('u:$me', opts: const RealtimeChannelConfig(private: true))
+        .onBroadcast(
+          event: 'ping',
+          callback: (_) {
+            final heard = _ringHeard;
+            if (heard != null && !heard.isCompleted) heard.complete();
+            _changes.add(null);
+          },
+        );
+    _channels['ring'] = ch;
+    var checking = false;
+    ch.subscribe((status, [error]) {
+      if (!identical(_channels['ring'], ch)) return;
+      switch (status) {
+        case RealtimeSubscribeStatus.subscribed:
+          if (checking) return;
+          checking = true;
+          unawaited(_checkRing(ch));
+        case RealtimeSubscribeStatus.closed:
+        case RealtimeSubscribeStatus.channelError:
+        case RealtimeSubscribeStatus.timedOut:
+          if (realtimeTables['ring'] == true) {
+            // It worked and stopped: reconnectLive opens it again.
+            realtimeTables['ring'] = false;
+            _live.add(LiveStatus.error);
+          } else if (!checking) {
+            checking = true;
+            unawaited(_ringFailed());
+          }
+      }
+    });
+  }
+
+  /// Ring myself and wait up to 5 seconds for it.
+  Future<void> _checkRing(RealtimeChannel ch) async {
+    final heard = _ringHeard = Completer<void>();
+    var ok = false;
+    try {
+      ok = await _c.rpc('ring_me') == true;
+      if (ok) await heard.future.timeout(const Duration(seconds: 5));
+    } catch (_) {
+      ok = false;
+    }
+    if (!identical(_channels['ring'], ch)) return;
+    if (!ok) return _ringFailed();
+    _ringTries = 0;
+    realtimeTables['ring'] = true;
+    _live.add(LiveStatus.connected);
+    // Catch up on anything missed while (re)connecting.
+    _changes.add(null);
+  }
+
+  /// Once more; then the old way (table changes).
+  Future<void> _ringFailed() async {
+    await _unsubscribe(quiet: true);
+    _ringTries++;
+    if (_ringTries >= 2) {
+      _ringTries = 0;
+      _ringOffUntil = DateTime.now().add(const Duration(minutes: 30));
+      _subscribeTables();
+    } else {
+      await _subscribeRing();
+    }
+  }
+
+  void _subscribeTables() {
     final stamp = DateTime.now().millisecondsSinceEpoch;
+    // (profiles and friend_ratings never send changes: not watched.)
     for (final table in const [
       'availability',
       'match_offers',
       'connections',
-      'profiles',
       'circles',
       'circle_members',
-      'friend_ratings',
     ]) {
       // One channel per table: if one table can't be watched (e.g. not
       // enabled for Realtime on the server), the others still work.
@@ -1334,13 +1500,21 @@ class SupabaseRealBackend implements RealBackend {
     if (_client == null || _c.auth.currentUser == null) return;
     final working =
         _channels.isNotEmpty &&
-        _coreTables.every((t) => realtimeTables[t] == true);
+        (realtimeTables['ring'] == true ||
+            _coreTables.every((t) => realtimeTables[t] == true));
     if (working) return;
     await _unsubscribe();
     // The current login for the new channels.
     final token = _c.auth.currentSession?.accessToken;
     if (token != null) await _c.realtime.setAuth(token);
+    _ringTries = 0;
     _subscribe();
+  }
+
+  @override
+  Future<void> pauseLive() async {
+    if (_client == null) return;
+    await _unsubscribe();
   }
 
   void _reportLive() {
@@ -1352,7 +1526,7 @@ class SupabaseRealBackend implements RealBackend {
     }
   }
 
-  Future<void> _unsubscribe() async {
+  Future<void> _unsubscribe({bool quiet = false}) async {
     final all = [..._channels.values];
     _channels.clear();
     realtimeTables.clear();
@@ -1361,7 +1535,7 @@ class SupabaseRealBackend implements RealBackend {
         await _c.removeChannel(ch);
       } catch (_) {}
     }
-    _live.add(LiveStatus.disconnected);
+    if (!quiet) _live.add(LiveStatus.disconnected);
   }
 
   // ------------------------------------------------------------- helpers

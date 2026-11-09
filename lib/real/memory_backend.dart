@@ -1195,6 +1195,15 @@ class MemoryRealBackend implements RealBackend {
   void dropLive() => _live.add(LiveStatus.error);
 
   @override
+  Future<void> pauseLive() async {
+    livePaused++;
+    _live.add(LiveStatus.disconnected);
+  }
+
+  /// How many times the live line was closed behind other apps (tests).
+  int livePaused = 0;
+
+  @override
   Future<void> reconnectLive() async {
     reconnects++;
     if (_me != null) _live.add(LiveStatus.connected);

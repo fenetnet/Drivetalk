@@ -219,26 +219,30 @@ void main() {
     await m.setQuietRanges(const []);
     expect(me.read(realProvider).snapshot!.status.quietRanges, isEmpty);
 
-    // Instant updates dropped: reconnecting opens them again.
+    // Instant updates dropped: reconnecting opens them again. Server 78:
+    // the quiet ring on my own channel (it checked that the ring arrives);
+    // an older server: the table changes (D-173).
     final live = me.read(realBackendProvider) as SupabaseRealBackend;
-    for (
-      var i = 0;
-      i < 50 && live.realtimeTables['availability'] != true;
-      i++
-    ) {
+    final ring = await me.read(realBackendProvider).schemaVersion() >= 78;
+    bool working() => ring
+        ? live.realtimeTables['ring'] == true
+        : live.realtimeTables['availability'] == true &&
+              live.realtimeTables['match_offers'] == true;
+    for (var i = 0; i < 100 && !working(); i++) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
-    live.realtimeTables['availability'] = false;
+    expect(working(), isTrue, reason: ring ? 'the ring' : 'table changes');
+    live.realtimeTables[ring ? 'ring' : 'availability'] = false;
     await live.reconnectLive();
-    for (
-      var i = 0;
-      i < 100 && live.realtimeTables['availability'] != true;
-      i++
-    ) {
+    for (var i = 0; i < 100 && !working(); i++) {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     }
-    expect(live.realtimeTables['availability'], isTrue);
-    expect(live.realtimeTables['match_offers'], isTrue);
+    expect(working(), isTrue, reason: 'open again after reconnecting');
+    expect(
+      live.realtimeTables.containsKey('availability'),
+      !ring,
+      reason: 'the ring replaces the table changes, not on top of them',
+    );
 
     // Delete my account through the real server.
     expect(await m.deleteAccount(), isNull);

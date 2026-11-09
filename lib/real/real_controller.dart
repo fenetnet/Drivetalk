@@ -645,6 +645,7 @@ class RealController extends Notifier<RealState> {
     _debounce?.cancel();
     _ticker?.cancel();
     _fastTicker?.cancel();
+    _pauseLiveTimer?.cancel();
     _lifecycle?.dispose();
   }
 
@@ -886,9 +887,28 @@ class RealController extends Notifier<RealState> {
     state = state.copyWith(localAnswers: {...state.localAnswers}..remove(id));
   }
 
+  /// Behind other apps for a minute: the live line closes (owner, D-173).
+  Timer? _pauseLiveTimer;
+  var _livePaused = false;
+
+  /// How long behind other apps before the live line closes (tests).
+  @visibleForTesting
+  static Duration pauseLiveAfter = const Duration(minutes: 1);
+
   void _onLifecycle(AppLifecycleState s) {
     _foreground =
         s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
+    if (_foreground) {
+      _pauseLiveTimer?.cancel();
+      _pauseLiveTimer = null;
+    } else {
+      _pauseLiveTimer ??= Timer(pauseLiveAfter, () {
+        _pauseLiveTimer = null;
+        if (_foreground || !ref.mounted) return;
+        _livePaused = true;
+        unawaited(_quietly(_backend.pauseLive));
+      });
+    }
     // Behind another app or locked: no hidden question and no open
     // microphone — the notification takes over there (D-111).
     if (!_foreground && _voiceAsking && ref.mounted) _stopVoice();
@@ -915,6 +935,10 @@ class RealController extends Notifier<RealState> {
 
   void _onResume() {
     unawaited(checkForUpdate());
+    if (_livePaused) {
+      _livePaused = false;
+      unawaited(_quietly(_backend.reconnectLive));
+    }
     if (state.phase != RealPhase.ready) return;
     // Back from the phone call → ask how it went (and I'm free again).
     if (state.callStage == CallStage.dialed) unawaited(_backFromCall());
