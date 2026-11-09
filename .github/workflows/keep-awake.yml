@@ -15,6 +15,8 @@ permissions: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
+    # A server that hangs must fail the run (→ email), not wait forever.
+    timeout-minutes: 5
     steps:
       - name: Ask the server its version
         env:
@@ -26,6 +28,6 @@ jobs:
             echo "::warning::SUPABASE_URL / SUPABASE_ANON_KEY variables not set — nothing to keep awake."
             exit 0
           fi
-          v=$(curl -fsS --retry 3 -X POST "$SUPABASE_URL/rest/v1/rpc/schema_version" \
+          v=$(curl -fsS --max-time 20 --retry 3 --retry-max-time 90 -X POST "$SUPABASE_URL/rest/v1/rpc/schema_version" \
             -H "apikey: $SUPABASE_ANON_KEY" -H "Content-Type: application/json" -d '{}')
           echo "Server is awake (version $v)."
