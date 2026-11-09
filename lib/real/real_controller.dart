@@ -895,6 +895,21 @@ class RealController extends Notifier<RealState> {
   @visibleForTesting
   static Duration pauseLiveAfter = const Duration(minutes: 1);
 
+  /// Never while something is going on (waiting for an answer, a call):
+  /// then it waits for another round.
+  void _armPauseLive() {
+    _pauseLiveTimer ??= Timer(pauseLiveAfter, () {
+      _pauseLiveTimer = null;
+      if (_foreground || !ref.mounted) return;
+      if (state.call != null || waitingOffer(state, _now()) != null) {
+        _armPauseLive();
+        return;
+      }
+      _livePaused = true;
+      unawaited(_quietly(_backend.pauseLive));
+    });
+  }
+
   void _onLifecycle(AppLifecycleState s) {
     _foreground =
         s == AppLifecycleState.resumed || s == AppLifecycleState.inactive;
@@ -902,12 +917,7 @@ class RealController extends Notifier<RealState> {
       _pauseLiveTimer?.cancel();
       _pauseLiveTimer = null;
     } else {
-      _pauseLiveTimer ??= Timer(pauseLiveAfter, () {
-        _pauseLiveTimer = null;
-        if (_foreground || !ref.mounted) return;
-        _livePaused = true;
-        unawaited(_quietly(_backend.pauseLive));
-      });
+      _armPauseLive();
     }
     // Behind another app or locked: no hidden question and no open
     // microphone — the notification takes over there (D-111).

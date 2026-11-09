@@ -3644,11 +3644,27 @@ void main() {
     expect(me.backend.livePaused, 1);
     expect(me.s.live, LiveStatus.disconnected);
     // Back: open again at once.
-    final before = me.backend.reconnects;
+    var before = me.backend.reconnects;
     me.c.debugLifecycle(AppLifecycleState.resumed);
     await pump(20);
     expect(me.backend.reconnects, before + 1);
     expect(me.s.live, LiveStatus.connected);
+    // Waiting for an answer behind other apps: the line stays open.
+    await me.c.startAvailability(AvailabilityMode.free, 30);
+    await yoni.c.startAvailability(AvailabilityMode.free, 30);
+    await refreshBoth();
+    await me.c.respond(currentOffer(me.s, now)!, accept: true);
+    await pump(20);
+    expect(waitingOffer(me.s, now), isNotNull);
+    me.c.debugLifecycle(AppLifecycleState.paused);
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await pump(20);
+    expect(me.backend.livePaused, 1, reason: 'not closed while waiting');
+    expect(me.s.live, LiveStatus.connected);
+    before = me.backend.reconnects;
+    me.c.debugLifecycle(AppLifecycleState.resumed);
+    await pump(20);
+    expect(me.backend.reconnects, before, reason: 'nothing to reopen');
   });
 
   test('⚡ said yes for me and they said no: I\'m not told anything', () async {
