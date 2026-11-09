@@ -1868,9 +1868,11 @@ Future<void> main() async {
   await weeklySummary();
   await autoYesEverywhere();
   await usualTimes();
+  await oneAnswer();
+  await quietRing();
 
   check(
-    await eve.rpc('schema_version') == 77,
+    await eve.rpc('schema_version') == 78,
     'the server says its version (41)',
   );
 
@@ -4548,4 +4550,145 @@ Future<void> usualTimes() async {
     List.from(await ub.rpc('friends_usual_times')).isEmpty,
     'turned off: deleted',
   );
+}
+
+/// 78: one answer instead of ~20 — exactly what the separate requests give.
+Future<void> oneAnswer() async {
+  final oa = await newUser('אורי', 'male');
+  final ob = await newUser('אורית', 'female');
+  final oc = await newUser('אופיר', 'male');
+  await befriend(oa, ob);
+  await free(ob);
+  await free(oa);
+  final snap = Map<String, dynamic>.from(await oa.rpc('app_snapshot') as Map);
+  Set<String> ids(Object? list, String key) => {
+    for (final r in list as List) '${(r as Map)[key]}',
+  };
+  final profiles = await oa
+      .from('profiles')
+      .select('id, display_name, gender, photo_version');
+  final avail = await oa
+      .from('availability')
+      .select('user_id, mode, expires_at, source');
+  final offers = await oa.from('match_offers').select('id');
+  final askable = List.from(await oa.rpc('askable_friends'));
+  check(
+    ids(snap['profiles'], 'id').containsAll(ids(profiles, 'id')) &&
+        ids(profiles, 'id').containsAll(ids(snap['profiles'], 'id')) &&
+        !ids(snap['profiles'], 'id').contains(uid(oc)),
+    'one answer: the same people as before (and nobody else)',
+  );
+  check(
+    ids(snap['availability'], 'user_id').length ==
+            ids(avail, 'user_id').length &&
+        ids(snap['availability'], 'user_id').contains(uid(ob)) &&
+        !(snap['availability'] as List).any(
+          (r) => (r as Map).containsKey('started_at'),
+        ),
+    'one answer: the same free friends, without their start time (D-118)',
+  );
+  check(
+    ids(snap['offers'], 'id').containsAll(ids(offers, 'id')) &&
+        (snap['askable'] as List).length == askable.length &&
+        snap['status'] is Map &&
+        snap['auto_yes'] is Map &&
+        (snap['mine'] as List).length == 1,
+    'one answer: offers, who I can ask, my status, ⚡ and my free time',
+  );
+  for (final c in [oa, ob]) {
+    await c.rpc('clear_availability');
+  }
+  for (final c in [oa, ob, oc]) {
+    await c.dispose();
+  }
+}
+
+/// 78: the quiet ring — only I hear my channel; a friend's change rings me.
+Future<void> quietRing() async {
+  final ra = await newUser('רועי', 'male');
+  final rb = await newUser('רונית', 'female');
+  final rc = await newUser('רז', 'male');
+  await befriend(ra, rb);
+
+  Future<(RealtimeChannel, Completer<void>, Completer<bool>)> listen(
+    SupabaseClient who,
+    String topicOf,
+  ) async {
+    final token = who.auth.currentSession?.accessToken;
+    if (token != null) await who.realtime.setAuth(token);
+    final rang = Completer<void>();
+    final joined = Completer<bool>();
+    final ch = who
+        .channel('u:$topicOf', opts: const RealtimeChannelConfig(private: true))
+        .onBroadcast(
+          event: 'ping',
+          callback: (_) {
+            if (!rang.isCompleted) rang.complete();
+          },
+        );
+    ch.subscribe((s, [e]) {
+      if (joined.isCompleted) return;
+      if (s == RealtimeSubscribeStatus.subscribed) joined.complete(true);
+      if (s == RealtimeSubscribeStatus.channelError ||
+          s == RealtimeSubscribeStatus.timedOut ||
+          s == RealtimeSubscribeStatus.closed) {
+        joined.complete(false);
+      }
+    });
+    return (ch, rang, joined);
+  }
+
+  Future<bool> heard(Completer<void> c, [int seconds = 10]) async {
+    try {
+      await c.future.timeout(Duration(seconds: seconds));
+      return true;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
+  // Someone else can't listen to my channel.
+  final (spyCh, spyRang, spyJoined) = await listen(rc, uid(ra));
+  final spyIn = await spyJoined.future.timeout(
+    const Duration(seconds: 15),
+    onTimeout: () => false,
+  );
+
+  var (ch, rang, joined) = await listen(ra, uid(ra));
+  final inMine = await joined.future.timeout(
+    const Duration(seconds: 15),
+    onTimeout: () => false,
+  );
+  check(inMine, 'quiet ring: I can listen to my own channel');
+  await Future<void>.delayed(const Duration(seconds: 2));
+  // The local realtime server limits messages per second, and the whole
+  // check above sent many rings: it may need up to a minute or two to
+  // accept new ones. Tried again every 10 seconds, for up to 3 minutes.
+  var ok = false;
+  for (var k = 0; k < 18 && !ok; k++) {
+    await ra.rpc('ring_me');
+    ok = await heard(rang);
+  }
+  check(ok, 'quiet ring: ring_me arrives (the app\'s own check)');
+
+  await ra.removeChannel(ch);
+  (ch, rang, joined) = await listen(ra, uid(ra));
+  await joined.future.timeout(const Duration(seconds: 15), onTimeout: () => false);
+  await Future<void>.delayed(const Duration(seconds: 1));
+  var rung = false;
+  for (var k = 0; k < 6 && !rung; k++) {
+    await free(rb, 30 - k);
+    rung = await heard(rang);
+  }
+  check(rung, 'quiet ring: my friend became free → it rings me');
+  check(
+    !spyIn && !await heard(spyRang, 3),
+    'quiet ring: nobody else can listen to my channel',
+  );
+  await ra.removeChannel(ch);
+  await rc.removeChannel(spyCh);
+  await rb.rpc('clear_availability');
+  for (final c in [ra, rb, rc]) {
+    await c.dispose();
+  }
 }
