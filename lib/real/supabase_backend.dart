@@ -86,6 +86,7 @@ class SupabaseRealBackend implements RealBackend {
   @override
   Future<void> signOut() async {
     await _unsubscribe();
+    _forgetLastAnswer();
     try {
       await _client?.auth.signOut();
     } catch (_) {
@@ -190,11 +191,58 @@ class SupabaseRealBackend implements RealBackend {
     return _fetchMany(me, since);
   }
 
+  /// Server 80 (1.3.3): "did anything change?" — the fingerprint of the
+  /// last full answer, for this account only. Off for 30 minutes on an
+  /// older server (then app_snapshot as in 1.3.2).
+  String? _lastHash;
+  String? _lastHashUser;
+  List<List<Map<String, dynamic>>>? _lastParts;
+  DateTime? _ifChangedOffUntil;
+
+  /// How many refreshes the server answered "nothing changed" (tests,
+  /// diagnostics).
+  var unchangedCount = 0;
+
   Future<List<List<Map<String, dynamic>>>> _fetchOne() async {
     final watch = Stopwatch()..start();
+    final me = userId;
+    final off = _ifChangedOffUntil;
+    if (off == null || DateTime.now().isAfter(off)) {
+      try {
+        final known = me != null && _lastHashUser == me && _lastParts != null
+            ? _lastHash
+            : null;
+        final m = Map<String, dynamic>.from(
+          await _c.rpc('app_snapshot_if_changed', params: {'p_hash': known})
+              as Map,
+        );
+        final cached = _lastParts;
+        if (m['same'] == true && known != null && cached != null) {
+          unchangedCount++;
+          slowest = 'app_snapshot same ${watch.elapsedMilliseconds}ms';
+          return cached;
+        }
+        final parts = oneAnswerParts(m);
+        _lastHash = m['hash'] as String?;
+        _lastHashUser = me;
+        _lastParts = parts;
+        slowest = 'app_snapshot ${watch.elapsedMilliseconds}ms';
+        return parts;
+      } on PostgrestException catch (e) {
+        if (!isOlderServer(e)) rethrow;
+        _ifChangedOffUntil = DateTime.now().add(const Duration(minutes: 30));
+      }
+    }
     final m = Map<String, dynamic>.from(await _c.rpc('app_snapshot') as Map);
     slowest = 'app_snapshot ${watch.elapsedMilliseconds}ms';
     return oneAnswerParts(m);
+  }
+
+  /// A different account (sign out, new login): never its old answer.
+  void _forgetLastAnswer() {
+    _lastHash = null;
+    _lastHashUser = null;
+    _lastParts = null;
   }
 
   /// The one answer, in the order of the separate requests (tests).

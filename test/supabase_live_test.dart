@@ -244,6 +244,26 @@ void main() {
       reason: 'the ring replaces the table changes, not on top of them',
     );
 
+    // Server 80 (1.3.3): nothing changed → the server says only "same",
+    // and the screen shows exactly what it showed; a change → all of it.
+    if (await me.read(realBackendProvider).schemaVersion() >= 80) {
+      await m.refresh();
+      final before = me.read(realProvider).snapshot!;
+      final same = live.unchangedCount;
+      await m.refresh();
+      expect(live.unchangedCount, same + 1, reason: 'nothing changed');
+      final after = me.read(realProvider).snapshot!;
+      expect(after.friends.map((f) => f.id), before.friends.map((f) => f.id));
+      expect(after.availability.keys, before.availability.keys);
+      await m.setQuietRanges(const [QuietRange(60, 120, 127)]);
+      expect(
+        me.read(realProvider).snapshot!.status.quietRanges,
+        hasLength(1),
+        reason: 'a change arrives in full',
+      );
+      await m.setQuietRanges(const []);
+    }
+
     // Delete my account through the real server.
     expect(await m.deleteAccount(), isNull);
     expect(me.read(realProvider).phase, RealPhase.signedOut);
