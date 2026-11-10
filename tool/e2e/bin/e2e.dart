@@ -1873,7 +1873,7 @@ Future<void> main() async {
   await quietRenewals();
 
   check(
-    await eve.rpc('schema_version') == 79,
+    await eve.rpc('schema_version') == 80,
     'the server says its version (41)',
   );
 
@@ -4595,6 +4595,37 @@ Future<void> oneAnswer() async {
         snap['auto_yes'] is Map &&
         (snap['mine'] as List).length == 1,
     'one answer: offers, who I can ask, my status, ⚡ and my free time',
+  );
+  // 80: "did anything change?" — the same answer → only "same".
+  final full = Map<String, dynamic>.from(
+    await oa.rpc('app_snapshot_if_changed') as Map,
+  );
+  final again = Map<String, dynamic>.from(
+    await oa.rpc('app_snapshot_if_changed', params: {'p_hash': full['hash']})
+        as Map,
+  );
+  check(
+    full['profiles'] is List &&
+        again['same'] == true &&
+        !again.containsKey('profiles'),
+    'nothing changed: the server says only "same"',
+  );
+  await ob.rpc('clear_availability');
+  final changed = Map<String, dynamic>.from(
+    await oa.rpc('app_snapshot_if_changed', params: {'p_hash': full['hash']})
+        as Map,
+  );
+  check(
+    changed['same'] != true && changed['profiles'] is List,
+    'something changed: the full answer again',
+  );
+  final other = Map<String, dynamic>.from(
+    await oc.rpc('app_snapshot_if_changed', params: {'p_hash': full['hash']})
+        as Map,
+  );
+  check(
+    other['same'] != true,
+    'someone else\'s fingerprint never gives "same"',
   );
   for (final c in [oa, ob]) {
     await c.rpc('clear_availability');
