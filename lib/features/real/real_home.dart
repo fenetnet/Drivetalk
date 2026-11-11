@@ -17,6 +17,7 @@ import 'real_about.dart';
 import 'real_common.dart';
 import 'real_free.dart';
 import 'real_people.dart';
+import 'real_settings.dart' show showTripQuietPicker, tripQuietLabel;
 
 /// "I'm driving" / "I have time" on Home (D-156): one tap, 30 minutes, to
 /// the groups chosen last time (the first time, one short note first).
@@ -374,6 +375,8 @@ Widget? _topCard(RealState s, RealController c, DateTime now) {
   if (c.showDriveInvite(now)) return const _DriveInviteCard();
   // Once, for people who joined before the question (1.2.2).
   if (c.showGenderCard) return const _GenderCard();
+  // Once: free to talk how long after a drive starts (owner, 2026-11-11).
+  if (c.showTripQuietCard) return const _TripQuietCard();
   return null;
 }
 
@@ -1217,6 +1220,65 @@ class _GenderCard extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: GenderChoice(value: null, onChanged: c.setMyGender),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Once on Home: "when can friends reach you on a drive?" with the current
+/// choice, a way to change it, and ✕ (it stays in Settings too).
+class _TripQuietCard extends ConsumerWidget {
+  const _TripQuietCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final c = ref.read(realProvider.notifier);
+    final minutes = ref.watch(realProvider).snapshot?.tripQuietMinutes ?? 5;
+    return Card(
+      color: AppColors.blush,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.timer_outlined),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    l.tripQuietCardTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: l.close,
+                  onPressed: c.dismissTripQuietCard,
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text(l.tripQuietCardBody(tripQuietLabel(l, minutes))),
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: FilledButton.tonal(
+                onPressed: () async {
+                  final v = await showTripQuietPicker(context, minutes);
+                  if (v != null) await c.setTripQuiet(v);
+                },
+                child: Text(l.tripQuietChange),
+              ),
             ),
           ],
         ),

@@ -2848,6 +2848,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tripQuietCardTitle =>
+      'New: when can friends reach you on a drive?';
+
+  @override
+  String tripQuietCardBody(String when) {
+    return 'Now: $when from the start of the drive. Choose anything from right away to 15 minutes, also in Settings.';
+  }
+
+  @override
+  String get tripQuietChange => 'Change';
+
+  @override
   String get autoYesOn => '⚡ Automatic yes is on';
 
   @override

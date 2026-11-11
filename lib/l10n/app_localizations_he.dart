@@ -2787,6 +2787,17 @@ class AppLocalizationsHe extends AppLocalizations {
   }
 
   @override
+  String get tripQuietCardTitle => 'חדש: מתי אפשר לפנות אליך בנסיעה?';
+
+  @override
+  String tripQuietCardBody(String when) {
+    return 'כרגע: $when מתחילת הנסיעה. אפשר לבחור ממיד ועד רבע שעה, גם בהגדרות.';
+  }
+
+  @override
+  String get tripQuietChange => 'לשנות';
+
+  @override
   String get autoYesOn => '⚡ כן אוטומטי פועל';
 
   @override

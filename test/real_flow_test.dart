@@ -1236,6 +1236,18 @@ void main() {
       // A quarter of an hour, at most.
       await me.c.setTripQuiet(40);
       expect(me.s.snapshot!.tripQuietMinutes, 15);
+      expect(me.c.showTripQuietCard, isFalse, reason: 'chosen: card gone');
+    });
+
+    test('the card on Home shows once; ✕ ends it', () async {
+      await connect();
+      for (var i = 0; i < 10 && me.s.firstRun != null; i++) {
+        me.c.firstRunNext();
+        await pump();
+      }
+      expect(me.c.showTripQuietCard, isTrue);
+      me.c.dismissTripQuietCard();
+      expect(me.c.showTripQuietCard, isFalse);
     });
 
     test('renewing during a drive keeps the same trip', () async {

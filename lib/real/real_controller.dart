@@ -1310,6 +1310,20 @@ class RealController extends Notifier<RealState> {
 
   static const _genderAskedKey = 'real.genderAsked.v1';
 
+  /// Once on Home (owner, 2026-11-11): "when can friends reach you on a
+  /// drive?" — any choice or ✕ ends it.
+  static const _tripQuietCardKey = 'real.tripQuietCard.v1';
+
+  bool get showTripQuietCard =>
+      (state.snapshot?.friends.isNotEmpty ?? false) &&
+      state.firstRun == null &&
+      _store.getString(_tripQuietCardKey) == null;
+
+  void dismissTripQuietCard() {
+    _store.setString(_tripQuietCardKey, 'seen');
+    state = state.copyWith();
+  }
+
   /// Joined before the question: ask once on Home (any answer or ✕ ends it).
   bool get showGenderCard =>
       state.snapshot?.me.gender == Gender.unspecified &&
@@ -1807,6 +1821,7 @@ class RealController extends Notifier<RealState> {
 
   /// Free to talk this many minutes after a trip starts (0–15, owner).
   Future<void> setTripQuiet(int minutes) async {
+    await _store.setString(_tripQuietCardKey, 'seen');
     await _run(() => _backend.setTripQuiet(minutes.clamp(0, 15)));
     await refresh();
     // The phone tells friends "on the way" when the quiet minutes end.
@@ -2083,6 +2098,7 @@ class RealController extends Notifier<RealState> {
       _milestoneKey,
       _autoYesLockKey,
       _genderAskedKey,
+      _tripQuietCardKey,
       _shareUsualKey,
       _lonelyDriveKey,
       _driveInviteKey,

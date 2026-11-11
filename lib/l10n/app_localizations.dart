@@ -4676,6 +4676,24 @@ abstract class AppLocalizations {
   /// **'אחרי {minutes} דק׳'**
   String tripQuietAfter(int minutes);
 
+  /// No description provided for @tripQuietCardTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'חדש: מתי אפשר לפנות אליך בנסיעה?'**
+  String get tripQuietCardTitle;
+
+  /// No description provided for @tripQuietCardBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כרגע: {when} מתחילת הנסיעה. אפשר לבחור ממיד ועד רבע שעה, גם בהגדרות.'**
+  String tripQuietCardBody(String when);
+
+  /// No description provided for @tripQuietChange.
+  ///
+  /// In he, this message translates to:
+  /// **'לשנות'**
+  String get tripQuietChange;
+
   /// No description provided for @autoYesOn.
   ///
   /// In he, this message translates to:
