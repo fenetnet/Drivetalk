@@ -1871,9 +1871,10 @@ Future<void> main() async {
   await oneAnswer();
   await quietRing();
   await quietRenewals();
+  await tripQuietMinutes();
 
   check(
-    await eve.rpc('schema_version') == 80,
+    await eve.rpc('schema_version') == 81,
     'the server says its version (41)',
   );
 
@@ -4790,6 +4791,61 @@ Future<void> quietRenewals() async {
   );
   await wa.rpc('clear_availability');
   for (final c in [wa, wb]) {
+    await c.dispose();
+  }
+}
+
+/// 81: "free to talk how long after a trip starts" (0–15, default 5).
+Future<void> tripQuietMinutes() async {
+  final ta = await newUser('טל', 'female');
+  final tb = await newUser('תומר', 'male');
+  await befriend(ta, tb);
+  final device = await ta.rpc('create_device_token') as String;
+  Future<double> quietLeft() async => double.parse(
+    await dbScalar(
+      "select coalesce(extract(epoch from quiet_until - now()), -1) "
+      "from availability where user_id = '${uid(ta)}'",
+    ),
+  );
+  Future<bool> askable() async =>
+      List.from(await tb.rpc('askable_friends')).contains(uid(ta));
+  final status = Map<String, dynamic>.from(
+    await ta.rpc('auto_yes_status') as Map,
+  );
+  check(status['trip_quiet'] == 5, 'trip quiet: 5 minutes by default');
+  await ta.rpc('auto_start', params: {'p_token': device});
+  final left = await quietLeft();
+  check(
+    left > 4 * 60 && left <= 5 * 60 && !await askable(),
+    'trip quiet: a new trip starts with 5 quiet minutes',
+  );
+  // Changed during the quiet minutes: counts at once.
+  await ta.rpc('set_trip_quiet', params: {'p_minutes': 0});
+  check(
+    await quietLeft() <= 0 && await askable(),
+    'trip quiet: "right away" during the quiet minutes → free to talk now',
+  );
+  await ta.rpc('clear_availability');
+  await ta.rpc('set_trip_quiet', params: {'p_minutes': 15});
+  await ta.rpc('auto_start', params: {'p_token': device});
+  final long = await quietLeft();
+  check(
+    long > 14 * 60 && long <= 15 * 60,
+    'trip quiet: a quarter of an hour when chosen',
+  );
+  var refused = false;
+  try {
+    await ta.rpc('set_trip_quiet', params: {'p_minutes': 16});
+  } on PostgrestException {
+    refused = true;
+  }
+  check(refused, 'trip quiet: more than 15 minutes is refused');
+  final back = Map<String, dynamic>.from(
+    await ta.rpc('auto_yes_status') as Map,
+  );
+  check(back['trip_quiet'] == 15, 'trip quiet: the app reads my choice back');
+  await ta.rpc('clear_availability');
+  for (final c in [ta, tb]) {
     await c.dispose();
   }
 }
