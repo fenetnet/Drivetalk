@@ -399,6 +399,7 @@ class RealSnapshot {
     this.pauses = const {},
     this.autoYes = false,
     this.autoYesMin = 3,
+    this.tripQuietMinutes = 5,
     this.instant = const {},
     this.usualTimes = const {},
   });
@@ -407,6 +408,10 @@ class RealSnapshot {
   /// stars, and the friends who'd say yes to me right now (double ring).
   final bool autoYes;
   final int autoYesMin;
+
+  /// Free to talk this many minutes after an automatic trip starts
+  /// (0–15, default 5; owner, 2026-11-11).
+  final int tripQuietMinutes;
   final Set<String> instant;
 
   /// Free friends I can really ask now (D-107). null = unknown (an older
@@ -520,6 +525,7 @@ class RealSnapshot {
     pauses: pauses,
     autoYes: autoYes,
     autoYesMin: autoYesMin,
+    tripQuietMinutes: tripQuietMinutes,
     instant: instant,
     usualTimes: usualTimes,
   );

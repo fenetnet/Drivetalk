@@ -2833,6 +2833,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoYesStars5 => 'Only 5';
 
   @override
+  String get tripQuietTitle => 'Free to talk on a drive';
+
+  @override
+  String get tripQuietBody =>
+      'How long after a drive starts friends can reach you';
+
+  @override
+  String get tripQuietNow => 'Right away';
+
+  @override
+  String tripQuietAfter(int minutes) {
+    return 'After $minutes min';
+  }
+
+  @override
   String get autoYesOn => '⚡ Automatic yes is on';
 
   @override

@@ -24,6 +24,9 @@ abstract class RealBackend {
   /// "Yes automatically while driving" (D-153): on/off and the star level.
   Future<void> setAutoYes({bool? on, int? min});
 
+  /// Free to talk this many minutes after an automatic trip starts (0–15).
+  Future<void> setTripQuiet(int minutes);
+
   /// The Google account this login is tied to (its email), if any.
   String? get googleEmail => null;
 

@@ -4652,6 +4652,30 @@ abstract class AppLocalizations {
   /// **'רק 5'**
   String get autoYesStars5;
 
+  /// No description provided for @tripQuietTitle.
+  ///
+  /// In he, this message translates to:
+  /// **'פנוי לשיחה בנסיעה'**
+  String get tripQuietTitle;
+
+  /// No description provided for @tripQuietBody.
+  ///
+  /// In he, this message translates to:
+  /// **'כמה זמן אחרי שמתחילה נסיעה אפשר לפנות אליך'**
+  String get tripQuietBody;
+
+  /// No description provided for @tripQuietNow.
+  ///
+  /// In he, this message translates to:
+  /// **'מיד'**
+  String get tripQuietNow;
+
+  /// No description provided for @tripQuietAfter.
+  ///
+  /// In he, this message translates to:
+  /// **'אחרי {minutes} דק׳'**
+  String tripQuietAfter(int minutes);
+
   /// No description provided for @autoYesOn.
   ///
   /// In he, this message translates to:

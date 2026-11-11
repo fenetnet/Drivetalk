@@ -2773,6 +2773,20 @@ class AppLocalizationsHe extends AppLocalizations {
   String get autoYesStars5 => 'רק 5';
 
   @override
+  String get tripQuietTitle => 'פנוי לשיחה בנסיעה';
+
+  @override
+  String get tripQuietBody => 'כמה זמן אחרי שמתחילה נסיעה אפשר לפנות אליך';
+
+  @override
+  String get tripQuietNow => 'מיד';
+
+  @override
+  String tripQuietAfter(int minutes) {
+    return 'אחרי $minutes דק׳';
+  }
+
+  @override
   String get autoYesOn => '⚡ כן אוטומטי פועל';
 
   @override

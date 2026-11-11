@@ -1218,6 +1218,26 @@ void main() {
       expect(waitingOffer(me.s, now)?.id, offer.id);
     });
 
+    test('free to talk how long after a trip starts: chosen in Settings '
+        '(0–15, default 5)', () async {
+      await connect();
+      await me.c.enableAutoDriving();
+      expect(me.s.snapshot!.tripQuietMinutes, 5, reason: 'the default');
+      expect(server.autoStart(me.driving.token!), 'available');
+      await yoni.c.startAvailability(AvailabilityMode.free, 30);
+      await me.c.refresh();
+      expect(currentOffer(me.s, now), isNull, reason: '5 quiet minutes');
+      // "Right away" during the quiet minutes: counts at once.
+      await me.c.setTripQuiet(0);
+      expect(me.s.snapshot!.tripQuietMinutes, 0);
+      expect(myActiveAvailability(me.s, now)!.quietAt(now), isFalse);
+      expect(currentOffer(me.s, now), isNotNull, reason: 'asked right away');
+      expect(me.driving.texts['tripQuietMin'], '0', reason: 'phone knows');
+      // A quarter of an hour, at most.
+      await me.c.setTripQuiet(40);
+      expect(me.s.snapshot!.tripQuietMinutes, 15);
+    });
+
     test('renewing during a drive keeps the same trip', () async {
       await connect();
       await me.c.enableAutoDriving();

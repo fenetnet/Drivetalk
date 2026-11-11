@@ -247,6 +247,9 @@ class MemoryServer {
   final Map<String, List<UsualTime>> usualTimes = {};
   final Map<String, int> autoYesMin = {};
 
+  /// Minutes of quiet at a trip's start, per person (default 5).
+  final Map<String, int> tripQuiet = {};
+
   /// Would [user] say yes to [from] by themselves right now?
   bool autoYesFor(String user, String from) {
     final a = availability[user];
@@ -811,7 +814,7 @@ class MemoryServer {
       missedAt: renewing ? cur.missedAt : null,
       quietUntil: renewing
           ? cur.quietUntil
-          : now().add(const Duration(minutes: 5)),
+          : now().add(Duration(minutes: tripQuiet[me] ?? 5)),
     );
     autoSet.add(me);
     _createOffersFor(me);
@@ -960,6 +963,27 @@ class MemoryRealBackend implements RealBackend {
 
   @override
   @override
+  Future<void> setTripQuiet(int minutes) async {
+    if (offline) throw const RealBackendException('offline');
+    if (minutes < 0 || minutes > 15) {
+      throw const RealBackendException('invalid');
+    }
+    final me = _uid;
+    server.tripQuiet[me] = minutes;
+    // In the quiet minutes of a trip right now: the new choice counts.
+    final a = server.availability[me];
+    final q = a?.quietUntil;
+    if (a != null && a.auto && q != null && q.isAfter(server.now())) {
+      server.availability[me] = a.withMarks(
+        missedAt: a.missedAt,
+        quietUntil: a.startedAt.add(Duration(minutes: minutes)),
+      );
+    }
+    server._createOffersFor(me);
+    server._changed();
+  }
+
+  @override
   Future<void> setAutoYes({bool? on, int? min}) async {
     if (offline) throw const RealBackendException('offline');
     final me = _uid;
@@ -1090,6 +1114,7 @@ class MemoryRealBackend implements RealBackend {
       },
       autoYes: server.autoYes.contains(me),
       autoYesMin: server.autoYesMin[me] ?? 3,
+      tripQuietMinutes: server.tripQuiet[me] ?? 5,
       instant: {
         for (final f in friends)
           if (server.autoYesFor(f.id, me)) f.id,

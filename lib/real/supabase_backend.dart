@@ -147,6 +147,10 @@ class SupabaseRealBackend implements RealBackend {
       _guard(() => _c.rpc('set_auto_yes', params: {'p_on': on, 'p_min': min}));
 
   @override
+  Future<void> setTripQuiet(int minutes) =>
+      _guard(() => _c.rpc('set_trip_quiet', params: {'p_minutes': minutes}));
+
+  @override
   String? slowest;
 
   /// All of a refresh's requests at once; remembers the slowest (shown in
@@ -570,6 +574,7 @@ class SupabaseRealBackend implements RealBackend {
       },
       autoYes: autoYes?['on'] == true,
       autoYesMin: (autoYes?['min'] as num?)?.toInt() ?? 3,
+      tripQuietMinutes: (autoYes?['trip_quiet'] as num?)?.toInt() ?? 5,
       instant: {for (final x in autoYes?['instant'] as List? ?? const []) '$x'},
       usualTimes: _usualTimes(results[16]),
       pauses: {

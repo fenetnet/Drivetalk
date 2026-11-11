@@ -1436,6 +1436,8 @@ class RealController extends Notifier<RealState> {
   Map<String, String> _nativeTexts() => {
     // The car's voice speaks the app's language (1.2.3).
     'ttsLang': _locale.languageCode == 'en' ? 'en-US' : 'he-IL',
+    // Minutes of quiet at a trip's start ("on the way" waits for them).
+    'tripQuietMin': '${state.snapshot?.tripQuietMinutes ?? 5}',
     'channelStatus': _l.realNotifChannelStatus,
     'channelOffers': _l.realNotifChannelOffers,
     'channelTalk': _l.realNotifChannelTalk,
@@ -1801,6 +1803,16 @@ class RealController extends Notifier<RealState> {
     await _run(() => _backend.setAutoYes(on: on, min: min));
     if (on != null) _event(on ? 'auto_yes_on' : 'auto_yes_off');
     await refresh();
+  }
+
+  /// Free to talk this many minutes after a trip starts (0–15, owner).
+  Future<void> setTripQuiet(int minutes) async {
+    await _run(() => _backend.setTripQuiet(minutes.clamp(0, 15)));
+    await refresh();
+    // The phone tells friends "on the way" when the quiet minutes end.
+    if (state.driving.configured && ref.mounted) {
+      unawaited(ref.read(drivingDetectorProvider).updateTexts(_nativeTexts()));
+    }
   }
 
   // ------------------------------------------------------------ Google

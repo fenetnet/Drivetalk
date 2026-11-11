@@ -34,8 +34,6 @@ class DrivingService : Service() {
         private const val FAST_POLL_MS = 3_000L
         private const val FAST_MS = 2 * 60_000L
 
-        /** The server's quiet first minutes of a trip (5) and a little. */
-        private const val TRIP_TELL_MS = 5 * 60_000L + 30_000L
         /** Renew the trip lease well before it runs out. */
         private const val RENEW_MS = 4 * 60 * 1000L
         private const val MAX_MS = 3 * 60 * 60 * 1000L
@@ -300,7 +298,7 @@ class DrivingService : Service() {
             checkPhoneCall(now)
             // After the trip's quiet first minutes: my quick-connect friends
             // hear I'm on the way (once per trip, D-119).
-            if (!manual && tripAt > 0L && !tripTold && now - tripAt > TRIP_TELL_MS) {
+            if (!manual && tripAt > 0L && !tripTold && now - tripAt > tripTellMs(store)) {
                 tripTold = true
                 io.execute { DrivingApi(DrivingStore(ctx)).notifyTrip() }
             }
@@ -317,6 +315,15 @@ class DrivingService : Service() {
             }
             main.postDelayed(this, if (fast) FAST_POLL_MS else POLL_MS)
         }
+    }
+
+    /**
+     * "On the way" goes out when my quiet minutes at the trip's start end
+     * (chosen in Settings, 0–15, default 5 — owner, 2026-11-11), plus 30 s.
+     */
+    private fun tripTellMs(store: DrivingStore): Long {
+        val minutes = store.text("tripQuietMin", "5").toIntOrNull()?.coerceIn(0, 15) ?: 5
+        return minutes * 60_000L + 30_000L
     }
 
     /** Until when to also ask "is a call agreed?" (after a question was shown). */

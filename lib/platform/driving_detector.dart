@@ -479,6 +479,7 @@ class FakeDrivingDetector implements DrivingDetector {
     if (!supported || !grantPermission) return false;
     enabled = true;
     this.token = token;
+    this.texts = {...texts};
     return true;
   }
 
@@ -487,8 +488,13 @@ class FakeDrivingDetector implements DrivingDetector {
     enabled = false;
   }
 
+  /// Tests: the texts and settings the phone's service was given last.
+  Map<String, String> texts = {};
+
   @override
-  Future<void> updateTexts(Map<String, String> texts) async {}
+  Future<void> updateTexts(Map<String, String> texts) async {
+    this.texts = {...texts};
+  }
 
   final handledCalls = <String>[];
 

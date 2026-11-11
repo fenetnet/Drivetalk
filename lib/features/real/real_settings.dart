@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../domain/models.dart';
+import '../../l10n/app_localizations.dart';
 import '../../app/app.dart';
 import '../../app/theme.dart';
 import '../../real/backend_config.dart';
@@ -114,6 +115,24 @@ class RealSettingsScreen extends ConsumerWidget {
                       ? null
                       : (v) => c.setAutoYes(min: v.first),
                 ),
+              ),
+              // Free to talk how long after a drive starts (owner,
+              // 2026-11-11): right away up to a quarter of an hour.
+              ListTile(
+                leading: const Icon(Icons.timer_outlined),
+                title: Text(l.tripQuietTitle),
+                subtitle: Text(
+                  '${l.tripQuietBody}\n${tripQuietLabel(l, s.snapshot?.tripQuietMinutes ?? 5)}',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                enabled: !s.busy && s.snapshot != null,
+                onTap: () async {
+                  final v = await showTripQuietPicker(
+                    context,
+                    s.snapshot?.tripQuietMinutes ?? 5,
+                  );
+                  if (v != null) await c.setTripQuiet(v);
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.schedule_rounded),
@@ -788,4 +807,56 @@ class _BlockedSheetState extends ConsumerState<_BlockedSheet> {
       ),
     );
   }
+}
+
+/// "Right away" / "After 5 min".
+String tripQuietLabel(AppLocalizations l, int minutes) =>
+    minutes <= 0 ? l.tripQuietNow : l.tripQuietAfter(minutes);
+
+/// A clock-like picker: right away up to 15 minutes, one minute at a time.
+Future<int?> showTripQuietPicker(BuildContext context, int current) {
+  var value = current.clamp(0, 15).toDouble();
+  final l = context.l10n;
+  return showDialog<int>(
+    context: context,
+    builder: (d) => StatefulBuilder(
+      builder: (d, set) => AlertDialog(
+        title: Text(l.tripQuietTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l.tripQuietBody),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.timer_outlined, size: 28),
+                const SizedBox(width: 8),
+                Text(
+                  tripQuietLabel(l, value.round()),
+                  style: Theme.of(d).textTheme.headlineSmall,
+                ),
+              ],
+            ),
+            Slider(
+              value: value,
+              min: 0,
+              max: 15,
+              divisions: 15,
+              label: tripQuietLabel(l, value.round()),
+              semanticFormatterCallback: (v) => tripQuietLabel(l, v.round()),
+              onChanged: (v) => set(() => value = v),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d), child: Text(l.cancel)),
+          FilledButton(
+            onPressed: () => Navigator.pop(d, value.round()),
+            child: Text(l.save),
+          ),
+        ],
+      ),
+    ),
+  );
 }
