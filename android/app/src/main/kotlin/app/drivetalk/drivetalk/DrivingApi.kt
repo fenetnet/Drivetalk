@@ -96,6 +96,14 @@ class DrivingApi(private val store: DrivingStore) {
     /** "Stop" on the notification: end any availability (manual too). */
     fun stopAll(): String? = rpc("device_stop", JSONObject())?.trim('"')
 
+    /**
+     * Android blocked or stopped a trip: one short note for the owner (with
+     * Android's reason, version and battery setting — D-175). Server 82.
+     */
+    fun report(kind: String, message: String): Boolean =
+        rpc("device_report", JSONObject().put("p_kind", kind).put("p_message", message))
+            ?.trim() == "true"
+
     /** Quick connect: cancel during the 5 seconds (reaches the other side). */
     fun cancelCall(offerId: String): Boolean =
         rpc("device_cancel_call", JSONObject().put("p_offer", offerId))?.trim() == "true"

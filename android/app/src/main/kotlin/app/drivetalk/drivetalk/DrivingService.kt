@@ -104,11 +104,12 @@ class DrivingService : Service() {
             val api = DrivingApi(store)
             // Visible in the test info: why a trip didn't show — Android's
             // own reason (e.g. a time limit) and the battery setting.
-            store.log(
-                "service refused (${action ?: "start"}): " +
-                    "${error?.javaClass?.simpleName ?: "?"} ${error?.message?.take(90) ?: ""}" +
-                    " · battery: ${if (batteryFree(context)) "unrestricted" else "optimized"}",
-            )
+            val why = "service refused (${action ?: "start"}): " +
+                "${error?.javaClass?.simpleName ?: "?"} ${error?.message?.take(90) ?: ""}" +
+                " · battery: ${if (batteryFree(context)) "unrestricted" else "optimized"}"
+            store.log(why)
+            // The owner sees it too, with Android's version (D-175).
+            Thread { api.report("trip_blocked", "$why · android ${Build.VERSION.SDK_INT} · ${Build.MANUFACTURER}") }.start()
             when (action) {
                 ACTION_END -> Thread { api.stop() }.start()
                 ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
@@ -505,7 +506,11 @@ class DrivingService : Service() {
      * up, stop cleanly and tell the server (no "free" left behind).
      */
     override fun onTimeout(startId: Int, fgsType: Int) {
-        if (manual) io.execute { DrivingApi(DrivingStore(this)).stopAll() }
+        val api = DrivingApi(DrivingStore(this))
+        io.execute {
+            api.report("trip_time_limit", "android stopped the trip service (time limit) · android ${Build.VERSION.SDK_INT} · ${Build.MANUFACTURER}")
+        }
+        if (manual) io.execute { api.stopAll() }
         finish(callServer = !manual, why = "android time limit")
     }
 
