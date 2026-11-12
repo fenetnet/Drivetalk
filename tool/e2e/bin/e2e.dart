@@ -1872,9 +1872,10 @@ Future<void> main() async {
   await quietRing();
   await quietRenewals();
   await tripQuietMinutes();
+  await tripBlockedReports();
 
   check(
-    await eve.rpc('schema_version') == 81,
+    await eve.rpc('schema_version') == 82,
     'the server says its version (41)',
   );
 
@@ -4848,4 +4849,45 @@ Future<void> tripQuietMinutes() async {
   for (final c in [ta, tb]) {
     await c.dispose();
   }
+}
+
+/// 82: the phone tells the owner when Android blocked a trip.
+Future<void> tripBlockedReports() async {
+  final ka = await newUser('קרן', 'female');
+  final device = await ka.rpc('create_device_token') as String;
+  final bg = SupabaseClient(url, anonKey);
+  final ok = await bg.rpc('device_report', params: {
+    'p_token': device,
+    'p_kind': 'trip_blocked',
+    'p_message': 'service refused (start): time limit · android 35',
+  });
+  check(
+    ok == true &&
+        await dbCount(
+              "select count(*) from crash_reports where user_id = '${uid(ka)}' "
+              "and kind = 'trip_blocked' and build = 'android service'",
+            ) ==
+            1,
+    'trip blocked: the phone\'s note reaches the owner, with the sender',
+  );
+  check(
+    await bg.rpc('device_report', params: {
+          'p_token': 'x' * 43,
+          'p_kind': 'trip_blocked',
+          'p_message': 'x',
+        }) ==
+        false,
+    'trip blocked: a wrong phone key is ignored',
+  );
+  check(
+    await bg.rpc('device_report', params: {
+          'p_token': device,
+          'p_kind': 'Bad Kind!',
+          'p_message': 'x',
+        }) ==
+        false,
+    'trip blocked: only short known kinds',
+  );
+  await bg.dispose();
+  await ka.dispose();
 }
