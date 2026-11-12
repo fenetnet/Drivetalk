@@ -12,6 +12,9 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <!-- Android 14+: the trip service ("free to talk on this drive") has no
+         daily time limit; dataSync stays for Android 10–13 (owner, D-175). -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- One tap "allow running in the background": battery saving would
          otherwise stop driving detection and the "a friend is free" notices. -->
@@ -132,7 +135,11 @@
         <service
             android:name=".DrivingService"
             android:exported="false"
-            android:foregroundServiceType="dataSync"/>
+            android:foregroundServiceType="dataSync|specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="While the user is driving or marked free, keeps them reachable for a consensual voice call with a friend: tells the server they are available, reads incoming call questions aloud and listens for yes/no. Started by a detected trip or by the user; ends with the trip or the chosen time."/>
+        </service>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

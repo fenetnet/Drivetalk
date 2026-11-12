@@ -4610,7 +4610,9 @@ class RealController extends Notifier<RealState> {
       'auto driving: ${s.driving.enabled ? 'on' : 'off'}'
           '${s.driving.supported ? '' : ' (unsupported)'}'
           '${s.driving.permission ? '' : ' (no permission)'}'
-          '${s.driving.inVehicle ? ', in vehicle' : ''}',
+          '${s.driving.inVehicle ? ', in vehicle' : ''}'
+          // Battery saving may stop the trip service (owner, 2026-11-12).
+          '${s.driving.background ? ', battery: unrestricted' : ', battery: optimized'}',
       'my phone in a call now: ${s.driving.inCallNow ? 'yes' : 'no'}',
       // Friends' names stay on this phone (a report goes to the owner).
       if (!forReport) 'friends in a call: ${_busyLine(s, now, time)}',

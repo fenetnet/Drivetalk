@@ -71,6 +71,13 @@ class DrivingService : Service() {
         /** "Stop" on the notification: clear availability on the server. */
         fun stopAll(context: Context) = send(context, ACTION_STOP_ALL)
 
+        private fun batteryFree(context: Context): Boolean = try {
+            val pm = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            pm.isIgnoringBatteryOptimizations(context.packageName)
+        } catch (e: Exception) {
+            false
+        }
+
         // Allowed from the background: activity-recognition events and
         // notification actions are exempt from Android's start limits.
         // False when Android refused (the caller then must not claim "free").
@@ -84,7 +91,7 @@ class DrivingService : Service() {
                 }
                 true
             } catch (e: Exception) {
-                undo(context, action)
+                undo(context, action, e)
                 false
             }
         }
@@ -92,11 +99,16 @@ class DrivingService : Service() {
         // Android didn't let the service run (battery saver, the daily
         // limit on Android 15…). Never leave "free" on the server without
         // alerts on this phone: undo it and say so.
-        private fun undo(context: Context, action: String?) {
+        private fun undo(context: Context, action: String?, error: Exception? = null) {
             val store = DrivingStore(context)
             val api = DrivingApi(store)
-            // Visible in the test info: why a trip didn't show.
-            store.log("service refused (${action ?: "start"})")
+            // Visible in the test info: why a trip didn't show — Android's
+            // own reason (e.g. a time limit) and the battery setting.
+            store.log(
+                "service refused (${action ?: "start"}): " +
+                    "${error?.javaClass?.simpleName ?: "?"} ${error?.message?.take(90) ?: ""}" +
+                    " · battery: ${if (batteryFree(context)) "unrestricted" else "optimized"}",
+            )
             when (action) {
                 ACTION_END -> Thread { api.stop() }.start()
                 ACTION_STOP_ALL -> Thread { api.stopAll() }.start()
@@ -157,7 +169,15 @@ class DrivingService : Service() {
         lastStartId = startId
         val notification = DrivingNotifications.status(this, manual)
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                // No daily time limit (dataSync gets 6 hours a day on
+                // Android 15+, which cut trips short — owner, 2026-11-12).
+                startForeground(
+                    DrivingNotifications.ID_STATUS,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(
                     DrivingNotifications.ID_STATUS,
                     notification,
@@ -169,7 +189,7 @@ class DrivingService : Service() {
         } catch (e: Exception) {
             // Refused (e.g. Android 15's daily limit): undo, don't crash.
             if (!running) {
-                undo(this, intent?.action)
+                undo(this, intent?.action, e)
                 stopSelf(startId)
             }
             return START_NOT_STICKY
@@ -195,7 +215,7 @@ class DrivingService : Service() {
             ACTION_QUIET_END -> finish(callServer = false)
             ACTION_STOP_ALL -> {
                 io.execute { DrivingApi(store).stopAll() }
-                finish(callServer = false)
+                finish(callServer = false, why = "stopped from the notification")
             }
             ACTION_MANUAL -> begin(callStart = false)
             else -> begin(callStart = true)
@@ -248,7 +268,10 @@ class DrivingService : Service() {
             // Quiet hours (also when they begin mid-trip): the server didn't
             // mark me free, so don't claim "available while driving".
             if (r == "bad_token" || r == "quiet_hours") {
-                main.post { if (running && !manual) finish(callServer = false) }
+                main.post { if (running && !manual) finish(callServer = false, why = "server: $r") }
+            } else if (r != "available" && r != "already_available") {
+                // No answer (network) or something else: kept, renewed again.
+                store.log("trip renew: server said ${r ?: "nothing (no network?)"}")
             }
         }
     }
@@ -288,7 +311,10 @@ class DrivingService : Service() {
                 QuickFree.refreshAll(ctx)
             }
             if (now - startedAt > MAX_MS || (manual && now > store.availableUntil)) {
-                finish(callServer = !manual)
+                finish(
+                    callServer = !manual,
+                    why = if (now - startedAt > MAX_MS) "3 hours" else "my free time ended",
+                )
                 return
             }
             if (!manual && now - renewedAt > RENEW_MS) {
@@ -438,7 +464,9 @@ class DrivingService : Service() {
         focus = null
     }
 
-    private fun finish(callServer: Boolean) {
+    private fun finish(callServer: Boolean, why: String? = null) {
+        // Visible in the test info: why a trip / free time ended.
+        if (why != null && running) DrivingStore(this).log("trip end ($why)")
         running = false
         watching = false
         if (instance === this) instance = null
@@ -478,7 +506,7 @@ class DrivingService : Service() {
      */
     override fun onTimeout(startId: Int, fgsType: Int) {
         if (manual) io.execute { DrivingApi(DrivingStore(this)).stopAll() }
-        finish(callServer = !manual)
+        finish(callServer = !manual, why = "android time limit")
     }
 
     override fun onDestroy() {

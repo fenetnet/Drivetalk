@@ -133,6 +133,12 @@
 
 > When the user turns on availability (the "I'm free" button, the home-screen widget, a routine they set, or the opt-in driving detection), a short foreground service checks every 10 seconds whether a friend is also free and shows a notification "X is free — talk?". It stops when the availability ends (it always has an end time) or when the user taps Stop. The notification is visible the whole time.
 
+**Foreground service — special use (מ-1.3.4, D-175):** באנדרואיד 15 ומעלה, לשירות מסוג dataSync יש מגבלה של 6 שעות ביממה, והיא קטעה נסיעות. מ-1.3.4 השירות מוגדר באנדרואיד 14 ומעלה כ"שימוש מיוחד" (specialUse), בלי מגבלת זמן, ו-dataSync נשאר לגרסאות ישנות יותר. ב-Play Console ← תוכן האפליקציה ← **הרשאות שירות בחזית**: מסמנים גם **Special use** ומדביקים:
+
+> DriveBond keeps the user reachable for a consensual voice call with a friend while they drive or during a free window they chose. While active, a foreground service tells our server the user is available, reads incoming "X wants to talk — yes or no?" questions aloud so the driver never has to look at the screen, and listens for a spoken yes/no. It starts only from an opt-in trip detection (Activity Recognition or the car's Bluetooth) or the user's own action, shows a persistent notification with a Stop button the whole time, and ends with the trip or the chosen time. A dataSync service doesn't fit: it is not a data transfer, and its daily time limit on Android 15 cut users off mid-trip.
+
+אותו סרטון שהוכן ל-dataSync מתאים גם כאן: לוחצים "יש לי זמן", יוצאים מהאפליקציה, רואים את ההתראה הקבועה, ולוחצים "עצור".
+
 **Activity recognition:** זיהוי נסיעה (רשות, כבוי כברירת מחדל). בלי מיקום.
 
 **Ignore battery optimizations (REQUEST_IGNORE_BATTERY_OPTIMIZATIONS), אם שואלים:**

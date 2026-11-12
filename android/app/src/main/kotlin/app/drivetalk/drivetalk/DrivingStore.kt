@@ -117,7 +117,8 @@ class DrivingStore(context: Context) {
             .format(java.util.Date())
         val old = prefs.getString("eventLog", "") ?: ""
         val lines = (old.split('\n').filter { it.isNotBlank() } + "$time $event").takeLast(25)
-        prefs.edit().putString("eventLog", lines.joinToString("\n")).apply()
+        // commit, not apply: a refusal may be followed by the process ending.
+        prefs.edit().putString("eventLog", lines.joinToString("\n")).commit()
     }
 
     val eventLog: String
