@@ -1,0 +1,54 @@
+# The whole server check (tool/e2e, ~340 checks) against a fresh local
+# Supabase built from supabase/migrations — on every server change, so a
+# mistake is caught before a part is pasted into the real server (owner,
+# 2026-11-07). Publishes nothing and touches no real server or secret: the
+# local keys below are Supabase's public development defaults.
+name: Server check
+
+on:
+  push:
+    branches: [main, "claude/social-voice-app-mnrxc1"]
+    paths: ["supabase/**", "tool/e2e/**", ".github/workflows/server-check.yml"]
+  pull_request:
+    paths: ["supabase/**", "tool/e2e/**", ".github/workflows/server-check.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: server-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.0.0
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 3.13.7
+
+      - name: Start a local Supabase (all migrations from scratch)
+        run: |
+          supabase start -x imgproxy,studio,postgres-meta,edge-runtime,logflare,vector,supavisor,mailpit
+          supabase status
+
+      - name: Run the server check
+        working-directory: tool/e2e
+        run: |
+          dart pub get
+          # Supabase's fixed local-development key (public, not a secret).
+          export SUPABASE_URL=http://127.0.0.1:54321
+          export SUPABASE_ANON_KEY=sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH
+          dart run bin/e2e.dart
+
+      - name: Stop
+        if: always()
+        run: supabase stop --no-backup
